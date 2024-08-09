@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <title>🤖 RK4</title>
+</head>
+<body>
+    <div class="grid-container">
+        <div class="title-bar lc30 wsr text code-like">🤖 Robot Karol 4 <i>(beta)</i> | RK-Skript, 3D, mehrere Roboter & Aufgaben</div>
+        <div class="code-title lc30 wsr text">💻 Code-Editor</div>
+        <button class="code-start" id="code-start">▷</button>
+        <button class="code-stop" id="code-stop">▢</button>
+        <div class="code-editor editor" id="code-editor">Code</div>
+        <div class="preload-title lc30 wsr text">📖 Bibliothek</div>
+        <div class="preload-editor editor" id="preload-editor">Preload</div>
+        <button class="save-world">💾</button>
+        <button class="load-world">📂</button>
+        <select class="load-task text" id="load-task">
+            <option selected disabled>Wähle eine Aufgabe</option>
+        </select>
+        <div class="robot-canvas" id="robot-canvas"></div>
+        <div class="wait-title wsr lc30">⌛ <span class="wait-time" id="wait-time">50 ms</span></div>
+        <div class="wait-slider-container wsr lc30">
+            <input type="range" min="0" max="500" value="50" step="25" class="wait-slider slider" id="wait-slider">
+        </div>
+        <input class="cmd-line code-like" id="cmd-line">
+        <div class="cmd-start code-like lc30">&gt;&gt;</div>
+        <button class="cmd-run" id="cmd-run">↩</button>
+        <div class="task-description wsr text" id="task-description">Aufgabe</div>
+        <!--div class="console-title lc30 wsr text">📤 Ausgabe</div-->
+        <div class="console-log wsr text code-like" id="console-log"></div>
+    </div>
+
+    <script src="bundle.js"></script>
+</body>
+</html>

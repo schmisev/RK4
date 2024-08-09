@@ -1,0 +1,399 @@
+import { RuntimeError } from "../errors";
+import Environment from "../language/runtime/environment";
+import { ObjectVal, MK_BOOL, MK_STRING, MK_NULL, MK_NATIVE_FN, MK_NUMBER, StringVal } from "../language/runtime/values";
+import { lerp, Vec2 } from "./utils";
+import { BlockType, CHAR2BLOCK, CHAR2MARKER, MarkerType, World } from "./world";
+
+const DIR2GER: Record<string, string> = {
+    "N": "Nord",
+    "E": "Ost",
+    "S": "Süden",
+    "W": "Westen"
+}
+
+const DIR2SHORTGER: Record<string, string> = {
+    "N": "N",
+    "E": "O",
+    "S": "S",
+    "W": "W"
+}
+
+export function declareRobot(r: Robot, varname: string, env: Environment): void {
+    const karol_env = new Environment(env);
+    
+    karol_env.declareVar("x", MK_NATIVE_FN(
+        (args, scope) => {
+            if (args.length != 0)
+                throw new RuntimeError(`x() erwartet keine Parameter!`);
+            return MK_NUMBER(r.pos.x);
+        }
+    ), true);
+
+    karol_env.declareVar("y", MK_NATIVE_FN(
+        (args, scope) => {
+            if (args.length != 0)
+                throw new RuntimeError(`y() erwartet keine Parameter!`);
+            return MK_NUMBER(r.pos.y);
+        }
+    ), true);
+
+    karol_env.declareVar("richtung", MK_NATIVE_FN(
+        (args, scope) => {
+            if (args.length != 0)
+                throw new RuntimeError(`richtung() erwartet keine Parameter!`);
+            return MK_STRING(DIR2SHORTGER[r.dir]);
+        }
+    ), true);
+    
+    karol_env.declareVar("schritt", MK_NATIVE_FN(
+        (args, scope) => {
+            if (args.length != 0)
+                throw new RuntimeError(`schritt() erwartet keine Parameter!`);
+            r.step();
+            return MK_STRING(`Schritt nach: ( ${r.pos.x} | ${r.pos.y} )`);
+        }
+    ), true);
+
+    karol_env.declareVar("linksDrehen", MK_NATIVE_FN(
+        (args, scope) => {
+            if (args.length != 0)
+                throw new RuntimeError(`linkDrehen() erwartet keine Parameter!`);
+            r.turnLeft();
+            return MK_STRING("Gedreht nach: " + DIR2GER[r.dir]);
+        }
+    ), true);
+
+    karol_env.declareVar("rechtsDrehen", MK_NATIVE_FN(
+        (args, scope) => {
+            if (args.length != 0)
+                throw new RuntimeError(`rechtDrehen() erwartet keine Parameter!`);
+            r.turnRight();
+            return MK_STRING("Gedreht nach: " + DIR2GER[r.dir]);
+        }
+    ), true);
+
+    karol_env.declareVar("hinlegen", MK_NATIVE_FN(
+        (args, scope) => {
+            if (args.length > 1)
+                throw new RuntimeError(`hinlegen() erwartet einen oder keine Parameter!`);
+            let col = "R";
+            if (args.length == 1) {
+                if (args[0].type != "string") throw new RuntimeError("Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!");
+                col =  (args[0] as StringVal).value;
+            }
+            r.placeBlock(CHAR2BLOCK[col.toLowerCase()]);
+            return MK_STRING(`Schritt nach: ( ${r.targetPos().x} | ${r.targetPos().y} )`);
+        }
+    ), true);
+
+    karol_env.declareVar("aufheben", MK_NATIVE_FN(
+        (args, scope) => {
+            if (args.length != 0)
+                throw new RuntimeError(`aufheben() erwartet keine Parameter!`);
+            r.pickUpBlock();
+            return MK_STRING(`Schritt nach: ( ${r.targetPos().x} | ${r.targetPos().y} )`);
+        }
+    ), true);
+
+    karol_env.declareVar("markeSetzen", MK_NATIVE_FN(
+        (args, scope) => {
+            if (args.length > 1)
+                throw new RuntimeError(`markeSetzen() erwartet einen oder keine Parameter, z.B. markSetzen(blau)!`);
+            let col = "Y";
+            if (args.length == 1) {
+                if (args[0].type != "string") throw new RuntimeError("Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!");
+                col =  (args[0] as StringVal).value;
+            }
+            r.setMarker(CHAR2MARKER[col]);
+            return MK_STRING(`Schritt nach: ( ${r.targetPos().x} | ${r.targetPos().y} )`);
+        }
+    ), true);
+
+    karol_env.declareVar("markeEntfernen", MK_NATIVE_FN(
+        (args, scope) => {
+            if (args.length != 0)
+                throw new RuntimeError(`markeSetzen() erwartet keine Parameter!`);
+            r.removeMarker();
+            return MK_STRING(`Schritt nach: ( ${r.targetPos().x} | ${r.targetPos().y} )`);
+        }
+    ), true);
+
+    karol_env.declareVar("istAufMarke", MK_NATIVE_FN(
+        (args, scope) => {
+            if (args.length > 1)
+                throw new RuntimeError(`istAufMarke() erwartet einen oder keine Parameter, z.B. istAufMarke(blau)!`);
+            let col: string = null;
+            if (args.length == 1) {
+                if (args[0].type != "string") throw new RuntimeError("Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!");
+                col =  (args[0] as StringVal).value;
+            }
+            if (col == null) return MK_BOOL(r.isOnMarker());
+            return MK_BOOL(r.isOnMarker(CHAR2MARKER[col]));
+        }
+    ), true);
+
+    karol_env.declareVar("siehtZiegel", MK_NATIVE_FN(
+        (args, scope) => {
+            if (args.length > 1)
+                throw new RuntimeError(`siehtZiegel() erwartet einen oder keine Parameter, z.B. siehtZiegel(blau)!`);
+            let col: string = null;
+            if (args.length == 1) {
+                if (args[0].type != "string") throw new RuntimeError("Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!");
+                col =  (args[0] as StringVal).value;
+            }
+            if (col == null) return MK_BOOL(r.seesBlock());
+            return MK_BOOL(r.seesBlock(CHAR2BLOCK[col.toLowerCase()]));
+        }
+    ), true);
+
+    karol_env.declareVar("siehtWand", MK_NATIVE_FN(
+        (args, scope) => {
+            if (args.length != 0)
+                throw new RuntimeError(`siehtWand() erwartet keine Parameter!`);
+            return MK_BOOL(r.seesWall());
+        }
+    ), true);
+
+    karol_env.declareVar("siehtAbgrund", MK_NATIVE_FN(
+        (args, scope) => {
+            if (args.length != 0)
+                throw new RuntimeError(`siehtAbgrund() erwartet keine Parameter!`);
+            return MK_BOOL(r.seesVoid());
+        }
+    ), true);
+
+    // add robot to environment
+    env.declareVar(varname, {type: "object", env: karol_env, classname: "Roboter"} as ObjectVal, true);
+}
+
+function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export class Robot {
+    pos: Vec2;
+    moveH: number;
+    dir: string;
+    name: string;
+    index: number | null;
+    world: World | undefined
+
+    constructor(x: number, y: number, dir: string, name = "Karol", index: number = null, w?: World) {
+        this.pos = new Vec2(x, y);
+        this.moveH = 0.0;
+        if (!["N", "E", "S", "W"].includes(dir))
+            throw new RuntimeError(`Roboterfehler: '${dir}' ist keine valide Richtung!`);
+        this.dir = dir;
+        this.name = name;
+        this.index = index;
+        if (w)
+            this.world = w;
+    }
+
+    dir2Vec(): Vec2 {
+        switch (this.dir) {
+            case "N":
+                return new Vec2(0, -1);
+            case "S":
+                return new Vec2(0, 1);
+            case "W":
+                return new Vec2(-1, 0);
+            case "E":
+                return new Vec2(1, 0);
+        }
+        this.dir = "N";
+        return new Vec2(0, 1);
+    }
+
+    dir2Angle(): number {
+        switch (this.dir) {
+            case "N":
+                return 180;
+            case "S":
+                return 0;
+            case "W":
+                return 90;
+            case "E":
+                return 270;
+        }
+        this.dir = "N";
+        return 180;
+    }
+
+    turnRight() {
+        switch (this.dir) {
+            case "N":
+                this.dir = "E"
+                break;
+            case "E":
+                this.dir = "S"
+                break;
+            case "S":
+                this.dir = "W"
+                break;
+            case "W":
+                this.dir = "N"
+                break;
+        }
+        return this.dir;
+    }
+
+    turnLeft() {
+        for(let i = 0; i < 3; i++) {
+            this.turnRight()
+        }
+        return this.dir;
+    }
+
+    step() {
+        const target = this.targetPos();
+        if (this.canMoveTo(target)) {
+            this.pos = target;
+        }
+    }
+
+    placeBlock(t: BlockType = BlockType.r) {
+        const target = this.targetPos();
+        if (this.canPlaceAt(target)) {
+            const field = this.world.getField(target.x, target.y);
+            field.addBlock(t);
+        }
+    }
+
+    pickUpBlock() {
+        const target = this.targetPos();
+        if (this.canPickUpFrom(target)) {
+            const field = this.world.getField(target.x, target.y);
+            field.removeBlock();
+        }
+    }
+
+    setMarker(m: MarkerType = MarkerType.Y) {
+        const target = this.pos;
+        if (this.canSetAt(target)) {
+            const field = this.world.getField(target.x, target.y);
+            field.setMarker(m);
+        }
+    }
+
+    removeMarker() {
+        const target = this.pos;
+        const field = this.world.getField(target.x, target.y);
+        field.removeMarker();
+    }
+
+    isOnMarker(m: MarkerType = null): boolean {
+        const target = this.pos;
+        try {
+            const field = this.world.getField(target.x, target.y);
+            if (m == null) {
+                if (field.marker != MarkerType.None) return true
+                return false;
+            }
+            if (field.marker == m) return true;
+            return false
+        } catch {
+            return false;
+        }
+    }
+
+    seesBlock(b: BlockType = null) {
+        const target = this.targetPos();
+        try {
+            const field = this.world.getField(target.x, target.y);
+            if (b == null) {
+                if (field.blocks.length >= 1) return true;
+                return false;
+            }
+            if (field.blocks[field.blocks.length - 1] == b) return true;
+            return false;
+        } catch(e) {
+            return false;
+        }
+    }
+
+    seesWall() {
+        const target = this.targetPos();
+        return this.isWall(target);
+    }
+
+    seesVoid() {
+        const target = this.targetPos();
+        return this.isEmpty(target);
+    }
+
+    // utils
+    targetPos() {
+        const dirVec = this.dir2Vec();
+        const target = this.pos.add(dirVec);
+
+        return target;
+    }
+
+    isWall(target: Vec2): boolean {
+        const targetField = this.world.getField(target.x, target.y);
+        if (!targetField) return true;
+        if (targetField.isWall) return true
+        return false;
+    }
+
+    isEmpty(target: Vec2): boolean {
+        const targetField = this.world.getField(target.x, target.y);
+        if (!targetField) return true;
+        if (targetField.isEmpty) return true;
+        return false
+    }
+
+    canMoveTo(target: Vec2): boolean {
+        if (!this.world) return true
+        // if there is a world with other robots, etc.
+        // check if this robot is legally positioned
+        const currentField = this.world.getField(this.pos.x, this.pos.y);
+        if (!currentField) throw new RuntimeError(`${this.name}: Illegale Position!`);
+        // check if target field isn't accessible
+        const targetField = this.world.getField(target.x, target.y);
+        if (!targetField) throw new RuntimeError(`${this.name}: Dieses Feld existiert nicht!`);
+        if (currentField.getBlockHeight() < targetField.getBlockHeight() - 1) throw new RuntimeError(`${this.name}: Kann diese Höhe hicht überwinden!`);
+        if (targetField.isEmpty) throw new RuntimeError(`${this.name}: Kann nicht ins Nichts laufen!`);
+        if (targetField.isWall) throw new RuntimeError(`${this.name}: Kann nicht gegen die Wand laufen!`);
+        // check if robot is in the way
+        const targetRobot = this.world.getRobotAt(target.x, target.y);
+        if (targetRobot) throw new RuntimeError(`${this.name}: Roboter '${targetRobot.name}' ist im Weg!`);
+        return true
+    }
+
+    canPlaceAt(target: Vec2): boolean {
+        if (!this.world) throw new RuntimeError(`${this.name}: Kann in einer leeren Welt keine Blöcke legen!`);
+        const targetField = this.world.getField(target.x, target.y);
+        // check if target field isn't accessible
+        if (!targetField) throw new RuntimeError(`${this.name}: Dieses Feld existiert nicht!`);
+        if (targetField.isEmpty) throw new RuntimeError(`${this.name}: Kann Blöcke nicht ins Nichts legen!`);
+        if (targetField.isWall) throw new RuntimeError(`${this.name}: Kann Blöcke nicht auf Wände legen!`);
+        if (targetField.blocks.length >= targetField.H) throw new RuntimeError(`${this.name}: Kann keinen Block mehr legen, da es keinen Platz mehr gibt!`);
+        return true;
+    }
+
+    canSetAt(target: Vec2): boolean {
+        if (!this.world) throw new RuntimeError(`${this.name}: Kann in einer leeren Welt keine Blöcke legen!`);
+        const targetField = this.world.getField(target.x, target.y);
+        // check if target field isn't accessible
+        if (!targetField) throw new RuntimeError(`${this.name}: Dieses Feld existiert nicht!`);
+        if (targetField.isEmpty) throw new RuntimeError(`${this.name}: Kann Marker nicht ins Nichts legen!`);
+        if (targetField.isWall) throw new RuntimeError(`${this.name}: Kann Marker nicht auf Wände legen!`);
+        return true;
+    }
+
+    canPickUpFrom(target: Vec2): boolean {
+        if (!this.world) throw new RuntimeError(`${this.name}: In einer leeren Welt gibt es keine Blöcke!`);
+        const targetField = this.world.getField(target.x, target.y);
+        // check if target field isn't accessible
+        if (!targetField) throw new RuntimeError(`${this.name}: Dieses Feld existiert nicht!`);
+        if (targetField.isEmpty) throw new RuntimeError(`${this.name}: Kann Blöcke nicht aus dem Nichts aufheben!`);
+        if (targetField.isWall) throw new RuntimeError(`${this.name}: Kann Wände nicht aufheben!`);
+        if (targetField.blocks.length == 0) throw new RuntimeError(`${this.name}: Kann keinen Block aufheben, weil hier keiner liegt!`);
+        return true;
+    }
+}
+
+// export const karol = new Robot(1, 1, "N", "Karol1", null);
+// export const karol2 = new Robot(1, 2, "S", "Karol2", null);
