@@ -14,7 +14,7 @@ S;.;.;.
 
 export const STD_PRELOAD = "\n";
 
-export const TASKS: Record<string, Task> = {
+export const TASKS = {
     "A0.0": {
         title: "Block legen",
         description: "Lege den Block an die markierte Stelle!",
@@ -67,4 +67,7 @@ x;;;;;;
 `,
         preload: STD_PRELOAD,
     } as Task,
-}
+} as const;
+const _ASSERT_TASK_TYPES: Record<string, Task> = TASKS;
+
+export const DEFAULT_TASK: keyof typeof TASKS = "A0.1";

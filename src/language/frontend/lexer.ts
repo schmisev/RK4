@@ -184,7 +184,7 @@ export function tokenize(sourceCode: string): Token[] {
         }
     }
 
-    if (tokens[tokens.length - 1].type != TokenType.EndLine)
+    if (tokens.length > 0 && tokens[tokens.length - 1].type != TokenType.EndLine)
         tokens.push(token("forced newline", TokenType.EndLine));
     tokens.push(token("eof", TokenType.EOF));
     return tokens;
