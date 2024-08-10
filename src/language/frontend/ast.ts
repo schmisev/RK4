@@ -1,187 +1,146 @@
-export type NodeType = 
-    // Statements
-    "Program"
-    | "VarDeclaration"
-    | "ObjDeclaration"
-    | "ParamDeclaration"
-    | "ShowCommand"
-    | "BreakCommand"
-    | "ContinueCommand"
-    | "ReturnCommand"
-    | "IfElseBlock"
-    | "ForBlock"
-    | "WhileBlock"
-    // Expressions
-    | "NumericLiteral" 
-    | "NullLiteral"
-    | "BooleanLiteral"
-    | "StringLiteral"
-    | "Identifier" 
-    | "AssignmentExpr"
-    | "BinaryExpr"
-    | "UnaryExpr"
-    | "MemberExpr"
-    | "CallExpr"
-    // Utility
-    | "EmptyLine"
-    // Definitions
-    | "ClassDefinition"
-    | "FunctionDefinition"
-    | "ExtMethodDefinition"
-    | "Attribute"
-    | "Property"
-    ;
+export type NodeType = Stmt["kind"];
 
+export type Stmt = Program | VarDeclaration | ObjDeclaration | IfElseBlock | ForBlock | WhileBlock | ShowCommand | BreakCommand | ContinueCommand | ReturnCommand | Expr;
 
-export interface Stmt {
-    kind: NodeType;
-}
-
-export interface Program extends Stmt {
+export interface Program {
     kind: "Program";
     body: Stmt[];
 }
 
-export interface VarDeclaration extends Stmt {
+export interface VarDeclaration {
     kind: "VarDeclaration";
     ident: string;
-    type: string;
+    type: "null" | "boolean" | "number" | "string";
     value: Expr;
 }
 
-export interface ObjDeclaration extends Stmt {
+export interface ObjDeclaration {
     kind: "ObjDeclaration";
     ident: string;
-    type: string;
+    type: "object";
     classname: string;
 }
 
-export interface Property extends Stmt {
-    kind: "Property";
-    key: string;
-    value: Expr;
-}
-
-export interface EmptyLine extends Stmt {
+export interface EmptyLine {
     kind: "EmptyLine";
 }
 
-export interface IfElseBlock extends Stmt {
+export interface IfElseBlock {
     kind: "IfElseBlock";
     condition: Expr;
     ifTrue: Stmt[];
     ifFalse: Stmt[];
 }
 
-export interface ForBlock extends Stmt {
+export interface ForBlock {
     kind: "ForBlock";
     counter: Expr;
     body: Stmt[];
 }
 
-export interface WhileBlock extends Stmt {
+export interface WhileBlock {
     kind: "WhileBlock";
     condition: Expr;
     body: Stmt[];
 }
 
-export interface ShowCommand extends Stmt {
+export interface ShowCommand {
     kind: "ShowCommand";
     values: Expr[];
 }
 
-export interface BreakCommand extends Stmt {
+export interface BreakCommand {
     kind: "BreakCommand";
 }
 
-export interface ContinueCommand extends Stmt {
+export interface ContinueCommand {
     kind: "ContinueCommand";
 }
 
-export interface ReturnCommand extends Stmt {
+export interface ReturnCommand {
     kind: "ReturnCommand";
     value: Stmt;
 }
 
-export interface Expr extends Stmt {}
+export type Expr = AssignmentExpr | BinaryExpr | UnaryExpr | Identifier | NumericLiteral | NullLiteral | BooleanLiteral | StringLiteral | EmptyLine | MemberExpr | CallExpr | ClassDefinition | FunctionDefinition | ExtMethodDefinition;
 
-export interface AssignmentExpr extends Expr {
+export interface AssignmentExpr {
     kind: "AssignmentExpr";
     assigne: Expr;
     value: Expr;
 }
 
-export interface BinaryExpr extends Expr {
+export interface BinaryExpr {
     kind: "BinaryExpr";
     left: Expr;
     right: Expr;
     operator: string;
 }
 
-export interface UnaryExpr extends Expr {
+export interface UnaryExpr {
     kind: "UnaryExpr";
     right: Expr;
     operator: string;
 }
 
-export interface Identifier extends Expr {
+export interface Identifier {
     kind: "Identifier";
     symbol: string;
 }
 
-export interface NumericLiteral extends Expr {
+export interface NumericLiteral {
     kind: "NumericLiteral";
     value: number;
 }
 
-export interface NullLiteral extends Expr {
+export interface NullLiteral {
     kind: "NullLiteral";
     value: "null";
 }
 
-export interface BooleanLiteral extends Expr {
+export interface BooleanLiteral {
     kind: "BooleanLiteral";
     value: boolean;
 }
 
-export interface StringLiteral extends Expr {
+export interface StringLiteral {
     kind: "StringLiteral";
     value: string;
 }
 
-export interface MemberExpr extends Expr {
+export interface MemberExpr {
     kind: "MemberExpr";
     container: Expr;
-    member: Expr;
+    member: Identifier;
 }
 
-export interface CallExpr extends Expr {
+export interface CallExpr {
     kind: "CallExpr";
     ident: Expr;
     args: Expr[];
 }
 
-export interface ClassDefinition extends Expr {
+export interface ClassDefinition {
     kind: "ClassDefinition";
     ident: string;
     attributes: VarDeclaration[];
     methods: FunctionDefinition[];
 }
 
-export interface ParamDeclaration extends Stmt {
+export interface ParamDeclaration {
     kind: "ParamDeclaration";
     ident: string;
     type: string;
 }
 
-export interface FunctionDefinition extends Stmt {
+export interface FunctionDefinition {
     kind: "FunctionDefinition";
     params: ParamDeclaration[];
     name: string;
     body: Stmt[];
 }
 
-export interface ExtMethodDefinition extends Stmt {
+export interface ExtMethodDefinition {
     kind: "ExtMethodDefinition";
     params: ParamDeclaration[];
     name: string;

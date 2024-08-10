@@ -6,13 +6,11 @@ import {
     RuntimeVal,
     NumberVal,
     BooleanVal,
-    MK_NULL,
     StringVal,
-    NativeFunctionVal,
-    FunctionVal,
     MK_BOOL,
     MK_NUMBER,
     ObjectVal,
+    MK_STRING,
 } from "../values";
 import { Return } from "./errors";
 import { eval_bare_statements } from "./statements";
@@ -25,15 +23,24 @@ export function eval_identifier(
     return val;
 }
 
+function expectObject(val: RuntimeVal, reason: string): asserts val is ObjectVal {
+    if (val.type != "object") {
+        throw new RuntimeError(
+            `Erwartete ein Object, aber bekam '${val.type}' - ${reason}`
+        )
+    }
+}
+
 export function* eval_assignment_expr(
     node: AssignmentExpr,
     env: Environment
 ): SteppedEval<RuntimeVal> {
     if (node.assigne.kind == "MemberExpr") {
-        const assigne = node.assigne as MemberExpr;
-        const symbol = (assigne.member as Identifier).symbol;
+        const assigne = node.assigne;
+        const symbol = assigne.member.symbol;
         const obj = yield* evaluate(assigne.container, env);
-        const objenv = (obj as ObjectVal).env;
+        expectObject(obj, "nur Objekten können Eigenschaften zugewiesen werden");
+        const objenv = obj.env;
         return objenv.assignVar(symbol, yield* evaluate(node.value, env));
     }
 
@@ -44,7 +51,7 @@ export function* eval_assignment_expr(
         );
     }
 
-    const varname = (node.assigne as Identifier).symbol;
+    const varname = node.assigne.symbol;
     return env.assignVar(varname, yield* evaluate(node.value, env));
 }
 
@@ -58,20 +65,20 @@ export function* eval_binary_expr(
     try {
         if (lhs.type == "number" && rhs.type == "number") {
             return eval_numeric_binary_expr(
-                lhs as NumberVal,
-                rhs as NumberVal,
+                lhs,
+                rhs,
                 binop.operator
             );
         } else if (lhs.type == "boolean" && rhs.type == "boolean") {
             return eval_logical_binary_expr(
-                lhs as BooleanVal,
-                rhs as BooleanVal,
+                lhs,
+                rhs,
                 binop.operator
             );
         } else if (lhs.type == "string" && rhs.type == "string") {
             return eval_string_binary_expr(
-                lhs as StringVal,
-                rhs as StringVal,
+                lhs,
+                rhs,
                 binop.operator
             );
         }
@@ -94,26 +101,23 @@ export function eval_numeric_binary_expr(
 ): RuntimeVal {
     // stays numeric
     if (operator == "+") {
-        return { type: "number", value: lhs.value + rhs.value } as NumberVal;
+        return MK_NUMBER(lhs.value + rhs.value);
     } else if (operator == "-") {
-        return { type: "number", value: lhs.value - rhs.value } as NumberVal;
+        return MK_NUMBER(lhs.value - rhs.value);
     } else if (operator == "*") {
-        return { type: "number", value: lhs.value * rhs.value } as NumberVal;
+        return MK_NUMBER(lhs.value * rhs.value);
     } else if (operator == "/" || operator == ":") {
-        return {
-            type: "number",
-            value: Math.floor(lhs.value / rhs.value),
-        } as NumberVal;
+        return MK_NUMBER(Math.floor(lhs.value / rhs.value));
     } else if (operator == "%") {
-        return { type: "number", value: lhs.value % rhs.value } as NumberVal;
+        return MK_NUMBER(lhs.value % rhs.value);
     }
     // boolean values
     else if (operator == "=") {
-        return { type: "boolean", value: lhs.value == rhs.value } as BooleanVal;
+        return MK_BOOL(lhs.value == rhs.value);
     } else if (operator == ">") {
-        return { type: "boolean", value: lhs.value > rhs.value } as BooleanVal;
+        return MK_BOOL(lhs.value > rhs.value);
     } else if (operator == "<") {
-        return { type: "boolean", value: lhs.value < rhs.value } as BooleanVal;
+        return MK_BOOL(lhs.value < rhs.value);
     }
     // nothing worked
     throw new RuntimeError();
@@ -125,9 +129,9 @@ export function eval_logical_binary_expr(
     operator: string
 ): BooleanVal {
     if (operator == "und") {
-        return { type: "boolean", value: lhs.value && rhs.value } as BooleanVal;
+        return MK_BOOL(lhs.value && rhs.value);
     } else if (operator == "oder") {
-        return { type: "boolean", value: lhs.value || rhs.value } as BooleanVal;
+        return MK_BOOL(lhs.value || rhs.value);
     }
     throw new RuntimeError();
 }
@@ -138,7 +142,7 @@ export function eval_string_binary_expr(
     operator: string
 ): StringVal {
     if (operator == "+") {
-        return { type: "string", value: lhs.value + rhs.value } as StringVal;
+        return MK_STRING(lhs.value + rhs.value);
     }
     throw new RuntimeError();
 }
@@ -151,11 +155,11 @@ export function* eval_unary_expr(
 
     try {
         if (rhs.type == "boolean") {
-            return eval_logical_unary_expr(rhs as BooleanVal, unop.operator);
+            return eval_logical_unary_expr(rhs, unop.operator);
         } else if (rhs.type == "number") {
-            return eval_numeric_unary_expr(rhs as NumberVal, unop.operator);
+            return eval_numeric_unary_expr(rhs, unop.operator);
         } else if (rhs.type == "string") {
-            return eval_string_unary_expr(rhs as StringVal, unop.operator);
+            return eval_string_unary_expr(rhs, unop.operator);
         }
     } catch {
         throw `Operator in '${unop.operator} ${rhs.type}' ist nicht unterstützt!`;
@@ -168,7 +172,7 @@ export function eval_logical_unary_expr(
     operator: string
 ): BooleanVal {
     if (operator == "nicht") {
-        return { type: "boolean", value: !rhs.value };
+        return MK_BOOL(!rhs.value);
     }
     throw new RuntimeError();
 }
@@ -207,18 +211,17 @@ export function* eval_call_expr(
     const fn = yield* evaluate(call.ident, env);
 
     if (fn.type == "native-fn") {
-        return (fn as NativeFunctionVal).call(args, env);
+        return fn.call(args, env);
     } else if (fn.type == "function") {
-        const fn_ = fn as FunctionVal;
-        const scope = new Environment(fn_.declenv);
+        const scope = new Environment(fn.declenv);
 
         // create variables
-        if (args.length != fn_.params.length)
+        if (args.length != fn.params.length)
             throw new RuntimeError(
-                `Erwarte ${fn_.params.length} Parameter, habe aber ${args.length} erhalten!`
+                `Erwarte ${fn.params.length} Parameter, habe aber ${args.length} erhalten!`
             );
-        for (let i = 0; i < fn_.params.length; i++) {
-            const param = fn_.params[i];
+        for (let i = 0; i < fn.params.length; i++) {
+            const param = fn.params[i];
             const varname = param.ident;
             const arg = args[i];
 
@@ -230,7 +233,7 @@ export function* eval_call_expr(
         }
 
         try {
-            const result = yield* eval_bare_statements(fn_.body, scope);
+            const result = yield* eval_bare_statements(fn.body, scope);
             return result;
         } catch (e) {
             if (!(e instanceof Return)) {
@@ -247,12 +250,8 @@ export function* eval_member_expr(
     expr: MemberExpr,
     env: Environment
 ): SteppedEval<RuntimeVal> {
-    const obj = (yield* evaluate(expr.container, env)) as ObjectVal;
-    if (obj.type != "object")
-        throw new RuntimeError(
-            `Typ ${obj.type} ist kein Objekt, hat also keine Attribute oder Methoden!`
-        );
-    const ref = (yield* evaluate(expr.member, obj.env)) as RuntimeVal;
-
+    const obj = yield* evaluate(expr.container, env);
+    expectObject(obj, "nur Objekte haben Attribute und Methoden!");
+    const ref = eval_identifier(expr.member, obj.env);
     return ref;
 }

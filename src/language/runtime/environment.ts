@@ -20,7 +20,7 @@ export function declareGlobalEnv() {
             } else if (args.length == 1) {
                 if (args[0].type != "number")
                     throw new RuntimeError(`Erwarte eine Zahl als Parameter, nicht '${args[0].type}'!`);
-                r = (args[0] as NumberVal).value;
+                r = args[0].value;
             }
             const n = Math.round(Math.random() * r);
             return MK_NUMBER(n);
@@ -78,14 +78,17 @@ export default class Environment {
 
     public lookupVar(varname: string): RuntimeVal {
         const env = this.resolve(varname);
-        return env.variables.get(varname) as RuntimeVal;
+        return env.variables.get(varname);
     }
 
     public resolve(varname: string): Environment {
-        if (this.variables.has(varname))
-            return this;
-        if (this.parent == undefined) 
-            throw new RuntimeError(`Variablenname nicht gefunden: ${varname}`);
-        return this.parent.resolve(varname);
+        let scope: Environment = this;
+        while (true) {
+            if (scope.variables.has(varname))
+                return scope;
+            if (scope.parent == undefined)
+                throw new RuntimeError(`Variablenname nicht gefunden: ${varname}`);
+            scope = scope.parent;
+        }
     }
 }

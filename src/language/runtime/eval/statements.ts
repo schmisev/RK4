@@ -5,9 +5,6 @@ import { SteppedEval, evaluate } from "../interpreter";
 import {
     RuntimeVal,
     MK_NULL,
-    NumberVal,
-    BooleanVal,
-    StringVal,
     FunctionVal,
     ClassVal,
     ObjectVal,
@@ -42,27 +39,23 @@ export function eval_obj_declaration(
     decl: ObjDeclaration,
     env: Environment
 ): RuntimeVal {
-    const cl = env.lookupVar(decl.classname) as ClassVal;
+    const cl = env.lookupVar(decl.classname);
     if (cl.type != "class")
         throw new RuntimeError(`'${decl.classname}' ist kein Klassenname!`);
     const scope = new Environment(cl.declenv);
 
     for (const attr of cl.attributes) {
-        if (attr.type == "object") {
-            eval_obj_declaration(attr as unknown as ObjDeclaration, scope);
-        } else {
-            eval_var_declaration(attr as VarDeclaration, scope);
-        }
+        eval_var_declaration(attr, scope);
     }
     for (const m of cl.methods) {
         eval_fn_definition(m, scope);
     }
 
-    const obj = {
+    const obj: ObjectVal = {
         type: "object",
         classname: cl.name,
         env: scope,
-    } as ObjectVal;
+    };
     return env.declareVar(decl.ident, obj, true);
 }
 
@@ -70,13 +63,13 @@ export function eval_fn_definition(
     def: FunctionDefinition,
     env: Environment
 ): RuntimeVal {
-    const fn = {
+    const fn: FunctionVal = {
         type: "function",
         name: def.name,
         params: def.params,
         declenv: env,
         body: def.body,
-    } as FunctionVal;
+    };
 
     return env.declareVar(def.name, fn, true);
 }
@@ -87,18 +80,16 @@ export function eval_ext_method_definition(
 ): RuntimeVal {
     for (const v of env.getVarValues()) {
         if (v.type == "object") {
-            const obj = v as ObjectVal;
-
-            const m = {
+            const m: FunctionVal = {
                 type: "function",
                 name: def.name,
                 params: def.params,
-                declenv: obj.env,
+                declenv: v.env,
                 body: def.body,
-            } as FunctionVal;
+            };
 
-            if (obj.classname == def.classname) {
-                obj.env.declareVar(def.name, m, true);
+            if (v.classname == def.classname) {
+                v.env.declareVar(def.name, m, true);
             }
         }
     }
@@ -114,13 +105,13 @@ export function eval_class_definition(
         throw new RuntimeError(
             `Du kannst Klassen wie '${def.ident}' nur global definieren!`
         );
-    const cl = {
+    const cl: ClassVal = {
         type: "class",
         name: def.ident,
         attributes: def.attributes,
         methods: def.methods,
         declenv: env,
-    } as ClassVal;
+    };
 
     return env.declareVar(def.ident, cl);
 }
@@ -137,9 +128,9 @@ export function* eval_show_command(
 
         // side effect
         if (result.type == "number") {
-            output += (result as NumberVal).value.toString();
+            output += result.value.toString();
         } else if (result.type == "boolean") {
-            const value = (result as BooleanVal).value;
+            const value = result.value;
             if (value) {
                 output += "wahr";
             } else {
@@ -148,7 +139,7 @@ export function* eval_show_command(
         } else if (result.type == "null") {
             output += "nix";
         } else if (result.type == "string") {
-            output += (result as StringVal).value.toString();
+            output += result.value.toString();
         }
         output += " ";
     }
@@ -163,15 +154,23 @@ export function* eval_return_command(
     throw new Return(yield* evaluate(ret.value, env));
 }
 
+function evaluate_condition_value(
+    condition: RuntimeVal
+): boolean {
+    if (condition.type == "boolean") return condition.value;
+    if (condition.type == "number") return condition.value != 0;
+    throw new RuntimeError(
+        "Die Bedingung muss eine Zahl oder ein Wahrheitswert sein!"
+    );
+
+}
+
 export function* eval_if_else_block(
     block: IfElseBlock,
     env: Environment
 ): SteppedEval<RuntimeVal> {
     const condition = yield* evaluate(block.condition, env);
-    if (
-        (condition.type == "boolean" && (condition as BooleanVal).value) ||
-        (condition.type == "number" && (condition as NumberVal).value != 0)
-    ) {
+    if (evaluate_condition_value(condition)) {
         return yield* eval_bare_statements(block.ifTrue, new Environment(env));
     } else {
         return yield* eval_bare_statements(block.ifFalse, new Environment(env));
@@ -185,7 +184,7 @@ export function* eval_for_block(
     const counter = yield* evaluate(block.counter, env);
     if (counter.type != "number")
         throw new RuntimeError("Zähler muss eine Zahl sein!");
-    let i = (counter as NumberVal).value;
+    let i = counter.value;
     let lastEvaluated: RuntimeVal = MK_NULL();
     if (i < 0) throw new RuntimeError("Zähler muss größer oder gleich 0 sein!");
 
@@ -222,14 +221,7 @@ export function* eval_while_block(
         while (true) {
             try {
                 const condition = yield* evaluate(block.condition, env);
-                if (condition.type != "boolean" && condition.type != "number")
-                    throw new RuntimeError(
-                        "Die Bedingung muss eine Zahl oder ein Wahrheitswert sein!"
-                    );
-                if (
-                    (condition.type == "boolean" && (condition as BooleanVal).value) ||
-                    (condition.type == "number" && (condition as NumberVal).value != 0)
-                ) {
+                if (evaluate_condition_value(condition)) {
                     lastEvaluated = yield* eval_bare_statements(
                         block.body,
                         new Environment(env)
