@@ -137,6 +137,7 @@ const fetchCmd = (e: KeyboardEvent) => {
 };
 
 async function runCode(code: string) {
+    // TODO Allow interrupts during execution... somehow...
     try {
         const program = parse.produceAST(code);
         let result = await evaluate(program, env);
