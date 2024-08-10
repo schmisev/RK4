@@ -78,7 +78,8 @@ export default class Environment {
 
     public lookupVar(varname: string): RuntimeVal {
         const env = this.resolve(varname);
-        return env.variables.get(varname);
+        // We checkd that the variable is contained in the resolved env
+        return env.variables.get(varname)!;
     }
 
     public resolve(varname: string): Environment {

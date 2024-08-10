@@ -26,7 +26,7 @@ _;_;_:r;_
 _;_;_;_
 x`,
         preload: "# Kein vordefinierter Code",
-    } as Task,
+    },
 
     "A0.1": {
         title: "Chaos",
@@ -52,7 +52,7 @@ Methode umdrehen() für Roboter
     ende
 ende
 `
-    } as Task,
+    },
 
     "A0.2": {
         title: "Aufräumen",
@@ -66,8 +66,7 @@ _:_;rrr:_;_:_;_:_;_:_;rrr:_;#
 x;;;;;;
 `,
         preload: STD_PRELOAD,
-    } as Task,
-} as const;
-const _ASSERT_TASK_TYPES: Record<string, Task> = TASKS;
+    },
+} satisfies Record<string, Task>;
 
 export const DEFAULT_TASK: keyof typeof TASKS = "A0.1";

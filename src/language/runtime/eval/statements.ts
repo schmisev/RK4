@@ -45,7 +45,11 @@ export function eval_obj_declaration(
     const scope = new Environment(cl.declenv);
 
     for (const attr of cl.attributes) {
-        eval_var_declaration(attr, scope);
+        if (attr.type == "object") {
+            eval_obj_declaration(attr, scope);
+        } else {
+            eval_var_declaration(attr, scope);
+        }
     }
     for (const m of cl.methods) {
         eval_fn_definition(m, scope);

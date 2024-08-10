@@ -27,7 +27,7 @@ console.log = (function (old_log, log: HTMLElement) {
         old_log.apply(console, arguments);
         log.scrollTop = log.scrollHeight;
     };
-} (console.log.bind(console), document.querySelector('#console-log')));
+}(console.log.bind(console), document.querySelector('#console-log')!));
 
 // Fetch HTML elements
 let preloadEditor = ace.edit("preload-editor", {
@@ -65,7 +65,7 @@ const waitSlider = document.getElementById("wait-slider") as HTMLInputElement;
 waitSlider.oninput = () => {
     const value = parseInt(waitSlider.value);
     dt = value;
-    document.getElementById("wait-time").innerHTML = value.toString() + " ms";
+    document.getElementById("wait-time")!.innerHTML = value.toString() + " ms";
 }
 
 function isTaskkey(key: string): key is keyof typeof TASKS {
@@ -152,9 +152,9 @@ async function runCode(code: string, stepped: boolean) {
 };
 
 cmdLine.onkeydown = fetchCmd
-document.getElementById("cmd-run").onclick = runCmd
-document.getElementById("code-start").onclick = startCode
-document.getElementById("code-stop").onclick = resetEnv
+document.getElementById("cmd-run")!.onclick = runCmd
+document.getElementById("code-start")!.onclick = startCode
+document.getElementById("code-stop")!.onclick = resetEnv
 
 taskSelector.onchange = (e: Event) => {
     console.log("Lade neue Aufgabe: " + taskSelector.value);
@@ -227,7 +227,7 @@ export const sketch = (p5: p5) => {
     const aspectRatio = 3 / 4;
 
     const resizeToParent = () => {
-        var canvasDiv = document.getElementById('robot-canvas');
+        var canvasDiv = document.getElementById('robot-canvas')!;
         var width = canvasDiv.offsetWidth;
         var height = canvasDiv.offsetHeight;
         p5.resizeCanvas(width, height);
@@ -237,7 +237,7 @@ export const sketch = (p5: p5) => {
     };
 
     p5.setup = () => {
-        var canvasDiv = document.getElementById('robot-canvas');
+        var canvasDiv = document.getElementById('robot-canvas')!;
         var width = canvasDiv.offsetWidth;
         var height = canvasDiv.offsetHeight;
         const cvs = p5.createCanvas(width, height, p5.WEBGL);
@@ -276,7 +276,7 @@ export const sketch = (p5: p5) => {
             // do the drawing
             p5.push();
             p5.translate(0, 0, 5 * p5.abs(p5.sin(i + p5.frameCount * 0.1)));
-            const f = w.getField(r.pos.x, r.pos.y);
+            const f = w.getField(r.pos.x, r.pos.y)!;
             p5.translate(
                 r.pos.x * TSZ, 
                 r.pos.y * TSZ, 

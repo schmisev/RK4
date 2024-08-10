@@ -123,7 +123,7 @@ export interface CallExpr {
 export interface ClassDefinition {
     kind: "ClassDefinition";
     ident: string;
-    attributes: VarDeclaration[];
+    attributes: (VarDeclaration | ObjDeclaration)[];
     methods: FunctionDefinition[];
 }
 

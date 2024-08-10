@@ -1,4 +1,4 @@
-import { FunctionDefinition, ParamDeclaration, Stmt, VarDeclaration } from "../frontend/ast";
+import { FunctionDefinition, ObjDeclaration, ParamDeclaration, Stmt, VarDeclaration } from "../frontend/ast";
 import Environment from "./environment";
 
 export type RuntimeVal = NullVal | NumberVal | BooleanVal | StringVal | NativeFunctionVal | FunctionVal | ClassVal | ObjectVal;
@@ -42,7 +42,7 @@ export interface FunctionVal {
 export interface ClassVal {
     type: "class";
     name: string;
-    attributes: VarDeclaration[];
+    attributes: (VarDeclaration | ObjDeclaration)[];
     methods: FunctionDefinition[];
     declenv: Environment;
 }
@@ -55,19 +55,19 @@ export interface ObjectVal {
 
 // MAKROS
 export function MK_STRING(s = "") {
-    return {type: "string", value: s} as StringVal;
+    return { type: "string", value: s } satisfies StringVal;
 }
 
 export function MK_NATIVE_FN(call: FunctionCall) {
-    return {type: "native-fn", call} as NativeFunctionVal;
+    return { type: "native-fn", call } satisfies NativeFunctionVal;
 }
 
 export function MK_NUMBER(n = 0) {
-    return {type: "number", value: n} as NumberVal;
+    return { type: "number", value: n } satisfies NumberVal;
 }
 
 export function MK_NULL() {
-    return {type: "null", value: null} as NullVal;
+    return { type: "null", value: null } satisfies NullVal;
 }
 
 const TRUE_VAL: BooleanVal = { type: "boolean", value: true };
