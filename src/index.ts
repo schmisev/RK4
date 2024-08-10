@@ -8,16 +8,17 @@ import * as ace from "ace-builds/src-noconflict/ace";
 import { clamp } from './robot/utils';
 import { STD_PRELOAD, STD_WORLD, TASKS } from './robot/tasks';
 import { sleep } from './language/runtime/utils';
+import { RuntimeError } from './errors';
 
 export async function stepSleep() {
     await sleep(dt);
 }
 
 // Global variables
-let dt = 50;
+let dt = 50; // ms to sleep between function calls
 
 let preloadCode = "\n";
-let code = "";
+let code = "\n";
 let worldSpec = STD_WORLD;
 
 const parse = new Parser();
