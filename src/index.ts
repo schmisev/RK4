@@ -6,13 +6,8 @@ import { evaluate } from "./language/runtime/interpreter";
 import { Robot } from './robot/robot';
 import * as ace from "ace-builds/src-noconflict/ace";
 import { clamp } from './robot/utils';
-import { STD_PRELOAD, STD_WORLD, TASKS } from './robot/tasks';
+import { STD_PRELOAD, STD_WORLD, TASKS, DEFAULT_TASK } from "./robot/tasks";
 import { sleep } from './language/runtime/utils';
-import { RuntimeError } from './errors';
-
-export async function stepSleep() {
-    await sleep(dt);
-}
 
 // Global variables
 let dt = 50; // ms to sleep between function calls
@@ -32,7 +27,7 @@ console.log = (function (old_log, log: HTMLElement) {
         old_log.apply(console, arguments);
         log.scrollTop = log.scrollHeight;
     };
-} (console.log.bind(console), document.querySelector('#console-log')));
+}(console.log.bind(console), document.querySelector('#console-log')!));
 
 // Fetch HTML elements
 let preloadEditor = ace.edit("preload-editor", {
@@ -61,6 +56,7 @@ for (const [key, task] of Object.entries(TASKS)) {
     const newOption = document.createElement("option");
     newOption.value = key;
     newOption.innerHTML = `${key} "${task.title}"`;
+    newOption.selected = key == DEFAULT_TASK;
     taskSelector.append(newOption);
 }
 
@@ -69,22 +65,26 @@ const waitSlider = document.getElementById("wait-slider") as HTMLInputElement;
 waitSlider.oninput = () => {
     const value = parseInt(waitSlider.value);
     dt = value;
-    document.getElementById("wait-time").innerHTML = value.toString() + " ms";
+    document.getElementById("wait-time")!.innerHTML = value.toString() + " ms";
 }
 
+function isTaskkey(key: string): key is keyof typeof TASKS {
+    return key in TASKS; // TASKS was not extended in any way and is a simple record
+}
 // Loading task
 const loadTask = (key: string) => {
-    if (!(key in TASKS)) {
+    if (!isTaskkey(key)) {
         preloadCode = STD_PRELOAD;
         worldSpec = STD_PRELOAD;
         return;
     }
-    preloadCode = TASKS[key].preload;
-    worldSpec = TASKS[key].world;
+    const task = TASKS[key];
+    preloadCode = task.preload;
+    worldSpec = task.world;
 
     taskDescription.innerHTML = `
-    <p><b>🤔 ${key} "${TASKS[key].title}"</b></p>
-    <p>${TASKS[key].description}</p>`;
+    <p><b>🤔 ${key} "${task.title}"</b></p>
+    <p>${task.description}</p>`;
 
     preloadEditor.setValue(preloadCode);
     resetEnv();
@@ -95,7 +95,7 @@ async function resetEnv() {
     world = new World(worldSpec);
     world.declareAllRobots(env);
 
-    await runCode(preloadCode);
+    await runCode(preloadCode, false);
 };
 
 async function runCmd() {
@@ -111,7 +111,7 @@ async function runCmd() {
     cmdLineStackPointer = cmdLineStack.length;
 
     console.log("↩ Anweisung ausgeführt!");
-    await runCode(cmdCode);
+    await runCode(cmdCode, true);
 };
 
 async function startCode() {
@@ -120,7 +120,7 @@ async function startCode() {
     console.log();
     await resetEnv();
     console.log("▷ Code wird ausgeführt!");
-    await runCode(code);
+    await runCode(code, true);
 };
 
 const fetchCmd = (e: KeyboardEvent) => {
@@ -137,11 +137,14 @@ const fetchCmd = (e: KeyboardEvent) => {
     }
 };
 
-async function runCode(code: string) {
+async function runCode(code: string, stepped: boolean) {
     // TODO Allow interrupts during execution... somehow...
     try {
         const program = parse.produceAST(code);
-        let result = await evaluate(program, env);
+        let stepper = evaluate(program, env);
+        while (!stepper.next().done) {
+            stepped && await sleep(dt);
+        }
     } catch (runtimeError) {
         console.log("⚠️ " + runtimeError.message);
         return;
@@ -149,9 +152,9 @@ async function runCode(code: string) {
 };
 
 cmdLine.onkeydown = fetchCmd
-document.getElementById("cmd-run").onclick = runCmd
-document.getElementById("code-start").onclick = startCode
-document.getElementById("code-stop").onclick = resetEnv
+document.getElementById("cmd-run")!.onclick = runCmd
+document.getElementById("code-start")!.onclick = startCode
+document.getElementById("code-stop")!.onclick = resetEnv
 
 taskSelector.onchange = (e: Event) => {
     console.log("Lade neue Aufgabe: " + taskSelector.value);
@@ -159,7 +162,7 @@ taskSelector.onchange = (e: Event) => {
 };
 
 // Setup app
-loadTask("A0.1");
+loadTask(DEFAULT_TASK);
 
 // Visualization (super inefficient)
 export const sketch = (p5: p5) => {
@@ -224,7 +227,7 @@ export const sketch = (p5: p5) => {
     const aspectRatio = 3 / 4;
 
     const resizeToParent = () => {
-        var canvasDiv = document.getElementById('robot-canvas');
+        var canvasDiv = document.getElementById('robot-canvas')!;
         var width = canvasDiv.offsetWidth;
         var height = canvasDiv.offsetHeight;
         p5.resizeCanvas(width, height);
@@ -234,7 +237,7 @@ export const sketch = (p5: p5) => {
     };
 
     p5.setup = () => {
-        var canvasDiv = document.getElementById('robot-canvas');
+        var canvasDiv = document.getElementById('robot-canvas')!;
         var width = canvasDiv.offsetWidth;
         var height = canvasDiv.offsetHeight;
         const cvs = p5.createCanvas(width, height, p5.WEBGL);
@@ -273,7 +276,7 @@ export const sketch = (p5: p5) => {
             // do the drawing
             p5.push();
             p5.translate(0, 0, 5 * p5.abs(p5.sin(i + p5.frameCount * 0.1)));
-            const f = w.getField(r.pos.x, r.pos.y);
+            const f = w.getField(r.pos.x, r.pos.y)!;
             p5.translate(
                 r.pos.x * TSZ, 
                 r.pos.y * TSZ, 

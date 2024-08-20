@@ -2,7 +2,7 @@ import { RuntimeError } from "../errors";
 import Environment from "../language/runtime/environment";
 import { ObjectVal, MK_BOOL, MK_STRING, MK_NULL, MK_NATIVE_FN, MK_NUMBER, StringVal } from "../language/runtime/values";
 import { lerp, Vec2 } from "./utils";
-import { BlockType, CHAR2BLOCK, CHAR2MARKER, MarkerType, World } from "./world";
+import { BlockType, CHAR2BLOCK, CHAR2MARKER, Field, MarkerType, World } from "./world";
 
 const DIR2GER: Record<string, string> = {
     "N": "Nord",
@@ -79,7 +79,7 @@ export function declareRobot(r: Robot, varname: string, env: Environment): void 
             let col = "R";
             if (args.length == 1) {
                 if (args[0].type != "string") throw new RuntimeError("Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!");
-                col =  (args[0] as StringVal).value;
+                col = args[0].value;
             }
             r.placeBlock(CHAR2BLOCK[col.toLowerCase()]);
             return MK_STRING(`Schritt nach: ( ${r.targetPos().x} | ${r.targetPos().y} )`);
@@ -102,7 +102,7 @@ export function declareRobot(r: Robot, varname: string, env: Environment): void 
             let col = "Y";
             if (args.length == 1) {
                 if (args[0].type != "string") throw new RuntimeError("Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!");
-                col =  (args[0] as StringVal).value;
+                col = args[0].value;
             }
             r.setMarker(CHAR2MARKER[col]);
             return MK_STRING(`Schritt nach: ( ${r.targetPos().x} | ${r.targetPos().y} )`);
@@ -122,13 +122,13 @@ export function declareRobot(r: Robot, varname: string, env: Environment): void 
         (args, scope) => {
             if (args.length > 1)
                 throw new RuntimeError(`istAufMarke() erwartet einen oder keine Parameter, z.B. istAufMarke(blau)!`);
-            let col: string = null;
             if (args.length == 1) {
                 if (args[0].type != "string") throw new RuntimeError("Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!");
-                col =  (args[0] as StringVal).value;
+                const col = args[0].value;
+                return MK_BOOL(r.isOnMarker(CHAR2MARKER[col]));
+            } else {
+                return MK_BOOL(r.isOnMarker());
             }
-            if (col == null) return MK_BOOL(r.isOnMarker());
-            return MK_BOOL(r.isOnMarker(CHAR2MARKER[col]));
         }
     ), true);
 
@@ -136,13 +136,13 @@ export function declareRobot(r: Robot, varname: string, env: Environment): void 
         (args, scope) => {
             if (args.length > 1)
                 throw new RuntimeError(`siehtZiegel() erwartet einen oder keine Parameter, z.B. siehtZiegel(blau)!`);
-            let col: string = null;
             if (args.length == 1) {
                 if (args[0].type != "string") throw new RuntimeError("Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!");
-                col =  (args[0] as StringVal).value;
+                const col = args[0].value;
+                return MK_BOOL(r.seesBlock(CHAR2BLOCK[col.toLowerCase()]));
+            } else {
+                return MK_BOOL(r.seesBlock());
             }
-            if (col == null) return MK_BOOL(r.seesBlock());
-            return MK_BOOL(r.seesBlock(CHAR2BLOCK[col.toLowerCase()]));
         }
     ), true);
 
@@ -163,7 +163,7 @@ export function declareRobot(r: Robot, varname: string, env: Environment): void 
     ), true);
 
     // add robot to environment
-    env.declareVar(varname, {type: "object", env: karol_env, classname: "Roboter"} as ObjectVal, true);
+    env.declareVar(varname, { type: "object", env: karol_env, classname: "Roboter" }, true);
 }
 
 function sleep(ms: number) {
@@ -175,10 +175,10 @@ export class Robot {
     moveH: number;
     dir: string;
     name: string;
-    index: number | null;
-    world: World | undefined
+    index: number;
+    world: World;
 
-    constructor(x: number, y: number, dir: string, name = "Karol", index: number = null, w?: World) {
+    constructor(x: number, y: number, dir: string, name = "Karol", index: number, w: World) {
         this.pos = new Vec2(x, y);
         this.moveH = 0.0;
         if (!["N", "E", "S", "W"].includes(dir))
@@ -186,8 +186,7 @@ export class Robot {
         this.dir = dir;
         this.name = name;
         this.index = index;
-        if (w)
-            this.world = w;
+        this.world = w;
     }
 
     dir2Vec(): Vec2 {
@@ -254,24 +253,24 @@ export class Robot {
 
     placeBlock(t: BlockType = BlockType.r) {
         const target = this.targetPos();
-        if (this.canPlaceAt(target)) {
-            const field = this.world.getField(target.x, target.y);
+        const field = this.world.getField(target.x, target.y);
+        if (this.canPlaceAt(field)) {
             field.addBlock(t);
         }
     }
 
     pickUpBlock() {
         const target = this.targetPos();
-        if (this.canPickUpFrom(target)) {
-            const field = this.world.getField(target.x, target.y);
+        const field = this.world.getField(target.x, target.y);
+        if (this.canPickUpFrom(field)) {
             field.removeBlock();
         }
     }
 
     setMarker(m: MarkerType = MarkerType.Y) {
         const target = this.pos;
-        if (this.canSetAt(target)) {
-            const field = this.world.getField(target.x, target.y);
+        const field = this.world.getField(target.x, target.y);
+        if (this.canMarkAt(field)) {
             field.setMarker(m);
         }
     }
@@ -279,13 +278,15 @@ export class Robot {
     removeMarker() {
         const target = this.pos;
         const field = this.world.getField(target.x, target.y);
-        field.removeMarker();
+        if (this.canUnmarkAt(field)) {
+            field.removeMarker();
+        }
     }
 
-    isOnMarker(m: MarkerType = null): boolean {
+    isOnMarker(m: MarkerType | null = null): boolean {
         const target = this.pos;
         try {
-            const field = this.world.getField(target.x, target.y);
+            const field = this.world.getField(target.x, target.y)!;
             if (m == null) {
                 if (field.marker != MarkerType.None) return true
                 return false;
@@ -297,10 +298,10 @@ export class Robot {
         }
     }
 
-    seesBlock(b: BlockType = null) {
+    seesBlock(b: BlockType | null = null) {
         const target = this.targetPos();
         try {
-            const field = this.world.getField(target.x, target.y);
+            const field = this.world.getField(target.x, target.y)!;
             if (b == null) {
                 if (field.blocks.length >= 1) return true;
                 return false;
@@ -345,7 +346,6 @@ export class Robot {
     }
 
     canMoveTo(target: Vec2): boolean {
-        if (!this.world) return true
         // if there is a world with other robots, etc.
         // check if this robot is legally positioned
         const currentField = this.world.getField(this.pos.x, this.pos.y);
@@ -362,9 +362,7 @@ export class Robot {
         return true
     }
 
-    canPlaceAt(target: Vec2): boolean {
-        if (!this.world) throw new RuntimeError(`${this.name}: Kann in einer leeren Welt keine Blöcke legen!`);
-        const targetField = this.world.getField(target.x, target.y);
+    canPlaceAt(targetField: Field | undefined): targetField is Field {
         // check if target field isn't accessible
         if (!targetField) throw new RuntimeError(`${this.name}: Dieses Feld existiert nicht!`);
         if (targetField.isEmpty) throw new RuntimeError(`${this.name}: Kann Blöcke nicht ins Nichts legen!`);
@@ -373,9 +371,16 @@ export class Robot {
         return true;
     }
 
-    canSetAt(target: Vec2): boolean {
-        if (!this.world) throw new RuntimeError(`${this.name}: Kann in einer leeren Welt keine Blöcke legen!`);
-        const targetField = this.world.getField(target.x, target.y);
+    canPickUpFrom(targetField: Field | undefined): targetField is Field {
+        // check if target field isn't accessible
+        if (!targetField) throw new RuntimeError(`${this.name}: Dieses Feld existiert nicht!`);
+        if (targetField.isEmpty) throw new RuntimeError(`${this.name}: Kann Blöcke nicht aus dem Nichts aufheben!`);
+        if (targetField.isWall) throw new RuntimeError(`${this.name}: Kann Wände nicht aufheben!`);
+        if (targetField.blocks.length == 0) throw new RuntimeError(`${this.name}: Kann keinen Block aufheben, weil hier keiner liegt!`);
+        return true;
+    }
+
+    canMarkAt(targetField: Field | undefined): targetField is Field {
         // check if target field isn't accessible
         if (!targetField) throw new RuntimeError(`${this.name}: Dieses Feld existiert nicht!`);
         if (targetField.isEmpty) throw new RuntimeError(`${this.name}: Kann Marker nicht ins Nichts legen!`);
@@ -383,14 +388,11 @@ export class Robot {
         return true;
     }
 
-    canPickUpFrom(target: Vec2): boolean {
-        if (!this.world) throw new RuntimeError(`${this.name}: In einer leeren Welt gibt es keine Blöcke!`);
-        const targetField = this.world.getField(target.x, target.y);
+    canUnmarkAt(targetField: Field | undefined): targetField is Field {
         // check if target field isn't accessible
         if (!targetField) throw new RuntimeError(`${this.name}: Dieses Feld existiert nicht!`);
-        if (targetField.isEmpty) throw new RuntimeError(`${this.name}: Kann Blöcke nicht aus dem Nichts aufheben!`);
-        if (targetField.isWall) throw new RuntimeError(`${this.name}: Kann Wände nicht aufheben!`);
-        if (targetField.blocks.length == 0) throw new RuntimeError(`${this.name}: Kann keinen Block aufheben, weil hier keiner liegt!`);
+        if (targetField.isEmpty) throw new RuntimeError(`${this.name}: Kann Marker nicht im Nichts entfernen!`);
+        if (targetField.isWall) throw new RuntimeError(`${this.name}: Kann Marker nicht von Wände entfernen!`);
         return true;
     }
 }

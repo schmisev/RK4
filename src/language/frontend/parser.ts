@@ -12,21 +12,19 @@ export default class Parser {
     }
 
     private at(): Token {
-        return this.tokens[0] as Token;
+        return this.tokens[0];
     }
 
     private eat(): Token {
-        const prev = this.tokens.shift() as Token;
+        const prev = this.tokens.shift()!;
         return prev;
     }
 
     private expect(type: TokenType, err: string) {
-        const prev = this.tokens.shift() as Token;
+        const prev = this.tokens.shift();
         if (!prev || prev.type != type) {
             throw new ParserError("PARSER:\n" + err + JSON.stringify(prev) + " - erwarte: " + type.toString());
-            
         }
-
         return prev;
     }
 
@@ -85,7 +83,7 @@ export default class Parser {
                 break;
             case TokenType.EndLine:
                 this.eat();
-                return { kind: "EmptyLine" } as EmptyLine
+                return { kind: "EmptyLine" }
             default:
                 statement = this.parse_expr();
                 break;
@@ -100,26 +98,24 @@ export default class Parser {
         while (this.at().type != TokenType.EndLine) {
             values.push(this.parse_expr());
         }
-        const cmd = {
+        return {
             kind: "ShowCommand",
             values,
-        } as ShowCommand;
-
-        return cmd;
+        };
     }
 
     parse_break(): Stmt {
         this.eat();
         return {
             kind: "BreakCommand",
-        } as BreakCommand;
+        };
     }
 
     parse_continue(): Stmt {
         this.eat();
         return {
             kind: "ContinueCommand",
-        } as ContinueCommand;
+        };
     }
 
     parse_return(): Stmt {
@@ -128,30 +124,30 @@ export default class Parser {
         return {
             kind: "ReturnCommand",
             value: result,
-        } as ReturnCommand
+        }
     }
 
-    parse_class_definition(): Stmt {
+    parse_class_definition(): ClassDefinition {
         this.eat();
         const ident = this.expect(TokenType.Identifier, "Erwarte einen Klassennamen nach 'Klasse'!").value;
         this.expect(TokenType.EndLine, "Nach dem Klassennamen sollte eine neue Zeile beginnen!");
-        const attributes: VarDeclaration[] = []; 
+        const attributes: (VarDeclaration | ObjDeclaration)[] = []; 
         const methods: FunctionDefinition[] = []; 
         while (this.at().type != TokenType.EndBlock && this.at().type != TokenType.MethodDef) {
-            const declaration = this.parse_var_declaration() as VarDeclaration;
+            const declaration = this.parse_var_declaration();
             this.expect(TokenType.EndLine, "Erwarte eine neue Zeile nach jedem Attribut!");
             attributes.push(declaration);
         }
         while (this.at().type != TokenType.EndBlock && this.at().type == TokenType.MethodDef) {
-            const definition = this.parse_fn_definition() as FunctionDefinition;
+            const definition = this.parse_fn_definition();
             this.expect(TokenType.EndLine, "Erwarte eine neue Zeile nach jeder Methode!");
             methods.push(definition);
         }
         this.eat(); // eat 'ende'
-        return {kind: "ClassDefinition", ident, attributes, methods} as ClassDefinition
+        return { kind: "ClassDefinition", ident, attributes, methods }
     }
 
-    parse_if_else_block(): Stmt {
+    parse_if_else_block(): IfElseBlock {
         const ifTrue: Stmt[] = [];
         const ifFalse: Stmt[] = [];
         this.eat(); // eat 'wenn'
@@ -164,7 +160,7 @@ export default class Parser {
             ifTrue.push(statement);
         }
         if (this.eat().type == TokenType.EndBlock) {
-            return {kind: "IfElseBlock", condition, ifTrue, ifFalse} as IfElseBlock;
+            return { kind: "IfElseBlock", condition, ifTrue, ifFalse };
         }
         if (this.at().type == TokenType.If) {
             // if-else chaining
@@ -174,7 +170,7 @@ export default class Parser {
                 condition, 
                 ifTrue, 
                 ifFalse,
-            } as IfElseBlock;
+            };
         }
         this.expect(TokenType.EndLine, "Nach 'sonst' sollte eine neue Zeile beginnen!");
         
@@ -185,7 +181,7 @@ export default class Parser {
         }
         this.eat(); // eat 'ende'
 
-        return {kind: "IfElseBlock", condition, ifTrue, ifFalse} as IfElseBlock;
+        return { kind: "IfElseBlock", condition, ifTrue, ifFalse };
     }
 
     parse_loop_block(): Stmt {
@@ -198,7 +194,7 @@ export default class Parser {
         }
     }
 
-    parse_for_loop(): Stmt {
+    parse_for_loop(): ForBlock {
         const counter = this.parse_expr();
         this.expect(TokenType.RepTimes, "Auf den Zähler sollte 'mal' folgen!");
         this.expect(TokenType.EndLine, "Nach 'mal' sollte eine neue Zeile folgen!");
@@ -212,10 +208,10 @@ export default class Parser {
             kind: "ForBlock",
             counter,
             body
-        } as ForBlock;
+        };
     }
 
-    parse_while_loop(): Stmt {
+    parse_while_loop(): WhileBlock {
         const condition = this.parse_expr();
         this.expect(TokenType.EndLine, "Nach der Bedingung sollte eine neue Zeile folgen!");
         const body: Stmt[] = [];
@@ -228,11 +224,11 @@ export default class Parser {
             kind: "WhileBlock",
             condition,
             body,
-        } as WhileBlock;
+        };
     }
 
-    parse_var_declaration(): Stmt {
-        let type = "null";
+    parse_var_declaration(): VarDeclaration | ObjDeclaration {
+        let type: VarDeclaration["type"] = "null";
         if (this.at().type == TokenType.DeclBoolean) {
             type = "boolean";
         } else if (this.at().type == TokenType.DeclNumber) {
@@ -246,14 +242,12 @@ export default class Parser {
         const ident = this.expect(TokenType.Identifier, "Erwarte Variablennamen nach 'Zahl', 'Wahrheitswert' oder 'Objekt'!").value;
         this.expect(TokenType.Assign, "Erwarte 'ist' nach Variablennamen!");
 
-        const declaration = {
+        return {
             kind: "VarDeclaration",
             ident: ident,
             type: type,
             value: this.parse_expr(),
-        } as VarDeclaration;
-
-        return declaration;
+        };
     }
 
     parse_param_declaration(): ParamDeclaration {
@@ -267,10 +261,10 @@ export default class Parser {
         }
         this.eat();
         const ident = this.expect(TokenType.Identifier, "Erwarte Variablennamen nach 'Zahl', 'Wahrheitswert' oder 'Objekt'!").value;
-        return {kind: "ParamDeclaration", type, ident} as ParamDeclaration;
+        return { kind: "ParamDeclaration", type, ident };
     }
 
-    parse_fn_definition(): Stmt {
+    parse_fn_definition(): FunctionDefinition {
         this.eat();
         const name = this.expect(TokenType.Identifier, "Erwarte einen Funktionsnamen nach 'Funktion'").value;
         const params: ParamDeclaration[] = []
@@ -289,10 +283,10 @@ export default class Parser {
         }
         this.eat();
 
-        return {kind: "FunctionDefinition", name, params, body} as FunctionDefinition;
+        return { kind: "FunctionDefinition", name, params, body };
     }
 
-    parse_ext_method_definition(): Stmt {
+    parse_ext_method_definition(): ExtMethodDefinition {
         this.eat();
         const name = this.expect(TokenType.Identifier, "Erwarte einen Funktionsnamen nach 'Funktion'").value;
         const params: ParamDeclaration[] = []
@@ -315,23 +309,21 @@ export default class Parser {
         }
         this.eat();
 
-        return {kind: "ExtMethodDefinition", name, params, body, classname} as ExtMethodDefinition;
+        return { kind: "ExtMethodDefinition", name, params, body, classname };
     }
 
-    parse_obj_declaration(): Stmt {
+    parse_obj_declaration(): ObjDeclaration {
         this.eat();
         const ident = this.expect(TokenType.Identifier, "Erwarte Objektname nach 'Objekt'").value;
         this.expect(TokenType.Instance, "Erwarte 'als' nach Objektnamen!");
         const classname = this.expect(TokenType.Identifier, "Erwarte Klassenname nach 'als'!").value;
 
-        const declaration = {
+        return {
             kind: "ObjDeclaration",
             ident,
             type: "object",
             classname,
-        } as ObjDeclaration;
-
-        return declaration
+        };
     }
 
     private parse_expr(): Expr {
@@ -354,7 +346,7 @@ export default class Parser {
         if (this.at().type == TokenType.Assign) {
             this.eat();
             const value = this.parse_assignment_expr();
-            return { value, assigne: left, kind: "AssignmentExpr" } as AssignmentExpr;
+            return { kind: "AssignmentExpr", value, assigne: left };
         }
 
         return left;
@@ -370,7 +362,7 @@ export default class Parser {
                 left,
                 right,
                 operator,
-            } as BinaryExpr;
+            };
         }
 
         return left;
@@ -386,7 +378,7 @@ export default class Parser {
                 left,
                 right,
                 operator,
-            } as BinaryExpr;
+            };
         }
 
         return left;
@@ -402,7 +394,7 @@ export default class Parser {
                 left,
                 right,
                 operator,
-            } as BinaryExpr;
+            };
         }
 
         return left;
@@ -418,7 +410,7 @@ export default class Parser {
                 left,
                 right,
                 operator,
-            } as BinaryExpr;
+            };
         }
 
         return left;
@@ -428,7 +420,7 @@ export default class Parser {
         if (this.at().type == TokenType.UnaryOperator || this.at().type == TokenType.BinaryOperator) {
             const operator = this.eat().value;
             const right = this.parse_call_expr();
-            return {kind: "UnaryExpr", right, operator} as UnaryExpr;
+            return { kind: "UnaryExpr", right, operator };
         } else {
             return this.parse_call_expr();
         }
@@ -446,7 +438,7 @@ export default class Parser {
                 this.expect(TokenType.Comma, "Erwarte Kommas zwischen Parametern!");
             }
             this.expect(TokenType.CloseParen, "Erwarte schließende Klammer nach Parametern!"); // eat close paren
-            return { kind: "CallExpr", ident, args} as CallExpr;
+            return { kind: "CallExpr", ident, args };
         } else {
             return ident;
         }
@@ -464,7 +456,7 @@ export default class Parser {
                 kind: "MemberExpr",
                 container,
                 member
-            } as MemberExpr;
+            };
         }
 
         return container;
@@ -474,11 +466,11 @@ export default class Parser {
         const tk = this.at().type;
         switch (tk) {
             case TokenType.Identifier:
-                return { kind: "Identifier", symbol: this.eat().value } as Identifier
+                return { kind: "Identifier", symbol: this.eat().value };
             case TokenType.Number:
-                return { kind: "NumericLiteral", value: parseInt(this.eat().value) } as NumericLiteral
+                return { kind: "NumericLiteral", value: parseInt(this.eat().value) };
             case TokenType.String:
-                return { kind: "StringLiteral", value: this.eat().value } as StringLiteral;
+                return { kind: "StringLiteral", value: this.eat().value };
             case TokenType.OpenParen: {
                 this.eat(); // eat opening paren
                 const value = this.parse_expr();
@@ -487,7 +479,7 @@ export default class Parser {
             }
             case TokenType.EndLine:
                 this.eat();
-                return { kind: "EmptyLine" } as EmptyLine
+                return { kind: "EmptyLine" };
             default:
                 throw new ParserError(`Unerwarteter Token beim Parsing gefunden: '${tk}'`);
         }
