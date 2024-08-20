@@ -4,16 +4,21 @@ import { BlockType, CB, CBOT, CBOT2, CG, CR, CY, Field, MarkerType, World } from
 import Environment, { declareGlobalEnv } from "./language/runtime/environment";
 import { evaluate } from "./language/runtime/interpreter";
 import { Robot } from './robot/robot';
-import * as ace from "ace-builds/src-noconflict/ace";
 import { clamp } from './robot/utils';
 import { STD_PRELOAD, STD_WORLD, TASKS, DEFAULT_TASK } from "./robot/tasks";
 import { sleep } from './language/runtime/utils';
 
+import * as ace from "ace-builds";
+import "ace-builds/esm-resolver";
+import "ace-builds/src-noconflict/ext-language_tools";
+import './assets/ace/mode-rkscript.js';
+
 // Global variables
 let dt = 50; // ms to sleep between function calls
+let interrupted = false;
 
 let preloadCode = "\n";
-let code = "\n";
+let code = "wiederhole 20 mal\n  zeig k1.linksDrehen()\nende\n";
 let worldSpec = STD_WORLD;
 
 const parse = new Parser();
@@ -30,16 +35,25 @@ console.log = (function (old_log, log: HTMLElement) {
 }(console.log.bind(console), document.querySelector('#console-log')!));
 
 // Fetch HTML elements
+// Editors
+
 let preloadEditor = ace.edit("preload-editor", {
     minLines: 1,
     value: preloadCode,
+    mode: "ace/mode/RKScript",
+	theme: "ace/theme/chrome",
 });
 preloadEditor.setReadOnly(true);
 
 let editor = ace.edit("code-editor", {
-    maxLines: 25,
-    minLines: 25,
+    minLines: 30,
+    mode: "ace/mode/RKScript",
+	theme: "ace/theme/chrome",
+    useWorker: false,
     value: code,
+    enableBasicAutocompletion: true,
+    enableSnippets: true,
+    enableLiveAutocompletion: true,
 });
 
 // Setup command line
@@ -123,6 +137,12 @@ async function startCode() {
     await runCode(code, true);
 };
 
+async function stopCode() {
+    interrupted = true;
+    await sleep(dt);
+    await resetEnv();
+}
+
 const fetchCmd = (e: KeyboardEvent) => {
     if (e.key == "ArrowUp") {
         if (cmdLineStackPointer == -1) return;
@@ -143,6 +163,11 @@ async function runCode(code: string, stepped: boolean) {
         const program = parse.produceAST(code);
         let stepper = evaluate(program, env);
         while (!stepper.next().done) {
+            if (interrupted) {
+                console.log("▢ Ausführung abgebrochen!");
+                interrupted = false;
+                break;
+            }
             stepped && await sleep(dt);
         }
     } catch (runtimeError) {
@@ -154,7 +179,7 @@ async function runCode(code: string, stepped: boolean) {
 cmdLine.onkeydown = fetchCmd
 document.getElementById("cmd-run")!.onclick = runCmd
 document.getElementById("code-start")!.onclick = startCode
-document.getElementById("code-stop")!.onclick = resetEnv
+document.getElementById("code-stop")!.onclick = stopCode
 
 taskSelector.onchange = (e: Event) => {
     console.log("Lade neue Aufgabe: " + taskSelector.value);

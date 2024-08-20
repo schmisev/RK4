@@ -1,2 +1,2 @@
-declare module 'ace-builds/src-noconflict/ace';
-declare module 'ace-builds/src-noconflict/mode-javascript';
+declare module 'ace-builds/src/mode-html';
+declare module 'ace-builds/src/ext-language_tools';

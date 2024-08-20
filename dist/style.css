@@ -76,19 +76,20 @@ button:active {
     background-color: lightcoral;
 }
 
-.preload-title {
+.code-editor {
     grid-column: 1 / 8;
+    grid-row: 3 / 18;
+    font-size: 15px;
+}
+
+.preload-title {
+    grid-column: 8 / 16;
     grid-row: 18;
 }
 
-.code-editor {
-    grid-column: 1 / 8;
-    grid-row: 3 / 12;
-}
-
 .preload-editor {
-    grid-column: 1 / 8;
-    grid-row: 19 / 25;
+    grid-column: 8 / 16;
+    grid-row: 19 / 24;
     font-style: italic;
 }
 
@@ -145,7 +146,7 @@ button:active {
 
 .console-log {
     grid-column: 1 / 8;
-    grid-row: 13 / 18;
+    grid-row: 19 / 24;
     padding-top: 5px;
     overflow-y: scroll;
     font-size: x-small;
@@ -157,13 +158,13 @@ button:active {
 
 .wait-title {
     grid-column: 1 / 3;
-    grid-row: 12;
+    grid-row: 18;
     padding-left: 10px;
 }
 
 .wait-slider-container {
     grid-column: 3 / 8;
-    grid-row: 12;
+    grid-row: 18;
     text-align: center;
     align-content: center;
     margin: 0;
