@@ -2,7 +2,7 @@ ace.define("ace/mode/RKScript_highlight_rules",["require","exports","module","ac
 var oop = require("../lib/oop");
 var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
 var RKScriptHighlightRules = function () {
-    var keywords = "wiederhole|solange|mal|ende|wenn|dann|sonst|zeig|für|als|ist";
+    var keywords = "wiederhole|solange|mal|ende|wenn|dann|sonst|zeig|für|als|ist|anhalten|zurück|weiter";
     var declarations = "Klasse|Funktion|Methode|Zahl|Wahrheitswert|Text|Objekt"
     var builtinConstants = ("wahr|falsch|nix");
     var builtinFunctions = ("zufallszahl|linksDrehen|rechtsDrehen|schritt|hinlegen|aufheben|markeSetzen|markeLöschen|x|y");

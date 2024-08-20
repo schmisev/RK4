@@ -5,7 +5,7 @@ import { eval_identifier, eval_binary_expr, eval_assignment_expr, eval_unary_exp
 import { eval_fn_definition, eval_empty_line, eval_for_block, eval_if_else_block, eval_program, eval_show_command, eval_var_declaration, eval_while_block, eval_class_definition, eval_obj_declaration, eval_return_command, eval_ext_method_definition } from "./eval/statements";
 import { Break, Continue } from "./eval/errors";
 
-export type SteppedEval<T> = Generator<void, T, void>;
+export type SteppedEval<T> = Generator<number, T, void>;
 
 function assertUnreachable(x: never): never {
     throw new Error("Didn't expect to get here");
@@ -14,6 +14,7 @@ export function* evaluate(
     astNode: Stmt,
     env: Environment
 ): SteppedEval<RuntimeVal> {
+
     switch (astNode.kind) {
         case "NumericLiteral":
             return MK_NUMBER(astNode.value);
@@ -32,7 +33,7 @@ export function* evaluate(
         case "AssignmentExpr":
             return yield* eval_assignment_expr(astNode, env);
         case "CallExpr":
-            yield;
+            yield astNode.lineIndex;
             return yield* eval_call_expr(astNode, env);
         case "MemberExpr":
             return yield* eval_member_expr(astNode, env);
@@ -55,12 +56,16 @@ export function* evaluate(
         case "ClassDefinition":
             return eval_class_definition(astNode, env);
         case "ShowCommand":
+            yield astNode.lineIndex;
             return yield* eval_show_command(astNode, env);
         case "BreakCommand":
+            yield astNode.lineIndex;
             throw new Break();
         case "ContinueCommand":
+            yield astNode.lineIndex;
             throw new Continue();
         case "ReturnCommand":
+            yield astNode.lineIndex;
             return yield* eval_return_command(astNode, env);
         case "EmptyLine":
             return eval_empty_line(astNode, env);

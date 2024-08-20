@@ -161,14 +161,23 @@ async function runCode(code: string, stepped: boolean) {
     // TODO Allow interrupts during execution... somehow...
     try {
         const program = parse.produceAST(code);
+        console.log(program);
         let stepper = evaluate(program, env);
-        while (!stepper.next().done) {
+        while (true) {
+            const next = stepper.next();
+            if (next.done) break;
+
             if (interrupted) {
                 console.log("▢ Ausführung abgebrochen!");
                 interrupted = false;
                 break;
             }
-            stepped && await sleep(dt);
+
+            if (stepped) {
+                const markerId = editor.session.addMarker(new ace.Range(next.value, 0, next.value, 10), 'ace_highlight-marker', 'fullLine');
+        	    await sleep(dt);
+                editor.session.removeMarker(markerId);
+            }
         }
     } catch (runtimeError) {
         console.log("⚠️ " + runtimeError.message);
