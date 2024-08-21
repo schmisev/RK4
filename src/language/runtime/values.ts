@@ -71,7 +71,7 @@ export function MK_NULL() {
 }
 
 const TRUE_VAL: BooleanVal = { type: "boolean", value: true };
-const FALSE_VAL: BooleanVal = { type: "boolean", value: true };
+const FALSE_VAL: BooleanVal = { type: "boolean", value: false };
 export function MK_BOOL(v = true) {
     return v ? TRUE_VAL : FALSE_VAL;
 }

@@ -18,7 +18,15 @@ let dt = 50; // ms to sleep between function calls
 let interrupted = false;
 
 let preloadCode = "\n";
-let code = "wiederhole 20 mal\n  zeig k1.linksDrehen()\nende\n";
+let code = `
+Zahl m ist 10
+
+wiederhole solange m > 0
+  zeig k1.linksDrehen()
+  zeig m ist m - 1
+ende
+
+`;
 let worldSpec = STD_WORLD;
 
 const parse = new Parser();
