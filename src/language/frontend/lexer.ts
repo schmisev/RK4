@@ -1,15 +1,3 @@
-/*
-Example code:
-
-Variable x ist 5
-x ist (x * 2) : 3
-
-Anweisung plusEins(zahl)
-
-ende
-
-*/
-
 import { LexerError } from "../../errors";
 
 
@@ -79,10 +67,11 @@ const KEYWORDS: Record<string, TokenType> = {
 export interface Token {
     value: string;
     type: TokenType;
+    lineIndex: number;
 }
 
-function token(value = "", type: TokenType): Token {
-    return { value, type };
+function token(value = "", type: TokenType, lineIndex: number): Token {
+    return { value, type, lineIndex };
 }
 
 function isalpha(src: string) {
@@ -102,32 +91,35 @@ function isskippable(src: string) {
 export function tokenize(sourceCode: string): Token[] {
     const tokens = new Array<Token>();
     const src = sourceCode.split("");
+    let lineCount = 0;
 
     while (src.length > 0) {
         if (src[0] == "(") {
-            tokens.push(token(src.shift(), TokenType.OpenParen));
+            tokens.push(token(src.shift(), TokenType.OpenParen, lineCount));
         } else if (src[0] == ")"){
-            tokens.push(token(src.shift(), TokenType.CloseParen));
+            tokens.push(token(src.shift(), TokenType.CloseParen, lineCount));
         } else if (src[0] == '+' || src[0] == "-"){
-            tokens.push(token(src.shift(), TokenType.BinaryOperator)); // Add and sub
+            tokens.push(token(src.shift(), TokenType.BinaryOperator, lineCount)); // Add and sub
         } else if (src[0] == '*' || src[0] == ":" || src[0] == "/" || src[0] == "%"){
-            tokens.push(token(src.shift(), TokenType.BinaryOperator)); // Mult and div
+            tokens.push(token(src.shift(), TokenType.BinaryOperator, lineCount)); // Mult and div
         } else if (src[0] == '=' || src[0] == '<' || src[0] == '>'){
-            tokens.push(token(src.shift(), TokenType.BinaryOperator)); // Comparisons
+            tokens.push(token(src.shift(), TokenType.BinaryOperator, lineCount)); // Comparisons
         } else if (src[0] == '\n'){
+            // increase line count for debug
+            lineCount += 1;
             if (tokens.length > 0 && tokens[tokens.length - 1].type == TokenType.EndLine) {
                 src.shift();
             } else {
-                tokens.push(token(src.shift(), TokenType.EndLine));
+                tokens.push(token(src.shift(), TokenType.EndLine, lineCount));
             }
         } else if (src[0] == '.'){
-            tokens.push(token(src.shift(), TokenType.Period));
+            tokens.push(token(src.shift(), TokenType.Period, lineCount));
         } else if (src[0] == ','){
-            tokens.push(token(src.shift(), TokenType.Comma));
+            tokens.push(token(src.shift(), TokenType.Comma, lineCount));
         } else if (src[0] == '{'){
-            tokens.push(token(src.shift(), TokenType.OpenBrace));
+            tokens.push(token(src.shift(), TokenType.OpenBrace, lineCount));
         } else if (src[0] == '}'){
-            tokens.push(token(src.shift(), TokenType.OpenBrace));
+            tokens.push(token(src.shift(), TokenType.OpenBrace, lineCount));
         } else {
             // Handle multicharacter tokens
             if (src[0] == '"') {
@@ -137,7 +129,7 @@ export function tokenize(sourceCode: string): Token[] {
                     str += src.shift();
                 }
                 src.shift();
-                tokens.push(token(str, TokenType.String));
+                tokens.push(token(str, TokenType.String, lineCount));
             }
             else if (src[0] == "#") {
                 let chr = src[0];
@@ -146,10 +138,12 @@ export function tokenize(sourceCode: string): Token[] {
                     chr = src[0];
                 }
                 src.shift();
+                lineCount ++;
             }
             else if (src[0] == "[") {
                 let chr = src[0];
                 while (src.length > 0 && chr != "]") {
+                    if (chr == "\n") lineCount ++;
                     src.shift();
                     chr = src[0];
                 }
@@ -161,7 +155,7 @@ export function tokenize(sourceCode: string): Token[] {
                     num += src.shift();
                 }
 
-                tokens.push(token(num, TokenType.Number));
+                tokens.push(token(num, TokenType.Number, lineCount));
             } else if (isalpha(src[0])) {
                 let ident = "";
                 ident += src.shift();
@@ -172,9 +166,9 @@ export function tokenize(sourceCode: string): Token[] {
                 // check for reserved keywords
                 const reserved = KEYWORDS[ident];
                 if (typeof reserved != "number") {
-                    tokens.push(token(ident, TokenType.Identifier));
+                    tokens.push(token(ident, TokenType.Identifier, lineCount));
                 } else {
-                    tokens.push(token(ident, reserved));
+                    tokens.push(token(ident, reserved, lineCount));
                 }
             } else if (isskippable(src[0])) {
                 src.shift();
@@ -185,7 +179,7 @@ export function tokenize(sourceCode: string): Token[] {
     }
 
     if (tokens.length > 0 && tokens[tokens.length - 1].type != TokenType.EndLine)
-        tokens.push(token("forced newline", TokenType.EndLine));
-    tokens.push(token("eof", TokenType.EOF));
+        tokens.push(token("forced newline", TokenType.EndLine, ++ lineCount));
+    tokens.push(token("eof", TokenType.EOF, lineCount));
     return tokens;
 }

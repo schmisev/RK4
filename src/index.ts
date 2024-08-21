@@ -4,7 +4,7 @@ import { BlockType, CB, CBOT, CBOT2, CG, CR, CY, Field, MarkerType, World } from
 import Environment, { declareGlobalEnv } from "./language/runtime/environment";
 import { evaluate } from "./language/runtime/interpreter";
 import { Robot } from './robot/robot';
-import { clamp } from './robot/utils';
+import { clamp, lerp } from './robot/utils';
 import { STD_PRELOAD, STD_WORLD, TASKS, DEFAULT_TASK } from "./robot/tasks";
 import { sleep } from './language/runtime/utils';
 
@@ -15,17 +15,17 @@ import './assets/ace/mode-rkscript.js';
 
 // Global variables
 let dt = 50; // ms to sleep between function calls
-let interrupted = false;
+let isRunning = false;
+let queueInterrupt = false;
 
 let preloadCode = "\n";
-let code = `
+let code = `# Test code
 Zahl m ist 10
 
 wiederhole solange m > 0
   zeig k1.linksDrehen()
   zeig m ist m - 1
 ende
-
 `;
 let worldSpec = STD_WORLD;
 
@@ -137,18 +137,24 @@ async function runCmd() {
 };
 
 async function startCode() {
+    queueInterrupt = true;
+    await sleep(dt);
+    queueInterrupt = false;
+
     const code = editor.getValue();
     if (!code) return;
+
     console.log();
     await resetEnv();
+    
     console.log("▷ Code wird ausgeführt!");
     await runCode(code, true);
 };
 
 async function stopCode() {
-    interrupted = true;
+    if (!isRunning) return;
+    queueInterrupt = true;
     await sleep(dt);
-    await resetEnv();
 }
 
 const fetchCmd = (e: KeyboardEvent) => {
@@ -166,22 +172,32 @@ const fetchCmd = (e: KeyboardEvent) => {
 };
 
 async function runCode(code: string, stepped: boolean) {
-    // TODO Allow interrupts during execution... somehow...
+    isRunning = true;
+    editor.setReadOnly(true);
     try {
         const program = parse.produceAST(code);
         let stepper = evaluate(program, env);
-        while (!stepper.next().done) {
-            if (interrupted) {
+        while (true) {
+            const next = stepper.next();
+            if (next.done) break;
+
+            if (queueInterrupt) {
                 console.log("▢ Ausführung abgebrochen!");
-                interrupted = false;
+                queueInterrupt = false;
                 break;
             }
-            stepped && await sleep(dt);
+
+            if (stepped) {
+                let markerId = editor.session.addMarker(new ace.Range(next.value, 0, next.value, 10), 'ace_highlight-marker', 'fullLine');
+        	    await sleep(dt);
+                editor.session.removeMarker(markerId);
+            }
         }
     } catch (runtimeError) {
         console.log("⚠️ " + runtimeError.message);
-        return;
     }
+    isRunning = false;
+    editor.setReadOnly(false);
 };
 
 cmdLine.onkeydown = fetchCmd
@@ -199,6 +215,8 @@ loadTask(DEFAULT_TASK);
 
 // Visualization (super inefficient)
 export const sketch = (p5: p5) => {
+    let bg = 0; // Background color
+
     const TSZ = 50; // Tilesize
     const BLH = 30; // Block height
     const MRH = 1; // Marker height
@@ -280,7 +298,13 @@ export const sketch = (p5: p5) => {
     p5.draw = () => {
         resizeToParent();
 
-        p5.background(0);
+        // bg color ramping
+        if (isRunning && bg == 0) bg = 255;
+        if (bg > 0) bg = lerp(0, bg, 0.9);
+        if (!isRunning || queueInterrupt) bg = 0;
+
+        p5.background(bg);
+
         p5.orbitControl();
         p5.rotateX(p5.PI * 0.4);
         p5.scale(0.8);
@@ -401,8 +425,6 @@ export const sketch = (p5: p5) => {
         p5.pop();
 
         // name
-
-
         p5.pop();
 
     };
@@ -542,7 +564,7 @@ export const sketch = (p5: p5) => {
     const drawGoalStatus = (f: Field) => {
         if (f.isEmpty) return;
         p5.push();
-        p5.translate(0, 0, (-BLH - FLH) * 0.5);
+        p5.translate(0, 0, (- FLH));
         p5.translate(0, 0, -2*FLH);
         p5.rotateX(p5.PI * 0.5);
         p5.noStroke();
@@ -552,7 +574,7 @@ export const sketch = (p5: p5) => {
         } else {
             p5.fill(255, 0, 0);
         }
-        p5.sphere(TSZ * 0.2);
+        p5.box(TSZ * 0.4, FLH, TSZ * 0.4);
         p5.pop();
     }
 

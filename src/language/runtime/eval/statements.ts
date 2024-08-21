@@ -8,6 +8,7 @@ import {
     FunctionVal,
     ClassVal,
     ObjectVal,
+    BooleanVal,
 } from "../values";
 import { Break, Continue, Return } from "./errors";
 
@@ -161,7 +162,9 @@ export function* eval_return_command(
 function evaluate_condition_value(
     condition: RuntimeVal
 ): boolean {
-    if (condition.type == "boolean") return condition.value;
+    if (condition.type == "boolean") {
+        return condition.value;
+    }
     if (condition.type == "number") return condition.value != 0;
     throw new RuntimeError(
         "Die Bedingung muss eine Zahl oder ein Wahrheitswert sein!"

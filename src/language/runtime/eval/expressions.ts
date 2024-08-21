@@ -119,6 +119,7 @@ export function eval_numeric_binary_expr(
     } else if (operator == "<") {
         return MK_BOOL(lhs.value < rhs.value);
     }
+
     // nothing worked
     throw new RuntimeError();
 }

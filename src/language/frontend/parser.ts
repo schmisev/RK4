@@ -93,6 +93,8 @@ export default class Parser {
     }
 
     parse_show(): Stmt {
+        const lineIndex = this.at().lineIndex;
+
         this.eat();
         const values: Expr[] = [];
         while (this.at().type != TokenType.EndLine) {
@@ -100,29 +102,39 @@ export default class Parser {
         }
         return {
             kind: "ShowCommand",
+            lineIndex,
             values,
         };
     }
 
     parse_break(): Stmt {
+        const lineIndex = this.at().lineIndex;
+
         this.eat();
         return {
             kind: "BreakCommand",
+            lineIndex,
         };
     }
 
     parse_continue(): Stmt {
+        const lineIndex = this.at().lineIndex;
+
         this.eat();
         return {
             kind: "ContinueCommand",
+            lineIndex,
         };
     }
 
     parse_return(): Stmt {
+        const lineIndex = this.at().lineIndex;
+
         this.eat();
         const result = this.parse_expr();
         return {
             kind: "ReturnCommand",
+            lineIndex,
             value: result,
         }
     }
@@ -207,7 +219,7 @@ export default class Parser {
         return {
             kind: "ForBlock",
             counter,
-            body
+            body,
         };
     }
 
@@ -228,6 +240,8 @@ export default class Parser {
     }
 
     parse_var_declaration(): VarDeclaration | ObjDeclaration {
+        const lineIndex = this.at().lineIndex;
+
         let type: VarDeclaration["type"] = "null";
         if (this.at().type == TokenType.DeclBoolean) {
             type = "boolean";
@@ -342,11 +356,13 @@ export default class Parser {
     // PrimaryExpr
 
     private parse_assignment_expr(): Expr {
+        const lineIndex = this.at().lineIndex;
+
         const left = this.parse_logical_expr();
         if (this.at().type == TokenType.Assign) {
             this.eat();
             const value = this.parse_assignment_expr();
-            return { kind: "AssignmentExpr", value, assigne: left };
+            return { kind: "AssignmentExpr", value, assigne: left, lineIndex };
         }
 
         return left;
@@ -427,6 +443,8 @@ export default class Parser {
     }
 
     private parse_call_expr(): Expr {
+        const lineIndex = this.at().lineIndex;
+
         const ident = this.parse_member_expr();
         if(this.at().type == TokenType.OpenParen) {
             this.eat();
@@ -438,7 +456,7 @@ export default class Parser {
                 this.expect(TokenType.Comma, "Erwarte Kommas zwischen Parametern!");
             }
             this.expect(TokenType.CloseParen, "Erwarte schließende Klammer nach Parametern!"); // eat close paren
-            return { kind: "CallExpr", ident, args };
+            return { kind: "CallExpr", ident, args, lineIndex };
         } else {
             return ident;
         }
@@ -463,6 +481,8 @@ export default class Parser {
     }
 
     private parse_primary_expr(): Expr {
+        const lineIndex = this.at().lineIndex;
+
         const tk = this.at().type;
         switch (tk) {
             case TokenType.Identifier:
@@ -479,9 +499,9 @@ export default class Parser {
             }
             case TokenType.EndLine:
                 this.eat();
-                return { kind: "EmptyLine" };
+                return { kind: "EmptyLine"};
             default:
-                throw new ParserError(`Unerwarteter Token beim Parsing gefunden: '${tk}'`);
+                throw new ParserError(`PARSER: Unerwarteter Token gefunden: '${tk}'`);
         }
     }
 }

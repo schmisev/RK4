@@ -46,19 +46,23 @@ export interface WhileBlock {
 
 export interface ShowCommand {
     kind: "ShowCommand";
+    lineIndex: number;
     values: Expr[];
 }
 
 export interface BreakCommand {
     kind: "BreakCommand";
+    lineIndex: number;
 }
 
 export interface ContinueCommand {
     kind: "ContinueCommand";
+    lineIndex: number;
 }
 
 export interface ReturnCommand {
     kind: "ReturnCommand";
+    lineIndex: number;
     value: Stmt;
 }
 
@@ -66,6 +70,7 @@ export type Expr = AssignmentExpr | BinaryExpr | UnaryExpr | Identifier | Numeri
 
 export interface AssignmentExpr {
     kind: "AssignmentExpr";
+    lineIndex: number;
     assigne: Expr;
     value: Expr;
 }
@@ -118,6 +123,7 @@ export interface CallExpr {
     kind: "CallExpr";
     ident: Expr;
     args: Expr[];
+    lineIndex: number;
 }
 
 export interface ClassDefinition {
