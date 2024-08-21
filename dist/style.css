@@ -154,6 +154,7 @@ button:active {
     background-color: black;
     scrollbar-color: lightgreen black;
     scrollbar-width: thin;
+    font-size: 15px;
 }
 
 .wait-title {

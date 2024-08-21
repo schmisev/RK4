@@ -1,6 +1,6 @@
 import * as p5 from 'p5';
 import Parser from "./language/frontend/parser";
-import { BlockType, CB, CBOT, CBOT2, CG, CR, CY, Field, MarkerType, World } from "./robot/world";
+import { BlockType, CB, CBOT, CBOT2, CG, CR, CY, declareWorld, Field, MarkerType, World } from "./robot/world";
 import Environment, { declareGlobalEnv } from "./language/runtime/environment";
 import { evaluate } from "./language/runtime/interpreter";
 import { Robot } from './robot/robot';
@@ -12,6 +12,7 @@ import * as ace from "ace-builds";
 import "ace-builds/esm-resolver";
 import "ace-builds/src-noconflict/ext-language_tools";
 import './assets/ace/mode-rkscript.js';
+import { RuntimeError, WorldError } from './errors';
 
 // Global variables
 let dt = 50; // ms to sleep between function calls
@@ -43,15 +44,14 @@ console.log = (function (old_log, log: HTMLElement) {
 }(console.log.bind(console), document.querySelector('#console-log')!));
 
 // Fetch HTML elements
-// Editors
-
+// Setup editors
 let preloadEditor = ace.edit("preload-editor", {
     minLines: 1,
     value: preloadCode,
     mode: "ace/mode/RKScript",
 	theme: "ace/theme/chrome",
+    readOnly: true,
 });
-preloadEditor.setReadOnly(true);
 
 let editor = ace.edit("code-editor", {
     minLines: 30,
@@ -90,10 +90,11 @@ waitSlider.oninput = () => {
     document.getElementById("wait-time")!.innerHTML = value.toString() + " ms";
 }
 
+// Loading tasks
 function isTaskkey(key: string): key is keyof typeof TASKS {
     return key in TASKS; // TASKS was not extended in any way and is a simple record
 }
-// Loading task
+
 const loadTask = (key: string) => {
     if (!isTaskkey(key)) {
         preloadCode = STD_PRELOAD;
@@ -110,13 +111,16 @@ const loadTask = (key: string) => {
 
     preloadEditor.setValue(preloadCode);
     resetEnv();
+    world.loadWorldLog();
 };
 
-async function resetEnv() {
+async function resetEnv(stage = 0) {
     env = declareGlobalEnv();
-    world = new World(worldSpec);
+    // create new world and register it in the global environment
+    world = new World(worldSpec, stage);
+    declareWorld(world, "welt", env);
     world.declareAllRobots(env);
-
+    // run preload so it works in the cmd
     await runCode(preloadCode, false);
 };
 
@@ -133,30 +137,50 @@ async function runCmd() {
     cmdLineStackPointer = cmdLineStack.length;
 
     console.log("↩ Anweisung ausgeführt!");
+    console.log(">>", cmdCode);
     await runCode(cmdCode, true);
 };
 
-async function startCode() {
+async function interrupt() {
     queueInterrupt = true;
-    await sleep(dt);
-    queueInterrupt = false;
+    await sleep(2*dt); // wait long enough for execution loop to exit
+    if (queueInterrupt) queueInterrupt = false;
+}
+
+// Start code button
+async function startCode() {
+    interrupt();
 
     const code = editor.getValue();
     if (!code) return;
 
-    console.log();
-    await resetEnv();
-    
-    console.log("▷ Code wird ausgeführt!");
-    await runCode(code, true);
+    for (let i = 0; i < world.getStageCount(); i++) {
+        await resetEnv(i);
+        if (i > 0) world.loadWorldLog();
+        console.log();
+        console.log("▷ Code wird ausgeführt!");
+        
+        await runCode(code, true);
+        await sleep(dt);
+
+        if (!world.isGoalReached()) {
+            console.log(`❌ Du hast die Teilaufgabe ${i+1} NICHT erfüllt!`);
+            return;
+        };
+        console.log(`✔️ Du hast die Teilaufgabe ${i+1} erfüllt!`);
+    }
+    console.log("🏅 Du hast alle Teilfgaben erfüllt!");
+    return;
 };
 
+// Stop code via button
 async function stopCode() {
-    if (!isRunning) return;
-    queueInterrupt = true;
-    await sleep(dt);
+    // if (!isRunning) return;
+    interrupt();
+    await resetEnv();
 }
 
+// Get past commands via keyboard
 const fetchCmd = (e: KeyboardEvent) => {
     if (e.key == "ArrowUp") {
         if (cmdLineStackPointer == -1) return;
@@ -171,6 +195,7 @@ const fetchCmd = (e: KeyboardEvent) => {
     }
 };
 
+// Run ANY code
 async function runCode(code: string, stepped: boolean) {
     isRunning = true;
     editor.setReadOnly(true);
@@ -195,25 +220,31 @@ async function runCode(code: string, stepped: boolean) {
         }
     } catch (runtimeError) {
         console.log("⚠️ " + runtimeError.message);
+        
     }
     isRunning = false;
     editor.setReadOnly(false);
 };
 
+// Cmd line input
 cmdLine.onkeydown = fetchCmd
 document.getElementById("cmd-run")!.onclick = runCmd
+
+// Start / stop buttons
 document.getElementById("code-start")!.onclick = startCode
 document.getElementById("code-stop")!.onclick = stopCode
 
+// Load new task
 taskSelector.onchange = (e: Event) => {
-    console.log("Lade neue Aufgabe: " + taskSelector.value);
+    console.log();
+    console.log("🤔 Lade neue Aufgabe: " + taskSelector.value);
     loadTask(taskSelector.value);
 };
 
-// Setup app
-loadTask(DEFAULT_TASK);
-
-// Visualization (super inefficient)
+/**
+ * Vizualization
+ * @param p5 
+ */
 export const sketch = (p5: p5) => {
     let bg = 0; // Background color
 
@@ -582,4 +613,7 @@ export const sketch = (p5: p5) => {
 
 export const robotView = new p5(sketch, document.body);
 
-// sound bindings
+/**
+ * Start app
+ */
+loadTask(DEFAULT_TASK);

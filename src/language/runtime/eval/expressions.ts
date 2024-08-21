@@ -163,9 +163,9 @@ export function* eval_unary_expr(
             return eval_string_unary_expr(rhs, unop.operator);
         }
     } catch {
-        throw `Operator in '${unop.operator} ${rhs.type}' ist nicht unterstützt!`;
+        throw new RuntimeError(`Operator in '${unop.operator} ${rhs.type}' ist nicht unterstützt!`);
     }
-    throw `Unpassender Typ im Ausdruck '${unop.operator} ${rhs.type}'!`;
+    throw new RuntimeError(`Unpassender Typ im Ausdruck '${unop.operator} ${rhs.type}'!`);
 }
 
 export function eval_logical_unary_expr(

@@ -2,15 +2,15 @@ ace.define("ace/mode/RKScript_highlight_rules",["require","exports","module","ac
 var oop = require("../lib/oop");
 var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
 var RKScriptHighlightRules = function () {
-    var keywords = "wiederhole|solange|mal|ende|wenn|dann|sonst|zeig|für|als|ist|anhalten|zurück|weiter";
+    var keywords = "wiederhole|solange|mal|ende|wenn|dann|sonst|zeig|für|als|ist|anhalten|zurück|weiter|und|oder|nicht";
     var declarations = "Klasse|Funktion|Methode|Zahl|Wahrheitswert|Text|Objekt"
-    var builtinConstants = ("wahr|falsch|nix");
-    var builtinFunctions = ("zufallszahl|linksDrehen|rechtsDrehen|schritt|hinlegen|aufheben|markeSetzen|markeLöschen|x|y");
+    var builtinConstants = ("wahr|falsch|nix|welt");
+    var builtinFunctions = ("Roboter|Welt|zufallszahl|fertig|linksDrehen|rechtsDrehen|schritt|hinlegen|aufheben|markeSetzen|markeLöschen|x|y");
     var keywordMapper = this.createKeywordMapper({
         "support.function": builtinFunctions,
         "keyword": keywords,
         "keyword.declaration": declarations,
-        "constant.language": builtinConstants
+        "constant.language": builtinConstants,
     }, "identifier", true);
     this.$rules = {
         "start": [{

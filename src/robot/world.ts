@@ -1,7 +1,8 @@
 import { RuntimeError, WorldError } from "../errors";
 import Environment from "../language/runtime/environment";
+import { MK_BOOL, MK_NATIVE_FN, MK_NUMBER } from "../language/runtime/values";
 import { declareRobot, Robot } from "./robot";
-import { Vec2 } from "./utils";
+import { rndi, Vec2 } from "./utils";
 
 export enum BlockType {
     r, g, b, y
@@ -48,45 +49,80 @@ export const CHAR2MARKER: Record<string, MarkerType> = {
     "gelb": MarkerType.Y,
 }
 
+export function declareWorld(w: World, varname: string, env: Environment): void {
+    const world_env = new Environment(env);
+    
+    world_env.declareVar("fertig", MK_NATIVE_FN(
+        (args, scope) => {
+            if (args.length != 0)
+                throw new RuntimeError(`fertig() erwartet keine Parameter!`);
+            return MK_BOOL(w.isGoalReached());
+        }
+    ), true);
+
+    // add world to environment
+    env.declareVar(varname, { type: "object", env: world_env, classname: "Welt" }, true);
+}
+
 export class World {
     robots: Robot[];
     fields: Array<Field[]>;
     L: number;
     W: number;
     H: number;
+    stages: string[];
+    stageIdx: number;
     
-    constructor(src: string) {
+    constructor(src: string, stage: number) {
+        this.resetWorld();
+        this.stages = [];
+        this.loadWorld(src, stage);
+    }
+
+    getStageCount() {
+        return this.stages.length;
+    }
+
+    resetWorld() {
         this.robots = Array<Robot>();
         this.fields = [];
         this.L = 0;
         this.W = 0;
         this.H = 0;
-        this.loadWorld(src);
     }
 
-    loadWorld(src: string) {
-        console.log("=========================");
-        console.log("Welt wird geladen...");
-
+    loadWorld(src: string, stage: number) {
         src = src.replaceAll("\r", ""); // clean up windows carriage returns
-        const srcBlocks = src.split("\nx"); // cut off at x!
-        const srcLines = srcBlocks[0].split("\n");
+        this.stages = src.split("x\n"); // cut off at x-cell!
+
+        // load first stage
+        this.stageIdx = stage;
+        this.loadStage(stage);
+    }
+
+    loadStage(idx: number) {
+        this.resetWorld();
+        const src = this.stages[idx];
+        const srcLines = src.split("\n");
         //srcLines.pop();
         const srcTokens = srcLines.map((l) => {return l.split(";")});
         if (!srcLines[0]) {
-            throw "Leere Welt-Datei!";
+            throw new WorldError("WELT: Leere Welt-Datei!");
         }
         const srcFirstLineTokens = srcTokens.shift();
-        if (srcFirstLineTokens && srcFirstLineTokens.length > 0)
-            this.H = parseInt(srcFirstLineTokens[0]);
-        else throw "Format der Welt-Datei ist ungültig!";
+        if (srcFirstLineTokens && srcFirstLineTokens.length >= 3) {
+            this.L = parseInt(srcFirstLineTokens[0]);
+            this.W = parseInt(srcFirstLineTokens[1]);
+            this.H = parseInt(srcFirstLineTokens[2]);
+        }
+        else throw new WorldError("WELT: Format der Welt-Datei ist ungültig!");
 
-        if (srcTokens.length == 0) throw "Die Welt hat eine Breite von 0!";
+        /*
+        if (srcTokens.length == 0) throw new WorldError("Die Welt hat eine Breite von 0!");
         this.W = srcTokens.length
-        if (srcTokens[0].length == 0) throw "Die Welt hat eine Länge von 0!";
+        if (srcTokens[0].length == 0) throw new WorldError("Die Welt hat eine Länge von 0!");
         this.L = srcTokens[0].length
-
-        console.log("Welt:", "L", this.L, "| W", this.W, "| H", this.H);
+        */
 
         let robotCounter = 1;
 
@@ -96,13 +132,40 @@ export class World {
             this.fields.push( [] );
             for (let x = 0; x < this.L; x++) {
                 let goalMode = false;
-                const expr = srcTokens[y][x];
-                if (expr == undefined) break;
-                //console.log(expr);
+                
+                let expr = "";
+                if (y < srcTokens.length && x < srcTokens[y].length)
+                    expr = srcTokens[y][x];
+                    
+                
+                // create new field
                 const f = new Field(expr == "", expr == "#", this.H);
                 let robotCreated = false;
                 for (const c of expr) {
                     switch (c) {
+                        case ".":
+                            f.addMultipleBlocks(rndi(0, 2), BlockType.r, goalMode);
+                            break;
+                        case "*":
+                            // put down 0 or more blocks
+                            f.addMultipleBlocks(rndi(0, this.H), BlockType.r, goalMode);
+                            break;
+                        case "+":
+                            // put down 1 or more blocks
+                            f.addMultipleBlocks(rndi(1, this.H), BlockType.r, goalMode);
+                            break;
+                        case "?":
+                            // put down 0 or 1 marker
+                            if (rndi(0, 2))
+                                f.setMarker(MarkerType.Y, goalMode);
+                            break;
+                        case "!":
+                            // put down inverse of current marker state (only makes sense when part of goal state)
+                            if (f.marker == MarkerType.None)
+                                f.setMarker(MarkerType.Y, goalMode)
+                            else if (f.marker)
+                                f.setMarker(MarkerType.None, goalMode)
+                            break;
                         case ":":
                             goalMode = true;
                             break;
@@ -110,7 +173,7 @@ export class World {
                         case "E":
                         case "S":
                         case "W":
-                            if (robotCreated) throw "Kann nicht zwei Roboter auf dasselbe Feld stellen!";
+                            if (robotCreated) throw new WorldError("Kann nicht zwei Roboter auf dasselbe Feld stellen!");
                             this.createRobot(x, y, c, "k" + robotCounter, robotCounter);
                             robotCreated = true;
                             robotCounter += 1;
@@ -132,6 +195,7 @@ export class World {
                                 f.goalBlocks = Array<BlockType>();
                                 f.goalMarker = MarkerType.None;
                             }
+                            break;
                         case "#":
                             break;
                         default:
@@ -144,10 +208,13 @@ export class World {
                 this.fields[y].push(f);
             }
         }
+    }
 
-        console.log("Roboter:", ...this.robots.map((r) => {return r.name}));
-        console.log("Welt erfolgreich geladen!");
-        console.log("=========================");
+    loadWorldLog() {
+        console.log("🌍 Welt wird geladen");
+        console.log("... 🤔 Teilaufgabe", this.stageIdx + 1);
+        console.log("... 🗺️ Welt:", "L", this.L, "| B", this.W, "| H", this.H);
+        console.log("... 🤖 Roboter:", this.robots.map((r) => {return r.name}).join(", "));
     }
 
     createRobot(x: number, y: number, dir: string, name: string, index: number) {
@@ -214,6 +281,12 @@ export class Field {
         } else {
             if (this.goalBlocks == null) this.goalBlocks = Array<BlockType>();
             this.goalBlocks.push(b);
+        }
+    }
+
+    addMultipleBlocks(n: number, b: BlockType, goal = false) {
+        for (let i = 0; i < n; i++) {
+            this.addBlock(b, goal);
         }
     }
 
