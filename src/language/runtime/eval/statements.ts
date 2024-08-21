@@ -228,7 +228,6 @@ export function* eval_while_block(
         while (true) {
             try {
                 const condition = yield* evaluate(block.condition, env);
-                console.log(JSON.stringify(condition));
                 if (evaluate_condition_value(condition)) {
                     lastEvaluated = yield* eval_bare_statements(
                         block.body,

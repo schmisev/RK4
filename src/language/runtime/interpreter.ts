@@ -31,6 +31,7 @@ export function* evaluate(
         case "UnaryExpr":
             return yield* eval_unary_expr(astNode, env);
         case "AssignmentExpr":
+            yield astNode.lineIndex;
             return yield* eval_assignment_expr(astNode, env);
         case "CallExpr":
             yield astNode.lineIndex;
@@ -56,7 +57,6 @@ export function* evaluate(
         case "ClassDefinition":
             return eval_class_definition(astNode, env);
         case "ShowCommand":
-            yield astNode.lineIndex;
             return yield* eval_show_command(astNode, env);
         case "BreakCommand":
             yield astNode.lineIndex;

@@ -138,10 +138,12 @@ export function tokenize(sourceCode: string): Token[] {
                     chr = src[0];
                 }
                 src.shift();
+                lineCount ++;
             }
             else if (src[0] == "[") {
                 let chr = src[0];
                 while (src.length > 0 && chr != "]") {
+                    if (chr == "\n") lineCount ++;
                     src.shift();
                     chr = src[0];
                 }
