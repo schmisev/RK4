@@ -105,13 +105,13 @@ export function tokenize(sourceCode: string): Token[] {
         } else if (src[0] == '=' || src[0] == '<' || src[0] == '>'){
             tokens.push(token(src.shift(), TokenType.BinaryOperator, lineCount)); // Comparisons
         } else if (src[0] == '\n'){
-            // increase line count for debug
-            lineCount += 1;
             if (tokens.length > 0 && tokens[tokens.length - 1].type == TokenType.EndLine) {
                 src.shift();
             } else {
                 tokens.push(token(src.shift(), TokenType.EndLine, lineCount));
             }
+            // increase line count for debug
+            lineCount += 1;
         } else if (src[0] == '.'){
             tokens.push(token(src.shift(), TokenType.Period, lineCount));
         } else if (src[0] == ','){
@@ -137,8 +137,8 @@ export function tokenize(sourceCode: string): Token[] {
                     src.shift();
                     chr = src[0];
                 }
+                if (chr == "\n") lineCount ++;
                 src.shift();
-                lineCount ++;
             }
             else if (src[0] == "[") {
                 let chr = src[0];
@@ -156,7 +156,8 @@ export function tokenize(sourceCode: string): Token[] {
                 }
 
                 tokens.push(token(num, TokenType.Number, lineCount));
-            } else if (isalpha(src[0])) {
+            }
+            else if (isalpha(src[0])) {
                 let ident = "";
                 ident += src.shift();
                 while(src && src.length > 0 && (isalpha(src[0]) || isint(src[0]))) {
@@ -170,9 +171,11 @@ export function tokenize(sourceCode: string): Token[] {
                 } else {
                     tokens.push(token(ident, reserved, lineCount));
                 }
-            } else if (isskippable(src[0])) {
+            }
+            else if (isskippable(src[0])) {
                 src.shift();
-            } else {
+            }
+            else {
                 throw new LexerError("LEXER: Unbekanntes Zeichen: " + src[0]);
             }
         }
@@ -181,5 +184,10 @@ export function tokenize(sourceCode: string): Token[] {
     if (tokens.length > 0 && tokens[tokens.length - 1].type != TokenType.EndLine)
         tokens.push(token("forced newline", TokenType.EndLine, ++ lineCount));
     tokens.push(token("eof", TokenType.EOF, lineCount));
+
+    while (tokens[0].type == TokenType.EndLine) {
+        tokens.shift();
+    }
+
     return tokens;
 }

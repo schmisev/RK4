@@ -5,7 +5,7 @@ var RKScriptHighlightRules = function () {
     var keywords = "wiederhole|solange|mal|ende|wenn|dann|sonst|zeig|für|als|ist|anhalten|zurück|weiter|und|oder|nicht";
     var declarations = "Klasse|Funktion|Methode|Zahl|Wahrheitswert|Text|Objekt"
     var builtinConstants = ("wahr|falsch|nix|welt");
-    var builtinFunctions = ("Roboter|Welt|zufallszahl|fertig|linksDrehen|rechtsDrehen|schritt|hinlegen|aufheben|markeSetzen|markeLöschen|x|y");
+    var builtinFunctions = ("Roboter|Welt|zufallszahl|fertig|linksDrehen|rechtsDrehen|schritt|hinlegen|aufheben|markeSetzen|markeEntfernen|x|y|istAufMarke|siehtWand|siehtAbgrund|siehtZiegel");
     var keywordMapper = this.createKeywordMapper({
         "support.function": builtinFunctions,
         "keyword": keywords,

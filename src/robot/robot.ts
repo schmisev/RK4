@@ -112,7 +112,7 @@ export function declareRobot(r: Robot, varname: string, env: Environment): void 
     karol_env.declareVar("markeEntfernen", MK_NATIVE_FN(
         (args, scope) => {
             if (args.length != 0)
-                throw new RuntimeError(`markeSetzen() erwartet keine Parameter!`);
+                throw new RuntimeError(`markeEntfernen() erwartet keine Parameter!`);
             r.removeMarker();
             return MK_STRING(`Schritt nach: ( ${r.targetPos().x} | ${r.targetPos().y} )`);
         }

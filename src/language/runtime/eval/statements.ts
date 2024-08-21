@@ -15,7 +15,12 @@ import { Break, Continue, Return } from "./errors";
 export function* eval_program(prog: Program, env: Environment) {
     let lastEvaluated: RuntimeVal = MK_NULL();
     for (const statement of prog.body) {
-        lastEvaluated = yield* evaluate(statement, env);
+        try {
+            lastEvaluated = yield* evaluate(statement, env);
+        } catch (e) {
+            if (e instanceof Return) return e.value;
+            throw e;
+        }
     }
     return lastEvaluated;
 }

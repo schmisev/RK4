@@ -48,13 +48,13 @@ button:active {
 .grid-container {
     display: grid;
     gap: 10px;
-    grid-template-columns: repeat(14, 1fr);
+    grid-template-columns: repeat(17, 1fr);
     grid-auto-rows: 30px;
     height: auto;
 }
 
 .title-bar {
-    grid-column: 1 / 15;
+    grid-column: 1 / 18;
     grid-row: 1;
     overflow: hidden;
 }
@@ -83,12 +83,12 @@ button:active {
 }
 
 .preload-title {
-    grid-column: 8 / 16;
+    grid-column: 8 / 14;
     grid-row: 18;
 }
 
 .preload-editor {
-    grid-column: 8 / 16;
+    grid-column: 8 / 14;
     grid-row: 19 / 24;
     font-style: italic;
 }
@@ -104,18 +104,30 @@ button:active {
 }
 
 .load-task {
-    grid-column: 10 / 15;
+    grid-column: 10 / 14;
     grid-row: 2;
 }
 
 .robot-canvas {
-    grid-column: 8 / 15;
-    grid-row: 3 / 12;
+    grid-column: 8 / 14;
+    grid-row: 3 / 13;
+}
+
+.diagram-title {
+    grid-column: 14 / 18;
+    grid-row: 2;
+}
+
+.diagram-canvas {
+    grid-column: 14 / 18;
+    grid-row: 3 / 24;
+    overflow-y: scroll;
+    padding: 5px;
 }
 
 .cmd-line {
-    grid-column: 8 / 14;
-    grid-row: 12;
+    grid-column: 8 / 13;
+    grid-row: 13;
     color: lightgreen;
     border-radius: 5px;
     background-color: black;
@@ -124,19 +136,19 @@ button:active {
 
 .cmd-start {
     grid-column: 8;
-    grid-row: 12;
+    grid-row: 13;
     padding-left: 7px;
     color: lightgreen;
 }
 
 .cmd-run {
-    grid-column: 14;
-    grid-row: 12;
+    grid-column: 13;
+    grid-row: 13;
 }
 
 .task-description {
-    grid-column: 8 / 15;
-    grid-row: 13 / 18;
+    grid-column: 8 / 14;
+    grid-row: 14 / 18;
 }
 
 .console-title {
@@ -216,4 +228,136 @@ button:active {
 
 .wait-time {
     font-size: small;
+}
+
+/* Structogram divs*/
+.struct-program {
+    border-radius: 5px;
+    background-color: whitesmoke;
+    outline: 2px black dashed;
+    padding: 5px;
+    font-family: Arial, Helvetica, sans-serif;
+    line-height: 25px;
+}
+
+.struct-class {
+    width: 50%;
+    float: left;
+    box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, .2);
+    background-color: whitesmoke;
+    outline: 2px black solid;
+    outline-offset: -1px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.struct-box {
+    background-color: white;
+    overflow-wrap: anywhere;
+    outline: 2px black solid;
+    outline-offset: -1px;
+    min-height: 25px;
+    padding-left: 5px;
+}
+
+.struct-container {
+    background-color: white;
+    overflow-wrap: anywhere;
+    min-height: 25px;
+    padding-left: 5px;
+}
+
+.struct-unpadded {
+    padding-left: 0px;
+}
+
+.struct-padded {
+    padding: 5px;
+}
+
+.struct-while {
+    outline: 1px black solid;
+    margin-left: 10%;
+}
+
+.struct-ifelse {
+    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' preserveAspectRatio='none' viewBox='0 0 100 100'><path d='M100 0 L50 100 ' stroke='black' stroke-width='1'/><path d='M0 0 L50 100 ' stroke='black' stroke-width='1'/></svg>");
+    background-repeat:no-repeat;
+    background-position:center center;
+    background-size: 100% 100%, auto;
+    text-align: center;
+}
+
+.struct-row {
+    background-color: #ccc;
+    display: flex;
+}
+
+.struct-column {
+    flex: 50%;
+}
+
+.struct-literal {
+    color: blue;
+    font-weight: bold;
+}
+
+.struct-object {
+    color: purple;
+    font-weight: bold;
+}
+
+.struct-string {
+    color: darkgreen;
+}
+
+.struct-type {
+    font-style: italic;
+}
+
+.struct-classname {
+    outline: 1px black solid;
+    text-align: center;
+    font-weight: bold;
+    padding: 5px;
+}
+
+.struct-attributes {
+    outline: 1px black solid;
+    padding: 5px;
+}
+
+.struct-methods {
+    outline: 1px black solid;
+    padding: 5px;
+}
+
+.struct-ident {
+    font-weight: bold;
+}
+
+.struct-deemph {
+    color: gray;
+    font-weight: bold;
+}
+
+.struct-cmd {
+    background-color: lightblue;
+    outline: 1px black solid;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.struct-text {
+    padding: 2px;
+}
+
+/* markers */
+.error-marker {
+    background-color: lightcoral;
+    position: absolute;
+}
+
+.exec-marker {
+    background-color: lightblue;
+    position: absolute;
 }

@@ -12,7 +12,10 @@ import * as ace from "ace-builds";
 import "ace-builds/esm-resolver";
 import "ace-builds/src-noconflict/ext-language_tools";
 import './assets/ace/mode-rkscript.js';
-import { RuntimeError, WorldError } from './errors';
+import { ParserError, RuntimeError, WorldError } from './errors';
+import { Program } from './language/frontend/ast';
+import { showStructogram } from './ui/structograms';
+import { Return } from './language/runtime/eval/errors';
 
 // Global variables
 let dt = 50; // ms to sleep between function calls
@@ -20,12 +23,83 @@ let isRunning = false;
 let queueInterrupt = false;
 
 let preloadCode = "\n";
-let code = `# Test code
-Zahl m ist 10
+let code = `# Großer Testcode
+[ Funktionsdefinition ]
+Funktion pow(Zahl basis, Zahl exponent)
+    Zahl ausgabe ist 1
+    wiederhole exponent mal
+        ausgabe ist ausgabe * basis
+    ende
+    zurück ausgabe
+ende
 
-wiederhole solange m > 0
-  zeig k1.linksDrehen()
-  zeig m ist m - 1
+[ Methodendefinition ]
+Methode stapeln(Zahl n) für Roboter
+    wiederhole n mal
+        hinlegen()
+    ende
+ende
+
+Methode abräumen() für Roboter
+    wiederhole solange siehtZiegel()
+        aufheben()
+    ende
+ende
+
+[ Klassendefinition ]
+Klasse Vektor2
+    Zahl x ist 0
+    Zahl y ist 0
+    
+    Methode plus(Zahl dx, Zahl dy)
+        x ist x + dx
+        y ist y + dy
+    ende
+
+    Methode skalieren(Zahl f)
+        x ist x * f
+        y ist y * f
+    ende
+ende
+
+[ Hauptprogramm ]
+zeig pow(3, 5)
+zeig k1.linksDrehen()
+zeig k1.stapeln(3)
+
+k2.rechtsDrehen()
+k2.schritt()
+k2.linksDrehen()
+
+wiederhole 3 mal
+    k2.abräumen()
+    k2.linksDrehen()
+    k2.schritt()
+    k2.rechtsDrehen()
+ende
+
+k2.schritt()
+k2.rechtsDrehen()
+k2.schritt()
+k2.markeSetzen()
+
+k1.abräumen()
+k1.schritt()
+k1.linksDrehen()
+k1.schritt()
+k1.markeEntfernen()
+k1.schritt()
+k1.rechtsDrehen()
+
+wiederhole 2 mal
+    k1.abräumen()
+    k1.rechtsDrehen()
+    k1.schritt()
+    k1.linksDrehen()
+ende
+
+wiederhole solange nicht welt.fertig()
+    k1.hinlegen()
 ende
 `;
 let worldSpec = STD_WORLD;
@@ -33,6 +107,7 @@ let worldSpec = STD_WORLD;
 const parse = new Parser();
 let env: Environment;
 let world: World
+let program: Program;
 
 // Console log replacement
 console.log = (function (old_log, log: HTMLElement) { 
@@ -62,6 +137,35 @@ let editor = ace.edit("code-editor", {
     enableBasicAutocompletion: true,
     enableSnippets: true,
     enableLiveAutocompletion: true,
+});
+
+let errorMarkers: number[] = [];
+    
+const updateStructogram = async () => {
+    // remove error markers
+    for (const em of errorMarkers) {
+        editor.session.removeMarker(em);
+    } 
+
+    const code = editor.getValue();
+    if (!code) return;
+    try {
+        program = parse.produceAST(code);
+        showStructogram("diagram-canvas", program);
+    } catch (e) {
+        if (e instanceof ParserError) {
+            //console.log(e.message);
+            let markerId = editor.session.addMarker(new ace.Range(e.lineIndex, 0, e.lineIndex, 10), "error-marker", 'fullLine');
+            errorMarkers.push(markerId);
+        }
+    }
+};
+
+// automatic parse timeout to avoid lagging the editor
+let autoParseTimeout = setTimeout(updateStructogram, 500);
+editor.on("change", async (e: ace.Ace.Delta) => {
+    clearTimeout(autoParseTimeout);
+    autoParseTimeout = setTimeout(updateStructogram, 500);
 });
 
 // Setup command line
@@ -143,13 +247,13 @@ async function runCmd() {
 
 async function interrupt() {
     queueInterrupt = true;
-    await sleep(2*dt); // wait long enough for execution loop to exit
+    await sleep(dt); // wait long enough for execution loop to exit
     if (queueInterrupt) queueInterrupt = false;
 }
 
 // Start code button
 async function startCode() {
-    interrupt();
+    await interrupt();
 
     const code = editor.getValue();
     if (!code) return;
@@ -176,7 +280,7 @@ async function startCode() {
 // Stop code via button
 async function stopCode() {
     // if (!isRunning) return;
-    interrupt();
+    await interrupt();
     await resetEnv();
 }
 
@@ -200,7 +304,7 @@ async function runCode(code: string, stepped: boolean) {
     isRunning = true;
     editor.setReadOnly(true);
     try {
-        const program = parse.produceAST(code);
+        program = parse.produceAST(code);
         let stepper = evaluate(program, env);
         while (true) {
             const next = stepper.next();
@@ -213,14 +317,13 @@ async function runCode(code: string, stepped: boolean) {
             }
 
             if (stepped) {
-                let markerId = editor.session.addMarker(new ace.Range(next.value, 0, next.value, 10), 'ace_highlight-marker', 'fullLine');
+                let markerId = editor.session.addMarker(new ace.Range(next.value, 0, next.value, 10), 'exec-marker', 'fullLine');
         	    await sleep(dt);
                 editor.session.removeMarker(markerId);
             }
         }
     } catch (runtimeError) {
         console.log("⚠️ " + runtimeError.message);
-        
     }
     isRunning = false;
     editor.setReadOnly(false);
@@ -245,7 +348,7 @@ taskSelector.onchange = (e: Event) => {
  * Vizualization
  * @param p5 
  */
-export const sketch = (p5: p5) => {
+export const robotSketch = (p5: p5) => {
     let bg = 0; // Background color
 
     const TSZ = 50; // Tilesize
@@ -611,7 +714,7 @@ export const sketch = (p5: p5) => {
 
 }
 
-export const robotView = new p5(sketch, document.body);
+export const robotView = new p5(robotSketch, document.body);
 
 /**
  * Start app

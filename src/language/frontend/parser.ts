@@ -22,8 +22,12 @@ export default class Parser {
 
     private expect(type: TokenType, err: string) {
         const prev = this.tokens.shift();
-        if (!prev || prev.type != type) {
-            throw new ParserError("PARSER:\n" + err + JSON.stringify(prev) + " - erwarte: " + type.toString());
+        if (!prev) {
+            throw new ParserError("PARSER:\n" + err + JSON.stringify(prev) + " - erwarte: " + type.toString(), -1);
+        }
+        if (prev.type != type) {
+            const lineIndex = prev.lineIndex;
+            throw new ParserError("PARSER:" + err + JSON.stringify(prev) + " - erwarte: " + type.toString(), lineIndex);
         }
         return prev;
     }
@@ -255,12 +259,13 @@ export default class Parser {
         this.eat();
         const ident = this.expect(TokenType.Identifier, "Erwarte Variablennamen nach 'Zahl', 'Wahrheitswert' oder 'Objekt'!").value;
         this.expect(TokenType.Assign, "Erwarte 'ist' nach Variablennamen!");
+        const value = this.parse_expr();
 
         return {
             kind: "VarDeclaration",
-            ident: ident,
-            type: type,
-            value: this.parse_expr(),
+            ident,
+            type,
+            value,
         };
     }
 
@@ -468,7 +473,7 @@ export default class Parser {
             this.eat();
             const member = this.parse_primary_expr(); // has to be identifier
             if (member.kind != "Identifier")
-                throw new ParserError(`Kann Punktoperator nicht nutzen, wenn rechts kein Name steht!`);
+                throw new ParserError(`Kann Punktoperator nicht nutzen, wenn rechts kein Name steht!`, this.at().lineIndex);
 
             container = {
                 kind: "MemberExpr",
@@ -497,11 +502,8 @@ export default class Parser {
                 this.expect(TokenType.CloseParen, "Schließende Klammer fehlt!"); // eat closing paren
                 return value;
             }
-            case TokenType.EndLine:
-                this.eat();
-                return { kind: "EmptyLine"};
             default:
-                throw new ParserError(`PARSER: Unerwarteter Token gefunden: '${tk}'`);
+                throw new ParserError(`PARSER: Unerwarteter Token gefunden: '${tk}'`, lineIndex);
         }
     }
 }
