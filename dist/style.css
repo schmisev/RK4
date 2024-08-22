@@ -90,6 +90,7 @@ button:active {
 .code-error {
     grid-column: 1 / 8;
     grid-row: 17;
+    font-weight: bold;
 }
 
 .preload-title {
@@ -121,6 +122,34 @@ button:active {
 .robot-canvas {
     grid-column: 8 / 14;
     grid-row: 3 / 13;
+}
+
+.object-bar {
+    grid-column: 8 / 14;
+    grid-row: 3;
+    border-radius: 0px 0px 5px 5px;
+}
+
+.object-button {
+    margin-top: 5px;
+    margin-left: 5px;
+    background-color: whitesmoke;
+}
+
+.object-overlay {
+    position: absolute; /* Sit on top of the page content */
+    display: none; /* Hidden by default */
+    width: auto;
+    height: auto;
+    /*width: 100%;  Full width (cover the whole page) */
+    /*height: 100%;  Full height (cover the whole page) */
+    background-color: rgba(255,255,255,1); /* Black background with opacity */
+    z-index: 0; /* Specify a stack order in case you're using a different order for other elements */
+    cursor: pointer; /* Add a pointer on hover */
+    transition: transform 0.2s; /* Sticking effect */
+    pointer-events: none; /* Allow clicking trough the div */
+    border-radius: 10px 10px 10px 10px;
+    outline: 2px black solid;
 }
 
 .diagram-title {
@@ -359,6 +388,26 @@ button:active {
 
 .struct-text {
     padding: 2px;
+}
+
+/* objectigrams */
+.obj-name {
+    outline: 1px black solid;
+    text-align: center;
+    font-weight: bold;
+    padding: 5px;
+    border-radius: 10px 10px 0px 0px;
+}
+.obj-attributes {
+    outline: 1px black solid;
+    text-align: left;
+    padding: 5px;
+}
+.obj-methods {
+    outline: 1px black solid;
+    text-align: left;
+    padding: 5px;
+    border-radius: 0px 0px 10px 10px ;
 }
 
 /* markers */

@@ -17,6 +17,7 @@ import { LexerError, ParserError, RuntimeError, WorldError } from './errors';
 import { Program } from './language/frontend/ast';
 import { showStructogram } from './ui/structograms';
 import { Return } from './language/runtime/eval/errors';
+import { addRobotButtons, hideRobotDiagram, robotDiagramIndex, showRobotDiagram } from './ui/objectigrams';
 
 // Global variables
 let dt = 50; // ms to sleep between function calls
@@ -31,6 +32,9 @@ const parse = new Parser();
 let env: Environment;
 let world: World
 let program: Program;
+
+let objOverlay = document.getElementById("object-overlay")!;
+let objBar = document.getElementById("object-bar")!;
 
 // Console log replacement
 console.log = (function (old_log, log: HTMLElement) { 
@@ -78,7 +82,7 @@ const updateStructogram = async () => {
     }
     
     // reset error bar
-    setCodeError("☑️ kein Fehler gefunden", "lightgreen");
+    setCodeError("✔️ kein Fehler gefunden", "lightgreen");
 
     const code = editor.getValue();
     if (!code) return;
@@ -87,12 +91,12 @@ const updateStructogram = async () => {
         showStructogram("diagram-canvas", program);
     } catch (e) {
         if (e instanceof LexerError) {
-            setCodeError(`⚠️ ${e.message} (Zeile ${e.lineIndex})`, "lightpink");
+            setCodeError(`❌ ${e.message} (Zeile ${e.lineIndex})`, "lightpink");
             let markerId = editor.session.addMarker(new ace.Range(e.lineIndex, 0, e.lineIndex, 10), "lexer-error-marker", 'fullLine');
             errorMarkers.push(markerId);
         }
         if (e instanceof ParserError) {
-            setCodeError(`⚠️ ${e.message} (Zeile ${e.lineIndex})`, "lightcoral");
+            setCodeError(`❌ ${e.message} (Zeile ${e.lineIndex})`, "lightcoral");
             let markerId = editor.session.addMarker(new ace.Range(e.lineIndex, 0, e.lineIndex, 10), "error-marker", 'fullLine');
             errorMarkers.push(markerId);
         }
@@ -162,6 +166,7 @@ async function resetEnv(stage = 0) {
     world = new World(worldSpec, stage);
     declareWorld(world, "welt", env);
     world.declareAllRobots(env);
+    addRobotButtons(objBar, objOverlay, world);
     // run preload so it works in the cmd
     await runCode(preloadCode, false);
 };
@@ -214,7 +219,7 @@ async function startCode() {
         };
         console.log(`✔️ Du hast die Teilaufgabe ${i+1} erfüllt!`);
     }
-    console.log("🏅 Du hast alle Teilfgaben erfüllt!");
+    console.log("🏅 Du hast alle Teilaufgaben erfüllt!");
     return;
 };
 
@@ -291,6 +296,7 @@ taskSelector.onchange = (e: Event) => {
  */
 export const robotSketch = (p5: p5) => {
     let bg = 0; // Background color
+    const canvasDiv = document.getElementById('robot-canvas')!;
 
     const TSZ = 50; // Tilesize
     const BLH = 30; // Block height
@@ -300,6 +306,9 @@ export const robotSketch = (p5: p5) => {
     const FLH = 10; // Floor height
     const RBH = 60; // Robot body height
     const RBW = 35;
+
+    let OFFX: number; // x-offset of bounding box
+    let OFFY: number; // x-offset of bounding box 
 
     const createXTexture = (col: string) => {
         const xt = p5.createGraphics(TSZ, TSZ);
@@ -353,16 +362,16 @@ export const robotSketch = (p5: p5) => {
     const aspectRatio = 3 / 4;
 
     const resizeToParent = () => {
-        var canvasDiv = document.getElementById('robot-canvas')!;
-        var width = canvasDiv.offsetWidth;
-        var height = canvasDiv.offsetHeight;
+        let width = canvasDiv.offsetWidth;
+        let height = canvasDiv.offsetHeight;
         p5.resizeCanvas(width, height);
     };
 
     p5.setup = () => {
-        var canvasDiv = document.getElementById('robot-canvas')!;
-        var width = canvasDiv.offsetWidth;
-        var height = canvasDiv.offsetHeight;
+        let width = canvasDiv.offsetWidth;
+        let height = canvasDiv.offsetHeight;
+        OFFX = canvasDiv.getBoundingClientRect().left;
+        OFFY = canvasDiv.getBoundingClientRect().top;
         const cvs = p5.createCanvas(width, height, p5.WEBGL);
         cvs.parent("robot-canvas");
     };
@@ -390,6 +399,14 @@ export const robotSketch = (p5: p5) => {
 
         // draw world
         drawWorld(world);
+
+        // draw object diagrams
+        if (robotDiagramIndex >= 0) {
+            //console.log("show");
+            showRobotDiagram(world.robots[robotDiagramIndex], objOverlay, p5.winMouseX, p5.winMouseY);
+        } else {
+            hideRobotDiagram(objOverlay);
+        }
     };
 
     const drawWorld = (w: World) => {

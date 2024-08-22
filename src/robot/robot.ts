@@ -4,14 +4,14 @@ import { ObjectVal, MK_BOOL, MK_STRING, MK_NULL, MK_NATIVE_FN, MK_NUMBER, String
 import { lerp, Vec2 } from "./utils";
 import { BlockType, CHAR2BLOCK, CHAR2MARKER, Field, MarkerType, World } from "./world";
 
-const DIR2GER: Record<string, string> = {
+export const DIR2GER: Record<string, string> = {
     "N": "Nord",
     "E": "Ost",
     "S": "Süden",
     "W": "Westen"
 }
 
-const DIR2SHORTGER: Record<string, string> = {
+export const DIR2SHORTGER: Record<string, string> = {
     "N": "N",
     "E": "O",
     "S": "S",

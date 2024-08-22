@@ -60,23 +60,23 @@ function structure(astNode: Stmt): string {
         case "BooleanLiteral":
             return `<span class="struct-literal">${astNode.value ? "wahr" : "falsch"}</span>`;
         case "NullLiteral":
-            return `<span>nix</span>`;
+            return `<span class="struct-literal">nix</span>`;
         case "Identifier":
             return `<span class="struct-ident">${astNode.symbol}</span>`
         case "BinaryExpr":
-            return `<span>(${structure(astNode.left)} ${translateOperator(astNode.operator)} ${structure(astNode.right)})</span>`
+            return `(${structure(astNode.left)} ${translateOperator(astNode.operator)} ${structure(astNode.right)})`
         case "UnaryExpr":
-            return `<span>${translateOperator(astNode.operator)} ${structure(astNode.right)}</span>`
+            return `${translateOperator(astNode.operator)} ${structure(astNode.right)}`
         case "AssignmentExpr":
-            return `<span>${structure(astNode.assigne)} ist ${structure(astNode.value)}</span>`
+            return `${structure(astNode.assigne)} ist ${structure(astNode.value)}`
         case "CallExpr":
-            return `<span>${structure(astNode.ident)}(${astNode.args.map(structure).join(", ")})</span>`
+            return `${structure(astNode.ident)}(${astNode.args.map(structure).join(", ")})`
         case "MemberExpr":
-            return `<span class="struct-object">${structure(astNode.container)}</span>.${structure(astNode.member)}`
+            return `<span class="struct-object">${structure(astNode.container)}</span><b>.</b>${structure(astNode.member)}`
         case "VarDeclaration":
             return `<span class="struct-type">${TYPE2GER[astNode.type]}</span> <span class="struct-ident">${astNode.ident}</span> ist ${structure(astNode.value)}`
         case "ObjDeclaration":
-            return `<span>Objekt ${astNode.ident} als ${astNode.type}</span>`
+            return `Objekt ${astNode.ident} als ${astNode.type}`
         case "ShowCommand":
             return `<span class="struct-cmd">zeig</span> ${astNode.values.map(structure).join(" ")}`
         case "FunctionDefinition":
