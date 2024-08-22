@@ -5,6 +5,8 @@ import { World } from "../robot/world";
 export let robotDiagramIndex = -1
 
 export function addRobotButtons(div: HTMLElement, overlay: HTMLElement, world: World) {
+    robotDiagramIndex = -1;
+
     div.innerHTML = "";
 
     for (const [i, r] of world.robots.entries()) {

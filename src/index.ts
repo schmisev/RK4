@@ -18,6 +18,7 @@ import { Program } from './language/frontend/ast';
 import { showStructogram } from './ui/structograms';
 import { Return } from './language/runtime/eval/errors';
 import { addRobotButtons, hideRobotDiagram, robotDiagramIndex, showRobotDiagram } from './ui/objectigrams';
+import { text } from 'stream/consumers';
 
 // Global variables
 let dt = 50; // ms to sleep between function calls
@@ -297,7 +298,11 @@ taskSelector.onchange = (e: Event) => {
 export const robotSketch = (p5: p5) => {
     let bg = 0; // Background color
     const canvasDiv = document.getElementById('robot-canvas')!;
+    let cam: p5.Camera;
+    let pan = 0.0;
+    let tilt = 0.0;
 
+    const CPS = 100; // Compass size
     const TSZ = 50; // Tilesize
     const BLH = 30; // Block height
     const MRH = 1; // Marker height
@@ -310,6 +315,9 @@ export const robotSketch = (p5: p5) => {
     let OFFX: number; // x-offset of bounding box
     let OFFY: number; // x-offset of bounding box 
 
+    const HUDF: number = 100; // HUD-factor
+    const SQHUDF: number = p5.sqrt(HUDF);
+
     const createXTexture = (col: string) => {
         const xt = p5.createGraphics(TSZ, TSZ);
         xt.background(col);
@@ -319,11 +327,43 @@ export const robotSketch = (p5: p5) => {
         return xt;
     };
 
+    const createCompassTexture = () => {
+        const ct = p5.createGraphics(CPS, CPS);
+        ct.strokeWeight(3);
+        ct.stroke(255);
+
+        ct.line(0.5 * CPS, 0, 0.5 * CPS, CPS);
+        ct.line(0, 0.5 * CPS, CPS, 0.5 * CPS);
+        ct.line(0.75 * CPS, 0.25 * CPS, 0.25 * CPS, 0.75 * CPS);
+        ct.line(0.25 * CPS, 0.25 * CPS, 0.75 * CPS, 0.75 * CPS);
+
+        ct.textAlign(p5.CENTER);
+        ct.text("N", 0.5 * CPS, 0.1 * CPS);
+
+        return ct;
+    };
+
+    const createTextTexture = (str: string) => {
+        const ct = p5.createGraphics(TSZ, TSZ);
+        ct.fill(255);
+        ct.textAlign(p5.CENTER);
+        ct.textSize(TSZ);
+        ct.text(str, 0.5 * TSZ, 1 * TSZ);
+        return ct;
+    };
+
     const XNone = createXTexture("#000000");
     const XR = createXTexture(CR);
     const XY = createXTexture(CY);
     const XG = createXTexture(CG);
     const XB = createXTexture(CB);
+
+    const CMP = createCompassTexture();
+
+    const NT = createTextTexture("N");
+    const WT = createTextTexture("W");
+    const ET = createTextTexture("O");
+    const ST = createTextTexture("S");
 
     const BLOCK2COLOR: Record<BlockType, string> = {
         "0": CR,
@@ -373,6 +413,7 @@ export const robotSketch = (p5: p5) => {
         OFFX = canvasDiv.getBoundingClientRect().left;
         OFFY = canvasDiv.getBoundingClientRect().top;
         const cvs = p5.createCanvas(width, height, p5.WEBGL);
+        cam = p5.createCamera();
         cvs.parent("robot-canvas");
     };
 
@@ -389,6 +430,11 @@ export const robotSketch = (p5: p5) => {
         p5.background(bg);
 
         p5.orbitControl();
+        pan = p5.atan2(cam.eyeZ - cam.centerZ, cam.eyeX - cam.centerX)
+        tilt = p5.atan2(cam.eyeY - cam.centerY, p5.dist(cam.centerX, cam.centerZ, cam.eyeX, cam.eyeZ))
+        
+        p5.push();
+
         p5.rotateX(p5.PI * 0.4);
         p5.scale(0.8);
         //p5.ambientLight(128, 128, 128);
@@ -407,6 +453,61 @@ export const robotSketch = (p5: p5) => {
         } else {
             hideRobotDiagram(objOverlay);
         }
+
+        // draw compass
+        drawCompass(world);
+
+        p5.pop();
+
+        // draw ui
+        drawHUD();
+    };
+
+    const drawHUD = () => {
+        p5.push();
+        p5.translate(cam.eyeX, cam.eyeY, cam.eyeZ);
+        p5.rotateY(-pan);
+        p5.rotateZ(tilt + p5.PI);
+        p5.translate(HUDF, 0, 0);
+        p5.rotateY(-p5.PI/2);
+        p5.rotateZ(p5.PI);
+
+        // draw UI here
+
+        p5.pop();
+    }
+
+    const drawCompass = (w: World) => {
+        p5.push();
+        p5.noStroke();
+        p5.translate(0, 0, - w.H * BLH * 0.5 - FLH);
+
+        // draw compass letters
+        p5.push();
+        p5.translate((-w.L * 0.5 - 1) * TSZ, 0, 0);
+        p5.texture(WT);
+        p5.plane();
+        p5.pop();
+
+        p5.push();
+        p5.translate(- (-w.L * 0.5 - 1) * TSZ, 0, 0);
+        p5.texture(ET);
+        p5.plane();
+        p5.pop();
+
+        p5.push();
+        p5.translate(0, (-w.W * 0.5 - 1) * TSZ, 0);
+        p5.texture(NT);
+        p5.plane();
+        p5.pop();
+
+        p5.push();
+        p5.translate(0, - (-w.W * 0.5 - 1) * TSZ, 0);
+        p5.texture(ST);
+        p5.plane();
+        p5.pop();
+        
+        p5.pop();
     };
 
     const drawWorld = (w: World) => {
@@ -526,6 +627,7 @@ export const robotSketch = (p5: p5) => {
         p5.noFill();
         p5.stroke(255);
         p5.box(w.L * TSZ + 2, w.W * TSZ + 2, w.H * BLH + FLH + 2);
+
         p5.pop();
     };
 
