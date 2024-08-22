@@ -1,18 +1,19 @@
 import * as p5 from 'p5';
+
 import Parser from "./language/frontend/parser";
 import { BlockType, CB, CBOT, CBOT2, CG, CR, CY, declareWorld, Field, MarkerType, World } from "./robot/world";
 import Environment, { declareGlobalEnv } from "./language/runtime/environment";
 import { evaluate } from "./language/runtime/interpreter";
 import { Robot } from './robot/robot';
 import { clamp, lerp } from './robot/utils';
-import { STD_PRELOAD, STD_WORLD, TASKS, DEFAULT_TASK } from "./robot/tasks";
+import { STD_PRELOAD, STD_WORLD, TASKS, DEFAULT_TASK, TEST_CODE } from "./robot/tasks";
 import { sleep } from './language/runtime/utils';
 
 import * as ace from "ace-builds";
 import "ace-builds/esm-resolver";
 import "ace-builds/src-noconflict/ext-language_tools";
 import './assets/ace/mode-rkscript.js';
-import { ParserError, RuntimeError, WorldError } from './errors';
+import { LexerError, ParserError, RuntimeError, WorldError } from './errors';
 import { Program } from './language/frontend/ast';
 import { showStructogram } from './ui/structograms';
 import { Return } from './language/runtime/eval/errors';
@@ -23,85 +24,7 @@ let isRunning = false;
 let queueInterrupt = false;
 
 let preloadCode = "\n";
-let code = `# Großer Testcode
-[ Funktionsdefinition ]
-Funktion pow(Zahl basis, Zahl exponent)
-    Zahl ausgabe ist 1
-    wiederhole exponent mal
-        ausgabe ist ausgabe * basis
-    ende
-    zurück ausgabe
-ende
-
-[ Methodendefinition ]
-Methode stapeln(Zahl n) für Roboter
-    wiederhole n mal
-        hinlegen()
-    ende
-ende
-
-Methode abräumen() für Roboter
-    wiederhole solange siehtZiegel()
-        aufheben()
-    ende
-ende
-
-[ Klassendefinition ]
-Klasse Vektor2
-    Zahl x ist 0
-    Zahl y ist 0
-    
-    Methode plus(Zahl dx, Zahl dy)
-        x ist x + dx
-        y ist y + dy
-    ende
-
-    Methode skalieren(Zahl f)
-        x ist x * f
-        y ist y * f
-    ende
-ende
-
-[ Hauptprogramm ]
-zeig pow(3, 5)
-zeig k1.linksDrehen()
-zeig k1.stapeln(3)
-
-k2.rechtsDrehen()
-k2.schritt()
-k2.linksDrehen()
-
-wiederhole 3 mal
-    k2.abräumen()
-    k2.linksDrehen()
-    k2.schritt()
-    k2.rechtsDrehen()
-ende
-
-k2.schritt()
-k2.rechtsDrehen()
-k2.schritt()
-k2.markeSetzen()
-
-k1.abräumen()
-k1.schritt()
-k1.linksDrehen()
-k1.schritt()
-k1.markeEntfernen()
-k1.schritt()
-k1.rechtsDrehen()
-
-wiederhole 2 mal
-    k1.abräumen()
-    k1.rechtsDrehen()
-    k1.schritt()
-    k1.linksDrehen()
-ende
-
-wiederhole solange nicht welt.fertig()
-    k1.hinlegen()
-ende
-`;
+let code = TEST_CODE;
 let worldSpec = STD_WORLD;
 
 const parse = new Parser();
@@ -140,12 +63,22 @@ let editor = ace.edit("code-editor", {
 });
 
 let errorMarkers: number[] = [];
-    
+
+let codeError = document.getElementById("code-error")!;
+
+const setCodeError = (msg: string, color: string) => {
+    codeError.style.backgroundColor = color
+    codeError.innerHTML = msg;
+}
+
 const updateStructogram = async () => {
     // remove error markers
     for (const em of errorMarkers) {
         editor.session.removeMarker(em);
-    } 
+    }
+    
+    // reset error bar
+    setCodeError("☑️ kein Fehler gefunden", "lightgreen");
 
     const code = editor.getValue();
     if (!code) return;
@@ -153,8 +86,13 @@ const updateStructogram = async () => {
         program = parse.produceAST(code);
         showStructogram("diagram-canvas", program);
     } catch (e) {
+        if (e instanceof LexerError) {
+            setCodeError(`⚠️ ${e.message} (Zeile ${e.lineIndex})`, "lightpink");
+            let markerId = editor.session.addMarker(new ace.Range(e.lineIndex, 0, e.lineIndex, 10), "lexer-error-marker", 'fullLine');
+            errorMarkers.push(markerId);
+        }
         if (e instanceof ParserError) {
-            //console.log(e.message);
+            setCodeError(`⚠️ ${e.message} (Zeile ${e.lineIndex})`, "lightcoral");
             let markerId = editor.session.addMarker(new ace.Range(e.lineIndex, 0, e.lineIndex, 10), "error-marker", 'fullLine');
             errorMarkers.push(markerId);
         }
@@ -260,7 +198,10 @@ async function startCode() {
 
     for (let i = 0; i < world.getStageCount(); i++) {
         await resetEnv(i);
-        if (i > 0) world.loadWorldLog();
+        if (i > 0) {
+            console.log();
+            world.loadWorldLog();
+        }
         console.log();
         console.log("▷ Code wird ausgeführt!");
         
@@ -418,9 +359,6 @@ export const robotSketch = (p5: p5) => {
         p5.resizeCanvas(width, height);
     };
 
-    p5.preload = () => {
-    };
-
     p5.setup = () => {
         var canvasDiv = document.getElementById('robot-canvas')!;
         var width = canvasDiv.offsetWidth;
@@ -433,7 +371,9 @@ export const robotSketch = (p5: p5) => {
         resizeToParent();
 
         // bg color ramping
-        if (isRunning && bg == 0) bg = 255;
+        if (isRunning && bg == 0) {
+            bg = 255;
+        }
         if (bg > 0) bg = lerp(0, bg, 0.9);
         if (!isRunning || queueInterrupt) bg = 0;
 

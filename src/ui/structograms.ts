@@ -100,7 +100,6 @@ function structure(astNode: Stmt): string {
         default:
             return `<span>&lt${astNode.kind}&gt</span>`
     }
-    throw new ParserError("PARSER: Konnte kein Struktogramm erstellen!", 0);
 }
 
 function structureSequence(body: Stmt[]): string {

@@ -60,6 +60,14 @@ export function declareWorld(w: World, varname: string, env: Environment): void 
         }
     ), true);
 
+    world_env.declareVar("teilaufgabe", MK_NATIVE_FN(
+        (args, scope) => {
+            if (args.length != 0)
+                throw new RuntimeError(`teilaufgabe() erwartet keine Parameter!`);
+            return MK_NUMBER(w.getStageIndex() + 1);
+        }
+    ), true);
+
     // add world to environment
     env.declareVar(varname, { type: "object", env: world_env, classname: "Welt" }, true);
 }
@@ -93,7 +101,8 @@ export class World {
 
     loadWorld(src: string, stage: number) {
         src = src.replaceAll("\r", ""); // clean up windows carriage returns
-        this.stages = src.split("x\n"); // cut off at x-cell!
+        this.stages = src.split("x;"); //
+        if (this.stages[0] == "") this.stages.shift();
 
         // load first stage
         this.stageIdx = stage;
@@ -148,11 +157,11 @@ export class World {
                             break;
                         case "*":
                             // put down 0 or more blocks
-                            f.addMultipleBlocks(rndi(0, this.H), BlockType.r, goalMode);
+                            f.addMultipleBlocks(rndi(0, this.H - f.getBlockHeight()), BlockType.r, goalMode);
                             break;
                         case "+":
                             // put down 1 or more blocks
-                            f.addMultipleBlocks(rndi(1, this.H), BlockType.r, goalMode);
+                            f.addMultipleBlocks(rndi(1, this.H - f.getBlockHeight()), BlockType.r, goalMode);
                             break;
                         case "?":
                             // put down 0 or 1 marker
@@ -174,6 +183,7 @@ export class World {
                         case "S":
                         case "W":
                             if (robotCreated) throw new WorldError("Kann nicht zwei Roboter auf dasselbe Feld stellen!");
+                            if (goalMode) break;
                             this.createRobot(x, y, c, "k" + robotCounter, robotCounter);
                             robotCreated = true;
                             robotCounter += 1;
@@ -249,6 +259,10 @@ export class World {
             }
         }
         return true;
+    }
+
+    getStageIndex() {
+        return this.stageIdx;
     }
 }
 

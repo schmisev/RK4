@@ -36,6 +36,11 @@ button:active {
     border-radius: 5px;
 }
 
+.slr {
+    background-color: salmon;
+    border-radius: 5px;
+}
+
 .text {
     padding-left: 10px;
 }
@@ -78,8 +83,13 @@ button:active {
 
 .code-editor {
     grid-column: 1 / 8;
-    grid-row: 3 / 18;
+    grid-row: 3 / 17;
     font-size: 15px;
+}
+
+.code-error {
+    grid-column: 1 / 8;
+    grid-row: 17;
 }
 
 .preload-title {
@@ -354,6 +364,11 @@ button:active {
 /* markers */
 .error-marker {
     background-color: lightcoral;
+    position: absolute;
+}
+
+.lexer-error-marker {
+    background-color: lightpink;
     position: absolute;
 }
 

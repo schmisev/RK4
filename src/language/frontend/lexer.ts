@@ -176,7 +176,7 @@ export function tokenize(sourceCode: string): Token[] {
                 src.shift();
             }
             else {
-                throw new LexerError("LEXER: Unbekanntes Zeichen: " + src[0]);
+                throw new LexerError("LEXER: Unbekanntes Zeichen: " + src[0], lineCount);
             }
         }
     }

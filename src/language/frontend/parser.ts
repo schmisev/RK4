@@ -23,11 +23,11 @@ export default class Parser {
     private expect(type: TokenType, err: string) {
         const prev = this.tokens.shift();
         if (!prev) {
-            throw new ParserError("PARSER:\n" + err + JSON.stringify(prev) + " - erwarte: " + type.toString(), -1);
+            throw new ParserError("PARSER: " + err + " - nichts erhalten", -1);
         }
         if (prev.type != type) {
             const lineIndex = prev.lineIndex;
-            throw new ParserError("PARSER:" + err + JSON.stringify(prev) + " - erwarte: " + type.toString(), lineIndex);
+            throw new ParserError("PARSER: " + err + " - erhalten: " + JSON.stringify(prev.value), lineIndex);
         }
         return prev;
     }
@@ -503,7 +503,7 @@ export default class Parser {
                 return value;
             }
             default:
-                throw new ParserError(`PARSER: Unerwarteter Token gefunden: '${tk}'`, lineIndex);
+                throw new ParserError(`PARSER: Unerwarteter Token gefunden: '${JSON.stringify(this.at().value)}'`, lineIndex);
         }
     }
 }
