@@ -49,6 +49,10 @@ button:active {
     padding-right: 10px;
 }
 
+.seethrough {
+    background-color: transparent;
+}
+
 .code-like {
     font-family: "Consolas";
     font-weight: bold;

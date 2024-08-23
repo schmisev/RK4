@@ -151,7 +151,7 @@ function structureSequence(body: Stmt[]): string {
 function structureWhile(node: WhileBlock): string {
     let cond = structure(node.condition);
     let result = 
-    `wiederhole ${makeTooltip("solange", "Die folgenden Anweisungen werden immer wieder ausgeführt, bis die Bedingung (" + cond + ") nicht mehr wahr ist!")}
+    `wiederhole ${makeTooltip("solange", "Die folgenden Anweisungen werden immer wieder ausgeführt, bis die Bedingung [" + cond + "] nicht mehr wahr ist!")}
      ${cond}
         <div class="struct-while">${structureSequence(node.body)}</div>`
     return result;
@@ -160,7 +160,7 @@ function structureWhile(node: WhileBlock): string {
 function structureFor(node: ForBlock): string {
     let count = structure(node.counter)
     let result = 
-    `wiederhole ${count} ${makeTooltip("mal", "Die folgenden Anweisungen werden so oft ausgeführt wie der Zahlenwert von (" + count) + ")"}
+    `wiederhole ${count} ${makeTooltip("mal", "Die folgenden Anweisungen werden so oft ausgeführt wie der Zahlenwert von [" + count + "]")}
         <div class="struct-while">${structureSequence(node.body)}</div>`
     return result;
 }
@@ -168,7 +168,12 @@ function structureFor(node: ForBlock): string {
 function structureIfElse(node: IfElseBlock): string {
     let result =
     `
-    <div class="struct-ifelse">${structure(node.condition)} ? <br><br><br></div>
+    <div class="struct-ifelse">${structure(node.condition)} ? <br><br>
+        <div style="display: flex;">
+            <div class="struct-column" style="padding-left: 5px; text-align: left;">wahr</div>
+            <div class="struct-column" style="padding-right: 5px; text-align: right;">falsch</div>
+        </div>
+    </div>
     <div class="struct-row">
         <div class="struct-column">${structureSequence(node.ifTrue)}</div>
         <div class="struct-column">${structureSequence(node.ifFalse)}</div>
