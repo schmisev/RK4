@@ -244,7 +244,7 @@ export function* eval_call_expr(
         }
     }
 
-    throw new RuntimeError("Kann nicht ausgeführt werden: " + JSON.stringify(fn));
+    throw new RuntimeError(`Du versuchst hier ${JSON.stringify(fn)} als Funktion auszuführen!`);
 }
 
 export function* eval_member_expr(

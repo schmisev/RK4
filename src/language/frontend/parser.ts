@@ -103,6 +103,7 @@ export default class Parser {
         const values: Expr[] = [];
         while (this.at().type != TokenType.EndLine) {
             values.push(this.parse_expr());
+            if (this.at().type != TokenType.EndLine) this.expect(TokenType.Comma, "Erwarte Kommas zwischen zu zeigenden Ausdrücken!");
         }
         return {
             kind: "ShowCommand",
@@ -375,7 +376,7 @@ export default class Parser {
 
     private parse_logical_expr(): Expr {
         let left = this.parse_comparison_expr();
-        while (this.at().value == "und" || this.at().value == "oder") {
+        while (this.at().type == TokenType.And || this.at().type == TokenType.Or) {
             const operator = this.eat().value;
             const right = this.parse_comparison_expr();
             left = {
@@ -391,7 +392,7 @@ export default class Parser {
 
     private parse_comparison_expr(): Expr {
         let left = this.parse_additive_expr();
-        while (this.at().value == "<" || this.at().value == ">" || this.at().value == "=") {
+        while (this.at().type == TokenType.Equal || this.at().type == TokenType.Greater || this.at().type == TokenType.Lesser) {
             const operator = this.eat().value;
             const right = this.parse_additive_expr();
             left = {
@@ -407,7 +408,7 @@ export default class Parser {
 
     private parse_additive_expr(): Expr {
         let left = this.parse_multiplicative_expr();
-        while (this.at().value == "+" || this.at().value == "-") {
+        while (this.at().type == TokenType.Plus || this.at().type == TokenType.Minus) {
             const operator = this.eat().value;
             const right = this.parse_multiplicative_expr();
             left = {
@@ -423,7 +424,7 @@ export default class Parser {
 
     private parse_multiplicative_expr(): Expr {
         let left = this.parse_unary_expr();
-        while (this.at().value == "*" || this.at().value == ":" || this.at().value == "/" || this.at().value == "%") {
+        while (this.at().type == TokenType.Multiply || this.at().type == TokenType.Divide || this.at().type == TokenType.Mod) {
             const operator = this.eat().value;
             const right = this.parse_unary_expr();
             left = {
@@ -438,7 +439,7 @@ export default class Parser {
     }
 
     private parse_unary_expr(): Expr {
-        if (this.at().type == TokenType.UnaryOperator || this.at().type == TokenType.BinaryOperator) {
+        if (this.at().type == TokenType.Not || this.at().type == TokenType.Minus || this.at().type == TokenType.Plus) {
             const operator = this.eat().value;
             const right = this.parse_call_expr();
             return { kind: "UnaryExpr", right, operator };

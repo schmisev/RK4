@@ -20,8 +20,20 @@ export enum TokenType {
     OpenParen, CloseParen,
     OpenBrace, CloseBrace,
     Comma, Period,
-    BinaryOperator,
-    UnaryOperator,
+    Plus,
+    Minus,
+    Multiply,
+    Divide,
+    Mod,
+    Greater,
+    Lesser,
+    Equal,
+    Not,
+    And,
+    Or,
+    // GeneralOperator,
+    // BinaryOperator,
+    // UnaryOperator,
 
     // Declarations
     ClassDef,
@@ -40,9 +52,9 @@ const KEYWORDS: Record<string, TokenType> = {
     Objekt: TokenType.DeclObject,
     selbst: TokenType.Self,
 
-    nicht: TokenType.UnaryOperator,
-    und: TokenType.BinaryOperator,
-    oder: TokenType.BinaryOperator,
+    nicht: TokenType.Not,
+    und: TokenType.And,
+    oder: TokenType.Or,
 
     zeig: TokenType.Show,
     wenn: TokenType.If,
@@ -98,12 +110,24 @@ export function tokenize(sourceCode: string): Token[] {
             tokens.push(token(src.shift(), TokenType.OpenParen, lineCount));
         } else if (src[0] == ")"){
             tokens.push(token(src.shift(), TokenType.CloseParen, lineCount));
-        } else if (src[0] == '+' || src[0] == "-"){
-            tokens.push(token(src.shift(), TokenType.BinaryOperator, lineCount)); // Add and sub
-        } else if (src[0] == '*' || src[0] == ":" || src[0] == "/" || src[0] == "%"){
-            tokens.push(token(src.shift(), TokenType.BinaryOperator, lineCount)); // Mult and div
-        } else if (src[0] == '=' || src[0] == '<' || src[0] == '>'){
-            tokens.push(token(src.shift(), TokenType.BinaryOperator, lineCount)); // Comparisons
+        } else if (src[0] == '+'){
+            tokens.push(token(src.shift(), TokenType.Plus, lineCount));
+        } else if (src[0] == '-'){
+            tokens.push(token(src.shift(), TokenType.Minus, lineCount));
+        } else if (src[0] == '*'){
+            tokens.push(token(src.shift(), TokenType.Multiply, lineCount));
+        } else if (src[0] == ':' || src[0] == "/"){
+            tokens.push(token(src.shift(), TokenType.Divide, lineCount));
+        } else if (src[0] == '%'){
+            tokens.push(token(src.shift(), TokenType.Mod, lineCount));
+        } else if (src[0] == '='){
+            tokens.push(token(src.shift(), TokenType.Equal, lineCount));
+        } else if (src[0] == '>'){
+            tokens.push(token(src.shift(), TokenType.Greater, lineCount));
+        } else if (src[0] == '<'){
+            tokens.push(token(src.shift(), TokenType.Lesser, lineCount));
+        } else if (src[0] == '-'){
+            tokens.push(token(src.shift(), TokenType.Minus, lineCount));
         } else if (src[0] == '\n'){
             if (tokens.length > 0 && tokens[tokens.length - 1].type == TokenType.EndLine) {
                 src.shift();
@@ -125,7 +149,9 @@ export function tokenize(sourceCode: string): Token[] {
             if (src[0] == '"') {
                 src.shift();
                 let str = "";
-                while(src.length > 0 && src[0] != '"') {
+                while(src.length > 0) {
+                    if (src[0] == '"') break;
+                    if (src[0] == "\n") lineCount ++;
                     str += src.shift();
                 }
                 src.shift();

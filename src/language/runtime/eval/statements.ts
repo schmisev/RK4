@@ -41,10 +41,10 @@ export function* eval_var_declaration(
     return env.declareVar(decl.ident, value);
 }
 
-export function eval_obj_declaration(
+export function* eval_obj_declaration(
     decl: ObjDeclaration,
     env: Environment
-): RuntimeVal {
+): SteppedEval<RuntimeVal> {
     const cl = env.lookupVar(decl.classname);
     if (cl.type != "class")
         throw new RuntimeError(`'${decl.classname}' ist kein Klassenname!`);
@@ -52,11 +52,12 @@ export function eval_obj_declaration(
 
     for (const attr of cl.attributes) {
         if (attr.type == "object") {
-            eval_obj_declaration(attr, scope);
+            yield* eval_obj_declaration(attr, scope);
         } else {
-            eval_var_declaration(attr, scope);
+            yield* eval_var_declaration(attr, scope);
         }
     }
+
     for (const m of cl.methods) {
         eval_fn_definition(m, scope);
     }
