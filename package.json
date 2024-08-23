@@ -10,11 +10,16 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@eslint/js": "^9.9.0",
     "@types/ace": "^0.0.52",
     "@types/node": "^22.1.0",
     "@types/p5": "^1.7.6",
+    "eslint": "^9.9.0",
+    "globals": "^15.9.0",
     "ts-loader": "^9.5.1",
+    "typedoc": "^0.26.6",
     "typescript": "^5.5.4",
+    "typescript-eslint": "^8.2.0",
     "webpack": "^5.93.0",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.0.4"

@@ -6,24 +6,23 @@ import Environment, { declareGlobalEnv } from "./language/runtime/environment";
 import { evaluate } from "./language/runtime/interpreter";
 import { Robot } from './robot/robot';
 import { clamp, lerp } from './robot/utils';
-import { STD_PRELOAD, STD_WORLD, TASKS, DEFAULT_TASK, TEST_CODE } from "./robot/tasks";
+import { STD_PRELOAD, STD_WORLD, TASKS, DEFAULT_TASK, TEST_CODE, Task } from "./robot/tasks";
 import { sleep } from './language/runtime/utils';
 
 import * as ace from "ace-builds";
 import "ace-builds/esm-resolver";
 import "ace-builds/src-noconflict/ext-language_tools";
 import './assets/ace/mode-rkscript.js';
-import { LexerError, ParserError, RuntimeError, WorldError } from './errors';
+import { LexerError, ParserError } from './errors';
 import { Program } from './language/frontend/ast';
 import { showStructogram } from './ui/structograms';
-import { Return } from './language/runtime/eval/errors';
 import { addRobotButtons, hideRobotDiagram, robotDiagramIndex, showRobotDiagram } from './ui/objectigrams';
-import { text } from 'stream/consumers';
 
 // Global variables
 let dt = 50; // ms to sleep between function calls
 let isRunning = false;
 let queueInterrupt = false;
+let taskName: string
 
 let preloadCode = "\n";
 let code = TEST_CODE;
@@ -33,9 +32,6 @@ const parse = new Parser();
 let env: Environment;
 let world: World
 let program: Program;
-
-let objOverlay = document.getElementById("object-overlay")!;
-let objBar = document.getElementById("object-bar")!;
 
 // Console log replacement
 console.log = (function (old_log, log: HTMLElement) { 
@@ -47,6 +43,10 @@ console.log = (function (old_log, log: HTMLElement) {
 }(console.log.bind(console), document.querySelector('#console-log')!));
 
 // Fetch HTML elements
+// Fetch object overlay & object bar
+let objOverlay = document.getElementById("object-overlay")!;
+let objBar = document.getElementById("object-bar")!;
+
 // Setup editors
 let preloadEditor = ace.edit("preload-editor", {
     minLines: 1,
@@ -67,49 +67,9 @@ let editor = ace.edit("code-editor", {
     enableLiveAutocompletion: true,
 });
 
-let errorMarkers: number[] = [];
-
+// Fetch code error bar
 let codeError = document.getElementById("code-error")!;
-
-const setCodeError = (msg: string, color: string) => {
-    codeError.style.backgroundColor = color
-    codeError.innerHTML = msg;
-}
-
-const updateStructogram = async () => {
-    // remove error markers
-    for (const em of errorMarkers) {
-        editor.session.removeMarker(em);
-    }
-    
-    // reset error bar
-    setCodeError("✔️ kein Fehler gefunden", "lightgreen");
-
-    const code = editor.getValue();
-    if (!code) return;
-    try {
-        program = parse.produceAST(code);
-        showStructogram("diagram-canvas", program);
-    } catch (e) {
-        if (e instanceof LexerError) {
-            setCodeError(`❌ ${e.message} (Zeile ${e.lineIndex})`, "lightpink");
-            let markerId = editor.session.addMarker(new ace.Range(e.lineIndex, 0, e.lineIndex, 10), "lexer-error-marker", 'fullLine');
-            errorMarkers.push(markerId);
-        }
-        if (e instanceof ParserError) {
-            setCodeError(`❌ ${e.message} (Zeile ${e.lineIndex})`, "lightcoral");
-            let markerId = editor.session.addMarker(new ace.Range(e.lineIndex, 0, e.lineIndex, 10), "error-marker", 'fullLine');
-            errorMarkers.push(markerId);
-        }
-    }
-};
-
-// automatic parse timeout to avoid lagging the editor
-let autoParseTimeout = setTimeout(updateStructogram, 500);
-editor.on("change", async (e: ace.Ace.Delta) => {
-    clearTimeout(autoParseTimeout);
-    autoParseTimeout = setTimeout(updateStructogram, 500);
-});
+let errorMarkers: number[] = [];
 
 // Setup command line
 let cmdLine = document.getElementById("cmd-line") as HTMLInputElement;
@@ -137,20 +97,141 @@ waitSlider.oninput = () => {
     document.getElementById("wait-time")!.innerHTML = value.toString() + " ms";
 }
 
+// automatic parse timeout to avoid lagging the editor
+let autoUpdateIDE = setTimeout(updateIDE, 500);
+editor.on("change", async (e: ace.Ace.Delta) => {
+    clearTimeout(autoUpdateIDE);
+    autoUpdateIDE = setTimeout(updateIDE, 500);
+});
+
+// Cmd line input
+cmdLine.onkeydown = fetchCmd
+document.getElementById("cmd-run")!.onclick = runCmd
+
+// Start / stop buttons
+document.getElementById("code-start")!.onclick = startCode
+document.getElementById("code-stop")!.onclick = stopCode
+
+// Download / load buttons
+document.getElementById("save-code")!.onclick = downloadCode
+document.getElementById("load-code")!.onclick = () => fileInput.click();
+
+// Downloading
+function downloadCode() {
+    let code = editor.getValue();
+    let filename = taskName + ".rk"
+    downloadTextFile(filename, code);
+}
+
+function downloadTextFile(filename: string, text: string) {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    
+    element.click();
+
+    document.body.removeChild(element);
+}
+
+const fileInput: HTMLInputElement = document.getElementById("load-file")! as HTMLInputElement;
+fileInput.onchange = loadFile
+
+// Uploading code
+function loadFile(evt: InputEvent) {
+    const target: HTMLInputElement = evt.target as HTMLInputElement;
+    if (!target) return;
+    const files = target.files;
+    if (!files) return;
+    const file = files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(event: any) {
+        console.log();
+        console.log(`Versuche '${file.name}' zu laden...`);
+        //console.log(event.target.result);
+        const parts = file.name.split(".");
+        const ext = parts.pop();
+        const justName = parts.join();
+
+        switch (ext) {
+            case "rk":
+                console.log(`Lade Programm '${justName}'`);
+                editor.setValue(event.target.result);
+                break;
+            case "csv":
+                console.log(`Lade Welt '${justName}'`);
+                loadRawTask("AX.X", {
+                    title: `${justName}`,
+                    description: "Nutze 'welt.fertig()' und die Feldlampen, um die Aufgabe zu lösen!",
+                    preload: "\n",
+                    world: event.target.result,
+                } satisfies Task)
+                taskSelector.selectedIndex = 0;
+                break;
+            default:
+                console.log("Dieses Dateienformat ist nicht unterstützt!");
+        }
+    }
+    reader.readAsText(file);
+    fileInput.value = "";
+  }
+
+// Load new task
+taskSelector.onchange = (e: Event) => {
+    console.log();
+    console.log("🤔 Lade neue Aufgabe: " + taskSelector.value);
+    loadTask(taskSelector.value);
+};
+
+// Setting error bar
+function setErrorBar(msg: string, color: string) {
+    codeError.style.backgroundColor = color;
+    codeError.innerHTML = msg;
+}
+
+// Updating IDE
+async function updateIDE() {
+    // remove error markers
+    for (const em of errorMarkers) {
+        editor.session.removeMarker(em);
+    }
+
+    // reset error bar
+    setErrorBar("✔️ kein Fehler gefunden", "lightgreen");
+
+    const code = editor.getValue();
+    if (!code) return;
+    try {
+        program = parse.produceAST(code);
+        showStructogram("diagram-canvas", program);
+    } catch (e) {
+        let errorMarker = "error-marker";
+        
+        if (e instanceof LexerError) {
+            errorMarker = "lexer-error-marker";
+        } else if (e instanceof ParserError) {
+            errorMarker = "error-marker"
+        }
+
+        setErrorBar(`❌ ${e.message} (Zeile ${e.lineIndex})`, "lightcoral");
+        let markerId = editor.session.addMarker(new ace.Range(e.lineIndex, 0, e.lineIndex, 10), errorMarker, 'fullLine');
+        errorMarkers.push(markerId);
+    }
+}
+
 // Loading tasks
 function isTaskkey(key: string): key is keyof typeof TASKS {
     return key in TASKS; // TASKS was not extended in any way and is a simple record
 }
 
-const loadTask = (key: string) => {
-    if (!isTaskkey(key)) {
-        preloadCode = STD_PRELOAD;
-        worldSpec = STD_PRELOAD;
-        return;
-    }
-    const task = TASKS[key];
+function loadRawTask(key: string, task: Task) {
     preloadCode = task.preload;
     worldSpec = task.world;
+    taskName = `${key} ${task.title}`
 
     taskDescription.innerHTML = `
     <p><b>🤔 ${key} "${task.title}"</b></p>
@@ -159,7 +240,16 @@ const loadTask = (key: string) => {
     preloadEditor.setValue(preloadCode);
     resetEnv();
     world.loadWorldLog();
-};
+}
+
+function loadTask(key: string) {
+    if (!isTaskkey(key)) {
+        preloadCode = STD_PRELOAD;
+        worldSpec = STD_PRELOAD;
+        return;
+    }
+    loadRawTask(key, TASKS[key]);
+}
 
 async function resetEnv(stage = 0) {
     env = declareGlobalEnv();
@@ -232,7 +322,7 @@ async function stopCode() {
 }
 
 // Get past commands via keyboard
-const fetchCmd = (e: KeyboardEvent) => {
+function fetchCmd(e: KeyboardEvent) {
     if (e.key == "ArrowUp") {
         if (cmdLineStackPointer == -1) return;
         cmdLineStackPointer = clamp(cmdLineStackPointer - 1, 0, cmdLineStackPointer);
@@ -244,7 +334,7 @@ const fetchCmd = (e: KeyboardEvent) => {
     } else if (e.key == "Enter") {
         runCmd();
     }
-};
+}
 
 // Run ANY code
 async function runCode(code: string, stepped: boolean) {
@@ -276,26 +366,8 @@ async function runCode(code: string, stepped: boolean) {
     editor.setReadOnly(false);
 };
 
-// Cmd line input
-cmdLine.onkeydown = fetchCmd
-document.getElementById("cmd-run")!.onclick = runCmd
-
-// Start / stop buttons
-document.getElementById("code-start")!.onclick = startCode
-document.getElementById("code-stop")!.onclick = stopCode
-
-// Load new task
-taskSelector.onchange = (e: Event) => {
-    console.log();
-    console.log("🤔 Lade neue Aufgabe: " + taskSelector.value);
-    loadTask(taskSelector.value);
-};
-
-/**
- * Vizualization
- * @param p5 
- */
-export const robotSketch = (p5: p5) => {
+// Setup robot sketch
+export function robotSketch(p5: p5) {
     let bg = 0; // Background color
     const canvasDiv = document.getElementById('robot-canvas')!;
     let cam: p5.Camera;
@@ -395,8 +467,7 @@ export const robotSketch = (p5: p5) => {
         "4": XY,
     };
 
-    let numberPlates: Record<number, p5.Graphics> = {
-    };
+    let numberPlates: Record<number, p5.Graphics> = {};
 
     let zoomLevel = 1.0;
     const aspectRatio = 3 / 4;
@@ -430,20 +501,16 @@ export const robotSketch = (p5: p5) => {
         p5.background(bg);
 
         p5.orbitControl();
-        pan = p5.atan2(cam.eyeZ - cam.centerZ, cam.eyeX - cam.centerX)
-        tilt = p5.atan2(cam.eyeY - cam.centerY, p5.dist(cam.centerX, cam.centerZ, cam.eyeX, cam.eyeZ))
-        
+        pan = p5.atan2(cam.eyeZ - cam.centerZ, cam.eyeX - cam.centerX);
+        tilt = p5.atan2(cam.eyeY - cam.centerY, p5.dist(cam.centerX, cam.centerZ, cam.eyeX, cam.eyeZ));
+
         p5.push();
 
-        p5.rotateX(p5.PI * 0.4);
+        // tilt and zoom out
+        //cam.tilt(p5.PI * 0.4);
+        p5.rotateX(p5.PI * 0.5);
         p5.scale(0.8);
-        //p5.ambientLight(128, 128, 128);
-        //p5.directionalLight(255, 255, 255, 1, 1, -1)
-        // show center box
-        //p5.fill(255, 255, 0);
-        //p5.box(10, 10, 10);
 
-        // draw world
         drawWorld(world);
 
         // draw object diagrams
@@ -459,7 +526,7 @@ export const robotSketch = (p5: p5) => {
 
         p5.pop();
 
-        // draw ui
+        // draw heads up display
         drawHUD();
     };
 
@@ -469,18 +536,17 @@ export const robotSketch = (p5: p5) => {
         p5.rotateY(-pan);
         p5.rotateZ(tilt + p5.PI);
         p5.translate(HUDF, 0, 0);
-        p5.rotateY(-p5.PI/2);
+        p5.rotateY(-p5.PI / 2);
         p5.rotateZ(p5.PI);
 
         // draw UI here
-
         p5.pop();
-    }
+    };
 
     const drawCompass = (w: World) => {
         p5.push();
         p5.noStroke();
-        p5.translate(0, 0, - w.H * BLH * 0.5 - FLH);
+        p5.translate(0, 0, -w.H * BLH * 0.5 - FLH);
 
         // draw compass letters
         p5.push();
@@ -490,7 +556,7 @@ export const robotSketch = (p5: p5) => {
         p5.pop();
 
         p5.push();
-        p5.translate(- (-w.L * 0.5 - 1) * TSZ, 0, 0);
+        p5.translate(-(-w.L * 0.5 - 1) * TSZ, 0, 0);
         p5.texture(ET);
         p5.plane();
         p5.pop();
@@ -502,11 +568,11 @@ export const robotSketch = (p5: p5) => {
         p5.pop();
 
         p5.push();
-        p5.translate(0, - (-w.W * 0.5 - 1) * TSZ, 0);
+        p5.translate(0, -(-w.W * 0.5 - 1) * TSZ, 0);
         p5.texture(ST);
         p5.plane();
         p5.pop();
-        
+
         p5.pop();
     };
 
@@ -520,19 +586,19 @@ export const robotSketch = (p5: p5) => {
 
     const drawRobots = (w: World) => {
         p5.push();
-        p5.translate((1-w.L) * 0.5 * TSZ, (1-w.W) * 0.5 * TSZ, (1-w.H) * 0.5 * BLH);
+        p5.translate((1 - w.L) * 0.5 * TSZ, (1 - w.W) * 0.5 * TSZ, (1 - w.H) * 0.5 * BLH);
         for (const [i, r] of w.robots.entries()) {
             // do the drawing
             p5.push();
             p5.translate(0, 0, 5 * p5.abs(p5.sin(i + p5.frameCount * 0.1)));
             const f = w.getField(r.pos.x, r.pos.y)!;
             p5.translate(
-                r.pos.x * TSZ, 
-                r.pos.y * TSZ, 
+                r.pos.x * TSZ,
+                r.pos.y * TSZ,
                 (f.blocks.length - 0.5) * BLH
             );
             p5.rotateZ(2 * p5.PI * r.dir2Angle() / 360);
-            
+
             drawSingleRobot(r);
 
             p5.pop();
@@ -574,7 +640,7 @@ export const robotSketch = (p5: p5) => {
         p5.pop();
 
         // eye
-        p5.translate(0, 0, RBH * 0.1)
+        p5.translate(0, 0, RBH * 0.1);
 
         p5.push();
         p5.noStroke();
@@ -633,7 +699,7 @@ export const robotSketch = (p5: p5) => {
 
     const drawWorldFields = (w: World) => {
         p5.push();
-        p5.translate((1-w.L) * 0.5 * TSZ, (1-w.W) * 0.5 * TSZ);
+        p5.translate((1 - w.L) * 0.5 * TSZ, (1 - w.W) * 0.5 * TSZ);
         for (const [y, line] of w.fields.entries()) {
             for (const [x, field] of line.entries()) {
                 p5.push();
@@ -649,8 +715,8 @@ export const robotSketch = (p5: p5) => {
 
     const drawField = (f: Field) => {
         p5.push();
-        p5.translate(0, 0, (1-f.H) * 0.5 * BLH);
-        
+        p5.translate(0, 0, (1 - f.H) * 0.5 * BLH);
+
         // field goal
         drawGoalStatus(f);
 
@@ -674,7 +740,7 @@ export const robotSketch = (p5: p5) => {
             p5.pop();
         }
 
-        
+
         for (const [z, block] of f.blocks.entries()) {
             p5.push();
             p5.translate(0, 0, z * BLH);
@@ -727,10 +793,10 @@ export const robotSketch = (p5: p5) => {
                 p5.scale(0.5);
                 p5.rotateZ(p5.frameCount * 0.02 + h);
                 p5.translate(
-                    0, 
-                    0, 
+                    0,
+                    0,
                     p5.sin(p5.frameCount * 0.05) * BLH * 0.4 + BLH * 0.5
-                )
+                );
                 p5.fill(MARKER2COLOR[f.goalMarker]);
                 p5.stroke(0);
                 p5.box(MSZ, MSZ, MRH);
@@ -752,13 +818,13 @@ export const robotSketch = (p5: p5) => {
         }
         p5.box(TSZ, TSZ, f.H * BLH);
         p5.pop();
-    }
+    };
 
     const drawGoalStatus = (f: Field) => {
         if (f.isEmpty) return;
         p5.push();
-        p5.translate(0, 0, (- FLH));
-        p5.translate(0, 0, -2*FLH);
+        p5.translate(0, 0, (-FLH));
+        p5.translate(0, 0, -2 * FLH);
         p5.rotateX(p5.PI * 0.5);
         p5.noStroke();
 
@@ -769,11 +835,11 @@ export const robotSketch = (p5: p5) => {
         }
         p5.box(TSZ * 0.4, FLH, TSZ * 0.4);
         p5.pop();
-    }
+    };
 
 }
 
-export const robotView = new p5(robotSketch, document.body);
+const robotView = new p5(robotSketch, document.body);
 
 /**
  * Start app

@@ -1,5 +1,5 @@
 import { ParserError } from "../errors";
-import { ClassDefinition, ForBlock, IfElseBlock, Program, Stmt, WhileBlock } from "../language/frontend/ast";
+import { BinaryExpr, ClassDefinition, Expr, ForBlock, IfElseBlock, Program, Stmt, UnaryExpr, WhileBlock } from "../language/frontend/ast";
 
 // Type alias
 const TYPE2GER: Record<string, string> = {
@@ -64,9 +64,9 @@ function structure(astNode: Stmt): string {
         case "Identifier":
             return `<span class="struct-ident">${astNode.symbol}</span>`
         case "BinaryExpr":
-            return `(${structure(astNode.left)} ${translateOperator(astNode.operator)} ${structure(astNode.right)})`
+            return structureBinaryExpr(astNode);
         case "UnaryExpr":
-            return `${translateOperator(astNode.operator)} ${structure(astNode.right)}`
+            return structureUnaryExpr(astNode);
         case "AssignmentExpr":
             return `${structure(astNode.assigne)} ist ${structure(astNode.value)}`
         case "CallExpr":
@@ -76,9 +76,9 @@ function structure(astNode: Stmt): string {
         case "VarDeclaration":
             return `<span class="struct-type">${TYPE2GER[astNode.type]}</span> <span class="struct-ident">${astNode.ident}</span> ist ${structure(astNode.value)}`
         case "ObjDeclaration":
-            return `Objekt ${astNode.ident} als ${astNode.type}`
+            return `<span class="struct-type">Objekt</span> <span class="struct-ident">${astNode.ident}</span> als <span class="struct-classtype">${astNode.classname}</span>`
         case "ShowCommand":
-            return `<span class="struct-cmd">zeig</span> ${astNode.values.map(structure).join(" ")}`
+            return `<span class="struct-cmd">zeig</span> ${astNode.values.map(structure).join(", ")}`
         case "FunctionDefinition":
             const funcHandle = `${astNode.name}(${astNode.params.map((p) => p.ident).join(", ")})`
             sections.push(`<div class="struct-program">Funktion: ${funcHandle} ${structureSequence(astNode.body)}</div>`);
@@ -100,6 +100,28 @@ function structure(astNode: Stmt): string {
         default:
             return `<span>&lt${astNode.kind}&gt</span>`
     }
+}
+
+function encapsulateExpr(astNode: Expr, right = false) {
+    let expr = structure(astNode)
+
+    if (astNode.kind == "BinaryExpr" || (astNode.kind == "UnaryExpr" && right))
+        return "(" + expr + ")";
+    return expr;
+}
+
+function structureBinaryExpr(astNode: BinaryExpr) {
+    let rightSide = encapsulateExpr(astNode.right, true);
+    let leftSide = encapsulateExpr(astNode.left);
+    
+    return `${leftSide} ${translateOperator(astNode.operator)} ${rightSide}`
+}
+
+function structureUnaryExpr(astNode: UnaryExpr) {
+    let rightSide = encapsulateExpr(astNode.right);
+    if (astNode.operator.length > 1) rightSide = " " + rightSide; // pad for multicharacter operators
+    
+    return `${astNode.operator}${rightSide}`
 }
 
 function structureSequence(body: Stmt[]): string {

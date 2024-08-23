@@ -49,7 +49,7 @@ export function* evaluate(
         case "VarDeclaration":
             return yield* eval_var_declaration(astNode, env);
         case "ObjDeclaration":
-            return eval_obj_declaration(astNode, env);
+            return yield* eval_obj_declaration(astNode, env);
         case "FunctionDefinition":
             return eval_fn_definition(astNode, env);
         case "ExtMethodDefinition":

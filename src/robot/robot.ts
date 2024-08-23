@@ -1,7 +1,7 @@
 import { RuntimeError } from "../errors";
 import Environment from "../language/runtime/environment";
-import { ObjectVal, MK_BOOL, MK_STRING, MK_NULL, MK_NATIVE_FN, MK_NUMBER, StringVal } from "../language/runtime/values";
-import { lerp, Vec2 } from "./utils";
+import { MK_BOOL, MK_STRING, MK_NATIVE_FN, MK_NUMBER } from "../language/runtime/values";
+import { Vec2 } from "./utils";
 import { BlockType, CHAR2BLOCK, CHAR2MARKER, Field, MarkerType, World } from "./world";
 
 export const DIR2GER: Record<string, string> = {
@@ -166,10 +166,6 @@ export function declareRobot(r: Robot, varname: string, env: Environment): void 
     env.declareVar(varname, { type: "object", env: karol_env, classname: "Roboter" }, true);
 }
 
-function sleep(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 export class Robot {
     pos: Vec2;
     moveH: number;
@@ -182,7 +178,7 @@ export class Robot {
         this.pos = new Vec2(x, y);
         this.moveH = 0.0;
         if (!["N", "E", "S", "W"].includes(dir))
-            throw new RuntimeError(`Roboterfehler: '${dir}' ist keine valide Richtung!`);
+            throw new RuntimeError(`${name}: '${dir}' ist keine valide Richtung!`);
         this.dir = dir;
         this.name = name;
         this.index = index;
@@ -308,7 +304,7 @@ export class Robot {
             }
             if (field.blocks[field.blocks.length - 1] == b) return true;
             return false;
-        } catch(e) {
+        } catch {
             return false;
         }
     }

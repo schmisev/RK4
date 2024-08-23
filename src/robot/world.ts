@@ -2,7 +2,7 @@ import { RuntimeError, WorldError } from "../errors";
 import Environment from "../language/runtime/environment";
 import { MK_BOOL, MK_NATIVE_FN, MK_NUMBER } from "../language/runtime/values";
 import { declareRobot, Robot } from "./robot";
-import { rndi, Vec2 } from "./utils";
+import { rndi } from "./utils";
 
 export enum BlockType {
     r, g, b, y
