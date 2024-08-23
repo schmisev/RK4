@@ -287,8 +287,8 @@ button:active {
 }
 
 .struct-class {
-    width: 50%;
-    float: left;
+    margin-left: 15%;
+    width: 70%;
     box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, .2);
     background-color: whitesmoke;
     outline: 2px black solid;
@@ -370,16 +370,25 @@ button:active {
     text-align: center;
     font-weight: bold;
     padding: 5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .struct-attributes {
     outline: 1px black solid;
     padding: 5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .struct-methods {
     outline: 1px black solid;
     padding: 5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .struct-ident {

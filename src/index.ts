@@ -155,9 +155,10 @@ function loadFile(evt: InputEvent) {
         //console.log(event.target.result);
         const parts = file.name.split(".");
         const ext = parts.pop();
+        if (!ext) return;
         const justName = parts.join();
 
-        switch (ext) {
+        switch (ext.toLowerCase()) {
             case "rk":
                 console.log(`Lade Programm '${justName}'`);
                 editor.setValue(event.target.result);
@@ -172,6 +173,15 @@ function loadFile(evt: InputEvent) {
                 } satisfies Task)
                 taskSelector.selectedIndex = 0;
                 break;
+            case "json":
+                console.log(`Lade Aufgabe aus '${justName}'`);
+                try {
+                    const newTask: Task = JSON.parse(event.target.result) satisfies Task;
+                    loadRawTask("AX.X", newTask);
+                } catch {
+                    console.log(`Die Aufgabe konnte nicht geladen werden.`);
+                    console.log(`Überprüfe das Dateienformat!`);
+                }
             default:
                 console.log("Dieses Dateienformat ist nicht unterstützt!");
         }
