@@ -46,6 +46,7 @@ button:active {
 
 .text {
     padding-left: 10px;
+    padding-right: 10px;
 }
 
 .code-like {
@@ -395,6 +396,34 @@ button:active {
 
 .struct-text {
     padding: 2px;
+}
+
+.struct-tooltip {
+    position: relative;
+    display: inline-block;
+    text-decoration: underline 2px dotted;
+}
+
+.struct-tooltip .tooltip {
+    visibility: hidden;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    padding: 5px;
+    border-radius: 6px;
+    
+    /* Position the tooltip text - see examples below! */
+    position: absolute;
+    z-index: 1;
+
+    width: 120px;
+    bottom: 100%;
+    left: 50%;
+    margin-left: -60px; /* Use half of the width (120/2 = 60), to center the tooltip */
+}
+
+.struct-tooltip:hover .tooltip {
+    visibility: visible;
 }
 
 /* objectigrams */

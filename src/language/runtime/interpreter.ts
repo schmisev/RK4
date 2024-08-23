@@ -51,7 +51,7 @@ export function* evaluate(
         case "ObjDeclaration":
             return yield* eval_obj_declaration(astNode, env);
         case "FunctionDefinition":
-            return eval_fn_definition(astNode, env);
+            return yield* eval_fn_definition(astNode, env);
         case "ExtMethodDefinition":
             return eval_ext_method_definition(astNode, env);
         case "ClassDefinition":

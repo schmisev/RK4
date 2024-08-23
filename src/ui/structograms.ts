@@ -46,7 +46,7 @@ function structure(astNode: Stmt): string {
     const view = document.getElementById("diagram-canvas")!;
     switch (astNode.kind) {
         case "Program":
-            return `<div class="struct-program">Hauptprogramm${structureSequence(astNode.body)}</div>`
+            return structureProgram(astNode);
         case "IfElseBlock":
             return structureIfElse(astNode);
         case "WhileBlock":
@@ -110,6 +110,18 @@ function encapsulateExpr(astNode: Expr, right = false) {
     return expr;
 }
 
+function makeTooltip(txt: string, tt: string) {
+    return `<span class="struct-tooltip">${txt}<span class="tooltip">${tt}</span></span>`;
+}
+
+function structureProgram(astNode: Program) {
+    return `<div class="struct-program">
+            ${makeTooltip("Hauptprogramm", "Das Hauptprogramm wird zuerst ausgeführt!")}
+            </span>
+            ${structureSequence(astNode.body)}
+            </div>`
+}
+
 function structureBinaryExpr(astNode: BinaryExpr) {
     let rightSide = encapsulateExpr(astNode.right, true);
     let leftSide = encapsulateExpr(astNode.left);
@@ -137,15 +149,18 @@ function structureSequence(body: Stmt[]): string {
 }
 
 function structureWhile(node: WhileBlock): string {
+    let cond = structure(node.condition);
     let result = 
-    `wiederhole solange ${structure(node.condition)}
+    `wiederhole ${makeTooltip("solange", "Die folgenden Anweisungen werden immer wieder ausgeführt, bis die Bedingung (" + cond + ") nicht mehr wahr ist!")}
+     ${cond}
         <div class="struct-while">${structureSequence(node.body)}</div>`
     return result;
 }
 
 function structureFor(node: ForBlock): string {
+    let count = structure(node.counter)
     let result = 
-    `wiederhole ${structure(node.counter)} mal
+    `wiederhole ${count} ${makeTooltip("mal", "Die folgenden Anweisungen werden so oft ausgeführt wie der Zahlenwert von (" + count) + ")"}
         <div class="struct-while">${structureSequence(node.body)}</div>`
     return result;
 }

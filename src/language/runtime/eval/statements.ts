@@ -59,7 +59,7 @@ export function* eval_obj_declaration(
     }
 
     for (const m of cl.methods) {
-        eval_fn_definition(m, scope);
+        yield* eval_fn_definition(m, scope);
     }
 
     const obj: ObjectVal = {
@@ -70,10 +70,10 @@ export function* eval_obj_declaration(
     return env.declareVar(decl.ident, obj, true);
 }
 
-export function eval_fn_definition(
+export function* eval_fn_definition(
     def: FunctionDefinition,
     env: Environment
-): RuntimeVal {
+): SteppedEval<RuntimeVal> {
     const fn: FunctionVal = {
         type: "function",
         name: def.name,
