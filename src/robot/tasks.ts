@@ -1,4 +1,6 @@
-
+/**
+ * Interface for tasks
+ */
 export interface Task {
     title: string,
     description: string,
@@ -6,14 +8,23 @@ export interface Task {
     preload: string,
 }
 
-export const STD_WORLD = `6;;;;
+/**
+ * Standard world
+ */
+export const STD_WORLD = `x;4;4;6;
 S;_;_;_
 _;_;_;_
 _;_;_;_
 _;_;_;_`
 
+/**
+ * Standard preload code, should be empty
+ */
 export const STD_PRELOAD = "\n";
 
+/**
+ * Test code using pretty much all language features
+ */
 export const TEST_CODE = `# Großer Testcode
 [ Funktionsdefinition ]
 Funktion pow(Zahl basis, Zahl exponent)
@@ -196,4 +207,7 @@ _;rr;_;#;_
     }
 } satisfies Record<string, Task>;
 
+/**
+ * Default task loaded on startup
+ */
 export const DEFAULT_TASK: keyof typeof TASKS = "A0.1";
