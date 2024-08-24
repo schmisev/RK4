@@ -1,4 +1,5 @@
 import { RuntimeError } from "../../errors";
+import { Trampoline, jump, jumpAround, jumpBind, land } from "./trampoline";
 import { ClassVal, MK_STRING, MethodVal, ObjectVal } from "./values";
 import { MK_BOOL, MK_NATIVE_FN, MK_NULL, MK_NUMBER, RuntimeVal } from "./values";
 
@@ -52,31 +53,6 @@ export function declareGlobalEnv(): GlobalEnvironment {
     ), true);
     env.declareVar("Roboter", env.robotClass, true);
     return env;
-}
-
-type TrampolineContiuation<T> = () => Trampoline<T>;
-type Trampoline<T> = T | TrampolineContiuation<T>;
-type NoFunction<T> = [T] extends [(...args: any[]) => any] ? never : T;
-function land<T>(t: NoFunction<T>): Trampoline<T> {
-    return t;
-}
-function jump<T>(t: () => Trampoline<T>): Trampoline<T> {
-    return t;
-}
-function jumpBind<U, T>(u: Trampoline<U>, thenT: (u: U) => Trampoline<T>): Trampoline<T> {
-    if (typeof u === "function") {
-        const ucont = u as TrampolineContiuation<U>;
-        return jump(() => jumpBind(ucont(), thenT));
-    }
-    return thenT(u);
-}
-function jumpAround<T>(t: Trampoline<T>): T {
-    let result = t;
-    while (typeof result === "function") {
-        const next = result as TrampolineContiuation<T>; // This cast is okay, as long as you use the `land` and `jump` combinators.
-        result = next();
-    }
-    return result as T;
 }
 
 interface ScopeMemberDefinition {
