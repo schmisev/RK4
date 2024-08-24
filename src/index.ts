@@ -1,5 +1,7 @@
 import * as p5 from 'p5';
 
+import "./ui/panels";
+
 import Parser from "./language/frontend/parser";
 import { BlockType, CB, CBOT, CBOT2, CG, CR, CY, declareWorld, Field, MarkerType, World } from "./robot/world";
 import Environment, { declareGlobalEnv } from "./language/runtime/environment";
@@ -44,11 +46,11 @@ console.log = (function (old_log, log: HTMLElement) {
 
 // Fetch HTML elements
 // Fetch object overlay & object bar
-let objOverlay = document.getElementById("object-overlay")!;
-let objBar = document.getElementById("object-bar")!;
+const objOverlay = document.getElementById("object-overlay")!;
+const objBar = document.getElementById("object-bar")!;
 
 // Setup editors
-let preloadEditor = ace.edit("preload-editor", {
+const preloadEditor = ace.edit("preload-editor", {
     minLines: 1,
     value: preloadCode,
     mode: "ace/mode/RKScript",
@@ -56,7 +58,7 @@ let preloadEditor = ace.edit("preload-editor", {
     readOnly: true,
 });
 
-let editor = ace.edit("code-editor", {
+const editor = ace.edit("code-editor", {
     minLines: 30,
     mode: "ace/mode/RKScript",
 	theme: "ace/theme/chrome",
@@ -68,12 +70,12 @@ let editor = ace.edit("code-editor", {
 });
 
 // Fetch code error bar
-let codeError = document.getElementById("code-error")!;
-let errorMarkers: number[] = [];
+const codeError = document.getElementById("code-error")!;
+const errorMarkers: number[] = [];
 
 // Setup command line
-let cmdLine = document.getElementById("cmd-line") as HTMLInputElement;
-let cmdLineStack: string[] = [];
+const cmdLine = document.getElementById("cmd-line") as HTMLInputElement;
+const cmdLineStack: string[] = [];
 let cmdLineStackPointer = -1;
 
 // Fetch task description
@@ -118,13 +120,13 @@ document.getElementById("load-code")!.onclick = () => fileInput.click();
 
 // Downloading
 function downloadCode() {
-    let code = editor.getValue();
-    let filename = taskName + ".rk"
+    const code = editor.getValue();
+    const filename = taskName + ".rk"
     downloadTextFile(filename, code);
 }
 
 function downloadTextFile(filename: string, text: string) {
-    var element = document.createElement('a');
+    const element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
     element.setAttribute('download', filename);
 
@@ -182,6 +184,7 @@ function loadFile(evt: InputEvent) {
                     console.log(`Die Aufgabe konnte nicht geladen werden.`);
                     console.log(`Überprüfe das Dateienformat!`);
                 }
+                break;
             default:
                 console.log("Dieses Dateienformat ist nicht unterstützt!");
         }
@@ -217,7 +220,7 @@ async function updateIDE() {
     if (!code) return;
     try {
         program = parse.produceAST(code);
-        showStructogram("diagram-canvas", program);
+        showStructogram(program);
     } catch (e) {
         let errorMarker = "error-marker";
         
@@ -228,7 +231,7 @@ async function updateIDE() {
         }
 
         setErrorBar(`❌ ${e.message} (Zeile ${e.lineIndex})`, "lightcoral");
-        let markerId = editor.session.addMarker(new ace.Range(e.lineIndex, 0, e.lineIndex, 10), errorMarker, 'fullLine');
+        const markerId = editor.session.addMarker(new ace.Range(e.lineIndex, 0, e.lineIndex, 10), errorMarker, 'fullLine');
         errorMarkers.push(markerId);
     }
 }
@@ -394,9 +397,6 @@ export function robotSketch(p5: p5) {
     const RBH = 60; // Robot body height
     const RBW = 35;
 
-    let OFFX: number; // x-offset of bounding box
-    let OFFY: number; // x-offset of bounding box 
-
     const HUDF: number = 100; // HUD-factor
     const SQHUDF: number = p5.sqrt(HUDF);
 
@@ -477,22 +477,17 @@ export function robotSketch(p5: p5) {
         "4": XY,
     };
 
-    let numberPlates: Record<number, p5.Graphics> = {};
-
-    let zoomLevel = 1.0;
-    const aspectRatio = 3 / 4;
+    const numberPlates: Record<number, p5.Graphics> = {};
 
     const resizeToParent = () => {
-        let width = canvasDiv.offsetWidth;
-        let height = canvasDiv.offsetHeight;
+        const width = canvasDiv.offsetWidth;
+        const height = canvasDiv.offsetHeight;
         p5.resizeCanvas(width, height);
     };
 
     p5.setup = () => {
-        let width = canvasDiv.offsetWidth;
-        let height = canvasDiv.offsetHeight;
-        OFFX = canvasDiv.getBoundingClientRect().left;
-        OFFY = canvasDiv.getBoundingClientRect().top;
+        const width = canvasDiv.offsetWidth;
+        const height = canvasDiv.offsetHeight;
         const cvs = p5.createCanvas(width, height, p5.WEBGL);
         cam = p5.createCamera();
         cvs.parent("robot-canvas");

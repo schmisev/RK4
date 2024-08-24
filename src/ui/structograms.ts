@@ -28,18 +28,19 @@ let sections: string[] = [];
 let classes: string[] = [];
 
 // Structograms
-export function showStructogram(div: string, program: Program) {
-    const view = document.getElementById(div)!;
+export function showStructogram(program: Program) {
+    const structogramView = document.getElementById("structogram-diagram-canvas")!;
+    const classView = document.getElementById("class-diagram-canvas")!;
     
     classes = [];
     sections = [];
     sections.push(structure(program));
 
-    view.innerHTML = ""; // reset view
-    view.innerHTML = 
-    sections.join("<br>") + 
-    `<br><div class="wsr lc30 text" style="text-align: center; font-weight: bold;">Klassenkarten</div><br>` + 
-    classes.join("<br>") + "<br>";
+    structogramView.innerHTML = ""; // reset view
+    structogramView.innerHTML = sections.join("<br>");
+
+    classView.innerHTML = ""; // reset view
+    classView.innerHTML = classes.join("<br>");
 }
 
 function structure(astNode: Stmt): string {
@@ -103,7 +104,7 @@ function structure(astNode: Stmt): string {
 }
 
 function encapsulateExpr(astNode: Expr, right = false) {
-    let expr = structure(astNode)
+    const expr = structure(astNode)
 
     if (astNode.kind == "BinaryExpr" || (astNode.kind == "UnaryExpr" && right))
         return "(" + expr + ")";
@@ -123,8 +124,8 @@ function structureProgram(astNode: Program) {
 }
 
 function structureBinaryExpr(astNode: BinaryExpr) {
-    let rightSide = encapsulateExpr(astNode.right, true);
-    let leftSide = encapsulateExpr(astNode.left);
+    const rightSide = encapsulateExpr(astNode.right, true);
+    const leftSide = encapsulateExpr(astNode.left);
     
     return `${leftSide} ${translateOperator(astNode.operator)} ${rightSide}`
 }
@@ -149,8 +150,8 @@ function structureSequence(body: Stmt[]): string {
 }
 
 function structureWhile(node: WhileBlock): string {
-    let cond = structure(node.condition);
-    let result = 
+    const cond = structure(node.condition);
+    const result = 
     `wiederhole ${makeTooltip("solange", "Die folgenden Anweisungen werden immer wieder ausgeführt, bis die Bedingung <u>" + cond + "</u> nicht mehr wahr ist!")}
      ${cond}
         <div class="struct-while">${structureSequence(node.body)}</div>`
@@ -158,21 +159,21 @@ function structureWhile(node: WhileBlock): string {
 }
 
 function structureFor(node: ForBlock): string {
-    let count = structure(node.counter)
-    let result = 
+    const count = structure(node.counter)
+    const result = 
     `wiederhole ${count} ${makeTooltip("mal", "Die folgenden Anweisungen werden sooft ausgeführt, wie es in die Anzahl <u>" + count + "</u> vorgibt!")}
         <div class="struct-while">${structureSequence(node.body)}</div>`
     return result;
 }
 
 function structureIfElse(node: IfElseBlock): string {
-    let cond = structure(node.condition);
-    let result =
+    const cond = structure(node.condition);
+    const result =
     `
     <div class="struct-ifelse">${cond} ? <br><br>
         <div style="display: flex;">
             <div class="struct-column" style="padding-left: 5px; text-align: left;">${makeTooltip("wahr", "Wenn die Bedingung <u>" + cond + "</u> zutrifft, wird die linke Spalte ausgeführt!")}</div>
-            <div class="struct-column" style="padding-right: 5px; text-align: right;">${makeTooltip("falsch", "Wenn die Bedingung <u>" + cond + "</u> nicht zutrifft, wird die rechts Spalte ausgeführt!")}</div>
+            <div class="struct-column" style="padding-right: 5px; text-align: right;">${makeTooltip("falsch", "Wenn die Bedingung <u>" + cond + "</u> nicht zutrifft, wird die rechte Spalte ausgeführt!")}</div>
         </div>
     </div>
     <div class="struct-row">
@@ -184,7 +185,7 @@ function structureIfElse(node: IfElseBlock): string {
 }
 
 function structureClass(node: ClassDefinition): string {
-    let result = 
+    const result = 
     `<div class="struct-class">
         <div class="struct-classname">
             ${node.ident}

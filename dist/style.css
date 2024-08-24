@@ -1,6 +1,6 @@
 body {
-    overflow-x: hidden;
-    font-family:Arial, Helvetica, sans-serif;
+    /*overflow-x: hidden;*/
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 code {
@@ -44,6 +44,15 @@ button:active {
     overflow: hidden;
 }
 
+.dgr {
+    background-color: gray;
+    color: #fff;
+    border-radius: 5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
 .slr {
     background-color: salmon;
     border-radius: 5px;
@@ -63,16 +72,72 @@ button:active {
     font-weight: bold;
 }
 
+.panel-row {
+    display: flex;
+}
+
+.left-panel {
+    overflow: hidden;
+    /*resize: horizontal;*/
+    float: left;
+
+    /* Use box-sizing so that element's outerwidth will match width property */
+    box-sizing: border-box;
+    
+    /* Allow box to grow and shrink, and ensure they are all equally sized */
+    flex: 1 auto;
+}
+
+.right-panel {
+    background-color: whitesmoke;
+    min-width: 5px;
+    max-width: 100%;
+    overflow: hidden scroll;
+    scrollbar-width: thin;
+
+    /* Use box-sizing so that element's outerwidth will match width property */
+    box-sizing: border-box;
+    
+    /* Allow box to grow and shrink, and ensure they are all equally sized */
+    flex: 2;
+}
+
+.handler {
+    width: 20px;
+    padding: 0;
+    cursor: ew-resize;
+    flex: 0 0 auto;
+}
+
+.handler::before {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 100%;
+    background: gray;
+    margin: 0 auto;
+}
+
 .grid-container {
     display: grid;
     gap: 10px;
-    grid-template-columns: repeat(17, minmax(0, 1fr));
+    grid-template-columns: repeat(13, minmax(0, 1fr));
     grid-auto-rows: 30px;
     height: auto;
 }
 
+.grid-container-right {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(5, 1fr);
+    grid-auto-rows: 30px;
+    height: auto;
+    /*align-items: center;*/
+    justify-items: center; /* adjusted */
+}
+
 .title-bar {
-    grid-column: 1 / 18;
+    grid-column: 1 / 14;
     grid-row: 1;
     overflow: hidden;
 }
@@ -165,17 +230,34 @@ button:active {
     outline: 2px black solid;
 }
 
-.diagram-title {
-    grid-column: 14 / 18;
+.debug-title {
+    grid-column: 1/6;
+    grid-row: 1;
+}
+
+.structogram-diagram-title {
+    grid-column: 1/5;
+    grid-row: 2;
+    
+}
+
+.structogram-diagram-canvas {
+    grid-column: 1/5;
+    grid-row: 3;
+    padding: 5px;
+    width: max-content;
+}
+
+.class-diagram-title {
+    grid-column: 5;
     grid-row: 2;
 }
 
-.diagram-canvas {
-    grid-column: 14 / 18;
-    grid-row: 3 / 24;
-    overflow: visible;
-    scrollbar-width: thin;
+.class-diagram-canvas {
+    grid-column: 5;
+    grid-row: 3;
     padding: 5px;
+    width: max-content;
 }
 
 .cmd-line {
@@ -293,8 +375,8 @@ button:active {
 }
 
 .struct-class {
-    margin-left: 15%;
-    width: 70%;
+    /*margin-left: 15%;*/
+    /*width: 70%;*/
     box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, .2);
     background-color: whitesmoke;
     outline: 2px black solid;
@@ -426,22 +508,23 @@ button:active {
 .struct-tooltip .tooltip {
     display: block;
     visibility: hidden;
-    background-color: black;
-    color: #fff;
-    text-align: center;
-    padding: 5px;
-    border-radius: 6px;
-    outline: 1px white solid;
+    background-color: rgba(255, 255, 255, .6);
+    backdrop-filter: blur(10px);
+    color: black;
+    text-align: left;
+    padding: 5px 10px 5px 10px;
+    border-radius: 5px;
+    outline: 1px black solid;
     box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, .2);
     
     /* Position the tooltip text - see examples below! */
     position: absolute;
     z-index: 1;
 
-    width: 250px;
-    top: 100%;
-    right: 105%;
-    margin-left: -125px; /* Use half of the width (120/2 = 60), to center the tooltip */
+    width: 200px;
+    bottom: 100%;
+    left: 50%;
+    margin-left: -100px; /* Use half of the width (120/2 = 60), to center the tooltip */
 }
 
 .struct-tooltip:hover .tooltip {
