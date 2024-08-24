@@ -1,5 +1,5 @@
-import { FunctionDefinition, ObjDeclaration, ParamDeclaration, Stmt, VarDeclaration } from "../frontend/ast";
-import { ClassPrototype, DynamicScope, Environment, StaticScope, VarHolder } from "./environment";
+import { ObjDeclaration, ParamDeclaration, Stmt, VarDeclaration } from "../frontend/ast";
+import { ClassPrototype, Environment, StaticScope, VarHolder } from "./environment";
 
 export type RuntimeVal = NullVal | NumberVal | BooleanVal | StringVal | NativeFunctionVal | FunctionVal | ClassVal | ObjectVal;
 export type ValueType = RuntimeVal["type"];

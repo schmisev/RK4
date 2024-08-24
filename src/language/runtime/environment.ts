@@ -88,10 +88,6 @@ export interface StaticScope {
     resolveVarImpl(varname: string): Trampoline<ScopeMemberDefinition | undefined>;
 }
 
-export interface DynamicScope {
-    resolveVarImpl(receiver: ObjectVal, varname: string): Trampoline<ScopeMemberDefinition | undefined>;
-}
-
 export class VarHolder {
     private variables: Map<string, RuntimeVal> = new Map();
     private constants: Set<string> = new Set();
@@ -194,7 +190,7 @@ export class BoundDynamicScope implements StaticScope {
     }
 }
 
-export class ClassPrototype implements DynamicScope {
+export class ClassPrototype {
     private _env: StaticScope;
     private _methods: Map<string, MethodVal> = new Map();
 
