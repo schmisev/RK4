@@ -44,7 +44,6 @@ export interface MethodVal {
     type: "method";
     name: string;
     params: ParamDeclaration[];
-    declenv: ClassPrototype;
     body: Stmt[];
 }
 

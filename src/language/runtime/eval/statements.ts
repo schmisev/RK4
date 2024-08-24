@@ -94,7 +94,6 @@ function eval_method_definition(
         type: "method",
         name: def.name,
         params: def.params,
-        declenv: env,
         body: def.body,
     };
 
