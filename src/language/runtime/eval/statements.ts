@@ -1,6 +1,6 @@
 import { RuntimeError } from "../../../errors";
 import { ClassDefinition, EmptyLine, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, VarDeclaration, WhileBlock } from "../../frontend/ast";
-import { ClassPrototype, Environment } from "../environment";
+import { ClassPrototype, Environment, VarHolder } from "../environment";
 import { SteppedEval, evaluate } from "../interpreter";
 import {
     RuntimeVal,
@@ -29,7 +29,7 @@ export function* eval_program(prog: Program, env: Environment) {
 export function* eval_var_declaration(
     decl: VarDeclaration,
     evalEnv: Environment,
-    declEnv: Environment = evalEnv,
+    declEnv: Environment | VarHolder = evalEnv,
 ): SteppedEval<RuntimeVal> {
     if (!decl.value) {
         throw new RuntimeError(`Kein Wert gegeben: ${JSON.stringify(decl)}`);
@@ -40,35 +40,37 @@ export function* eval_var_declaration(
             `Datentypen '${value.type}' und '${decl.type}' passen nicht zusammen!`
         );
     }
-    return declEnv.declareVar(decl.ident, value);
+    declEnv.declareVar(decl.ident, value);
+    return value;
 }
 
 export function* eval_obj_declaration(
     decl: ObjDeclaration,
     evalEnv: Environment,
-    declEnv: Environment = evalEnv,
+    declEnv: Environment | VarHolder = evalEnv,
 ): SteppedEval<RuntimeVal> {
     const cl = evalEnv.lookupVar(decl.classname);
     if (cl.type != "class")
         throw new RuntimeError(`'${decl.classname}' ist kein Klassenname!`);
-    const ownProps = new Environment();
+    const ownMembers = new VarHolder();
 
     const obj: ObjectVal = {
         type: "object",
         classname: cl.name,
-        vtable: cl.prototype,
-        env: ownProps,
+        prototype: cl.prototype,
+        ownMembers,
     };
 
     for (const attr of cl.attributes) {
         if (attr.type == "object") {
-            yield* eval_obj_declaration(attr, evalEnv, ownProps);
+            yield* eval_obj_declaration(attr, evalEnv, ownMembers);
         } else {
-            yield* eval_var_declaration(attr, evalEnv, ownProps);
+            yield* eval_var_declaration(attr, evalEnv, ownMembers);
         }
     }
 
-    return declEnv.declareVar(decl.ident, obj, true);
+    declEnv.declareVar(decl.ident, obj, true);
+    return obj;
 }
 
 export function* eval_fn_definition(
@@ -104,22 +106,17 @@ export function eval_ext_method_definition(
     def: ExtMethodDefinition,
     env: Environment
 ): RuntimeVal {
-    for (const v of env.getVarValues()) {
-        if (v.type == "object") {
-            const m: FunctionVal = {
-                type: "function",
-                name: def.name,
-                params: def.params,
-                declenv: v.env,
-                body: def.body,
-            };
-
-            if (v.classname == def.classname) {
-                v.env.declareVar(def.name, m, true);
-            }
-        }
-    }
-
+    const cls = env.lookupVar(def.classname);
+    if (cls.type != "class")
+        throw new RuntimeError(
+            `Erweiterungsmethoden können nur für Klassen definiert werden, nicht für '${cls.type}'!`
+        );
+    cls.prototype.declareMethod(def.name, {
+        type: "method",
+        body: def.body,
+        name: def.name,
+        params: def.params,
+    });
     return MK_NULL();
 }
 
@@ -131,7 +128,7 @@ export function eval_class_definition(
         throw new RuntimeError(
             `Du kannst Klassen wie '${def.ident}' nur global definieren!`
         );
-    const prototype = new ClassPrototype(undefined, env);
+    const prototype = new ClassPrototype(env);
     for (const m of def.methods) {
         eval_method_definition(m, prototype);
     }

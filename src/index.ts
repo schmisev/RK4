@@ -2,7 +2,7 @@ import * as p5 from 'p5';
 
 import Parser from "./language/frontend/parser";
 import { BlockType, CB, CBOT, CBOT2, CG, CR, CY, declareWorld, Field, MarkerType, World } from "./robot/world";
-import { Environment, declareGlobalEnv } from "./language/runtime/environment";
+import { Environment, GlobalEnvironment, declareGlobalEnv } from "./language/runtime/environment";
 import { evaluate } from "./language/runtime/interpreter";
 import { Robot } from './robot/robot';
 import { clamp, lerp } from './robot/utils';
@@ -29,7 +29,7 @@ let code = TEST_CODE;
 let worldSpec = STD_WORLD;
 
 const parse = new Parser();
-let env: Environment;
+let env: GlobalEnvironment;
 let world: World
 let program: Program;
 

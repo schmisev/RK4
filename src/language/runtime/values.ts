@@ -1,5 +1,5 @@
 import { FunctionDefinition, ObjDeclaration, ParamDeclaration, Stmt, VarDeclaration } from "../frontend/ast";
-import { ClassPrototype, DynamicScope, Environment, StaticScope } from "./environment";
+import { ClassPrototype, DynamicScope, Environment, StaticScope, VarHolder } from "./environment";
 
 export type RuntimeVal = NullVal | NumberVal | BooleanVal | StringVal | NativeFunctionVal | FunctionVal | ClassVal | ObjectVal;
 export type ValueType = RuntimeVal["type"];
@@ -58,8 +58,8 @@ export interface ClassVal {
 export interface ObjectVal {
     type: "object";
     classname: string;
-    vtable: DynamicScope,
-    env: Environment;
+    prototype: ClassPrototype,
+    ownMembers: VarHolder;
 }
 
 // MAKROS

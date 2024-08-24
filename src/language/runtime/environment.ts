@@ -1,9 +1,24 @@
 import { RuntimeError } from "../../errors";
-import { FunctionVal, MK_STRING, MethodVal, ObjectVal } from "./values";
-import { MK_BOOL, MK_NATIVE_FN, MK_NULL, MK_NUMBER, NumberVal, RuntimeVal } from "./values";
+import { ClassVal, MK_STRING, MethodVal, ObjectVal } from "./values";
+import { MK_BOOL, MK_NATIVE_FN, MK_NULL, MK_NUMBER, RuntimeVal } from "./values";
 
-export function declareGlobalEnv() {
-    const env = new Environment();
+export interface GlobalEnvironment extends Environment {
+    // global env holds some special values that we don't want to lookup by name
+    readonly robotClass: ClassVal;
+}
+
+export function declareGlobalEnv(): GlobalEnvironment {
+    class GlobalEnvironment extends Environment {
+        private _robotClass: ClassVal = {
+            type: "class",
+            name: "Roboter",
+            attributes: [],
+            declenv: this,
+            prototype: new ClassPrototype(this),
+        };
+        get robotClass() { return this._robotClass }
+    }
+    const env = new GlobalEnvironment();
     env.declareVar("wahr", MK_BOOL(true), true);
     env.declareVar("falsch", MK_BOOL(false), true);
     env.declareVar("nix", MK_NULL(), true);
@@ -26,6 +41,7 @@ export function declareGlobalEnv() {
             return MK_NUMBER(n);
         }
     ), true);
+    env.declareVar("Roboter", env.robotClass, true);
     return env;
 }
 
@@ -85,7 +101,7 @@ export function lookupVar(scope: StaticScope, varname: string): RuntimeVal {
     return varDef.get();
 }
 
-class VarHolder {
+export class VarHolder {
     private variables: Map<string, RuntimeVal> = new Map();
     private constants: Set<string> = new Set();
 
@@ -97,6 +113,12 @@ class VarHolder {
         if (constant) {
             this.constants.add(varname);
         }
+    }
+    assignVar(varname: string, value: RuntimeVal) {
+        const varDef = this.resolveVar(varname);
+        if (varDef === undefined)
+            throw new RuntimeError(`Variablenname nicht gefunden: ${varname}`);
+        varDef.set(value);
     }
     resolveVar(varname: string): ScopeMemberDefinition | undefined {
         if (!this.variables.has(varname))
@@ -111,9 +133,6 @@ class VarHolder {
             }
         }
     }
-    values(): IterableIterator<RuntimeVal> {
-        return this.variables.values();
-    }
 }
 
 export class Environment implements StaticScope {
@@ -127,10 +146,6 @@ export class Environment implements StaticScope {
 
     public isGlobal() {
         return this._parent ? false : true;
-    }
-
-    public getVarValues(): IterableIterator<RuntimeVal> {
-        return this._vars.values();
     }
 
     public declareVar(varname: string, value: RuntimeVal, constant = false): RuntimeVal {
@@ -157,31 +172,36 @@ export class Environment implements StaticScope {
     }
 }
 
+function resolveDynamicVar(varname: string, receiver: ObjectVal, fallback?: StaticScope): Trampoline<ScopeMemberDefinition | undefined> {
+    const ownVar = receiver.ownMembers.resolveVar(varname);
+    if (ownVar !== undefined)
+        return ownVar;
+    return jumpBind(receiver.prototype.resolveVarImpl(varname, receiver), (found) => {
+        if (found !== undefined)
+            return land(found);
+        if (!fallback)
+            return land(undefined)
+        return fallback.resolveVarImpl(varname);
+    });
+}
+
 export class BoundDynamicScope implements StaticScope {
     private _parent: StaticScope;
-    private _dynamic: DynamicScope;
     private _receiver: ObjectVal;
-    constructor(parent: StaticScope, scope: DynamicScope, receiver: ObjectVal) {
+    constructor(parent: StaticScope, receiver: ObjectVal) {
         this._parent = parent;
-        this._dynamic = scope;
         this._receiver = receiver;
     }
     resolveVarImpl(varname: string): Trampoline<ScopeMemberDefinition | undefined> {
-        return jumpBind(this._dynamic.resolveVarImpl(varname, this._receiver), (found) => {
-            if (found !== undefined)
-                return found;
-            return this._parent.resolveVarImpl(varname);
-        })
+        return resolveDynamicVar(varname, this._receiver, this._parent)
     }
 }
 
 export class ClassPrototype implements DynamicScope {
-    private _super?: DynamicScope;
     private _env: StaticScope;
     private _methods: Map<string, MethodVal> = new Map();
 
-    constructor(parent: DynamicScope | undefined, declEnv: StaticScope) {
-        this._super = parent;
+    constructor(declEnv: StaticScope) {
         this._env = declEnv;
     }
     public declareMethod(name: string, method: MethodVal) {
@@ -194,7 +214,7 @@ export class ClassPrototype implements DynamicScope {
         if (method !== undefined) {
             return land({
                 get: () => {
-                    const declenv = new BoundDynamicScope(this._env, this, receiver);
+                    const declenv = new BoundDynamicScope(this._env, receiver);
                     return {
                         type: "function",
                         body: method.body,
@@ -208,8 +228,12 @@ export class ClassPrototype implements DynamicScope {
                 }
             })
         }
-        if (!this._super)
-            return land(undefined);
-        return jump(() => this._super!.resolveVarImpl(varname, receiver));
+        return land(undefined);
+    }
+    public lookupVar(varname: string, receiver: ObjectVal): RuntimeVal {
+        const varDef = jumpAround(resolveDynamicVar(varname, receiver));
+        if (varDef !== undefined)
+            return varDef.get();
+        throw new RuntimeError(`Variablenname nicht gefunden: ${varname}`);
     }
 }

@@ -40,8 +40,9 @@ export function* eval_assignment_expr(
         const symbol = assigne.member.symbol;
         const obj = yield* evaluate(assigne.container, env);
         expectObject(obj, "nur Objekten können Eigenschaften zugewiesen werden");
-        const objenv = obj.env;
-        return objenv.assignVar(symbol, yield* evaluate(node.value, env));
+        const value = yield* evaluate(node.value, env);
+        obj.ownMembers.assignVar(symbol, value);
+        return value;
     }
 
     // regular assigments
@@ -253,6 +254,5 @@ export function* eval_member_expr(
 ): SteppedEval<RuntimeVal> {
     const obj = yield* evaluate(expr.container, env);
     expectObject(obj, "nur Objekte haben Attribute und Methoden!");
-    const ref = eval_identifier(expr.member, obj.env);
-    return ref;
+    return obj.prototype.lookupVar(expr.member.symbol, obj);
 }
