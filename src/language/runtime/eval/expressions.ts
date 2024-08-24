@@ -1,6 +1,6 @@
 import { RuntimeError } from "../../../errors";
 import { Identifier, BinaryExpr, UnaryExpr, AssignmentExpr, CallExpr, MemberExpr } from "../../frontend/ast";
-import Environment from "../environment";
+import { Environment } from "../environment";
 import { SteppedEval, evaluate } from "../interpreter";
 import {
     RuntimeVal,

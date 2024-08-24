@@ -1,6 +1,6 @@
 import { RuntimeVal, MK_NUMBER, MK_STRING, MK_BOOL, MK_NULL } from "./values";
 import { Stmt } from "../frontend/ast";
-import Environment from "./environment";
+import { Environment } from "./environment";
 import { eval_identifier, eval_binary_expr, eval_assignment_expr, eval_unary_expr, eval_call_expr, eval_member_expr } from "./eval/expressions";
 import { eval_fn_definition, eval_empty_line, eval_for_block, eval_if_else_block, eval_program, eval_show_command, eval_var_declaration, eval_while_block, eval_class_definition, eval_obj_declaration, eval_return_command, eval_ext_method_definition } from "./eval/statements";
 import { Break, Continue } from "./eval/errors";

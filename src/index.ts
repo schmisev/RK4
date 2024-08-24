@@ -2,7 +2,7 @@ import * as p5 from 'p5';
 
 import Parser from "./language/frontend/parser";
 import { BlockType, CB, CBOT, CBOT2, CG, CR, CY, declareWorld, Field, MarkerType, World } from "./robot/world";
-import Environment, { declareGlobalEnv } from "./language/runtime/environment";
+import { Environment, declareGlobalEnv } from "./language/runtime/environment";
 import { evaluate } from "./language/runtime/interpreter";
 import { Robot } from './robot/robot';
 import { clamp, lerp } from './robot/utils';
@@ -371,6 +371,7 @@ async function runCode(code: string, stepped: boolean) {
         }
     } catch (runtimeError) {
         console.log("⚠️ " + runtimeError.message);
+        console.error(runtimeError.stack);
     }
     isRunning = false;
     editor.setReadOnly(false);

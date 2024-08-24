@@ -1,5 +1,5 @@
 import { RuntimeError, WorldError } from "../errors";
-import Environment from "../language/runtime/environment";
+import { ClassPrototype, Environment } from "../language/runtime/environment";
 import { MK_BOOL, MK_NATIVE_FN, MK_NUMBER } from "../language/runtime/values";
 import { declareRobot, Robot } from "./robot";
 import { rndi } from "./utils";
@@ -50,7 +50,7 @@ export const CHAR2MARKER: Record<string, MarkerType> = {
 }
 
 export function declareWorld(w: World, varname: string, env: Environment): void {
-    const world_env = new Environment(env);
+    const world_env = new Environment();
     
     world_env.declareVar("fertig", MK_NATIVE_FN(
         (args, scope) => {
@@ -69,7 +69,8 @@ export function declareWorld(w: World, varname: string, env: Environment): void 
     ), true);
 
     // add world to environment
-    env.declareVar(varname, { type: "object", env: world_env, classname: "Welt" }, true);
+    const world_proto = new ClassPrototype(undefined, env);
+    env.declareVar(varname, { type: "object", classname: "Welt", vtable: world_proto, env: world_env }, true);
 }
 
 export class World {
