@@ -1,5 +1,5 @@
-import { FunctionDefinition, ObjDeclaration, ParamDeclaration, Stmt, VarDeclaration } from "../frontend/ast";
-import Environment from "./environment";
+import { ObjDeclaration, ParamDeclaration, Stmt, VarDeclaration } from "../frontend/ast";
+import { ClassPrototype, Environment, StaticScope, VarHolder } from "./environment";
 
 export type RuntimeVal = NullVal | NumberVal | BooleanVal | StringVal | NativeFunctionVal | FunctionVal | ClassVal | ObjectVal;
 export type ValueType = RuntimeVal["type"];
@@ -35,7 +35,15 @@ export interface FunctionVal {
     type: "function";
     name: string;
     params: ParamDeclaration[];
-    declenv: Environment;
+    declenv: StaticScope;
+    body: Stmt[];
+}
+
+// A method is an "unbound" function, i.e. without a receiver. Crucially, only a runtime value when it gets bound to a receiver
+export interface MethodVal {
+    type: "method";
+    name: string;
+    params: ParamDeclaration[];
     body: Stmt[];
 }
 
@@ -43,14 +51,14 @@ export interface ClassVal {
     type: "class";
     name: string;
     attributes: (VarDeclaration | ObjDeclaration)[];
-    methods: FunctionDefinition[];
+    prototype: ClassPrototype,
     declenv: Environment;
 }
 
 export interface ObjectVal {
     type: "object";
-    classname: string;
-    env: Environment;
+    cls: ClassVal,
+    ownMembers: VarHolder;
 }
 
 // MAKROS

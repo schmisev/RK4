@@ -1,6 +1,6 @@
 import { RuntimeError, WorldError } from "../errors";
-import Environment from "../language/runtime/environment";
-import { MK_BOOL, MK_NATIVE_FN, MK_NUMBER } from "../language/runtime/values";
+import { ClassPrototype, Environment, GlobalEnvironment, VarHolder } from "../language/runtime/environment";
+import { MK_BOOL, MK_NATIVE_FN, MK_NUMBER, RuntimeVal } from "../language/runtime/values";
 import { declareRobot, Robot } from "./robot";
 import { rndi } from "./utils";
 
@@ -49,9 +49,17 @@ export const CHAR2MARKER: Record<string, MarkerType> = {
     "gelb": MarkerType.Y,
 }
 
-export function declareWorld(w: World, varname: string, env: Environment): void {
-    const world_env = new Environment(env);
-    
+export function declareWorld(w: World, varname: string, env: GlobalEnvironment): void {
+    const world_env = new VarHolder();
+    const world: RuntimeVal = {
+        type: "object",
+        cls: env.worldClass,
+        ownMembers: world_env,
+    };
+
+    // add world to environment
+    env.declareVar(varname, world, true);
+    // declare its properties
     world_env.declareVar("fertig", MK_NATIVE_FN(
         (args, scope) => {
             if (args.length != 0)
@@ -67,9 +75,6 @@ export function declareWorld(w: World, varname: string, env: Environment): void 
             return MK_NUMBER(w.getStageIndex() + 1);
         }
     ), true);
-
-    // add world to environment
-    env.declareVar(varname, { type: "object", env: world_env, classname: "Welt" }, true);
 }
 
 export class World {
@@ -232,7 +237,7 @@ export class World {
         this.robots.push(bot);
     }
 
-    declareAllRobots(env: Environment) {
+    declareAllRobots(env: GlobalEnvironment) {
         for (const r of this.robots) {
             declareRobot(r, r.name, env);
         }
