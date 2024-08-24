@@ -57,8 +57,7 @@ export interface ClassVal {
 
 export interface ObjectVal {
     type: "object";
-    classname: string;
-    prototype: ClassPrototype,
+    cls: ClassVal,
     ownMembers: VarHolder;
 }
 

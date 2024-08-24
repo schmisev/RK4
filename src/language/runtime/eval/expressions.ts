@@ -41,7 +41,7 @@ export function* eval_assignment_expr(
         const obj = yield* evaluate(assigne.container, env);
         expectObject(obj, "nur Objekten können Eigenschaften zugewiesen werden");
         const value = yield* evaluate(node.value, env);
-        obj.ownMembers.assignVar(symbol, value);
+        obj.cls.prototype.assignVar(obj, symbol, value);
         return value;
     }
 
@@ -254,5 +254,5 @@ export function* eval_member_expr(
 ): SteppedEval<RuntimeVal> {
     const obj = yield* evaluate(expr.container, env);
     expectObject(obj, "nur Objekte haben Attribute und Methoden!");
-    return obj.prototype.lookupVar(expr.member.symbol, obj);
+    return obj.cls.prototype.lookupVar(obj, expr.member.symbol);
 }

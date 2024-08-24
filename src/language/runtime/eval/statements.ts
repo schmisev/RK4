@@ -56,8 +56,7 @@ export function* eval_obj_declaration(
 
     const obj: ObjectVal = {
         type: "object",
-        classname: cl.name,
-        prototype: cl.prototype,
+        cls: cl,
         ownMembers,
     };
 

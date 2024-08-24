@@ -53,8 +53,7 @@ export function declareWorld(w: World, varname: string, env: GlobalEnvironment):
     const world_env = new VarHolder();
     const world: RuntimeVal = {
         type: "object",
-        classname: env.worldClass.name,
-        prototype: env.worldClass.prototype,
+        cls: env.worldClass,
         ownMembers: world_env,
     };
 

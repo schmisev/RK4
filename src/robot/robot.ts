@@ -22,8 +22,7 @@ export function declareRobot(r: Robot, varname: string, env: GlobalEnvironment):
     const karol_env = new VarHolder();
     const robot: RuntimeVal = {
         type: "object",
-        classname: env.robotClass.name,
-        prototype: env.robotClass.prototype,
+        cls: env.robotClass,
         ownMembers: karol_env,
     };
 
