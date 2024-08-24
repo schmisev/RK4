@@ -5,6 +5,7 @@ import { MK_BOOL, MK_NATIVE_FN, MK_NULL, MK_NUMBER, RuntimeVal } from "./values"
 export interface GlobalEnvironment extends Environment {
     // global env holds some special values that we don't want to lookup by name
     readonly robotClass: ClassVal;
+    readonly worldClass: ClassVal;
 }
 
 export function declareGlobalEnv(): GlobalEnvironment {
@@ -16,7 +17,15 @@ export function declareGlobalEnv(): GlobalEnvironment {
             declenv: this,
             prototype: new ClassPrototype(this),
         };
+        private _worldClass: ClassVal = {
+            type: "class",
+            name: "World",
+            attributes: [],
+            declenv: this,
+            prototype: new ClassPrototype(this),
+        }
         get robotClass() { return this._robotClass }
+        get worldClass() { return this._worldClass }
     }
     const env = new GlobalEnvironment();
     env.declareVar("wahr", MK_BOOL(true), true);

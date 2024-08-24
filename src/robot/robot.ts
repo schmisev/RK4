@@ -1,6 +1,6 @@
 import { RuntimeError } from "../errors";
-import { ClassPrototype, Environment, GlobalEnvironment, VarHolder } from "../language/runtime/environment";
-import { MK_BOOL, MK_STRING, MK_NATIVE_FN, MK_NUMBER } from "../language/runtime/values";
+import { GlobalEnvironment, VarHolder } from "../language/runtime/environment";
+import { MK_BOOL, MK_STRING, MK_NATIVE_FN, MK_NUMBER, RuntimeVal } from "../language/runtime/values";
 import { Vec2 } from "./utils";
 import { BlockType, CHAR2BLOCK, CHAR2MARKER, Field, MarkerType, World } from "./world";
 
@@ -20,7 +20,16 @@ export const DIR2SHORTGER: Record<string, string> = {
 
 export function declareRobot(r: Robot, varname: string, env: GlobalEnvironment): void {
     const karol_env = new VarHolder();
-    
+    const robot: RuntimeVal = {
+        type: "object",
+        classname: env.robotClass.name,
+        prototype: env.robotClass.prototype,
+        ownMembers: karol_env,
+    };
+
+    // add robot to environment
+    env.declareVar(varname, robot, true);
+    // declare its properties
     karol_env.declareVar("x", MK_NATIVE_FN(
         (args, scope) => {
             if (args.length != 0)
@@ -161,10 +170,6 @@ export function declareRobot(r: Robot, varname: string, env: GlobalEnvironment):
             return MK_BOOL(r.seesVoid());
         }
     ), true);
-
-    // add robot to environment
-    const robotCls = env.robotClass;
-    env.declareVar(varname, { type: "object", classname: "Roboter", prototype: robotCls.prototype, ownMembers: karol_env }, true);
 }
 
 export class Robot {
