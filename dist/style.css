@@ -1,4 +1,5 @@
 body {
+    overflow-x: hidden;
     font-family:Arial, Helvetica, sans-serif;
 }
 
@@ -29,6 +30,10 @@ button:active {
 
 .lc30 {
     line-height: 30px;
+}
+
+.shadow {
+    box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, .2);
 }
 
 .wsr {
@@ -168,7 +173,8 @@ button:active {
 .diagram-canvas {
     grid-column: 14 / 18;
     grid-row: 3 / 24;
-    overflow-y: scroll;
+    overflow: visible;
+    scrollbar-width: thin;
     padding: 5px;
 }
 
@@ -418,21 +424,24 @@ button:active {
 }
 
 .struct-tooltip .tooltip {
+    display: block;
     visibility: hidden;
     background-color: black;
     color: #fff;
     text-align: center;
     padding: 5px;
     border-radius: 6px;
+    outline: 1px white solid;
+    box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, .2);
     
     /* Position the tooltip text - see examples below! */
     position: absolute;
     z-index: 1;
 
-    width: 120px;
-    bottom: 100%;
-    left: 50%;
-    margin-left: -60px; /* Use half of the width (120/2 = 60), to center the tooltip */
+    width: 250px;
+    top: 100%;
+    right: 105%;
+    margin-left: -125px; /* Use half of the width (120/2 = 60), to center the tooltip */
 }
 
 .struct-tooltip:hover .tooltip {

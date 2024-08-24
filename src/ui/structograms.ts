@@ -151,7 +151,7 @@ function structureSequence(body: Stmt[]): string {
 function structureWhile(node: WhileBlock): string {
     let cond = structure(node.condition);
     let result = 
-    `wiederhole ${makeTooltip("solange", "Die folgenden Anweisungen werden immer wieder ausgeführt, bis die Bedingung [" + cond + "] nicht mehr wahr ist!")}
+    `wiederhole ${makeTooltip("solange", "Die folgenden Anweisungen werden immer wieder ausgeführt, bis die Bedingung <u>" + cond + "</u> nicht mehr wahr ist!")}
      ${cond}
         <div class="struct-while">${structureSequence(node.body)}</div>`
     return result;
@@ -160,18 +160,19 @@ function structureWhile(node: WhileBlock): string {
 function structureFor(node: ForBlock): string {
     let count = structure(node.counter)
     let result = 
-    `wiederhole ${count} ${makeTooltip("mal", "Die folgenden Anweisungen werden so oft ausgeführt wie der Zahlenwert von [" + count + "]")}
+    `wiederhole ${count} ${makeTooltip("mal", "Die folgenden Anweisungen werden sooft ausgeführt, wie es in die Anzahl <u>" + count + "</u> vorgibt!")}
         <div class="struct-while">${structureSequence(node.body)}</div>`
     return result;
 }
 
 function structureIfElse(node: IfElseBlock): string {
+    let cond = structure(node.condition);
     let result =
     `
-    <div class="struct-ifelse">${structure(node.condition)} ? <br><br>
+    <div class="struct-ifelse">${cond} ? <br><br>
         <div style="display: flex;">
-            <div class="struct-column" style="padding-left: 5px; text-align: left;">wahr</div>
-            <div class="struct-column" style="padding-right: 5px; text-align: right;">falsch</div>
+            <div class="struct-column" style="padding-left: 5px; text-align: left;">${makeTooltip("wahr", "Wenn die Bedingung <u>" + cond + "</u> zutrifft, wird die linke Spalte ausgeführt!")}</div>
+            <div class="struct-column" style="padding-right: 5px; text-align: right;">${makeTooltip("falsch", "Wenn die Bedingung <u>" + cond + "</u> nicht zutrifft, wird die rechts Spalte ausgeführt!")}</div>
         </div>
     </div>
     <div class="struct-row">

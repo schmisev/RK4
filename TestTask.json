@@ -1,5 +1,5 @@
 {
-    "title": "Block hegen",
+    "title": "Testaufgabe",
     "description": "Lege den Block an die markierte Stelle!",
     "world": "x;4;4;5;;\nS;_;_;_\n_;_;_;_\n_;_;_:r;_\n_;_;_;_\nx;4;4;5;;\nS;_;_;_:r\n_;_;_;_\n_;_;_:r;_\n_;_;_;_x",
     "preload": "# Kein vordefinierter Code"
