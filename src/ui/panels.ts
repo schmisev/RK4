@@ -33,7 +33,7 @@ document.addEventListener('mousemove', function(e) {
   const pointerRelativeXpos = e.clientX - containerOffsetLeft;
   
   // Arbitrary minimum width set on box A, otherwise its inner content will collapse to width of 0
-  const boxAminWidth = 60;
+  const boxAminWidth = 200;
 
   // Resize box A
   // * 8px is the left/right spacing between .handler and its inner pseudo-element

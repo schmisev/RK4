@@ -37,10 +37,10 @@ export function showStructogram(program: Program) {
     sections.push(structure(program));
 
     structogramView.innerHTML = ""; // reset view
-    structogramView.innerHTML = sections.join("<br>");
+    structogramView.innerHTML = sections.join("<br>") + "<br>";
 
     classView.innerHTML = ""; // reset view
-    classView.innerHTML = classes.join("<br>");
+    classView.innerHTML = classes.join("<br>") + "<br>";
 }
 
 function structure(astNode: Stmt): string {
