@@ -31,7 +31,7 @@ export function declareGlobalEnv(): GlobalEnvironment {
         (args, scope) => {
             let r = 0;
             if (args.length == 0) {
-                r =  100;
+                r = 100;
             } else if (args.length == 1) {
                 if (args[0].type != "number")
                     throw new RuntimeError(`Erwarte eine Zahl als Parameter, nicht '${args[0].type}'!`);
@@ -81,24 +81,6 @@ export interface StaticScope {
 
 export interface DynamicScope {
     resolveVarImpl(varname: string, receiver: ObjectVal): Trampoline<ScopeMemberDefinition | undefined>;
-}
-
-export function resolveVar(scope: StaticScope, varname: string): ScopeMemberDefinition | undefined {
-    return jumpAround(scope.resolveVarImpl(varname));
-}
-
-export function assignVar(scope: StaticScope, varname: string, value: RuntimeVal) {
-    const varDef = resolveVar(scope, varname);
-    if (varDef === undefined)
-        throw new RuntimeError(`Variablenname nicht gefunden: ${varname}`);
-    varDef.set(value);
-}
-
-export function lookupVar(scope: StaticScope, varname: string): RuntimeVal {
-    const varDef = resolveVar(scope, varname);
-    if (varDef === undefined)
-        throw new RuntimeError(`Variablenname nicht gefunden: ${varname}`);
-    return varDef.get();
 }
 
 export class VarHolder {
@@ -153,13 +135,23 @@ export class Environment implements StaticScope {
         return value;
     }
 
+    resolveVar(varname: string): ScopeMemberDefinition | undefined {
+        return jumpAround(this.resolveVarImpl(varname));
+    }
+
     public assignVar(varname: string, value: RuntimeVal): RuntimeVal {
-        assignVar(this, varname, value);
+        const varDef = this.resolveVar(varname);
+        if (varDef === undefined)
+            throw new RuntimeError(`Variablenname nicht gefunden: ${varname}`);
+        varDef.set(value);
         return value;
     }
 
     public lookupVar(varname: string): RuntimeVal {
-        return lookupVar(this, varname);
+        const varDef = this.resolveVar(varname);
+        if (varDef === undefined)
+            throw new RuntimeError(`Variablenname nicht gefunden: ${varname}`);
+        return varDef.get();
     }
 
     public resolveVarImpl(varname: string): Trampoline<ScopeMemberDefinition | undefined> {
@@ -188,11 +180,13 @@ function resolveDynamicVar(varname: string, receiver: ObjectVal, fallback?: Stat
 export class BoundDynamicScope implements StaticScope {
     private _parent: StaticScope;
     private _receiver: ObjectVal;
+
     constructor(parent: StaticScope, receiver: ObjectVal) {
         this._parent = parent;
         this._receiver = receiver;
     }
-    resolveVarImpl(varname: string): Trampoline<ScopeMemberDefinition | undefined> {
+
+    public resolveVarImpl(varname: string): Trampoline<ScopeMemberDefinition | undefined> {
         return resolveDynamicVar(varname, this._receiver, this._parent)
     }
 }
@@ -204,12 +198,14 @@ export class ClassPrototype implements DynamicScope {
     constructor(declEnv: StaticScope) {
         this._env = declEnv;
     }
+
     public declareMethod(name: string, method: MethodVal) {
         if (this._methods.has(name))
             throw new RuntimeError(`Die Methode '${name}' existiert schon!`);
         this._methods.set(name, method);
     }
-    resolveVarImpl(varname: string, receiver: ObjectVal): Trampoline<ScopeMemberDefinition | undefined> {
+
+    public resolveVarImpl(varname: string, receiver: ObjectVal): Trampoline<ScopeMemberDefinition | undefined> {
         const method = this._methods.get(varname);
         if (method !== undefined) {
             return land({
@@ -230,6 +226,7 @@ export class ClassPrototype implements DynamicScope {
         }
         return land(undefined);
     }
+
     public lookupVar(varname: string, receiver: ObjectVal): RuntimeVal {
         const varDef = jumpAround(resolveDynamicVar(varname, receiver));
         if (varDef !== undefined)
