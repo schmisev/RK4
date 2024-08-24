@@ -52,6 +52,7 @@ export function declareGlobalEnv(): GlobalEnvironment {
         }
     ), true);
     env.declareVar("Roboter", env.robotClass, true);
+    env.declareVar("World", env.worldClass, true);
     return env;
 }
 
