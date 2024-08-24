@@ -5,29 +5,36 @@ var RKScriptHighlightRules = function () {
     var keywords = "wiederhole|solange|mal|ende|wenn|dann|sonst|zeig|für|als|ist|anhalten|zurück|weiter|und|oder|nicht";
     var declarations = "Klasse|Funktion|Methode|Zahl|Wahrheitswert|Text|Objekt"
     var builtinConstants = ("wahr|falsch|nix|welt");
-    var builtinFunctions = ("Roboter|Welt|zufallszahl|fertig|linksDrehen|rechtsDrehen|schritt|hinlegen|aufheben|markeSetzen|markeEntfernen|x|y|istAufMarke|siehtWand|siehtAbgrund|siehtZiegel|teilaufgabe");
+    var builtinFunctions = (
+        "Roboter|Welt|zufallszahl|" +
+        "welt.fertig|welt.teilaufgabe|"
+    );
+    var robotMethods = (
+        "linksDrehen|rechtsDrehen|schritt|hinlegen|aufheben|markeSetzen|markeEntfernen|x|y|istAufMarke|siehtWand|siehtAbgrund|siehtZiegel"
+    );
     var keywordMapper = this.createKeywordMapper({
-        "support.function": builtinFunctions,
+        "support.function": builtinFunctions + robotMethods,
         "keyword": keywords,
         "keyword.declaration": declarations,
         "constant.language": builtinConstants,
-    }, "identifier", true);
+    }, "text", true);
     this.$rules = {
         "start": [{
                 token: "comment",
-                regex: "#.*$"
+                regex: "#.*$",
+                unicode: true,
             }, {
                 token: "string", // " string
                 regex: '".*?"'
             }, {
-                token: "constant.numeric", // float
-                regex: "[+-]?\\d+(?:(?:\\.\\d*)?(?:[eE][+-]?\\d+)?)?\\b"
+                token: "constant.numeric", // int
+                regex: "[+-]?\\d+\\b"
             }, {
                 token: keywordMapper,
-                regex: "[a-zA-Z_$][a-zA-Z0-9_$]*\\b"
+                regex: "[\\p{L}0-9]+\\b",
             }, {
                 token: "keyword.operator",
-                regex: "\\+|\\-|\\/|\\:|%|<|>|="
+                regex: "\\+|-|\\/|:|%|<|>|=|\\*"
             }, {
                 token: "paren.lparen",
                 regex: "[\\(]"
