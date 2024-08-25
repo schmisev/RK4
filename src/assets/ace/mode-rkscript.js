@@ -11,7 +11,7 @@ var RKScriptHighlightRules = function () {
         "Roboter|Welt|zufallszahl|"
     );
     var robotMethods = (
-        Object.values(KW.ROBOT.ATTRIBUTES).join("|") + "|"
+        Object.values(KW.ROBOT.METHODS).join("|") + "|"
     );
     var worldMethods = (
         Object.values(KW.WORLD.METHODS).join("|") + "|"

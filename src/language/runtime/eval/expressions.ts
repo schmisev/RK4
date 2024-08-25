@@ -142,9 +142,11 @@ export function eval_string_binary_expr(
     lhs: StringVal,
     rhs: StringVal,
     operator: string
-): StringVal {
+): RuntimeVal {
     if (operator == "+") {
         return MK_STRING(lhs.value + rhs.value);
+    } else if (operator == "=") {
+        return MK_BOOL(lhs.value === rhs.value);
     }
     throw new RuntimeError();
 }

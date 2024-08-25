@@ -1,3 +1,4 @@
+import { robotSketch, robotView } from "../..";
 import { RuntimeError } from "../../errors";
 import { Trampoline, jump, jumpAround, jumpBind, land } from "./trampoline";
 import { ClassVal, MK_STRING, MethodVal, ObjectVal } from "./values";
@@ -51,6 +52,31 @@ export function declareGlobalEnv(): GlobalEnvironment {
             return MK_NUMBER(n);
         }
     ), true);
+
+    env.declareVar("linksGedrückt", MK_NATIVE_FN(
+        (args, scope) => {
+            return MK_BOOL(robotView.keyIsDown(robotView.LEFT_ARROW));
+        }
+    ), true);
+
+    env.declareVar("rechtsGedrückt", MK_NATIVE_FN(
+        (args, scope) => {
+            return MK_BOOL(robotView.keyIsDown(robotView.RIGHT_ARROW));
+        }
+    ), true);
+
+    env.declareVar("hochGedrückt", MK_NATIVE_FN(
+        (args, scope) => {
+            return MK_BOOL(robotView.keyIsDown(robotView.UP_ARROW));
+        }
+    ), true);
+
+    env.declareVar("runterGedrückt", MK_NATIVE_FN(
+        (args, scope) => {
+            return MK_BOOL(robotView.keyIsDown(robotView.DOWN_ARROW));
+        }
+    ), true);
+
     env.declareVar("Roboter", env.robotClass, true);
     env.declareVar("World", env.worldClass, true);
     return env;

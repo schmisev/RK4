@@ -390,7 +390,8 @@ export function robotSketch(p5: p5) {
     let cam: p5.Camera;
     let pan = 0.0;
     let tilt = 0.0;
-    let worldGoalReached = false;
+
+    const inputKeyBus: string[] = [];
 
     const CPS = 100; // Compass size
     const TSZ = 50; // Tilesize
@@ -858,7 +859,7 @@ export function robotSketch(p5: p5) {
 
 }
 
-const robotView = new p5(robotSketch, document.body);
+export const robotView = new p5(robotSketch, document.body);
 
 /**
  * Start app
