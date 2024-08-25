@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <title>🤖 RK4</title>
+</head>
+<body>
+    <div class="panel-row" id="panel-row">
+        <div class="left-panel" id="left-panel">
+            <div class="grid-container-left">
+                <div class="title-bar lc30 wsr text code-like">
+                    🤖 Robot Karol 4 <i>(beta)</i> | RK-Skript, 3D, mehrere Roboter & Aufgaben
+                    <span style="float: right;">
+                        Zieh mich! →</span>
+                </div>
+                <!-- Code editor UI -->
+                <div class="code-title lc30 wsr text">💻 Code-Editor</div>
+                <button class="code-start" id="code-start">▷</button>
+                <button class="code-stop" id="code-stop">▢</button>
+                <div class="code-editor editor" id="code-editor">Code</div>
+                <div class="code-error lc30 wsr text" id="code-error">keine Fehler gefunden</div>
+                <!-- Preload / library UI -->
+                <div class="preload-title lc30 wsr text">📖 Bibliothek</div>
+                <div class="preload-editor editor" id="preload-editor">Preload</div>
+                <!-- Save / load UI -->
+                <button class="save-world" id="save-code">💾</button>
+                <button class="load-world" id="load-code">📂</button>
+                <input id="load-file" type="file" accept=".rk, .csv, .json," style="visibility: hidden;">
+                <select class="load-task text" id="load-task">
+                    <option selected disabled>Wähle eine Aufgabe</option>
+                </select>
+                <!-- 3D Robot view & associated UI -->
+                <div class="robot-canvas" id="robot-canvas"></div>
+                <div class="object-bar" id="object-bar"></div>
+                <div class="object-overlay" id="object-overlay">overlay</div>
+                <div class="" id="task-bar">
+                    <div class="wsr lc30" id="task-check">?</div>
+                </div>
+                <!-- Step time UI -->
+                <div class="wait-title wsr lc30">⌛ <span class="wait-time" id="wait-time">50 ms</span></div>
+                <div class="wait-slider-container wsr lc30">
+                    <input type="range" min="0" max="500" value="50" step="25" class="wait-slider slider" id="wait-slider">
+                </div>
+                <!-- Command line UI -->
+                <input class="cmd-line code-like" id="cmd-line" autocomplete="off">
+                <div class="cmd-start code-like lc30">&gt;&gt;</div>
+                <button class="cmd-run" id="cmd-run">↩</button>
+                <!-- Task view UI -->
+                <div class="task-description wsr text" id="task-description">Aufgabe</div>
+                <div class="console-log wsr text code-like" id="console-log"></div>
+                <!-- credits -->
+                <div id="credits-bar">Mitwirkende: <a href="https://github.com/schmisev">schmisev</a> ● <a href="https://github.com/WorldsEnder">WorldsEnder</a> | 3D-Ansicht: <a href="https://p5js.org/">p5</a> ● Editor: <a href="https://ace.c9.io/">Ace Editor</a> </div>
+            </div>
+        </div>
+        <div class="handler" id="panel-handler"></div>
+        <div class="right-panel" id="right-panel">
+            <div class="debug-title wsr lc30 text">🐞 Debug</div>
+            <div class="grid-container-right">
+                <!-- Structogram view -->
+                <div class="structogram-diagram-title dgr lc30 text">🌳 Struktogramm</div>
+                <div class="structogram-diagram-canvas" id="structogram-diagram-canvas"></div>
+                <!-- Class view -->
+                <div class="class-diagram-title dgr lc30 text">🗃️ Klassen</div>
+                <div class="class-diagram-canvas" id="class-diagram-canvas"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="bundle.js"></script>
+</body>
+</html>
