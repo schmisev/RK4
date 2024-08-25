@@ -43,7 +43,7 @@ const WORLD_PSEUDO_CLASS =
     
     <div class="struct-methods">
         ${makeTooltip(KW.WORLD.METHODS.IS_GOAL_REACHED , `Gibt <span class="struct-literal">wahr</span> zurück, wenn die aktuelle Teilaufgabe vollständig gelöst wurde, sonst <span class="struct-literal">falsch</span>.`) + "()<br>"}
-        ${makeTooltip(KW.WORLD.METHODS.GET_STAGE_INDEX, `Gibt der aktuellen Teilaufgabe als Zahl aus, also <span class="struct-literal">1</span>, <span class="struct-literal">2</span>, <span class="struct-literal">3</span>, usw.`) + "()<br>"}
+        ${makeTooltip(KW.WORLD.METHODS.GET_STAGE_INDEX, `Gibt die aktuelle Teilaufgabe als Zahl aus, also <span class="struct-literal">1</span>, <span class="struct-literal">2</span>, <span class="struct-literal">3</span>, usw.`) + "()<br>"}
     </div>
 </div>`
 

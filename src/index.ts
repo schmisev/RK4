@@ -89,7 +89,7 @@ const taskSelector = document.getElementById("load-task") as HTMLSelectElement;
 for (const [key, task] of Object.entries(TASKS)) {
     const newOption = document.createElement("option");
     newOption.value = key;
-    newOption.innerHTML = `${key} "${task.title}"`;
+    newOption.innerHTML = `${key}: "${task.title}"`;
     newOption.selected = key == DEFAULT_TASK;
     taskSelector.append(newOption);
 }
@@ -250,7 +250,7 @@ function loadRawTask(key: string, task: Task) {
     taskName = `${key} ${task.title}`
 
     taskDescription.innerHTML = `
-    <p><b>🤔 ${key} "${task.title}"</b></p>
+    <p><b>🤔 ${key}: "${task.title}"</b></p>
     <p>${task.description}</p>`;
 
     preloadEditor.setValue(preloadCode);

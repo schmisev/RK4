@@ -1,3 +1,17 @@
+let range = (n: number) => [...Array(n).keys()]
+
+function generateHomogeneousWorld(l: number, w: number, h: number, fieldCode = "_") {
+    let result = `x;${l};${w};${h};\n`;
+    for (let j = 0; j < w; j++) {
+        for (let i = 0; i < l-1; i++) {
+            if (i == 0 && j == 0) result += "S";
+            result += fieldCode + ";";
+        }
+        result += fieldCode + "\n";
+    }
+    return result;
+}
+
 /**
  * Interface for tasks
  */
@@ -20,7 +34,7 @@ _;_;_;_`
 /**
  * Standard preload code, should be empty
  */
-export const STD_PRELOAD = "\n";
+export const STD_PRELOAD = "# Nichts vordefiniert\n";
 
 /**
  * Test code using pretty much all language features
@@ -135,24 +149,43 @@ ende
 `
 
 export const TASKS = {
-    "A0.0": {
-        title: "Block legen",
-        description: "Lege den Block an die markierte Stelle!",
-        world: 
-`x;4;4;5;;
-S;_;_;_
-_;_;_;_
-_;_;_:r;_
-_;_;_;_
-x;4;4;5;;
-S;_;_;_:r
-_;_;_;_
-_;_;_:r;_
-_;_;_;_x`,
-        preload: "# Kein vordefinierter Code",
+    "Leer 4x4": {
+        title: "Kleine leere Welt",
+        description: "Eine leere Welt.",
+        world: generateHomogeneousWorld(4, 4, 10),
+        preload: STD_PRELOAD,
     },
-
-    "A0.1": {
+    "Leer 8x6": {
+        title: "Mittle leere Welt",
+        description: "Eine leere Welt.",
+        world: generateHomogeneousWorld(8, 6, 10),
+        preload: STD_PRELOAD,
+    },
+    "Leer 16x8": {
+        title: "Große leere Welt",
+        description: "Eine leere Welt.",
+        world: generateHomogeneousWorld(16, 8, 10),
+        preload: STD_PRELOAD,
+    },
+    "Zufall 4x4": {
+        title: "Klein und verrümpelt",
+        description: "Eine vollgerümpelte Welt.",
+        world: generateHomogeneousWorld(4, 4, 6, "...:_"),
+        preload: STD_PRELOAD,
+    },
+    "Zufall 8x6": {
+        title: "Mittel und verrümpelt",
+        description: "Eine vollgerümpelte Welt.",
+        world: generateHomogeneousWorld(8, 6, 6, "...:_"),
+        preload: STD_PRELOAD,
+    },
+    "Zufall 16x8": {
+        title: "Groß und verrümpelt",
+        description: "Eine vollgerümpelte Welt.",
+        world: generateHomogeneousWorld(16, 8, 6, "...:_"),
+        preload: STD_PRELOAD,
+    },
+    "X1": {
         title: "Chaos",
         description: "Räume alle Blöcke auf!",
         world: 
@@ -167,22 +200,25 @@ S;...:_;S;...:_
 ...:_;...:_;...:_;...:_
 ...:_;...:_;...:_;...:_
 ...:_;...:_;...:_;...:_`,
-        preload: 
-`Methode schritte(Zahl n) für Roboter
-    wiederhole n mal
-        schritt()
-    ende
-ende
-
-Methode umdrehen() für Roboter
-    wiederhole 2 mal
-        linksDrehen()
-    ende
-ende
-`
+        preload: STD_PRELOAD,
     },
-
-    "A0.2": {
+    "A1": {
+        title: "Block legen",
+        description: "Lege den Block an die markierte Stelle!",
+        world: 
+`x;4;4;5;;
+S;_;_;_
+_;_;_;_
+_;_;_:r;_
+_;_;_;_
+x;4;4;5;;
+S;_;_;_:r
+_;_;_;_
+_;_;_:r;_
+_;_;_;_`,
+        preload: STD_PRELOAD,
+    },
+    "A3": {
         title: "Aufräumen",
         description: "Räume alle Blöcke auf!",
         world: `x;7;7;5;;;;
@@ -194,8 +230,7 @@ _:_;rrr:_;_:_;_:_;_:_;rrr:_;#
 `,
         preload: STD_PRELOAD,
     },
-
-    "A0.3": {
+    "A4": {
         title: "Simple Welt",
         description: "Nichts zu tun!",
         world: `x;5;4;6;
@@ -210,4 +245,4 @@ _;rr;_;#;_
 /**
  * Default task loaded on startup
  */
-export const DEFAULT_TASK: keyof typeof TASKS = "A0.1";
+export const DEFAULT_TASK: keyof typeof TASKS = "X1";
