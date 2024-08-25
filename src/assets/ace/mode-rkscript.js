@@ -1,3 +1,5 @@
+const { KW } = require("../../robot/keywords");
+
 ace.define("ace/mode/RKScript_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(require, exports, module){"use strict";
 var oop = require("../lib/oop");
 var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
@@ -6,11 +8,13 @@ var RKScriptHighlightRules = function () {
     var declarations = "Klasse|Funktion|Methode|Zahl|Wahrheitswert|Text|Objekt"
     var builtinConstants = ("wahr|falsch|nix|welt");
     var builtinFunctions = (
-        "Roboter|Welt|zufallszahl|" +
-        "welt.fertig|welt.teilaufgabe|"
+        "Roboter|Welt|zufallszahl|"
     );
     var robotMethods = (
-        "linksDrehen|rechtsDrehen|schritt|hinlegen|aufheben|markeSetzen|markeEntfernen|x|y|istAufMarke|siehtWand|siehtAbgrund|siehtZiegel"
+        Object.values(KW.ROBOT.ATTRIBUTES).join("|") + "|"
+    );
+    var worldMethods = (
+        Object.values(KW.WORLD.METHODS).join("|") + "|"
     );
     var keywordMapper = this.createKeywordMapper({
         "support.function": builtinFunctions + robotMethods,

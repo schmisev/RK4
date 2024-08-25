@@ -1,6 +1,7 @@
 import { RuntimeError, WorldError } from "../errors";
 import { ClassPrototype, Environment, GlobalEnvironment, VarHolder } from "../language/runtime/environment";
 import { MK_BOOL, MK_NATIVE_FN, MK_NUMBER, RuntimeVal } from "../language/runtime/values";
+import { KW } from "./keywords";
 import { declareRobot, Robot } from "./robot";
 import { rndi } from "./utils";
 
@@ -60,18 +61,18 @@ export function declareWorld(w: World, varname: string, env: GlobalEnvironment):
     // add world to environment
     env.declareVar(varname, world, true);
     // declare its properties
-    world_env.declareVar("fertig", MK_NATIVE_FN(
+    world_env.declareVar(KW.WORLD.METHODS.IS_GOAL_REACHED, MK_NATIVE_FN(
         (args, scope) => {
             if (args.length != 0)
-                throw new RuntimeError(`fertig() erwartet keine Parameter!`);
+                throw new RuntimeError(KW.WORLD.METHODS.IS_GOAL_REACHED + `() erwartet keine Parameter!`);
             return MK_BOOL(w.isGoalReached());
         }
     ), true);
 
-    world_env.declareVar("teilaufgabe", MK_NATIVE_FN(
+    world_env.declareVar(KW.WORLD.METHODS.GET_STAGE_INDEX, MK_NATIVE_FN(
         (args, scope) => {
             if (args.length != 0)
-                throw new RuntimeError(`teilaufgabe() erwartet keine Parameter!`);
+                throw new RuntimeError(KW.WORLD.METHODS.GET_STAGE_INDEX + `() erwartet keine Parameter!`);
             return MK_NUMBER(w.getStageIndex() + 1);
         }
     ), true);

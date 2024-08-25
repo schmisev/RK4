@@ -45,6 +45,9 @@ console.log = (function (old_log, log: HTMLElement) {
 }(console.log.bind(console), document.querySelector('#console-log')!));
 
 // Fetch HTML elements
+// Fetch task check
+const taskCheck = document.getElementById("task-check")!;
+
 // Fetch object overlay & object bar
 const objOverlay = document.getElementById("object-overlay")!;
 const objBar = document.getElementById("object-bar")!;
@@ -314,8 +317,10 @@ async function startCode() {
         console.log();
         console.log("▷ Code wird ausgeführt!");
         
+        editor.setReadOnly(true);
         await runCode(code, true);
-        await sleep(dt);
+        await sleep(1000);
+        editor.setReadOnly(false);
 
         if (!world.isGoalReached()) {
             console.log(`❌ Du hast die Teilaufgabe ${i+1} NICHT erfüllt!`);
@@ -352,7 +357,6 @@ function fetchCmd(e: KeyboardEvent) {
 // Run ANY code
 async function runCode(code: string, stepped: boolean) {
     isRunning = true;
-    editor.setReadOnly(true);
     try {
         program = parse.produceAST(code);
         let stepper = evaluate(program, env);
@@ -377,7 +381,6 @@ async function runCode(code: string, stepped: boolean) {
         console.error(runtimeError.stack);
     }
     isRunning = false;
-    editor.setReadOnly(false);
 };
 
 // Setup robot sketch
@@ -387,6 +390,7 @@ export function robotSketch(p5: p5) {
     let cam: p5.Camera;
     let pan = 0.0;
     let tilt = 0.0;
+    let worldGoalReached = false;
 
     const CPS = 100; // Compass size
     const TSZ = 50; // Tilesize
@@ -525,6 +529,15 @@ export function robotSketch(p5: p5) {
             showRobotDiagram(world.robots[robotDiagramIndex], objOverlay, p5.winMouseX, p5.winMouseY);
         } else {
             hideRobotDiagram(objOverlay);
+        }
+
+        // update task status
+        if (!world.isGoalReached()) {
+            taskCheck.style.backgroundColor = "whitesmoke";
+            taskCheck.innerHTML = "❌<br>" + `${world.getStageIndex()} / ${world.getStageCount()}`;
+        } else {
+            taskCheck.style.backgroundColor = "lightgreen";
+            taskCheck.innerHTML = "✔️<br>" + `${world.getStageIndex() + 1} / ${world.getStageCount()}`;
         }
 
         // draw compass
