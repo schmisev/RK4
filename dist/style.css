@@ -424,7 +424,7 @@ a {
 
 .struct-box {
     background-color: white;
-    overflow-wrap: anywhere;
+    overflow-wrap: normal;
     outline: 2px black solid;
     outline-offset: -1px;
     min-height: 25px;
