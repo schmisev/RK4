@@ -207,7 +207,7 @@ function structureWhile(node: WhileBlock): string {
 function structureFor(node: ForBlock): string {
     const count = structure(node.counter)
     const result = 
-    `wiederhole ${count} ${makeTooltip("mal", "Die folgenden Anweisungen werden sooft ausgeführt, wie es in die Anzahl <u>" + count + "</u> vorgibt!")}
+    `wiederhole ${count} ${makeTooltip("mal", "Die folgenden Anweisungen werden sooft ausgeführt, wie es die die Anzahl <u>" + count + "</u> vorgibt!")}
         <div class="struct-while">${structureSequence(node.body)}</div>`
     return result;
 }
