@@ -1,0 +1,15 @@
+wenn a dann
+    wenn b dann
+        wenn c dann
+            "hallo"
+        ende
+    ende
+ende
+
+wenn a dann
+    hallo
+sonst wenn b dann
+    tschüss
+sonst wenn c dann
+    ciao
+ende

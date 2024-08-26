@@ -161,6 +161,10 @@ function makeTooltip(txt: string, tt: string) {
     return `<span class="struct-tooltip">${txt}<span class="tooltip">${tt}</span></span>`;
 }
 
+function makeContainer(content: string) {
+    return `<div class="struct-container">${content}</div>`;
+}
+
 function structureProgram(astNode: Program) {
     return `<div class="struct-program">
             ${makeTooltip("Hauptprogramm", "Das Hauptprogramm wird zuerst ausgeführt!")}
@@ -186,11 +190,10 @@ function structureUnaryExpr(astNode: UnaryExpr) {
 function structureSequence(body: Stmt[]): string {
     let result = "";
     for (const node of body) {
-        if (node.kind == "IfElseBlock") {
-            result += `<div class="struct-box struct-unpadded">${structure(node)}</div>`
-        } else {
-            result += `<div class="struct-box">${structure(node)}</div>`
-        }
+        if (node.kind == "WhileBlock" || node.kind == "ForBlock" || node.kind == "IfElseBlock")
+            result += `<div class="struct-box">${structure(node)}</div>`;
+        else 
+            result += `<div class="struct-box lpad rpad">${structure(node)}</div>`;
     }
     return result;
 }
@@ -198,8 +201,12 @@ function structureSequence(body: Stmt[]): string {
 function structureWhile(node: WhileBlock): string {
     const cond = structure(node.condition);
     const result = 
-    `wiederhole ${makeTooltip("solange", "Die folgenden Anweisungen werden immer wieder ausgeführt, bis die Bedingung <u>" + cond + "</u> nicht mehr wahr ist!")}
-     ${cond}
+    `<div class="struct-label">
+    wiederhole ${makeTooltip("solange", "Die folgenden Anweisungen werden immer wieder ausgeführt, bis die Bedingung <u>" + cond + "</u> nicht mehr wahr ist!")}
+    <span class="line">
+    ${cond} 
+    </span>
+    </div>
         <div class="struct-while">${structureSequence(node.body)}</div>`
     return result;
 }
@@ -207,7 +214,11 @@ function structureWhile(node: WhileBlock): string {
 function structureFor(node: ForBlock): string {
     const count = structure(node.counter)
     const result = 
-    `wiederhole ${count} ${makeTooltip("mal", "Die folgenden Anweisungen werden sooft ausgeführt, wie es die die Anzahl <u>" + count + "</u> vorgibt!")}
+    `<div class="struct-label">
+    wiederhole 
+    <span class="line">${count} ${makeTooltip("mal", "Die folgenden Anweisungen werden sooft ausgeführt, wie es die die Anzahl <u>" + count + "</u> vorgibt!")}
+    </span>
+    </div>
         <div class="struct-while">${structureSequence(node.body)}</div>`
     return result;
 }
@@ -218,8 +229,8 @@ function structureIfElse(node: IfElseBlock): string {
     `
     <div class="struct-ifelse">${cond} ? <br><br>
         <div style="display: flex;">
-            <div class="struct-column" style="padding-left: 5px; text-align: left;">${makeTooltip("wahr", "Wenn die Bedingung <u>" + cond + "</u> zutrifft, wird die linke Spalte ausgeführt!")}</div>
-            <div class="struct-column" style="padding-right: 5px; text-align: right;">${makeTooltip("falsch", "Wenn die Bedingung <u>" + cond + "</u> nicht zutrifft, wird die rechte Spalte ausgeführt!")}</div>
+            <div style="flex: 50%; padding-left: 5px; text-align: left;">${makeTooltip("W", "Wenn die Bedingung <u>" + cond + "</u> zutrifft, wird die linke Spalte ausgeführt!")}</div>
+            <div style="flex: 50%; padding-right: 5px; text-align: right;">${makeTooltip("F", "Wenn die Bedingung <u>" + cond + "</u> nicht zutrifft, wird die rechte Spalte ausgeführt!")}</div>
         </div>
     </div>
     <div class="struct-row">
