@@ -3,6 +3,7 @@ import * as p5 from 'p5';
 import "./ui/panels";
 
 import Parser from "./language/frontend/parser";
+import { Program } from './language/frontend/ast';
 import { BlockType, CB, CBOT, CBOT2, CG, CR, CY, declareWorld, Field, MarkerType, World } from "./robot/world";
 import { Environment, GlobalEnvironment, declareGlobalEnv } from "./language/runtime/environment";
 import { evaluate } from "./language/runtime/interpreter";
@@ -15,8 +16,9 @@ import * as ace from "ace-builds";
 import "ace-builds/esm-resolver";
 import "ace-builds/src-noconflict/ext-language_tools";
 import './assets/ace/mode-rkscript.js';
+import './assets/ace/theme-rklight.js';
+
 import { LexerError, ParserError } from './errors';
-import { Program } from './language/frontend/ast';
 import { showStructogram } from './ui/structograms';
 import { addRobotButtons, hideRobotDiagram, robotDiagramIndex, showRobotDiagram } from './ui/objectigrams';
 
@@ -57,14 +59,14 @@ const preloadEditor = ace.edit("preload-editor", {
     minLines: 1,
     value: preloadCode,
     mode: "ace/mode/RKScript",
-	theme: "ace/theme/chrome",
+	theme: "ace/theme/RKLight",
     readOnly: true,
 });
 
 const editor = ace.edit("code-editor", {
     minLines: 30,
     mode: "ace/mode/RKScript",
-	theme: "ace/theme/chrome",
+	theme: "ace/theme/RKLight",
     useWorker: false,
     value: code,
     enableBasicAutocompletion: true,

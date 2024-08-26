@@ -1,33 +1,33 @@
 import { ParserError } from "../errors";
 import { BinaryExpr, ClassDefinition, Expr, ForBlock, IfElseBlock, Program, Stmt, UnaryExpr, WhileBlock } from "../language/frontend/ast";
-import {KW} from "../keywords";
+import { ENV } from "../spec";
 
 // Robot class
 const ROBOT_PSEUDO_CLASS = 
 `<div class="struct-class">
-    <div class="struct-classname">${KW.ROBOT.CLASSNAME}</div>
+    <div class="struct-classname">${ENV.robot.cls}</div>
     
     <div class="struct-attributes">
-        <span class="struct-type">Zahl</span> ${makeTooltip(KW.ROBOT.ATTRIBUTES.X, `Du kannst auf das Attribut <span class="struct-ident">${KW.ROBOT.ATTRIBUTES.X}</span> nicht direkt zugreifen.`) + "🔒<br>"}
-        <span class="struct-type">Zahl</span> ${makeTooltip(KW.ROBOT.ATTRIBUTES.Y, `Du kannst auf das Attribut <span class="struct-ident">${KW.ROBOT.ATTRIBUTES.Y}</span> nicht direkt zugreifen.`) + "🔒<br>"}
-        <span class="struct-type">Text</span> ${makeTooltip(KW.ROBOT.ATTRIBUTES.DIR, `Du kannst auf das Attribut <span class="struct-ident">${KW.ROBOT.ATTRIBUTES.DIR}</span> nicht direkt zugreifen.`) + "🔒<br>"}
+        <span class="struct-type">Zahl</span> ${makeTooltip(ENV.robot.attr.X, `Du kannst auf das Attribut <span class="struct-ident">${ENV.robot.attr.X}</span> nicht direkt zugreifen.`) + "🔒<br>"}
+        <span class="struct-type">Zahl</span> ${makeTooltip(ENV.robot.attr.Y, `Du kannst auf das Attribut <span class="struct-ident">${ENV.robot.attr.Y}</span> nicht direkt zugreifen.`) + "🔒<br>"}
+        <span class="struct-type">Text</span> ${makeTooltip(ENV.robot.attr.DIR, `Du kannst auf das Attribut <span class="struct-ident">${ENV.robot.attr.DIR}</span> nicht direkt zugreifen.`) + "🔒<br>"}
     </div>
     
     <div class="struct-methods">
-        ${makeTooltip(KW.ROBOT.METHODS.GET_X , `Gibt die aktuelle x-Koordinate des Roboters zurück!`) + "()<br>"}
-        ${makeTooltip(KW.ROBOT.METHODS.GET_Y, `Gibt die aktuelle y-Koordinate des Roboters zurück!`) + "()<br>"}
-        ${makeTooltip(KW.ROBOT.METHODS.GET_DIR, `Gibt die aktuelle Richtung des Roboters als Text zurück: <span class="struct-string">"N"</span>, <span class="struct-string">"S"</span>, <span class="struct-string">"W"</span> oder <span class="struct-string">"O"</span>!`) + "()<br>"}
+        ${makeTooltip(ENV.robot.mth.GET_X , `Gibt die aktuelle x-Koordinate des Roboters zurück!`) + "()<br>"}
+        ${makeTooltip(ENV.robot.mth.GET_Y, `Gibt die aktuelle y-Koordinate des Roboters zurück!`) + "()<br>"}
+        ${makeTooltip(ENV.robot.mth.GET_DIR, `Gibt die aktuelle Richtung des Roboters als Text zurück: <span class="struct-string">"N"</span>, <span class="struct-string">"S"</span>, <span class="struct-string">"W"</span> oder <span class="struct-string">"O"</span>!`) + "()<br>"}
         <div class="struct-dot"></div>
-        ${makeTooltip(KW.ROBOT.METHODS.STEP, `Der Roboter geht ein Feld nach vorne - wenn das möglich ist.`) + "()<br>"}
-        ${makeTooltip(KW.ROBOT.METHODS.PLACE_BLOCK, `Der Roboter legt vor sich einen roten Block. Du kannst natürlich auch eine eigene Farbe angeben!`) + `(farbe?)<br>`}
-        ${makeTooltip(KW.ROBOT.METHODS.PICKUP_BLOCK, `Der Roboter hebt einen Block vor sich auf!`) + `()<br>`}
-        ${makeTooltip(KW.ROBOT.METHODS.SET_MARKER, `Der Roboter setzt unter sich eine gelbe Marke. Du kannst natürlich auch eine eigene Farbe angeben!`) + `(farbe?)<br>`}
-        ${makeTooltip(KW.ROBOT.METHODS.REMOVE_MARKER, `Der Roboter entfernt die Marke unter sich.`) + `()<br>`}
+        ${makeTooltip(ENV.robot.mth.STEP, `Der Roboter geht ein Feld nach vorne - wenn das möglich ist.`) + "()<br>"}
+        ${makeTooltip(ENV.robot.mth.PLACE_BLOCK, `Der Roboter legt vor sich einen roten Block. Du kannst natürlich auch eine eigene Farbe angeben!`) + `(farbe?)<br>`}
+        ${makeTooltip(ENV.robot.mth.PICKUP_BLOCK, `Der Roboter hebt einen Block vor sich auf!`) + `()<br>`}
+        ${makeTooltip(ENV.robot.mth.SET_MARKER, `Der Roboter setzt unter sich eine gelbe Marke. Du kannst natürlich auch eine eigene Farbe angeben!`) + `(farbe?)<br>`}
+        ${makeTooltip(ENV.robot.mth.REMOVE_MARKER, `Der Roboter entfernt die Marke unter sich.`) + `()<br>`}
         <div class="struct-dot"></div>
-        ${makeTooltip(KW.ROBOT.METHODS.SEES_BLOCK, `Gibt <span class="struct-literal">wahr</span> zurück, wenn vor dem Roboter mindestens ein Ziegel liegt, sonst <span class="struct-literal">falsch</span>. Wenn du eine Farbe angibst, wird nur <span class="struct-literal">wahr</span> zurückgegeben, wenn der oberste Ziegel auf dem Stapel diese Farbe hat.`) + `(farbe?)<br>`}
-        ${makeTooltip(KW.ROBOT.METHODS.IS_ON_MARKER, `Gibt <span class="struct-literal">wahr</span> zurück, wenn der Roboter auf einer Marke steht, sonst <span class="struct-literal">falsch</span>. Wenn du eine Farbe angibst, wird nur <span class="struct-literal">wahr</span> zurückgegeben, wenn die Marke diese Farbe hat.`) + `(farbe?)<br>`}
-        ${makeTooltip(KW.ROBOT.METHODS.SEES_WALL, `Gibt <span class="struct-literal">wahr</span> zurück, wenn der Roboter vor einer Wand steht, sonst <span class="struct-literal">falsch</span>.`) + `()<br>`}
-        ${makeTooltip(KW.ROBOT.METHODS.SEES_VOID, `Gibt <span class="struct-literal">wahr</span> zurück, wenn der Roboter vor dem Abgrund steht, sonst <span class="struct-literal">falsch</span>.`) + `()<br>`}
+        ${makeTooltip(ENV.robot.mth.SEES_BLOCK, `Gibt <span class="struct-literal">wahr</span> zurück, wenn vor dem Roboter mindestens ein Ziegel liegt, sonst <span class="struct-literal">falsch</span>. Wenn du eine Farbe angibst, wird nur <span class="struct-literal">wahr</span> zurückgegeben, wenn der oberste Ziegel auf dem Stapel diese Farbe hat.`) + `(farbe?)<br>`}
+        ${makeTooltip(ENV.robot.mth.IS_ON_MARKER, `Gibt <span class="struct-literal">wahr</span> zurück, wenn der Roboter auf einer Marke steht, sonst <span class="struct-literal">falsch</span>. Wenn du eine Farbe angibst, wird nur <span class="struct-literal">wahr</span> zurückgegeben, wenn die Marke diese Farbe hat.`) + `(farbe?)<br>`}
+        ${makeTooltip(ENV.robot.mth.SEES_WALL, `Gibt <span class="struct-literal">wahr</span> zurück, wenn der Roboter vor einer Wand steht, sonst <span class="struct-literal">falsch</span>.`) + `()<br>`}
+        ${makeTooltip(ENV.robot.mth.SEES_VOID, `Gibt <span class="struct-literal">wahr</span> zurück, wenn der Roboter vor dem Abgrund steht, sonst <span class="struct-literal">falsch</span>.`) + `()<br>`}
             
     </div>
 </div>`
@@ -35,15 +35,15 @@ const ROBOT_PSEUDO_CLASS =
 // World class
 const WORLD_PSEUDO_CLASS = 
 `<div class="struct-class">
-    <div class="struct-classname">${KW.WORLD.CLASSNAME}</div>
+    <div class="struct-classname">${ENV.world.cls}</div>
     
     <div class="struct-attributes" style="text-align: center">
         ${makeTooltip("❓", "Du musst die Attribute der Welt-Klasse nicht kennen oder benutzen.")}
     </div>
     
     <div class="struct-methods">
-        ${makeTooltip(KW.WORLD.METHODS.IS_GOAL_REACHED , `Gibt <span class="struct-literal">wahr</span> zurück, wenn die aktuelle Teilaufgabe vollständig gelöst wurde, sonst <span class="struct-literal">falsch</span>.`) + "()<br>"}
-        ${makeTooltip(KW.WORLD.METHODS.GET_STAGE_INDEX, `Gibt die aktuelle Teilaufgabe als Zahl aus, also <span class="struct-literal">1</span>, <span class="struct-literal">2</span>, <span class="struct-literal">3</span>, usw.`) + "()<br>"}
+        ${makeTooltip(ENV.world.mth.IS_GOAL_REACHED , `Gibt <span class="struct-literal">wahr</span> zurück, wenn die aktuelle Teilaufgabe vollständig gelöst wurde, sonst <span class="struct-literal">falsch</span>.`) + "()<br>"}
+        ${makeTooltip(ENV.world.mth.GET_STAGE_INDEX, `Gibt die aktuelle Teilaufgabe als Zahl aus, also <span class="struct-literal">1</span>, <span class="struct-literal">2</span>, <span class="struct-literal">3</span>, usw.`) + "()<br>"}
     </div>
 </div>`
 

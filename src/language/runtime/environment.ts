@@ -1,5 +1,5 @@
 import { RuntimeError } from "../../errors";
-import { KW } from "../../keywords";
+import { ENV } from "../../spec";
 import { Trampoline, jump, jumpAround, jumpBind, land } from "./trampoline";
 import { ClassVal, MK_STRING, MethodVal, ObjectVal } from "./values";
 import { MK_BOOL, MK_NATIVE_FN, MK_NULL, MK_NUMBER, RuntimeVal } from "./values";
@@ -30,15 +30,15 @@ export function declareGlobalEnv(): GlobalEnvironment {
         get worldClass() { return this._worldClass }
     }
     const env = new GlobalEnvironment();
-    env.declareVar(KW.GLOBAL_ENV.CONSTANTS.TRUE, MK_BOOL(true), true);
-    env.declareVar(KW.GLOBAL_ENV.CONSTANTS.FALSE, MK_BOOL(false), true);
-    env.declareVar(KW.GLOBAL_ENV.CONSTANTS.NULL, MK_NULL(), true);
-    env.declareVar(KW.GLOBAL_ENV.CONSTANTS.YELLOW, MK_STRING("Y"), true);
-    env.declareVar(KW.GLOBAL_ENV.CONSTANTS.RED, MK_STRING("R"), true);
-    env.declareVar(KW.GLOBAL_ENV.CONSTANTS.GREEN, MK_STRING("G"), true);
-    env.declareVar(KW.GLOBAL_ENV.CONSTANTS.BLUE, MK_STRING("B"), true);
+    env.declareVar(ENV.global.const.TRUE, MK_BOOL(true), true);
+    env.declareVar(ENV.global.const.FALSE, MK_BOOL(false), true);
+    env.declareVar(ENV.global.const.NULL, MK_NULL(), true);
+    env.declareVar(ENV.global.const.YELLOW, MK_STRING("Y"), true);
+    env.declareVar(ENV.global.const.RED, MK_STRING("R"), true);
+    env.declareVar(ENV.global.const.GREEN, MK_STRING("G"), true);
+    env.declareVar(ENV.global.const.BLUE, MK_STRING("B"), true);
 
-    env.declareVar(KW.GLOBAL_ENV.FUNCTIONS.RANDOM_NUMBER, MK_NATIVE_FN(
+    env.declareVar(ENV.global.fn.RANDOM_NUMBER, MK_NATIVE_FN(
         (args, scope) => {
             let r = 0;
             if (args.length == 0) {
@@ -52,8 +52,8 @@ export function declareGlobalEnv(): GlobalEnvironment {
             return MK_NUMBER(n);
         }
     ), true);
-    env.declareVar(KW.ROBOT.CLASSNAME, env.robotClass, true);
-    env.declareVar(KW.WORLD.CLASSNAME, env.worldClass, true);
+    env.declareVar(ENV.robot.cls, env.robotClass, true);
+    env.declareVar(ENV.world.cls, env.worldClass, true);
     return env;
 }
 

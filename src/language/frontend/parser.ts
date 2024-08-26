@@ -1,4 +1,4 @@
-import { Stmt, Program, Expr, BinaryExpr, NumericLiteral, Identifier, VarDeclaration, ObjDeclaration, FunctionDefinition, UnaryExpr, ShowCommand, AssignmentExpr, IfElseBlock, BreakCommand, ContinueCommand, StringLiteral, ClassDefinition, CallExpr, ParamDeclaration, EmptyLine, MemberExpr, ReturnCommand, ExtMethodDefinition } from "./ast";
+import { Stmt, Program, Expr, BinaryExpr, NumericLiteral, Identifier, VarDeclaration, ObjDeclaration, FunctionDefinition, UnaryExpr, ShowCommand, AssignmentExpr, IfElseBlock, BreakCommand, ContinueCommand, StringLiteral, ClassDefinition, CallExpr, ParamDeclaration, EmptyLine, MemberExpr, ReturnCommand, ExtMethodDefinition, BooleanLiteral } from "./ast";
 import { tokenize, Token, TokenType } from "./lexer";
 import { ForBlock } from "./ast";
 import { WhileBlock } from "./ast";
@@ -206,6 +206,9 @@ export default class Parser {
         if (this.at().type == TokenType.RepWhile) {
             this.eat(); // eat 'solange'
             return this.parse_while_loop();
+        } else if (this.at().type == TokenType.RepAlways) {
+            this.eat(); // eat immer'
+            return this.parse_bare_loop({kind: "BooleanLiteral", value: true} satisfies BooleanLiteral);
         } else {
             return this.parse_for_loop();
         }
@@ -231,6 +234,10 @@ export default class Parser {
     parse_while_loop(): WhileBlock {
         const condition = this.parse_expr();
         this.expect(TokenType.EndLine, "Nach der Bedingung sollte eine neue Zeile folgen!");
+        return this.parse_bare_loop(condition);
+    }
+
+    parse_bare_loop(condition: Expr): WhileBlock {
         const body: Stmt[] = [];
         while (this.at().type != TokenType.EndBlock) {
             const statement = this.parse_stmt();

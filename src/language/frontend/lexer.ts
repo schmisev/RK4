@@ -14,7 +14,7 @@ export enum TokenType {
     DeclObject, Self, DotOp,
     If, Then, IfElse, Else,
     Return,
-    Repeat, RepTimes, RepWhile, Break, Continue,
+    Repeat, RepTimes, RepWhile, RepAlways, Break, Continue,
 
     // Operations
     OpenParen, CloseParen,
@@ -45,7 +45,7 @@ export enum TokenType {
     EOF,
 }
 
-const KEYWORDS: Record<string, TokenType> = {
+export const KEYWORDS: Record<string, TokenType> = {
     Zahl: TokenType.DeclNumber,
     Wahrheitswert: TokenType.DeclBoolean,
     Text: TokenType.DeclString,
@@ -65,7 +65,8 @@ const KEYWORDS: Record<string, TokenType> = {
     wiederhole: TokenType.Repeat,
     solange: TokenType.RepWhile,
     mal: TokenType.RepTimes,
-    anhalten: TokenType.Break,
+    immer: TokenType.RepAlways,
+    abbrechen: TokenType.Break,
     weiter: TokenType.Continue,
     zurück: TokenType.Return,
     ende: TokenType.EndBlock,

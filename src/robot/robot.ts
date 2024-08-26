@@ -1,7 +1,7 @@
 import { RuntimeError } from "../errors";
 import { GlobalEnvironment, VarHolder } from "../language/runtime/environment";
 import { MK_BOOL, MK_STRING, MK_NATIVE_FN, MK_NUMBER, RuntimeVal } from "../language/runtime/values";
-import { KW } from "../keywords";
+import { ENV } from "../spec";
 import { Vec2 } from "./utils";
 import { BlockType, CHAR2BLOCK, CHAR2MARKER, Field, MarkerType, World } from "./world";
 
@@ -30,61 +30,61 @@ export function declareRobot(r: Robot, varname: string, env: GlobalEnvironment):
     // add robot to environment
     env.declareVar(varname, robot, true);
     // declare its properties
-    karol_env.declareVar(KW.ROBOT.METHODS.GET_X, MK_NATIVE_FN(
+    karol_env.declareVar(ENV.robot.mth.GET_X, MK_NATIVE_FN(
         (args, scope) => {
             if (args.length != 0)
-                throw new RuntimeError(KW.ROBOT.METHODS.GET_X + `() erwartet keine Parameter!`);
+                throw new RuntimeError(ENV.robot.mth.GET_X + `() erwartet keine Parameter!`);
             return MK_NUMBER(r.pos.x);
         }
     ), true);
 
-    karol_env.declareVar(KW.ROBOT.METHODS.GET_Y, MK_NATIVE_FN(
+    karol_env.declareVar(ENV.robot.mth.GET_Y, MK_NATIVE_FN(
         (args, scope) => {
             if (args.length != 0)
-                throw new RuntimeError(KW.ROBOT.METHODS.GET_Y + `() erwartet keine Parameter!`);
+                throw new RuntimeError(ENV.robot.mth.GET_Y + `() erwartet keine Parameter!`);
             return MK_NUMBER(r.pos.y);
         }
     ), true);
 
-    karol_env.declareVar(KW.ROBOT.METHODS.GET_DIR, MK_NATIVE_FN(
+    karol_env.declareVar(ENV.robot.mth.GET_DIR, MK_NATIVE_FN(
         (args, scope) => {
             if (args.length != 0)
-                throw new RuntimeError(KW.ROBOT.METHODS.GET_DIR + `() erwartet keine Parameter!`);
+                throw new RuntimeError(ENV.robot.mth.GET_DIR + `() erwartet keine Parameter!`);
             return MK_STRING(DIR2SHORTGER[r.dir]);
         }
     ), true);
     
-    karol_env.declareVar(KW.ROBOT.METHODS.STEP, MK_NATIVE_FN(
+    karol_env.declareVar(ENV.robot.mth.STEP, MK_NATIVE_FN(
         (args, scope) => {
             if (args.length != 0)
-                throw new RuntimeError(KW.ROBOT.METHODS.STEP + `() erwartet keine Parameter!`);
+                throw new RuntimeError(ENV.robot.mth.STEP + `() erwartet keine Parameter!`);
             r.step();
             return MK_STRING(`Schritt nach: ( ${r.pos.x} | ${r.pos.y} )`);
         }
     ), true);
 
-    karol_env.declareVar(KW.ROBOT.METHODS.TURN_LEFT, MK_NATIVE_FN(
+    karol_env.declareVar(ENV.robot.mth.TURN_LEFT, MK_NATIVE_FN(
         (args, scope) => {
             if (args.length != 0)
-                throw new RuntimeError(KW.ROBOT.METHODS.TURN_LEFT + `() erwartet keine Parameter!`);
+                throw new RuntimeError(ENV.robot.mth.TURN_LEFT + `() erwartet keine Parameter!`);
             r.turnLeft();
             return MK_STRING("Gedreht nach: " + DIR2GER[r.dir]);
         }
     ), true);
 
-    karol_env.declareVar(KW.ROBOT.METHODS.TURN_RIGHT, MK_NATIVE_FN(
+    karol_env.declareVar(ENV.robot.mth.TURN_RIGHT, MK_NATIVE_FN(
         (args, scope) => {
             if (args.length != 0)
-                throw new RuntimeError(KW.ROBOT.METHODS.TURN_RIGHT + `() erwartet keine Parameter!`);
+                throw new RuntimeError(ENV.robot.mth.TURN_RIGHT + `() erwartet keine Parameter!`);
             r.turnRight();
             return MK_STRING("Gedreht nach: " + DIR2GER[r.dir]);
         }
     ), true);
 
-    karol_env.declareVar(KW.ROBOT.METHODS.PLACE_BLOCK, MK_NATIVE_FN(
+    karol_env.declareVar(ENV.robot.mth.PLACE_BLOCK, MK_NATIVE_FN(
         (args, scope) => {
             if (args.length > 1)
-                throw new RuntimeError(KW.ROBOT.METHODS.PLACE_BLOCK + `() erwartet einen oder keine Parameter!`);
+                throw new RuntimeError(ENV.robot.mth.PLACE_BLOCK + `() erwartet einen oder keine Parameter!`);
             let col = "R";
             if (args.length == 1) {
                 if (args[0].type != "string") throw new RuntimeError("Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!");
@@ -95,19 +95,19 @@ export function declareRobot(r: Robot, varname: string, env: GlobalEnvironment):
         }
     ), true);
 
-    karol_env.declareVar(KW.ROBOT.METHODS.PICKUP_BLOCK, MK_NATIVE_FN(
+    karol_env.declareVar(ENV.robot.mth.PICKUP_BLOCK, MK_NATIVE_FN(
         (args, scope) => {
             if (args.length != 0)
-                throw new RuntimeError(KW.ROBOT.METHODS.PICKUP_BLOCK + `() erwartet keine Parameter!`);
+                throw new RuntimeError(ENV.robot.mth.PICKUP_BLOCK + `() erwartet keine Parameter!`);
             r.pickUpBlock();
             return MK_STRING(`Schritt nach: ( ${r.targetPos().x} | ${r.targetPos().y} )`);
         }
     ), true);
 
-    karol_env.declareVar(KW.ROBOT.METHODS.SET_MARKER, MK_NATIVE_FN(
+    karol_env.declareVar(ENV.robot.mth.SET_MARKER, MK_NATIVE_FN(
         (args, scope) => {
             if (args.length > 1)
-                throw new RuntimeError(KW.ROBOT.METHODS.SET_MARKER + `() erwartet einen oder keine Parameter, z.B. markSetzen(blau)!`);
+                throw new RuntimeError(ENV.robot.mth.SET_MARKER + `() erwartet einen oder keine Parameter, z.B. markSetzen(blau)!`);
             let col = "Y";
             if (args.length == 1) {
                 if (args[0].type != "string") throw new RuntimeError("Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!");
@@ -118,19 +118,19 @@ export function declareRobot(r: Robot, varname: string, env: GlobalEnvironment):
         }
     ), true);
 
-    karol_env.declareVar(KW.ROBOT.METHODS.REMOVE_MARKER, MK_NATIVE_FN(
+    karol_env.declareVar(ENV.robot.mth.REMOVE_MARKER, MK_NATIVE_FN(
         (args, scope) => {
             if (args.length != 0)
-                throw new RuntimeError(KW.ROBOT.METHODS.REMOVE_MARKER + `() erwartet keine Parameter!`);
+                throw new RuntimeError(ENV.robot.mth.REMOVE_MARKER + `() erwartet keine Parameter!`);
             r.removeMarker();
             return MK_STRING(`Schritt nach: ( ${r.targetPos().x} | ${r.targetPos().y} )`);
         }
     ), true);
 
-    karol_env.declareVar(KW.ROBOT.METHODS.IS_ON_MARKER, MK_NATIVE_FN(
+    karol_env.declareVar(ENV.robot.mth.IS_ON_MARKER, MK_NATIVE_FN(
         (args, scope) => {
             if (args.length > 1)
-                throw new RuntimeError(KW.ROBOT.METHODS.IS_ON_MARKER +`() erwartet einen oder keine Parameter, z.B. istAufMarke(blau)!`);
+                throw new RuntimeError(ENV.robot.mth.IS_ON_MARKER +`() erwartet einen oder keine Parameter, z.B. istAufMarke(blau)!`);
             if (args.length == 1) {
                 if (args[0].type != "string") throw new RuntimeError("Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!");
                 const col = args[0].value;
@@ -141,10 +141,10 @@ export function declareRobot(r: Robot, varname: string, env: GlobalEnvironment):
         }
     ), true);
 
-    karol_env.declareVar(KW.ROBOT.METHODS.SEES_BLOCK, MK_NATIVE_FN(
+    karol_env.declareVar(ENV.robot.mth.SEES_BLOCK, MK_NATIVE_FN(
         (args, scope) => {
             if (args.length > 1)
-                throw new RuntimeError(KW.ROBOT.METHODS.SEES_BLOCK + `() erwartet einen oder keine Parameter, z.B. siehtZiegel(blau)!`);
+                throw new RuntimeError(ENV.robot.mth.SEES_BLOCK + `() erwartet einen oder keine Parameter, z.B. siehtZiegel(blau)!`);
             if (args.length == 1) {
                 if (args[0].type != "string") throw new RuntimeError("Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!");
                 const col = args[0].value;
@@ -155,18 +155,18 @@ export function declareRobot(r: Robot, varname: string, env: GlobalEnvironment):
         }
     ), true);
 
-    karol_env.declareVar(KW.ROBOT.METHODS.SEES_WALL, MK_NATIVE_FN(
+    karol_env.declareVar(ENV.robot.mth.SEES_WALL, MK_NATIVE_FN(
         (args, scope) => {
             if (args.length != 0)
-                throw new RuntimeError(KW.ROBOT.METHODS.SEES_WALL + `() erwartet keine Parameter!`);
+                throw new RuntimeError(ENV.robot.mth.SEES_WALL + `() erwartet keine Parameter!`);
             return MK_BOOL(r.seesWall());
         }
     ), true);
 
-    karol_env.declareVar(KW.ROBOT.METHODS.SEES_VOID, MK_NATIVE_FN(
+    karol_env.declareVar(ENV.robot.mth.SEES_VOID, MK_NATIVE_FN(
         (args, scope) => {
             if (args.length != 0)
-                throw new RuntimeError(KW.ROBOT.METHODS.SEES_VOID + `() erwartet keine Parameter!`);
+                throw new RuntimeError(ENV.robot.mth.SEES_VOID + `() erwartet keine Parameter!`);
             return MK_BOOL(r.seesVoid());
         }
     ), true);

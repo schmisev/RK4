@@ -1,26 +1,17 @@
-const { KW } = require("../../keywords");
+import { ENV } from "../../spec";
+import { KEYWORDS } from "../../language/frontend/lexer";
 
 ace.define("ace/mode/RKScript_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(require, exports, module){"use strict";
 var oop = require("../lib/oop");
 var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
 var RKScriptHighlightRules = function () {
-    var keywords = "wiederhole|solange|mal|ende|wenn|dann|sonst|zeig|für|als|ist|anhalten|zurück|weiter|und|oder|nicht";
-    var declarations = "Klasse|Funktion|Methode|Zahl|Wahrheitswert|Text|Objekt"
-    var builtinConstants = (Object.values(KW.GLOBAL_ENV.CONSTANTS).join("|") + "|");
-    var builtinFunctions = (
-        KW.ROBOT.CLASSNAME + "|" + KW.WORLD + "|" + Object.values(KW.GLOBAL_ENV.FUNCTIONS).join("|") + "|"
-    );
-    var robotMethods = (
-        Object.values(KW.ROBOT.METHODS).join("|") + "|"
-    );
-    var worldMethods = (
-        Object.values(KW.WORLD.METHODS).join("|") + "|"
-    );
+    var builtinFunctions = Object.values(ENV.global.fn).concat(Object.values(ENV.robot.mth)).concat(ENV.world.mth).join("|");
     var keywordMapper = this.createKeywordMapper({
-        "support.function": builtinFunctions + robotMethods + worldMethods,
-        "keyword": keywords,
-        "keyword.declaration": declarations,
-        "constant.language": builtinConstants,
+        "support.function": Object.values(ENV.global.fn).join("|"),
+        "support.class": ENV.robot.cls + "|" + ENV.world.cls,
+        "entity.name.function": Object.values(ENV.robot.mth).join("|"),
+        "keyword": Object.keys(KEYWORDS).join("|"),
+        "constant.language": Object.values(ENV.global.const).join("|"),
     }, "text", true);
     this.$rules = {
         "start": [{
@@ -30,6 +21,9 @@ var RKScriptHighlightRules = function () {
             }, {
                 token: "string", // " string
                 regex: '".*?"'
+            }, {
+                token: "entity.other.attribute-name",
+                regex: '(?<=\\.)([\\p{L}0-9]+)'
             }, {
                 token: "constant.numeric", // int
                 regex: "[+-]?\\d+\\b"
