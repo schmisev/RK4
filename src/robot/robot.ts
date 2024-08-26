@@ -1,7 +1,7 @@
 import { RuntimeError } from "../errors";
 import { GlobalEnvironment, VarHolder } from "../language/runtime/environment";
 import { MK_BOOL, MK_STRING, MK_NATIVE_FN, MK_NUMBER, RuntimeVal } from "../language/runtime/values";
-import { KW } from "./keywords";
+import { KW } from "../keywords";
 import { Vec2 } from "./utils";
 import { BlockType, CHAR2BLOCK, CHAR2MARKER, Field, MarkerType, World } from "./world";
 

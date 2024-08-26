@@ -1,6 +1,6 @@
 import { ParserError } from "../errors";
 import { BinaryExpr, ClassDefinition, Expr, ForBlock, IfElseBlock, Program, Stmt, UnaryExpr, WhileBlock } from "../language/frontend/ast";
-import {KW} from "../robot/keywords";
+import {KW} from "../keywords";
 
 // Robot class
 const ROBOT_PSEUDO_CLASS = 

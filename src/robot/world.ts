@@ -1,7 +1,7 @@
 import { RuntimeError, WorldError } from "../errors";
-import { ClassPrototype, Environment, GlobalEnvironment, VarHolder } from "../language/runtime/environment";
+import { GlobalEnvironment, VarHolder } from "../language/runtime/environment";
 import { MK_BOOL, MK_NATIVE_FN, MK_NUMBER, RuntimeVal } from "../language/runtime/values";
-import { KW } from "./keywords";
+import { KW } from "../keywords";
 import { declareRobot, Robot } from "./robot";
 import { rndi } from "./utils";
 

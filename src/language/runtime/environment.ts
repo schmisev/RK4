@@ -1,4 +1,5 @@
 import { RuntimeError } from "../../errors";
+import { KW } from "../../keywords";
 import { Trampoline, jump, jumpAround, jumpBind, land } from "./trampoline";
 import { ClassVal, MK_STRING, MethodVal, ObjectVal } from "./values";
 import { MK_BOOL, MK_NATIVE_FN, MK_NULL, MK_NUMBER, RuntimeVal } from "./values";
@@ -29,15 +30,15 @@ export function declareGlobalEnv(): GlobalEnvironment {
         get worldClass() { return this._worldClass }
     }
     const env = new GlobalEnvironment();
-    env.declareVar("wahr", MK_BOOL(true), true);
-    env.declareVar("falsch", MK_BOOL(false), true);
-    env.declareVar("nix", MK_NULL(), true);
-    env.declareVar("gelb", MK_STRING("Y"), true);
-    env.declareVar("rot", MK_STRING("R"), true);
-    env.declareVar("grün", MK_STRING("G"), true);
-    env.declareVar("blau", MK_STRING("B"), true);
+    env.declareVar(KW.GLOBAL_ENV.CONSTANTS.TRUE, MK_BOOL(true), true);
+    env.declareVar(KW.GLOBAL_ENV.CONSTANTS.FALSE, MK_BOOL(false), true);
+    env.declareVar(KW.GLOBAL_ENV.CONSTANTS.NULL, MK_NULL(), true);
+    env.declareVar(KW.GLOBAL_ENV.CONSTANTS.YELLOW, MK_STRING("Y"), true);
+    env.declareVar(KW.GLOBAL_ENV.CONSTANTS.RED, MK_STRING("R"), true);
+    env.declareVar(KW.GLOBAL_ENV.CONSTANTS.GREEN, MK_STRING("G"), true);
+    env.declareVar(KW.GLOBAL_ENV.CONSTANTS.BLUE, MK_STRING("B"), true);
 
-    env.declareVar("zufallszahl", MK_NATIVE_FN(
+    env.declareVar(KW.GLOBAL_ENV.FUNCTIONS.RANDOM_NUMBER, MK_NATIVE_FN(
         (args, scope) => {
             let r = 0;
             if (args.length == 0) {
@@ -51,8 +52,8 @@ export function declareGlobalEnv(): GlobalEnvironment {
             return MK_NUMBER(n);
         }
     ), true);
-    env.declareVar("Roboter", env.robotClass, true);
-    env.declareVar("World", env.worldClass, true);
+    env.declareVar(KW.ROBOT.CLASSNAME, env.robotClass, true);
+    env.declareVar(KW.WORLD.CLASSNAME, env.worldClass, true);
     return env;
 }
 

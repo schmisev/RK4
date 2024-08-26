@@ -1,4 +1,20 @@
 export namespace KW {
+    export namespace GLOBAL_ENV {
+        export namespace CONSTANTS {
+            export const TRUE = "wahr";
+            export const FALSE = "falsch";
+            export const NULL = "nix";
+            export const YELLOW = "gelb";
+            export const RED = "rot";
+            export const GREEN = "grün";
+            export const BLUE = "blau";
+        }
+        
+        export namespace FUNCTIONS {
+            export const RANDOM_NUMBER = "zufallszahl";
+        }
+    }
+
     export namespace ROBOT {
         export const CLASSNAME = "Roboter";
 

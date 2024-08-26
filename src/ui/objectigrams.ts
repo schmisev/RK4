@@ -1,5 +1,4 @@
-import { sleep } from "../language/runtime/utils";
-import { DIR2GER, DIR2SHORTGER, Robot } from "../robot/robot";
+import { DIR2SHORTGER, Robot } from "../robot/robot";
 import { World } from "../robot/world";
 
 export let robotDiagramIndex = -1
@@ -13,7 +12,7 @@ export function addRobotButtons(div: HTMLElement, overlay: HTMLElement, world: W
         const el = document.createElement("button");
         el.classList.add("object-button");
 
-        el.onmouseover = () => {robotDiagramIndex = i};
+        el.onmousedown = () => {robotDiagramIndex = i};
         el.onmouseleave = () => {robotDiagramIndex = -1};
 
         el.innerHTML = `🤖 ${r.name}`;

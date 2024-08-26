@@ -1,4 +1,4 @@
-const { KW } = require("../../robot/keywords");
+const { KW } = require("../../keywords");
 
 ace.define("ace/mode/RKScript_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(require, exports, module){"use strict";
 var oop = require("../lib/oop");
@@ -6,9 +6,9 @@ var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
 var RKScriptHighlightRules = function () {
     var keywords = "wiederhole|solange|mal|ende|wenn|dann|sonst|zeig|für|als|ist|anhalten|zurück|weiter|und|oder|nicht";
     var declarations = "Klasse|Funktion|Methode|Zahl|Wahrheitswert|Text|Objekt"
-    var builtinConstants = ("wahr|falsch|nix|welt");
+    var builtinConstants = (Object.values(KW.GLOBAL_ENV.CONSTANTS).join("|") + "|");
     var builtinFunctions = (
-        "Roboter|Welt|zufallszahl|"
+        KW.ROBOT.CLASSNAME + "|" + KW.WORLD + "|" + Object.values(KW.GLOBAL_ENV.FUNCTIONS).join("|") + "|"
     );
     var robotMethods = (
         Object.values(KW.ROBOT.METHODS).join("|") + "|"
@@ -17,7 +17,7 @@ var RKScriptHighlightRules = function () {
         Object.values(KW.WORLD.METHODS).join("|") + "|"
     );
     var keywordMapper = this.createKeywordMapper({
-        "support.function": builtinFunctions + robotMethods,
+        "support.function": builtinFunctions + robotMethods + worldMethods,
         "keyword": keywords,
         "keyword.declaration": declarations,
         "constant.language": builtinConstants,
