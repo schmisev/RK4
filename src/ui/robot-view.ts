@@ -2,7 +2,7 @@ import * as p5 from 'p5';
 
 import { isRunning, queueInterrupt, world, objOverlay, taskCheck } from '..';
 import { Robot } from '../robot/robot';
-import { lerp } from '../robot/utils';
+import { lerp } from '../utils';
 import { CR, CY, CG, CB, BlockType, MarkerType, World, CBOT, CBOT2, Field } from '../robot/world';
 import { robotDiagramIndex, showRobotDiagram, hideRobotDiagram } from './objectigrams';
 
@@ -129,7 +129,7 @@ export function robotSketch(p5: p5) {
         if (isRunning && bg == 0) {
             bg = 255;
         }
-        if (bg > 0) bg = lerp(0, bg, 0.9);
+        if (bg > 0) bg = p5.lerp(0, bg, 0.9);
         if (!isRunning || queueInterrupt) bg = 0;
 
         p5.background(bg);

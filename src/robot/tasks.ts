@@ -185,6 +185,12 @@ export const TASKS = {
         world: generateHomogeneousWorld(16, 8, 6, "...:_"),
         preload: STD_PRELOAD,
     },
+    "Zufall 1x4": {
+        title: "Alles versucht?",
+        description: "Lege die Blöcke an die richtigen Stellen - aber Achtung! Wo sie liegen sollen wird jedes Mal ausgewürfelt. Nutze dafür welt.fertig()!",
+        preload: "Methode gehen(Zahl n) für Roboter\n    wiederhole n mal\n        schritt()\n    ende\nende",
+        world: "x;5;1;5;\nE;_:.;_:.;_:.;_:.",
+    },
     "X1": {
         title: "Chaos",
         description: "Räume alle Blöcke auf!",

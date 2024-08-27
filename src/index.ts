@@ -1,25 +1,32 @@
-
+// UI imports
 import "./ui/panels";
-import "./ui/robot_view";
+import "./ui/robot-view";
+import "./ui/console-log";
+import { showStructogram } from './ui/structograms';
+import { addRobotButtons } from './ui/objectigrams';
 
+// language imports
 import Parser from "./language/frontend/parser";
 import { Program } from './language/frontend/ast';
-import { declareWorld, World } from "./robot/world";
-import { Environment, GlobalEnvironment, declareGlobalEnv } from "./language/runtime/environment";
+import { GlobalEnvironment, declareGlobalEnv } from "./language/runtime/environment";
 import { evaluate } from "./language/runtime/interpreter";
-import { clamp } from './robot/utils';
-import { STD_PRELOAD, STD_WORLD, TASKS, DEFAULT_TASK, TEST_CODE, Task } from "./robot/tasks";
-import { sleep } from './language/runtime/utils';
+import { sleep } from "./utils";
 
+// Robot imports
+import { declareWorld, World } from "./robot/world";
+import { STD_PRELOAD, STD_WORLD, TASKS, DEFAULT_TASK, TEST_CODE, Task } from "./robot/tasks";
+import { clamp } from './utils';
+
+// ACE imports
 import * as ace from "ace-builds";
 import "ace-builds/esm-resolver";
 import "ace-builds/src-noconflict/ext-language_tools";
 import './assets/ace/mode-rkscript.js';
 import './assets/ace/theme-rklight.js';
 
+// General errors 
+// TODO: Split up?
 import { LexerError, ParserError } from './errors';
-import { showStructogram } from './ui/structograms';
-import { addRobotButtons } from './ui/objectigrams';
 
 // Global variables
 let dt = 50; // ms to sleep between function calls
@@ -35,15 +42,6 @@ const parse = new Parser();
 let env: GlobalEnvironment;
 export let world: World
 let program: Program;
-
-// Console log replacement
-console.log = (function (old_log, log: HTMLElement) { 
-    return function () {
-        log.innerText += Array.prototype.slice.call(arguments).join(' ') + "\n";
-        old_log.apply(console, arguments);
-        log.scrollTop = log.scrollHeight;
-    };
-}(console.log.bind(console), document.querySelector('#console-log')!));
 
 // Fetch HTML elements
 // Fetch task check
@@ -291,7 +289,6 @@ async function runCmd() {
     if (cmdLineStack.length > 30) cmdLineStack.shift()
     cmdLineStackPointer = cmdLineStack.length;
 
-    console.log("↩ Anweisung ausgeführt!");
     console.log(">>", cmdCode);
     await runCode(cmdCode, true);
 };
@@ -320,14 +317,18 @@ async function startCode() {
         
         editor.setReadOnly(true);
         await runCode(code, true);
-        await sleep(1000);
-        editor.setReadOnly(false);
+
+        console.log("▢ Ausführung beendet!");
 
         if (!world.isGoalReached()) {
             console.log(`❌ Du hast die Teilaufgabe ${i+1} NICHT erfüllt!`);
+            editor.setReadOnly(false);
             return;
-        };
+        }
         console.log(`✔️ Du hast die Teilaufgabe ${i+1} erfüllt!`);
+        
+        await sleep(1000);
+        editor.setReadOnly(false);
     }
     console.log("🏅 Du hast alle Teilaufgaben erfüllt!");
     return;
@@ -366,7 +367,7 @@ async function runCode(code: string, stepped: boolean) {
             if (next.done) break;
 
             if (queueInterrupt) {
-                console.log("▢ Ausführung abgebrochen!");
+                console.log("▽ Ausführung wird abgebrochen!");
                 queueInterrupt = false;
                 break;
             }

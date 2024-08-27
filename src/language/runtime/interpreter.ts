@@ -2,7 +2,7 @@ import { RuntimeVal, MK_NUMBER, MK_STRING, MK_BOOL, MK_NULL } from "./values";
 import { Stmt } from "../frontend/ast";
 import { Environment } from "./environment";
 import { eval_identifier, eval_binary_expr, eval_assignment_expr, eval_unary_expr, eval_call_expr, eval_member_expr } from "./eval/expressions";
-import { eval_fn_definition, eval_empty_line, eval_for_block, eval_if_else_block, eval_program, eval_show_command, eval_var_declaration, eval_while_block, eval_class_definition, eval_obj_declaration, eval_return_command, eval_ext_method_definition } from "./eval/statements";
+import { eval_fn_definition, eval_empty_line, eval_for_block, eval_if_else_block, eval_program, eval_show_command, eval_var_declaration, eval_while_block, eval_class_definition, eval_obj_declaration, eval_return_command, eval_ext_method_definition, eval_always_block } from "./eval/statements";
 import { Break, Continue } from "./eval/errors";
 
 export type SteppedEval<T> = Generator<number, T, void>;
@@ -42,6 +42,8 @@ export function* evaluate(
             return yield* eval_program(astNode, env);
         case "WhileBlock":
             return yield* eval_while_block(astNode, env);
+        case "AlwaysBlock":
+            return yield* eval_always_block(astNode, env);
         case "ForBlock":
             return yield* eval_for_block(astNode, env);
         case "IfElseBlock":
@@ -57,6 +59,7 @@ export function* evaluate(
         case "ClassDefinition":
             return eval_class_definition(astNode, env);
         case "ShowCommand":
+            yield astNode.lineIndex;
             return yield* eval_show_command(astNode, env);
         case "BreakCommand":
             yield astNode.lineIndex;

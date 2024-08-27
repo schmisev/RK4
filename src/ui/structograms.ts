@@ -1,5 +1,5 @@
 import { ParserError } from "../errors";
-import { BinaryExpr, ClassDefinition, Expr, ForBlock, IfElseBlock, Program, Stmt, UnaryExpr, WhileBlock } from "../language/frontend/ast";
+import { AlwaysBlock, BinaryExpr, ClassDefinition, Expr, ForBlock, IfElseBlock, Program, Stmt, UnaryExpr, WhileBlock } from "../language/frontend/ast";
 import { ENV } from "../spec";
 
 // Robot class
@@ -98,6 +98,8 @@ function structure(astNode: Stmt): string {
             return structureIfElse(astNode);
         case "WhileBlock":
             return structureWhile(astNode);
+        case "AlwaysBlock":
+            return structureAlways(astNode);
         case "ForBlock":
             return structureFor(astNode);
         case "NumericLiteral":
@@ -218,6 +220,15 @@ function structureWhile(node: WhileBlock): string {
     <span class="line">
     ${cond} 
     </span>
+    </div>
+        <div class="struct-while">${structureSequence(node.body)}</div>`
+    return result;
+}
+
+function structureAlways(node: AlwaysBlock): string {
+    const result = 
+    `<div class="struct-label">
+    wiederhole ${makeTooltip("immer", "Die folgenden Anweisungen werden auf immer und ewig ausgeführt - außer man benutzt 'abbrechen' oder 'zurück'!")}
     </div>
         <div class="struct-while">${structureSequence(node.body)}</div>`
     return result;

@@ -1,5 +1,5 @@
 import { RuntimeError } from "../../../errors";
-import { ClassDefinition, EmptyLine, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, VarDeclaration, WhileBlock } from "../../frontend/ast";
+import { AlwaysBlock, ClassDefinition, EmptyLine, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, VarDeclaration, WhileBlock } from "../../frontend/ast";
 import { ClassPrototype, Environment, VarHolder } from "../environment";
 import { SteppedEval, evaluate } from "../interpreter";
 import {
@@ -219,6 +219,7 @@ export function* eval_for_block(
 
     try {
         while (i > 0) {
+            yield block.lineIndex;
             try {
                 lastEvaluated = yield* eval_bare_statements(
                     block.body,
@@ -237,7 +238,6 @@ export function* eval_for_block(
         }
         return MK_NULL();
     }
-
     return lastEvaluated;
 }
 
@@ -248,7 +248,9 @@ export function* eval_while_block(
     let lastEvaluated: RuntimeVal = MK_NULL();
     try {
         while (true) {
+            yield block.lineIndex;
             try {
+                // yield here to prevent infinite loops from being unable to be stopped
                 const condition = yield* evaluate(block.condition, env);
                 if (evaluate_condition_value(condition)) {
                     lastEvaluated = yield* eval_bare_statements(
@@ -258,6 +260,33 @@ export function* eval_while_block(
                 } else {
                     return lastEvaluated;
                 }
+            } catch (e) {
+                if (!(e instanceof Continue)) {
+                    throw e;
+                }
+            }
+        }
+    } catch (e) {
+        if (!(e instanceof Break)) {
+            throw e;
+        }
+        return MK_NULL();
+    }
+}
+
+export function* eval_always_block(
+    block: AlwaysBlock,
+    env: Environment
+): SteppedEval<RuntimeVal> {
+    let lastEvaluated: RuntimeVal = MK_NULL();
+    try {
+        while (true) {
+            yield block.lineIndex;
+            try {
+                lastEvaluated = yield* eval_bare_statements(
+                    block.body,
+                    new Environment(env)
+                );
             } catch (e) {
                 if (!(e instanceof Continue)) {
                     throw e;

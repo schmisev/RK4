@@ -2,7 +2,7 @@ import { RuntimeError } from "../errors";
 import { GlobalEnvironment, VarHolder } from "../language/runtime/environment";
 import { MK_BOOL, MK_STRING, MK_NATIVE_FN, MK_NUMBER, RuntimeVal } from "../language/runtime/values";
 import { ENV } from "../spec";
-import { Vec2 } from "./utils";
+import { Vec2 } from "../utils";
 import { BlockType, CHAR2BLOCK, CHAR2MARKER, Field, MarkerType, World } from "./world";
 
 export const DIR2GER: Record<string, string> = {

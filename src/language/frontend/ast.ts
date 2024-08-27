@@ -1,6 +1,6 @@
 export type NodeType = Stmt["kind"];
 
-export type Stmt = Program | VarDeclaration | ObjDeclaration | IfElseBlock | ForBlock | WhileBlock | ShowCommand | BreakCommand | ContinueCommand | ReturnCommand | Expr;
+export type Stmt = Program | VarDeclaration | ObjDeclaration | IfElseBlock | ForBlock | WhileBlock | AlwaysBlock | ShowCommand | BreakCommand | ContinueCommand | ReturnCommand | Expr;
 
 export interface Program {
     kind: "Program";
@@ -34,13 +34,21 @@ export interface IfElseBlock {
 
 export interface ForBlock {
     kind: "ForBlock";
+    lineIndex: number;
     counter: Expr;
     body: Stmt[];
 }
 
 export interface WhileBlock {
     kind: "WhileBlock";
+    lineIndex: number;
     condition: Expr;
+    body: Stmt[];
+}
+
+export interface AlwaysBlock {
+    kind: "AlwaysBlock";
+    lineIndex: number;
     body: Stmt[];
 }
 

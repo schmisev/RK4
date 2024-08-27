@@ -1,4 +1,4 @@
-import { Stmt, Program, Expr, BinaryExpr, NumericLiteral, Identifier, VarDeclaration, ObjDeclaration, FunctionDefinition, UnaryExpr, ShowCommand, AssignmentExpr, IfElseBlock, BreakCommand, ContinueCommand, StringLiteral, ClassDefinition, CallExpr, ParamDeclaration, EmptyLine, MemberExpr, ReturnCommand, ExtMethodDefinition, BooleanLiteral } from "./ast";
+import { Stmt, Program, Expr, BinaryExpr, NumericLiteral, Identifier, VarDeclaration, ObjDeclaration, FunctionDefinition, UnaryExpr, ShowCommand, AssignmentExpr, IfElseBlock, BreakCommand, ContinueCommand, StringLiteral, ClassDefinition, CallExpr, ParamDeclaration, EmptyLine, MemberExpr, ReturnCommand, ExtMethodDefinition, BooleanLiteral, AlwaysBlock } from "./ast";
 import { tokenize, Token, TokenType } from "./lexer";
 import { ForBlock } from "./ast";
 import { WhileBlock } from "./ast";
@@ -208,13 +208,15 @@ export default class Parser {
             return this.parse_while_loop();
         } else if (this.at().type == TokenType.RepAlways) {
             this.eat(); // eat immer'
-            return this.parse_bare_loop({kind: "BooleanLiteral", value: true} satisfies BooleanLiteral);
+            return this.parse_always_loop();
         } else {
             return this.parse_for_loop();
         }
     }
 
     parse_for_loop(): ForBlock {
+        const lineIndex = this.at().lineIndex;
+        
         const counter = this.parse_expr();
         this.expect(TokenType.RepTimes, "Auf den Zähler sollte 'mal' folgen!");
         this.expect(TokenType.EndLine, "Nach 'mal' sollte eine neue Zeile folgen!");
@@ -226,29 +228,47 @@ export default class Parser {
         this.eat(); // eat 'ende'
         return {
             kind: "ForBlock",
+            lineIndex,
             counter,
             body,
         };
     }
 
     parse_while_loop(): WhileBlock {
+        const lineIndex = this.at().lineIndex;
+
         const condition = this.parse_expr();
         this.expect(TokenType.EndLine, "Nach der Bedingung sollte eine neue Zeile folgen!");
-        return this.parse_bare_loop(condition);
+        
+        return {
+            kind: "WhileBlock",
+            lineIndex,
+            condition,
+            body: this.parse_bare_loop(),
+        };
     }
 
-    parse_bare_loop(condition: Expr): WhileBlock {
+    parse_always_loop(): AlwaysBlock {
+        const lineIndex = this.at().lineIndex;
+        
+        this.expect(TokenType.EndLine, "Nach 'immer' sollte eine neue Zeile folgen!");
+        
+        return {
+            kind: "AlwaysBlock",
+            lineIndex,
+            body: this.parse_bare_loop(),
+        };
+    }
+
+    // helper function
+    parse_bare_loop(): Stmt[] {
         const body: Stmt[] = [];
         while (this.at().type != TokenType.EndBlock) {
             const statement = this.parse_stmt();
             body.push(statement);
         }
         this.eat();
-        return {
-            kind: "WhileBlock",
-            condition,
-            body,
-        };
+        return body;
     }
 
     parse_var_declaration(): VarDeclaration | ObjDeclaration {

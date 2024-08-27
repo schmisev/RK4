@@ -3,7 +3,7 @@ import { GlobalEnvironment, VarHolder } from "../language/runtime/environment";
 import { MK_BOOL, MK_NATIVE_FN, MK_NUMBER, RuntimeVal } from "../language/runtime/values";
 import { ENV } from "../spec";
 import { declareRobot, Robot } from "./robot";
-import { rndi } from "./utils";
+import { rndi } from "../utils";
 
 export enum BlockType {
     r, g, b, y
