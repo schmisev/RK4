@@ -199,11 +199,13 @@ export class ClassPrototype {
                             params: method.params,
                             declenv: new BoundDynamicScope(this._env, receiver),
                         }
-                    else
+                    else if (method.type === "native-method")
                         return {
                             type: "native-fn",
                             call: method.call.bind(receiver),
                         }
+                    // unreachable!
+                    return method satisfies never;
                 },
                 set: (_newVal) => {
                     throw new RuntimeError(`Kann die Konstante '${varname}' nicht verändern!`);
