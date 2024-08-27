@@ -52,19 +52,20 @@ export function* eval_obj_declaration(
     const cl = evalEnv.lookupVar(decl.classname);
     if (cl.type != "class")
         throw new RuntimeError(`'${decl.classname}' ist kein Klassenname!`);
-    const ownMembers = new VarHolder();
+    if (cl.internal)
+        throw new RuntimeError(`Kann kein neues Objekt der Klasse ${decl.classname} erzeugen.`);
 
     const obj: ObjectVal = {
         type: "object",
         cls: cl,
-        ownMembers,
+        ownMembers: new VarHolder(),
     };
 
     for (const attr of cl.attributes) {
         if (attr.type == "object") {
-            yield* eval_obj_declaration(attr, evalEnv, ownMembers);
+            yield* eval_obj_declaration(attr, evalEnv, obj.ownMembers);
         } else {
-            yield* eval_var_declaration(attr, evalEnv, ownMembers);
+            yield* eval_var_declaration(attr, evalEnv, obj.ownMembers);
         }
     }
 

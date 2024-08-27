@@ -215,7 +215,7 @@ export function* eval_call_expr(
     const fn = yield* evaluate(call.ident, env);
 
     if (fn.type == "native-fn") {
-        return fn.call(args, env);
+        return fn.call(args);
     } else if (fn.type == "function") {
         const scope = new Environment(fn.declenv);
 

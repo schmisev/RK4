@@ -1,7 +1,9 @@
 import { RuntimeError } from "../../errors";
+import { declareRobotClass } from "../../robot/robot";
+import { declareWorldClass } from "../../robot/world";
 import { ENV } from "../../spec";
 import { Trampoline, jump, jumpAround, jumpBind, land } from "./trampoline";
-import { ClassVal, MK_STRING, MethodVal, ObjectVal } from "./values";
+import { BuiltinClass, ClassVal, MK_STRING, MethodVal, NativeMethodVal, ObjectVal } from "./values";
 import { MK_BOOL, MK_NATIVE_FN, MK_NULL, MK_NUMBER, RuntimeVal } from "./values";
 
 export interface GlobalEnvironment extends Environment {
@@ -12,20 +14,8 @@ export interface GlobalEnvironment extends Environment {
 
 export function declareGlobalEnv(): GlobalEnvironment {
     class GlobalEnvironment extends Environment {
-        private _robotClass: ClassVal = {
-            type: "class",
-            name: "Roboter",
-            attributes: [],
-            declenv: this,
-            prototype: new ClassPrototype(this),
-        };
-        private _worldClass: ClassVal = {
-            type: "class",
-            name: "World",
-            attributes: [],
-            declenv: this,
-            prototype: new ClassPrototype(this),
-        }
+        private _robotClass: BuiltinClass = declareRobotClass(this);
+        private _worldClass: BuiltinClass = declareWorldClass(this);
         get robotClass() { return this._robotClass }
         get worldClass() { return this._worldClass }
     }
@@ -39,7 +29,7 @@ export function declareGlobalEnv(): GlobalEnvironment {
     env.declareVar(ENV.global.const.BLUE, MK_STRING("B"), true);
 
     env.declareVar(ENV.global.fn.RANDOM_NUMBER, MK_NATIVE_FN(
-        (args, scope) => {
+        (args) => {
             let r = 0;
             if (args.length == 0) {
                 r = 100;
@@ -170,13 +160,13 @@ export class BoundDynamicScope implements StaticScope {
 
 export class ClassPrototype {
     private _env: StaticScope;
-    private _methods: Map<string, MethodVal> = new Map();
+    private _methods: Map<string, MethodVal | NativeMethodVal> = new Map();
 
     constructor(declEnv: StaticScope) {
         this._env = declEnv;
     }
 
-    public declareMethod(name: string, method: MethodVal) {
+    public declareMethod(name: string, method: MethodVal | NativeMethodVal) {
         if (this._methods.has(name))
             throw new RuntimeError(`Die Methode '${name}' existiert schon!`);
         this._methods.set(name, method);
@@ -202,13 +192,19 @@ export class ClassPrototype {
             return land({
                 get: () => {
                     const declenv = new BoundDynamicScope(this._env, receiver);
-                    return {
-                        type: "function",
-                        body: method.body,
-                        name: method.name,
-                        params: method.params,
-                        declenv,
-                    }
+                    if (method.type === "method")
+                        return {
+                            type: "function",
+                            body: method.body,
+                            name: method.name,
+                            params: method.params,
+                            declenv,
+                        }
+                    else
+                        return {
+                            type: "native-fn",
+                            call: method.call.bind(receiver),
+                        }
                 },
                 set: (_newVal) => {
                     throw new RuntimeError(`Kann die Konstante '${varname}' nicht verändern!`);
