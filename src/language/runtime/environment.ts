@@ -191,14 +191,13 @@ export class ClassPrototype {
         if (method !== undefined) {
             return land({
                 get: () => {
-                    const declenv = new BoundDynamicScope(this._env, receiver);
                     if (method.type === "method")
                         return {
                             type: "function",
                             body: method.body,
                             name: method.name,
                             params: method.params,
-                            declenv,
+                            declenv: new BoundDynamicScope(this._env, receiver),
                         }
                     else
                         return {
