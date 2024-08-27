@@ -101,15 +101,17 @@ function structure(astNode: Stmt): string {
         case "ForBlock":
             return structureFor(astNode);
         case "NumericLiteral":
-            return `<span class="struct-literal">${astNode.value}</span>`;
+            return makeSpan(astNode.value.toString(), "struct-literal");
         case "StringLiteral":
-            return `<span class="struct-string">"${astNode.value}"</span>`;
+            return makeSpan('"' + astNode.value + '"', "struct-literal");
         case "BooleanLiteral":
-            return `<span class="struct-literal">${astNode.value ? "wahr" : "falsch"}</span>`;
+            return makeSpan(astNode.value ? "wahr" : "falsch", "struct-literal");
         case "NullLiteral":
-            return `<span class="struct-literal">nix</span>`;
+            return makeSpan("nix", "struct-literal");
         case "Identifier":
-            return `<span class="struct-ident">${astNode.symbol}</span>`
+            if (Object.values(ENV.global.const).includes(astNode.symbol))
+                return makeSpan(astNode.symbol, "struct-literal");
+            return makeSpan(astNode.symbol, "struct-ident");
         case "BinaryExpr":
             return structureBinaryExpr(astNode);
         case "UnaryExpr":
@@ -119,30 +121,34 @@ function structure(astNode: Stmt): string {
         case "CallExpr":
             return `${structure(astNode.ident)}(${astNode.args.map(structure).join(", ")})`
         case "MemberExpr":
-            return `<span class="struct-object">${structure(astNode.container)}</span><b>.</b>${structure(astNode.member)}`
+            return `${makeSpan(structure(astNode.container), "struct-object")}<b>.</b>${structure(astNode.member)}`
         case "VarDeclaration":
-            return `<span class="struct-type">${TYPE2GER[astNode.type]}</span> <span class="struct-ident">${astNode.ident}</span> ist ${structure(astNode.value)}`
+            return `${makeSpan(TYPE2GER[astNode.type], "struct-type")}</span> <span class="struct-ident">${astNode.ident}</span> ist ${structure(astNode.value)}`
         case "ObjDeclaration":
-            return `<span class="struct-type">Objekt</span> <span class="struct-ident">${astNode.ident}</span> als <span class="struct-classtype">${astNode.classname}</span>`
+            return `${makeSpan("Objekt", "struct-type")} <span class="struct-ident">${astNode.ident}</span> als <span class="struct-classtype">${astNode.classname}</span>`
         case "ShowCommand":
-            return `<span class="struct-cmd">zeig</span> ${astNode.values.map(structure).join(", ")}`
+            return `${makeSpan("zeig", "struct-cmd")} ${astNode.values.map(structure).join(", ")}`
         case "FunctionDefinition":
             const funcHandle = `${astNode.name}(${astNode.params.map((p) => p.ident).join(", ")})`
-            sections.push(`<div class="struct-program">Funktion: ${funcHandle} ${structureSequence(astNode.body)}</div>`);
-            return `<span class="struct-deemph">↪  ${funcHandle}</span>`;
+            sections.push(
+                makeDiv(`${makeTooltip("Funktion", "Hier wird eine neue Funktion definiert, die an anderen Stellen im Code aufgerufen werden kann. So muss man nicht immer dieselben Anweisungen schreiben.")}: ${funcHandle} ${structureSequence(astNode.body)}`, "struct-program")
+            );
+            return makeSpan(`↪  ${funcHandle}`, "struct-deemph");
         case "ExtMethodDefinition":
             const methodHandle = `${astNode.name}(${astNode.params.map((p) => p.ident).join(", ")}) für ${astNode.classname}`
-            sections.push(`<div class="struct-program">Methode: ${methodHandle} ${structureSequence(astNode.body)}</div>`);
-            return `<span class="struct-deemph">↪ ${methodHandle}</span>`;
+            sections.push(
+                makeDiv(`${makeTooltip("Methode", `Hier wird eine neue Methode für die Klasse ${astNode.classname} definiert, die an anderen Stellen im Code aufgerufen werden kann.`)}: ${methodHandle} ${structureSequence(astNode.body)}`,"struct-program")
+            );
+            return makeSpan(`↪ ${methodHandle}`, "struct-deemph");
         case "ClassDefinition":
             classes.push(structureClass(astNode));
-            return `<div class="struct-deemph">↪ ${astNode.ident}</div>`;
+            return makeSpan(`↪ ${astNode.ident}`, "struct-deemph");
         case "BreakCommand":
-            return `<span class="struct-cmd">anhalten</span>`
+            return makeSpan("abbrechen", "struct-cmd");
         case "ContinueCommand":
-            return `<span class="struct-cmd">weiter</span>`
+            return makeSpan("weiter", "struct-cmd");
         case "ReturnCommand":
-            return `<span><span class="struct-cmd">zurück</span> ${structure(astNode.value)}</span>`
+            return `${makeSpan("zurück", "struct-cmd")} ${structure(astNode.value)}`
         case "EmptyLine":
         default:
             return `<span>&lt${astNode.kind}&gt</span>`
@@ -157,12 +163,17 @@ function encapsulateExpr(astNode: Expr, right = false) {
     return expr;
 }
 
+// helper functions
 function makeTooltip(txt: string, tt: string) {
     return `<span class="struct-tooltip">${txt}<span class="tooltip">${tt}</span></span>`;
 }
 
-function makeContainer(content: string) {
-    return `<div class="struct-container">${content}</div>`;
+function makeDiv(content: string, cls: string = "") {
+    return `<div class="${cls}">${content}</div>`;
+}
+
+function makeSpan(content: string, cls: string = "") {
+    return `<span class="${cls}">${content}</span>`;
 }
 
 function structureProgram(astNode: Program) {
@@ -203,6 +214,7 @@ function structureWhile(node: WhileBlock): string {
     const result = 
     `<div class="struct-label">
     wiederhole ${makeTooltip("solange", "Die folgenden Anweisungen werden immer wieder ausgeführt, bis die Bedingung <u>" + cond + "</u> nicht mehr wahr ist!")}
+    <br>&nbsp;&nbsp;&nbsp
     <span class="line">
     ${cond} 
     </span>

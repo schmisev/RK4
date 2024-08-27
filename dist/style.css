@@ -304,6 +304,9 @@ a {
     grid-column: 3;
     grid-row: 2 / 23;
     padding: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .cmd-line {
@@ -431,6 +434,7 @@ a {
     outline: 2px black solid;
     outline-offset: -1px;
     font-family: Arial, Helvetica, sans-serif;
+    width: max-content;
 }
 
 .struct-box {
@@ -591,10 +595,13 @@ span.line {
     position: absolute;
     z-index: 1;
 
-    width: 200px;
+    width: max-content;
+    max-width: 140px;
+
     top: calc(100% + 5px);
     left: 50%;
-    margin-left: -110px;
+    /*margin-left: calc(width / 2 - 10px);*/
+    transform: translateX(-50%);
 
     pointer-events: none;
     transition: visibility 0s linear 0ms, opacity 200ms;
@@ -623,17 +630,19 @@ span.line {
     font-weight: bold;
     padding: 5px;
     border-radius: 10px 10px 0px 0px;
+    min-width: max-content;
 }
 .obj-attributes {
     outline: 1px black solid;
     text-align: left;
     padding: 5px;
+    min-width: max-content;
 }
 .obj-methods {
     outline: 1px black solid;
     text-align: left;
     padding: 5px;
-    border-radius: 0px 0px 10px 10px ;
+    border-radius: 0px 0px 10px 10px;
 }
 
 /* markers */
