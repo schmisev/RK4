@@ -216,7 +216,7 @@ function structureFor(node: ForBlock): string {
     const result = 
     `<div class="struct-label">
     wiederhole 
-    <span class="line">${count} ${makeTooltip("mal", "Die folgenden Anweisungen werden sooft ausgeführt, wie es die die Anzahl <u>" + count + "</u> vorgibt!")}
+    <span class="line">${count} ${makeTooltip("mal", "Die folgenden Anweisungen werden sooft ausgeführt, wie es die Anzahl <u>" + count + "</u> vorgibt!")}
     </span>
     </div>
         <div class="struct-while">${structureSequence(node.body)}</div>`
@@ -225,15 +225,23 @@ function structureFor(node: ForBlock): string {
 
 function structureIfElse(node: IfElseBlock): string {
     const cond = structure(node.condition);
+    let bias = "";
+    if (node.ifFalse.length == 0 && node.ifTrue.length > 0) {
+        bias = "left";
+    }
+    if (node.ifTrue.length == 0 && node.ifFalse.length > 0) {
+        bias = "right";
+    }
+
     const result =
     `
-    <div class="struct-ifelse">${cond} ? <br><br>
+    <div class="struct-ifelse ${bias}">${cond} ? <br><br>
         <div style="display: flex;">
             <div style="flex: 50%; padding-left: 5px; text-align: left;">${makeTooltip("W", "Wenn die Bedingung <u>" + cond + "</u> zutrifft, wird die linke Spalte ausgeführt!")}</div>
             <div style="flex: 50%; padding-right: 5px; text-align: right;">${makeTooltip("F", "Wenn die Bedingung <u>" + cond + "</u> nicht zutrifft, wird die rechte Spalte ausgeführt!")}</div>
         </div>
     </div>
-    <div class="struct-row">
+    <div class="struct-row ${bias}">
         <div class="struct-column">${structureSequence(node.ifTrue)}</div>
         <div class="struct-column">${structureSequence(node.ifFalse)}</div>
     </div>
