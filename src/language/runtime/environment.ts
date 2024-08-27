@@ -3,7 +3,7 @@ import { declareRobotClass } from "../../robot/robot";
 import { declareWorldClass } from "../../robot/world";
 import { ENV } from "../../spec";
 import { Trampoline, jump, jumpAround, jumpBind, land } from "./trampoline";
-import { BuiltinClass, ClassVal, MK_STRING, MethodVal, NativeMethodVal, ObjectVal } from "./values";
+import { BuiltinClassVal, ClassVal, MK_STRING, MethodVal, NativeMethodVal, ObjectVal } from "./values";
 import { MK_BOOL, MK_NATIVE_FN, MK_NULL, MK_NUMBER, RuntimeVal } from "./values";
 
 export interface GlobalEnvironment extends Environment {
@@ -14,8 +14,8 @@ export interface GlobalEnvironment extends Environment {
 
 export function declareGlobalEnv(): GlobalEnvironment {
     class GlobalEnvironment extends Environment {
-        private _robotClass: BuiltinClass = declareRobotClass(this);
-        private _worldClass: BuiltinClass = declareWorldClass(this);
+        private _robotClass: BuiltinClassVal = declareRobotClass(this);
+        private _worldClass: BuiltinClassVal = declareWorldClass(this);
         get robotClass() { return this._robotClass }
         get worldClass() { return this._worldClass }
     }

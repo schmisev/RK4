@@ -54,7 +54,7 @@ export interface MethodVal {
     body: Stmt[];
 }
 
-export interface BuiltinClass {
+export interface BuiltinClassVal {
     type: "class";
     name: string;
     internal: true;
@@ -62,7 +62,7 @@ export interface BuiltinClass {
     declenv: GlobalEnvironment;
 }
 
-export interface UserClass {
+export interface UserClassVal {
     type: "class";
     name: string;
     internal?: false;
@@ -71,7 +71,7 @@ export interface UserClass {
     declenv: Environment;
 }
 
-export type ClassVal = BuiltinClass | UserClass;
+export type ClassVal = BuiltinClassVal | UserClassVal;
 
 export interface ObjectVal {
     type: "object";

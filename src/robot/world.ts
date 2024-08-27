@@ -1,6 +1,6 @@
 import { RuntimeError, WorldError } from "../errors";
 import { ClassPrototype, GlobalEnvironment, VarHolder } from "../language/runtime/environment";
-import { BuiltinClass, MK_BOOL, MK_NATIVE_METHOD, MK_NUMBER, NativeMethodVal, ObjectVal, RuntimeVal } from "../language/runtime/values";
+import { BuiltinClassVal, MK_BOOL, MK_NATIVE_METHOD, MK_NUMBER, NativeMethodVal, ObjectVal, RuntimeVal } from "../language/runtime/values";
 import { ENV } from "../spec";
 import { declareRobot, Robot } from "./robot";
 import { rndi } from "../utils";
@@ -54,9 +54,9 @@ interface WorldObjVal extends ObjectVal {
     w: World,
 }
 
-export function declareWorldClass(env: GlobalEnvironment): BuiltinClass {
+export function declareWorldClass(env: GlobalEnvironment): BuiltinClassVal {
     const prototype = new ClassPrototype(this);
-    const worldClass: BuiltinClass = {
+    const worldClass: BuiltinClassVal = {
         type: "class",
         name: "Welt",
         internal: true,

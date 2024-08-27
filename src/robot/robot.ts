@@ -1,6 +1,6 @@
 import { RuntimeError } from "../errors";
 import { ClassPrototype, GlobalEnvironment, VarHolder } from "../language/runtime/environment";
-import { MK_BOOL, MK_STRING, MK_NUMBER, RuntimeVal, BuiltinClass, ObjectVal, MK_NATIVE_METHOD, NativeMethodVal } from "../language/runtime/values";
+import { MK_BOOL, MK_STRING, MK_NUMBER, RuntimeVal, BuiltinClassVal, ObjectVal, MK_NATIVE_METHOD, NativeMethodVal } from "../language/runtime/values";
 import { ENV } from "../spec";
 import { Vec2 } from "../utils";
 import { BlockType, CHAR2BLOCK, CHAR2MARKER, Field, MarkerType, World } from "./world";
@@ -23,9 +23,9 @@ interface RobotObjVal extends ObjectVal {
     r: Robot,
 }
 
-export function declareRobotClass(env: GlobalEnvironment): BuiltinClass {
+export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
     const prototype = new ClassPrototype(this);
-    const robotCls: BuiltinClass = {
+    const robotCls: BuiltinClassVal = {
         type: "class",
         name: "Roboter",
         internal: true,
