@@ -27,11 +27,11 @@ export function showRobotDiagram(r: Robot, overlay: HTMLElement, mx: number, my:
 
     overlay.innerHTML = 
     `<div>
-        <div class="obj-name">${r.name} : Roboter</div>
+        <div class="obj-name"><span class="struct-object">${r.name}</span> : Roboter</div>
         <div class="obj-attributes">
-            x = ${r.pos.x}<br>
-            y = ${r.pos.y}<br>
-            richtung = ${DIR2SHORTGER[r.dir]}<br>
+            x = <span class="struct-literal">${r.pos.x}</span><br>
+            y = <span class="struct-literal">${r.pos.y}</span><br>
+            richtung = <span class="struct-string">"${DIR2SHORTGER[r.dir]}"</span><br>
         </div>
         <div class="obj-methods">...</div>
     </div>`;
