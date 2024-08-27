@@ -42,7 +42,7 @@ const WORLD_PSEUDO_CLASS =
     </div>
     
     <div class="struct-methods">
-        ${makeTooltip(ENV.world.mth.IS_GOAL_REACHED , `Gibt <span class="struct-literal">wahr</span> zurück, wenn die aktuelle Teilaufgabe vollständig gelöst wurde, sonst <span class="struct-literal">falsch</span>.`) + "()<br>"}
+        ${makeTooltip(ENV.world.mth.IS_GOAL_REACHED, `Gibt <span class="struct-literal">wahr</span> zurück, wenn die aktuelle Teilaufgabe vollständig gelöst wurde, sonst <span class="struct-literal">falsch</span>.`) + "()<br>"}
         ${makeTooltip(ENV.world.mth.GET_STAGE_INDEX, `Gibt die aktuelle Teilaufgabe als Zahl aus, also <span class="struct-literal">1</span>, <span class="struct-literal">2</span>, <span class="struct-literal">3</span>, usw.`) + "()<br>"}
     </div>
 </div>`
@@ -65,6 +65,12 @@ const translateOperator = (op: string) => {
             return "＋";
         case "-":
             return "－";
+        case "und":
+            return "∧";
+        case "oder":
+            return "∨";
+        case "nicht":
+            return "¬";
         default:
             return op;
     }
@@ -160,7 +166,7 @@ function structure(astNode: Stmt): string {
 function encapsulateExpr(astNode: Expr, right = false) {
     const expr = structure(astNode)
 
-    if (astNode.kind == "BinaryExpr" || (astNode.kind == "UnaryExpr" && right))
+    if (astNode.kind == "BinaryExpr" || astNode.kind == "UnaryExpr")
         return "(" + expr + ")";
     return expr;
 }
@@ -190,14 +196,14 @@ function structureBinaryExpr(astNode: BinaryExpr) {
     const rightSide = encapsulateExpr(astNode.right, true);
     const leftSide = encapsulateExpr(astNode.left);
     
-    return `${leftSide} ${translateOperator(astNode.operator)} ${rightSide}`
+    return `${makeSpan(leftSide, "line")} ${translateOperator(astNode.operator)} ${makeSpan(rightSide, "line")}`
 }
 
 function structureUnaryExpr(astNode: UnaryExpr) {
     let rightSide = encapsulateExpr(astNode.right);
     if (astNode.operator.length > 1) rightSide = " " + rightSide; // pad for multicharacter operators
     
-    return `${astNode.operator}${rightSide}`
+    return `${translateOperator(astNode.operator)}${rightSide}`
 }
 
 function structureSequence(body: Stmt[]): string {

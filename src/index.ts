@@ -2,6 +2,8 @@
 import "./ui/panels";
 import "./ui/robot-view";
 import "./ui/console-log";
+import "./ui/save-load-files";
+import "./ui/task-selector";
 import { showStructogram } from './ui/structograms';
 import { addRobotButtons } from './ui/objectigrams';
 
@@ -30,9 +32,10 @@ import { LexerError, ParserError } from './errors';
 
 // Global variables
 let dt = 50; // ms to sleep between function calls
+let dtIDE = 100;
 export let isRunning = false;
 export let queueInterrupt = false;
-let taskName: string
+export let taskName: string
 
 let preloadCode = "\n";
 let code = TEST_CODE;
@@ -60,7 +63,7 @@ const preloadEditor = ace.edit("preload-editor", {
     readOnly: true,
 });
 
-const editor = ace.edit("code-editor", {
+export const editor = ace.edit("code-editor", {
     minLines: 30,
     mode: "ace/mode/RKScript",
 	theme: "ace/theme/RKLight",
@@ -83,16 +86,6 @@ let cmdLineStackPointer = -1;
 // Fetch task description
 const taskDescription = document.getElementById("task-description") as HTMLElement;
 
-// Fill task selector
-const taskSelector = document.getElementById("load-task") as HTMLSelectElement;
-for (const [key, task] of Object.entries(TASKS)) {
-    const newOption = document.createElement("option");
-    newOption.value = key;
-    newOption.innerHTML = `${key}: "${task.title}"`;
-    newOption.selected = key == DEFAULT_TASK;
-    taskSelector.append(newOption);
-}
-
 // Setup slider
 const waitSlider = document.getElementById("wait-slider") as HTMLInputElement;
 waitSlider.oninput = () => {
@@ -102,10 +95,10 @@ waitSlider.oninput = () => {
 }
 
 // automatic parse timeout to avoid lagging the editor
-let autoUpdateIDE = setTimeout(updateIDE, 500);
+let autoUpdateIDE = setTimeout(updateIDE, dtIDE);
 editor.on("change", async (e: ace.Ace.Delta) => {
     clearTimeout(autoUpdateIDE);
-    autoUpdateIDE = setTimeout(updateIDE, 500);
+    autoUpdateIDE = setTimeout(updateIDE, dtIDE);
 });
 
 // Cmd line input
@@ -115,92 +108,6 @@ document.getElementById("cmd-run")!.onclick = runCmd
 // Start / stop buttons
 document.getElementById("code-start")!.onclick = startCode
 document.getElementById("code-stop")!.onclick = stopCode
-
-// Download / load buttons
-document.getElementById("save-code")!.onclick = downloadCode
-document.getElementById("load-code")!.onclick = () => fileInput.click();
-
-// Downloading
-function downloadCode() {
-    const code = editor.getValue();
-    const filename = taskName + ".rk"
-    downloadTextFile(filename, code);
-}
-
-function downloadTextFile(filename: string, text: string) {
-    const element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-    element.setAttribute('download', filename);
-
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    
-    element.click();
-
-    document.body.removeChild(element);
-}
-
-const fileInput: HTMLInputElement = document.getElementById("load-file")! as HTMLInputElement;
-fileInput.onchange = loadFile
-
-// Uploading code
-function loadFile(evt: InputEvent) {
-    const target: HTMLInputElement = evt.target as HTMLInputElement;
-    if (!target) return;
-    const files = target.files;
-    if (!files) return;
-    const file = files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(event: any) {
-        console.log();
-        console.log(`Versuche '${file.name}' zu laden...`);
-        //console.log(event.target.result);
-        const parts = file.name.split(".");
-        const ext = parts.pop();
-        if (!ext) return;
-        const justName = parts.join();
-
-        switch (ext.toLowerCase()) {
-            case "rk":
-                console.log(`Lade Programm '${justName}'`);
-                editor.setValue(event.target.result);
-                break;
-            case "csv":
-                console.log(`Lade Welt '${justName}'`);
-                loadRawTask("AX.X", {
-                    title: `${justName}`,
-                    description: "Nutze 'welt.fertig()' und die Feldlampen, um die Aufgabe zu lösen!",
-                    preload: "\n",
-                    world: event.target.result,
-                } satisfies Task)
-                taskSelector.selectedIndex = 0;
-                break;
-            case "json":
-                console.log(`Lade Aufgabe aus '${justName}'`);
-                try {
-                    const newTask: Task = JSON.parse(event.target.result) satisfies Task;
-                    loadRawTask("AX.X", newTask);
-                } catch {
-                    console.log(`Die Aufgabe konnte nicht geladen werden.`);
-                    console.log(`Überprüfe das Dateienformat!`);
-                }
-                break;
-            default:
-                console.log("Dieses Dateienformat ist nicht unterstützt!");
-        }
-    }
-    reader.readAsText(file);
-    fileInput.value = "";
-  }
-
-// Load new task
-taskSelector.onchange = (e: Event) => {
-    console.log();
-    console.log("🤔 Lade neue Aufgabe: " + taskSelector.value);
-    loadTask(taskSelector.value);
-};
 
 // Setting error bar
 function setErrorBar(msg: string, color: string) {
@@ -243,7 +150,7 @@ function isTaskkey(key: string): key is keyof typeof TASKS {
     return key in TASKS; // TASKS was not extended in any way and is a simple record
 }
 
-function loadRawTask(key: string, task: Task) {
+export function loadRawTask(key: string, task: Task) {
     preloadCode = task.preload;
     worldSpec = task.world;
     taskName = `${key} ${task.title}`
@@ -257,7 +164,7 @@ function loadRawTask(key: string, task: Task) {
     world.loadWorldLog();
 }
 
-function loadTask(key: string) {
+export function loadTask(key: string) {
     if (!isTaskkey(key)) {
         preloadCode = STD_PRELOAD;
         worldSpec = STD_PRELOAD;

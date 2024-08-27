@@ -20,6 +20,7 @@ export interface Task {
     description: string,
     world: string,
     preload: string,
+    author: string,
 }
 
 /**
@@ -154,42 +155,49 @@ export const TASKS = {
         description: "Eine leere Welt.",
         world: generateHomogeneousWorld(4, 4, 10),
         preload: STD_PRELOAD,
+        author: "std",
     },
     "Leer 8x6": {
-        title: "Mittle leere Welt",
+        title: "Mittlere leere Welt",
         description: "Eine leere Welt.",
         world: generateHomogeneousWorld(8, 6, 10),
         preload: STD_PRELOAD,
+        author: "std",
     },
     "Leer 16x8": {
         title: "Große leere Welt",
         description: "Eine leere Welt.",
         world: generateHomogeneousWorld(16, 8, 10),
         preload: STD_PRELOAD,
+        author: "std",
     },
     "Zufall 4x4": {
         title: "Klein und verrümpelt",
         description: "Eine vollgerümpelte Welt.",
         world: generateHomogeneousWorld(4, 4, 6, "...:_"),
         preload: STD_PRELOAD,
+        author: "std",
     },
     "Zufall 8x6": {
         title: "Mittel und verrümpelt",
         description: "Eine vollgerümpelte Welt.",
         world: generateHomogeneousWorld(8, 6, 6, "...:_"),
         preload: STD_PRELOAD,
+        author: "std",
     },
     "Zufall 16x8": {
         title: "Groß und verrümpelt",
         description: "Eine vollgerümpelte Welt.",
         world: generateHomogeneousWorld(16, 8, 6, "...:_"),
         preload: STD_PRELOAD,
+        author: "std",
     },
     "Zufall 1x4": {
         title: "Alles versucht?",
         description: "Lege die Blöcke an die richtigen Stellen - aber Achtung! Wo sie liegen sollen wird jedes Mal ausgewürfelt. Nutze dafür welt.fertig()!",
         preload: "Methode gehen(Zahl n) für Roboter\n    wiederhole n mal\n        schritt()\n    ende\nende",
         world: "x;5;1;5;\nE;_:.;_:.;_:.;_:.",
+        author: "std",
     },
     "X1": {
         title: "Chaos",
@@ -207,6 +215,7 @@ S;...:_;S;...:_
 ...:_;...:_;...:_;...:_
 ...:_;...:_;...:_;...:_`,
         preload: STD_PRELOAD,
+        author: "sms",
     },
     "A1": {
         title: "Block legen",
@@ -223,6 +232,7 @@ _;_;_;_
 _;_;_:r;_
 _;_;_;_`,
         preload: STD_PRELOAD,
+        author: "sms",
     },
     "A3": {
         title: "Aufräumen",
@@ -235,6 +245,7 @@ _:_;_:_;_:_;rr:_;r:_;_:_;#
 _:_;rrr:_;_:_;_:_;_:_;rrr:_;#
 `,
         preload: STD_PRELOAD,
+        author: "sms",
     },
     "A4": {
         title: "Simple Welt",
@@ -245,6 +256,7 @@ _;_;_;_;_
 _;rr;_;#;_
 `,
         preload: STD_PRELOAD,
+        author: "sms",
     }
 } satisfies Record<string, Task>;
 
