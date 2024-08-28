@@ -228,7 +228,7 @@ export async function loadExtTasks() {
         const fileName: string = (file.path satisfies string);
         const splitFileName = fileName.split(".")
         const fileExt = splitFileName.pop();
-        const key = splitFileName.pop();
+        const key = splitFileName.join(".");
 
         if (key && fileExt == "json") {
             console.log(fileName);
