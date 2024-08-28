@@ -141,16 +141,16 @@ function structure(astNode: Stmt): string {
             sections.push(
                 makeDiv(`${makeTooltip("Funktion", "Hier wird eine neue Funktion definiert, die an anderen Stellen im Code aufgerufen werden kann. So muss man nicht immer dieselben Anweisungen schreiben.")}: ${funcHandle} ${structureSequence(astNode.body)}`, "struct-program")
             );
-            return makeSpan(`↪  ${funcHandle}`, "struct-deemph");
+            return makeSpan(`→  ${funcHandle}`, "struct-deemph");
         case "ExtMethodDefinition":
             const methodHandle = `${astNode.name}(${astNode.params.map((p) => p.ident).join(", ")}) für ${astNode.classname}`
             sections.push(
                 makeDiv(`${makeTooltip("Methode", `Hier wird eine neue Methode für die Klasse ${astNode.classname} definiert, die an anderen Stellen im Code aufgerufen werden kann.`)}: ${methodHandle} ${structureSequence(astNode.body)}`,"struct-program")
             );
-            return makeSpan(`↪ ${methodHandle}`, "struct-deemph");
+            return makeSpan(`→ ${methodHandle}`, "struct-deemph");
         case "ClassDefinition":
             classes.push(structureClass(astNode));
-            return makeSpan(`↪ ${astNode.ident}`, "struct-deemph");
+            return makeSpan(`→ ${astNode.ident}`, "struct-deemph");
         case "BreakCommand":
             return makeSpan("abbrechen", "struct-cmd");
         case "ContinueCommand":
@@ -201,9 +201,10 @@ function structureBinaryExpr(astNode: BinaryExpr) {
 
 function structureUnaryExpr(astNode: UnaryExpr) {
     let rightSide = encapsulateExpr(astNode.right);
-    if (astNode.operator.length > 1) rightSide = " " + rightSide; // pad for multicharacter operators
+    let operator = translateOperator(astNode.operator);
+    if (operator.length > 1) rightSide = " " + rightSide; // pad for multicharacter operators
     
-    return `${translateOperator(astNode.operator)}${rightSide}`
+    return `${operator}${rightSide}`
 }
 
 function structureSequence(body: Stmt[]): string {
