@@ -11,12 +11,12 @@ import { addRobotButtons } from './ui/objectigrams';
 import Parser from "./language/frontend/parser";
 import { Program } from './language/frontend/ast';
 import { GlobalEnvironment, declareGlobalEnv } from "./language/runtime/environment";
-import { evaluate } from "./language/runtime/interpreter";
+import { evaluate, SteppedEval } from "./language/runtime/interpreter";
 import { sleep } from "./utils";
 
 // Robot imports
 import { declareWorld, World } from "./robot/world";
-import { STD_PRELOAD, STD_WORLD, TASKS, DEFAULT_TASK, TEST_CODE, Task } from "./robot/tasks";
+import { STD_PRELOAD, STD_WORLD, TASKS, DEFAULT_TASK, TEST_CODE, Task, destructureKey } from "./robot/tasks";
 import { clamp } from './utils';
 
 // ACE imports
@@ -29,6 +29,7 @@ import './assets/ace/theme-rklight.js';
 // General errors 
 // TODO: Split up?
 import { LexerError, ParserError } from './errors';
+import { RuntimeVal } from "./language/runtime/values";
 
 // Global variables
 let dt = 50; // ms to sleep between function calls
@@ -110,20 +111,32 @@ document.getElementById("code-start")!.onclick = startCode
 document.getElementById("code-stop")!.onclick = stopCode
 
 // Setting error bar
-function setErrorBar(msg: string, color: string) {
-    codeError.style.backgroundColor = color;
+function setErrorBar(msg: string, errorTypeCss: string) {
+    codeError.classList.toggle("none", false);
+    codeError.classList.toggle(errorTypeCss, true);
     codeError.innerHTML = msg;
 }
 
-// Updating IDE
-async function updateIDE() {
+// Handling of live errors
+function resetErrorMarkers() {
     // remove error markers
     for (const em of errorMarkers) {
         editor.session.removeMarker(em);
     }
+}
+
+function setErrorMarker(msg: string, lineIndex: number, errorTypeCss: string) {
+    setErrorBar(msg, errorTypeCss);
+    const markerId = editor.session.addMarker(new ace.Range(lineIndex, 0, lineIndex, 10), "error-marker " + errorTypeCss, 'fullLine');
+    errorMarkers.push(markerId);
+}
+
+// Updating IDE
+async function updateIDE() {
+    resetErrorMarkers();
 
     // reset error bar
-    setErrorBar("✔️ kein Fehler gefunden", "lightgreen");
+    setErrorBar("✔️ kein Fehler gefunden", "none");
 
     const code = editor.getValue();
     if (!code) return;
@@ -131,17 +144,15 @@ async function updateIDE() {
         program = parse.produceAST(code);
         showStructogram(program);
     } catch (e) {
-        let errorMarker = "error-marker";
+        let errorCssClass = "none";
         
         if (e instanceof LexerError) {
-            errorMarker = "lexer-error-marker";
+            errorCssClass = "lexer";
         } else if (e instanceof ParserError) {
-            errorMarker = "error-marker"
+            errorCssClass = "parser"
         }
 
-        setErrorBar(`❌ ${e.message} (Zeile ${e.lineIndex})`, "lightcoral");
-        const markerId = editor.session.addMarker(new ace.Range(e.lineIndex, 0, e.lineIndex, 10), errorMarker, 'fullLine');
-        errorMarkers.push(markerId);
+        setErrorMarker(`❌ ${e.message} (Zeile ${e.lineIndex+1})`, e.lineIndex, errorCssClass);
     }
 }
 
@@ -151,26 +162,29 @@ function isTaskkey(key: string): key is keyof typeof TASKS {
 }
 
 export function loadRawTask(key: string, task: Task) {
+    const splitKey = destructureKey(key);
+
     preloadCode = task.preload;
     worldSpec = task.world;
-    taskName = `${key} ${task.title}`
+    taskName = `${key}_${task.title}`
 
     taskDescription.innerHTML = `
-    <p><b>🤔 ${key}: "${task.title}"</b></p>
+    <p><b>🤔 ${splitKey.name}: "${task.title}"</b></p>
     <p>${task.description}</p>`;
 
     preloadEditor.setValue(preloadCode);
-    resetEnv();
-    world.loadWorldLog();
 }
 
 export function loadTask(key: string) {
     if (!isTaskkey(key)) {
         preloadCode = STD_PRELOAD;
-        worldSpec = STD_PRELOAD;
+        worldSpec = STD_WORLD;
         return;
     }
     loadRawTask(key, TASKS[key]);
+    
+    resetEnv();
+    world.loadWorldLog();
 }
 
 async function resetEnv(stage = 0) {
@@ -266,6 +280,7 @@ function fetchCmd(e: KeyboardEvent) {
 // Run ANY code
 async function runCode(code: string, stepped: boolean) {
     isRunning = true;
+    let lastLineIndex = -1;
     try {
         program = parse.produceAST(code);
         let stepper = evaluate(program, env);
@@ -280,7 +295,8 @@ async function runCode(code: string, stepped: boolean) {
             }
 
             if (stepped) {
-                let markerId = editor.session.addMarker(new ace.Range(next.value, 0, next.value, 10), 'exec-marker', 'fullLine');
+                lastLineIndex = next.value
+                let markerId = editor.session.addMarker(new ace.Range(lastLineIndex, 0, lastLineIndex, 10), 'exec-marker', 'fullLine');
         	    await sleep(dt);
                 editor.session.removeMarker(markerId);
             }
@@ -288,6 +304,7 @@ async function runCode(code: string, stepped: boolean) {
     } catch (runtimeError) {
         console.log("⚠️ " + runtimeError.message);
         console.error(runtimeError.stack);
+        setErrorMarker(`⚠️ ${runtimeError.message} (Zeile: ${lastLineIndex + 1})`, lastLineIndex, "runtime");
     }
     isRunning = false;
 };

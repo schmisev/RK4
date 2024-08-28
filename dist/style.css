@@ -188,12 +188,6 @@ a {
     font-size: small;
 }
 
-.code-error {
-    grid-column: 1 / 8;
-    grid-row: 17;
-    font-weight: bold;
-}
-
 .preload-title {
     grid-column: 8 / 14;
     grid-row: 18;
@@ -646,15 +640,47 @@ span.line {
     border-radius: 0px 0px 10px 10px;
 }
 
+/* debug */
+.code-error {
+    grid-column: 1 / 8;
+    grid-row: 17;
+    font-weight: bold;
+    outline-offset: -4px;
+    outline: 4px gray solid;
+}
+
+.code-error.none {
+    outline-color: lightgreen;
+}
+
+.code-error.runtime {
+    outline-color: lightcoral;
+}
+
+.code-error.lexer {
+    outline-color: lightcoral;
+}
+
+.code-error.parser {
+    outline-color: lightcoral;
+}
+
 /* markers */
 .error-marker {
     background-color: lightcoral;
     position: absolute;
 }
 
-.lexer-error-marker {
-    background-color: lightpink;
-    position: absolute;
+.error-marker.runtime {
+    background-color: lightcoral;
+}
+
+.error-marker.lexer {
+    background-color: lightcoral;
+}
+
+.error-marker.parser {
+    background-color: lightcoral;
 }
 
 .exec-marker {

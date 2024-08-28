@@ -1,4 +1,5 @@
-export class RuntimeError extends Error {}
+export class RuntimeError extends Error {
+}
 export class ParserError extends Error {
     lineIndex: number
     constructor(msg: string, lineIndex: number) {

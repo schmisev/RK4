@@ -59,7 +59,6 @@ function loadFile(evt: InputEvent) {
                         description: "Nutze 'welt.fertig()' und die Feldlampen, um die Aufgabe zu lösen!",
                         preload: "\n",
                         world: event.target.result,
-                        author: "unbekannt",
                     } satisfies Task);
                     taskSelector.selectedIndex = 0;
                 } catch {

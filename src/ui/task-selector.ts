@@ -1,25 +1,45 @@
 import { loadTask } from "..";
-import { TASKS, DEFAULT_TASK } from "../robot/tasks";
+import { TASKS, DEFAULT_TASK, destructureKey } from "../robot/tasks";
+
+// Create new Option
+function createOption(key: string, innerHTML: string, disabled = false): HTMLOptionElement {
+    const newOption = document.createElement("option");
+    newOption.disabled = disabled;
+    newOption.value = key;
+    newOption.innerHTML = innerHTML;
+    newOption.selected = key == DEFAULT_TASK;
+    return newOption;
+}
 
 // Fill task selector
 export const taskSelector = document.getElementById("load-task") as HTMLSelectElement;
-let currentAuthor = "unbekannt";
-for (const [key, task] of Object.entries(TASKS)) {
-    if (currentAuthor != task.author) {
-        currentAuthor = task.author;
-        const sepOption = document.createElement("option");
-        sepOption.disabled = true;
-        sepOption.value = key;
-        sepOption.innerHTML = `👤 Autor: ${task.author}`;
-        sepOption.selected = key == DEFAULT_TASK;
-        taskSelector.append(sepOption);
+let currentAuthor: string | undefined = "";
+let currentCategory: string | undefined = "";
+
+for (const [key, task] of Object.entries(TASKS).sort(
+    (a, b) => {
+        const ka = destructureKey(a[0]).sortStr;
+        const kb = destructureKey(b[0]).sortStr;
+
+        if (ka < kb) return -1;
+        if (ka > kb) return 1;
+
+        return 0;
+    }
+)) {
+    const splitKey = destructureKey(key);
+
+    if (currentAuthor != splitKey.author) {
+        currentAuthor = splitKey.author;
+        taskSelector.append(createOption("", `👤 ${currentAuthor}`, true));
     }
 
-    const newOption = document.createElement("option");
-    newOption.value = key;
-    newOption.innerHTML = `&nbsp;&nbsp;&nbsp;🗺️ ${key}: "${task.title}"`;
-    newOption.selected = key == DEFAULT_TASK;
-    taskSelector.append(newOption);
+    if (currentCategory != splitKey.category) {
+        currentCategory = splitKey.category;
+        taskSelector.append(createOption("", `&nbsp;&nbsp;🗃️ ${currentCategory}`, true));
+    }
+
+    taskSelector.append(createOption(key, `&nbsp;&nbsp;&nbsp;&nbsp;🗺️ ${splitKey.name}: "${task.title}"`));
 }
 // Load new task
 taskSelector.onchange = (e: Event) => {

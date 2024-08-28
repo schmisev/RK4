@@ -12,6 +12,20 @@ function generateHomogeneousWorld(l: number, w: number, h: number, fieldCode = "
     return result;
 }
 
+export function destructureKey(key: string) {
+    const keyParts = key.split("_");
+    let name = keyParts.pop() || "unbenannt";
+    let category = keyParts.pop() || "Standard";
+    let author = keyParts.pop() || "unbekannt";
+
+    return {
+        name: name,
+        category: category,
+        author: author,
+        sortStr: author + category + name,
+    };
+}
+
 /**
  * Interface for tasks
  */
@@ -20,7 +34,6 @@ export interface Task {
     description: string,
     world: string,
     preload: string,
-    author: string,
 }
 
 /**
@@ -150,56 +163,49 @@ ende
 `
 
 export const TASKS = {
-    "Leer 4x4": {
+    "Leer_4x4": {
         title: "Kleine leere Welt",
         description: "Eine leere Welt.",
         world: generateHomogeneousWorld(4, 4, 10),
         preload: STD_PRELOAD,
-        author: "std",
     },
-    "Leer 8x6": {
+    "Leer_8x6": {
         title: "Mittlere leere Welt",
         description: "Eine leere Welt.",
         world: generateHomogeneousWorld(8, 6, 10),
         preload: STD_PRELOAD,
-        author: "std",
     },
-    "Leer 16x8": {
+    "Leer_16x8": {
         title: "Große leere Welt",
         description: "Eine leere Welt.",
         world: generateHomogeneousWorld(16, 8, 10),
         preload: STD_PRELOAD,
-        author: "std",
     },
-    "Zufall 4x4": {
+    "Zufall_4x4": {
         title: "Klein und verrümpelt",
         description: "Eine vollgerümpelte Welt.",
         world: generateHomogeneousWorld(4, 4, 6, "...:_"),
         preload: STD_PRELOAD,
-        author: "std",
     },
-    "Zufall 8x6": {
+    "Zufall_8x6": {
         title: "Mittel und verrümpelt",
         description: "Eine vollgerümpelte Welt.",
         world: generateHomogeneousWorld(8, 6, 6, "...:_"),
         preload: STD_PRELOAD,
-        author: "std",
     },
-    "Zufall 16x8": {
+    "Zufall_16x8": {
         title: "Groß und verrümpelt",
         description: "Eine vollgerümpelte Welt.",
         world: generateHomogeneousWorld(16, 8, 6, "...:_"),
         preload: STD_PRELOAD,
-        author: "std",
     },
-    "Zufall 1x4": {
+    "Zufall_1x4": {
         title: "Alles versucht?",
         description: "Lege die Blöcke an die richtigen Stellen - aber Achtung! Wo sie liegen sollen wird jedes Mal ausgewürfelt. Nutze dafür welt.fertig()!",
         preload: "Methode gehen(Zahl n) für Roboter\n    wiederhole n mal\n        schritt()\n    ende\nende",
         world: "x;5;1;5;\nE;_:.;_:.;_:.;_:.",
-        author: "std",
     },
-    "X1": {
+    "sms_X_1": {
         title: "Chaos",
         description: "Räume alle Blöcke auf!",
         world: 
@@ -215,9 +221,8 @@ S;...:_;S;...:_
 ...:_;...:_;...:_;...:_
 ...:_;...:_;...:_;...:_`,
         preload: STD_PRELOAD,
-        author: "sms",
     },
-    "A1": {
+    "A_1": {
         title: "Block legen",
         description: "Lege den Block an die markierte Stelle!",
         world: 
@@ -232,9 +237,8 @@ _;_;_;_
 _;_;_:r;_
 _;_;_;_`,
         preload: STD_PRELOAD,
-        author: "sms",
     },
-    "A3": {
+    "A_3": {
         title: "Aufräumen",
         description: "Räume alle Blöcke auf!",
         world: `x;7;7;5;;;;
@@ -245,9 +249,8 @@ _:_;_:_;_:_;rr:_;r:_;_:_;#
 _:_;rrr:_;_:_;_:_;_:_;rrr:_;#
 `,
         preload: STD_PRELOAD,
-        author: "sms",
     },
-    "A4": {
+    "A_4": {
         title: "Simple Welt",
         description: "Nichts zu tun!",
         world: `x;5;4;6;
@@ -256,11 +259,86 @@ _;_;_;_;_
 _;rr;_;#;_
 `,
         preload: STD_PRELOAD,
-        author: "sms",
+    },
+    "karol.arrrg.de_Übung_1": {
+        title: "Start",
+        description: "Lege einen Ziegel an die markierte Stelle! Nutze dafür k1.hinlegen()",
+        world: `x;4;1;6;
+E:_;_:_;_:_;_:_:r
+`,
+        preload: STD_PRELOAD,
+    },
+    "karol.arrrg.de_Übung_2": {
+        title: "Um die Ecke",
+        description: "Lege einen Ziegel an die markierte Stelle!",
+        world: `x;3;3;6;
+S:_;_:_;_:_
+_:_;_:_;_:_
+_:_;_:_;_:r
+`,
+        preload: STD_PRELOAD,
+    },
+    "karol.arrrg.de_Übung_3": {
+        title: "Verschieben",
+        description: "Entferne den Ziegel mit k1.aufheben() und lege dann einen Ziegel an die markierte Stelle!",
+        world: `x;5;3;6;
+_:_;_:_;_:_;_:_;_:_
+S:_;_:_;_:_;_:_;_:r
+r:_;_:_;_:_;_:_;_:_
+`,
+        preload: STD_PRELOAD,
+    },
+    "karol.arrrg.de_Übung_4": {
+        title: "Umweltschutz",
+        description: "Hebe alle Ziegel auf!",
+        world: `x;5;1;6;
+E:_;_:_;r:_;_:_;r:_
+`,
+        preload: STD_PRELOAD,
+    },
+    "karol.arrrg.de_Übung_5": {
+        title: "Treppe",
+        description: "Baue die Treppe! Nutze dafür die neue Methode stapeln(), z.B. k1.stapeln(2)",
+        world: `x;5;1;6;
+E:_;_:r;_:rr;_:rrr;_:_
+`,
+        preload: `# Legt mehrere Blöcke gleichzeitig
+Methode stapeln(Zahl n) für Roboter
+        wiederhole n mal
+            hinlegen()
+        ende
+ende
+`,
+    },
+    "karol.arrrg.de_Übung_6": {
+        title: "Spiegelei",
+        description: "Setze eine Marke an die vorgegebene Stelle! Nutze dafür k1.markeSetzen()",
+        world: `x;3;3;6;
+E:_;_:_;_:_
+_:_;_:Y;_:_
+_:_;_:_;_:_
+`,
+        preload: STD_PRELOAD,
+    },
+    "karol.arrrg.de_Übung_7": {
+        title: "Parkour",
+        description: "Setz die Blöcke in einer Reihe!",
+        world: `x;5;3;6;
+_:_;_:_;r;_:_;_:_
+E:_;_:r;r:rr;_:r;_:_
+_:_;_:_;r;_:_;_:_
+x;3;5;6;
+_:_;S:_;_:_
+_:_;_:r;_:_
+r:_;r:rr;r:_
+_:_;_:r;_:_
+_:_;_:_;_:_
+`,
+        preload: STD_PRELOAD,
     }
 } satisfies Record<string, Task>;
 
 /**
  * Default task loaded on startup
  */
-export const DEFAULT_TASK: keyof typeof TASKS = "X1";
+export const DEFAULT_TASK: keyof typeof TASKS = "sms_X_1";
