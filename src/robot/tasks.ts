@@ -1,4 +1,5 @@
-let range = (n: number) => [...Array(n).keys()]
+import { Octokit } from "@octokit/rest";
+import { liveTasks } from "..";
 
 function generateHomogeneousWorld(l: number, w: number, h: number, fieldCode = "_") {
     let result = `x;${l};${w};${h};\n`;
@@ -162,7 +163,7 @@ ende
 ende
 `
 
-export const TASKS = {
+export const STD_TASKS: Record<string, Task> = {
     "Leer_4x4": {
         title: "Kleine leere Welt",
         description: "Eine leere Welt.",
@@ -336,9 +337,46 @@ _:_;_:_;_:_
 `,
         preload: STD_PRELOAD,
     }
-} satisfies Record<string, Task>;
+};
+
+
+/**
+ * Get github files
+ */
+// Octokit.js
+// https://github.com/octokit/core.js#readme
+export async function loadExtTasks() {
+    const octokit = new Octokit({
+        auth: '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'
+    })
+    
+    const allFiles = await octokit.request("GET /repos/{owner}/{repo}/git/trees/main", {
+        owner: "schmisev",
+        repo: "RK4Tasks",
+      });
+    
+    for (const file of allFiles.data.tree) {
+        const fileName: string = (file.path satisfies string);
+        const splitFileName = fileName.split(".")
+        const fileExt = splitFileName.pop();
+        const key = splitFileName.pop();
+
+        if (key && fileExt == "json") {
+            console.log(fileName);
+            // request all the files
+            const file = await fetch("https://raw.githubusercontent.com/schmisev/RK4Tasks/main/" + fileName);
+            const fileContent = await file.text();
+            try {
+                const task: Task = JSON.parse(fileContent);
+                liveTasks[key] = task;
+            } catch {
+                console.error("Konnte externe Aufgabe nicht laden...")
+            }
+        }
+    }
+}
 
 /**
  * Default task loaded on startup
  */
-export const DEFAULT_TASK: keyof typeof TASKS = "sms_X_1";
+export const DEFAULT_TASK: keyof typeof STD_TASKS = "A_1";

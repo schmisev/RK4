@@ -29,6 +29,7 @@
     "webpack-dev-server": "^5.0.4"
   },
   "dependencies": {
+    "@octokit/rest": "^21.0.2",
     "@types/node": "^22.1.0",
     "ace-builds": "^1.35.4",
     "fs": "^0.0.1-security",

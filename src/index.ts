@@ -16,7 +16,7 @@ import { sleep } from "./utils";
 
 // Robot imports
 import { declareWorld, World } from "./robot/world";
-import { STD_PRELOAD, STD_WORLD, TASKS, DEFAULT_TASK, TEST_CODE, Task, destructureKey } from "./robot/tasks";
+import { STD_PRELOAD, STD_WORLD, STD_TASKS, DEFAULT_TASK, TEST_CODE, Task, destructureKey, loadExtTasks } from "./robot/tasks";
 import { clamp } from './utils';
 
 // ACE imports
@@ -30,12 +30,14 @@ import './assets/ace/theme-rklight.js';
 // TODO: Split up?
 import { LexerError, ParserError } from './errors';
 import { RuntimeVal } from "./language/runtime/values";
+import { updateTaskSelector } from "./ui/task-selector";
 
 // Global variables
 let dt = 50; // ms to sleep between function calls
 let dtIDE = 100;
 export let isRunning = false;
 export let queueInterrupt = false;
+export let liveTasks = STD_TASKS;
 export let taskName: string
 
 let preloadCode = "\n";
@@ -157,8 +159,8 @@ async function updateIDE() {
 }
 
 // Loading tasks
-function isTaskkey(key: string): key is keyof typeof TASKS {
-    return key in TASKS; // TASKS was not extended in any way and is a simple record
+function isTaskkey(key: string): key is keyof typeof liveTasks {
+    return key in liveTasks; // TASKS was not extended in any way and is a simple record
 }
 
 export function loadRawTask(key: string, task: Task) {
@@ -173,18 +175,19 @@ export function loadRawTask(key: string, task: Task) {
     <p>${task.description}</p>`;
 
     preloadEditor.setValue(preloadCode);
+
+    resetEnv();
+    world.loadWorldLog();
 }
 
 export function loadTask(key: string) {
     if (!isTaskkey(key)) {
         preloadCode = STD_PRELOAD;
         worldSpec = STD_WORLD;
+        console.log("Standardwelt geladen...")
         return;
     }
-    loadRawTask(key, TASKS[key]);
-    
-    resetEnv();
-    world.loadWorldLog();
+    loadRawTask(key, liveTasks[key]);
 }
 
 async function resetEnv(stage = 0) {
@@ -312,4 +315,5 @@ async function runCode(code: string, stepped: boolean) {
 /**
  * Start app
  */
+loadExtTasks().then(updateTaskSelector);
 loadTask(DEFAULT_TASK);
