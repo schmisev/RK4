@@ -42,7 +42,6 @@ export function updateTaskSelector() {
 
         taskSelector.append(createOption(key, `&nbsp;&nbsp;&nbsp;&nbsp;🗺️ ${splitKey.name}: "${task.title}"`));
     }
-    console.log(liveTasks);
 }
 // Load new task
 taskSelector.onchange = (e: Event) => {
