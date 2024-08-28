@@ -1,6 +1,6 @@
 import { RuntimeError, WorldError } from "../errors";
-import { GlobalEnvironment, VarHolder } from "../language/runtime/environment";
-import { MK_BOOL, MK_NATIVE_FN, MK_NUMBER, RuntimeVal } from "../language/runtime/values";
+import { ClassPrototype, GlobalEnvironment, VarHolder } from "../language/runtime/environment";
+import { BuiltinClassVal, MK_BOOL, MK_NATIVE_METHOD, MK_NUMBER, NativeMethodVal, ObjectVal, RuntimeVal } from "../language/runtime/values";
 import { ENV } from "../spec";
 import { declareRobot, Robot } from "./robot";
 import { rndi } from "../utils";
@@ -50,32 +50,61 @@ export const CHAR2MARKER: Record<string, MarkerType> = {
     "gelb": MarkerType.Y,
 }
 
-export function declareWorld(w: World, varname: string, env: GlobalEnvironment): void {
-    const world_env = new VarHolder();
-    const world: RuntimeVal = {
-        type: "object",
-        cls: env.worldClass,
-        ownMembers: world_env,
+interface WorldObjVal extends ObjectVal {
+    w: World,
+}
+
+export function declareWorldClass(env: GlobalEnvironment): BuiltinClassVal {
+    const prototype = new ClassPrototype(this);
+    const worldClass: BuiltinClassVal = {
+        type: "class",
+        name: "Welt",
+        internal: true,
+        declenv: this,
+        prototype,
     };
 
-    // add world to environment
-    env.declareVar(varname, world, true);
-    // declare its properties
-    world_env.declareVar(ENV.world.mth.IS_GOAL_REACHED, MK_NATIVE_FN(
-        (args, scope) => {
+    function downcastWorld(self: ObjectVal): asserts self is WorldObjVal {
+        if (!Object.is(self.cls, worldClass))
+            throw new RuntimeError(`Diese Methode kann nur auf einer Welt ausgeführt werden.`);
+    }
+    function mkWorldMethod(m: (r: World, args: RuntimeVal[]) => RuntimeVal): NativeMethodVal {
+        return MK_NATIVE_METHOD(function (args) {
+            downcastWorld(this);
+            return m(this.w, args);
+        })
+    }
+
+    prototype.declareMethod(ENV.world.mth.IS_GOAL_REACHED, mkWorldMethod(
+        (w, args) => {
             if (args.length != 0)
                 throw new RuntimeError(ENV.world.mth.IS_GOAL_REACHED + `() erwartet keine Parameter!`);
             return MK_BOOL(w.isGoalReached());
         }
-    ), true);
+    ));
 
-    world_env.declareVar(ENV.world.mth.GET_STAGE_INDEX, MK_NATIVE_FN(
-        (args, scope) => {
+    prototype.declareMethod(ENV.world.mth.GET_STAGE_INDEX, mkWorldMethod(
+        (w, args) => {
             if (args.length != 0)
                 throw new RuntimeError(ENV.world.mth.GET_STAGE_INDEX + `() erwartet keine Parameter!`);
             return MK_NUMBER(w.getStageIndex() + 1);
         }
-    ), true);
+    ));
+
+    return worldClass;
+}
+
+export function declareWorld(w: World, varname: string, env: GlobalEnvironment): void {
+    const world_env = new VarHolder();
+    const world: WorldObjVal = {
+        type: "object",
+        cls: env.worldClass,
+        ownMembers: world_env,
+        w,
+    };
+
+    // add world to environment
+    env.declareVar(varname, world, true);
 }
 
 export class World {
