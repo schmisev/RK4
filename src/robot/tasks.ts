@@ -219,13 +219,20 @@ export async function loadExtTasks() {
         auth: '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'
     })
     
+    /*
     const allFiles = await octokit.request("GET /repos/{owner}/{repo}/git/trees/main/tasks", {
         owner: "schmisev",
         repo: "RK4Tasks",
-      });
-    
-    for (const file of allFiles.data.tree) {
-        const fileName: string = (file.path satisfies string);
+    });
+    */
+
+    const allFiles = await octokit.request("GET /repos/{owner}/{repo}/contents/tasks/", {
+        owner: "schmisev",
+        repo: "RK4Tasks",
+    });
+
+    for (const file of allFiles.data) {
+        const fileName: string = (file.name satisfies string);
         const splitFileName = fileName.split(".")
         const fileExt = splitFileName.pop();
         const key = splitFileName.join(".");
@@ -233,8 +240,8 @@ export async function loadExtTasks() {
         if (key && fileExt == "json") {
             console.log(fileName);
             // request all the files
-            const file = await fetch("https://raw.githubusercontent.com/schmisev/RK4Tasks/main/tasks" + fileName);
-            const fileContent = await file.text();
+            const dlFile = await fetch(file.download_url);
+            const fileContent = await dlFile.text();
             try {
                 const task: Task = JSON.parse(fileContent);
                 liveTasks[key] = task;
@@ -243,6 +250,7 @@ export async function loadExtTasks() {
             }
         }
     }
+    /**/
 }
 
 /**

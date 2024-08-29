@@ -17,6 +17,11 @@ let currentAuthor: string | undefined = "";
 let currentCategory: string | undefined = "";
 
 export function updateTaskSelector() {
+    var i, L = taskSelector.options.length - 1;
+    for(i = L; i >= 0; i--) {
+        taskSelector.remove(i);
+    }
+
     for (const [key, task] of Object.entries(liveTasks).sort(
         (a, b) => {
             const ka = destructureKey(a[0]).sortStr;

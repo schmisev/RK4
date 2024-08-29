@@ -315,5 +315,6 @@ async function runCode(code: string, stepped: boolean) {
 /**
  * Start app
  */
-loadExtTasks().then(updateTaskSelector);
+updateTaskSelector(); // get std tasks
+loadExtTasks().then(updateTaskSelector); // get github tasks
 loadTask(DEFAULT_TASK);
