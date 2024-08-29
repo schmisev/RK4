@@ -4,6 +4,7 @@ import "./ui/robot-view";
 import "./ui/console-log";
 import "./ui/save-load-files";
 import "./ui/task-selector";
+import "./ui/store-code";
 import { showStructogram } from './ui/structograms';
 import { addRobotButtons } from './ui/objectigrams';
 
@@ -32,7 +33,7 @@ import { LexerError, ParserError } from './errors';
 import { RuntimeVal } from "./language/runtime/values";
 import { updateTaskSelector } from "./ui/task-selector";
 
-// Global variables
+// App state variables
 let dt = 50; // ms to sleep between function calls
 let dtIDE = 100;
 export let isRunning = false;
@@ -43,6 +44,7 @@ export let taskName: string
 let preloadCode = "\n";
 let code = TEST_CODE;
 let worldSpec = STD_WORLD;
+const errorMarkers: number[] = [];
 
 const parse = new Parser();
 let env: GlobalEnvironment;
@@ -79,7 +81,6 @@ export const editor = ace.edit("code-editor", {
 
 // Fetch code error bar
 const codeError = document.getElementById("code-error")!;
-const errorMarkers: number[] = [];
 
 // Setup command line
 const cmdLine = document.getElementById("cmd-line") as HTMLInputElement;
@@ -168,7 +169,7 @@ export function loadRawTask(key: string, task: Task) {
 
     preloadCode = task.preload;
     worldSpec = task.world;
-    taskName = `${key}_${task.title}`
+    taskName = `${key}`
 
     taskDescription.innerHTML = `
     <p><b>🤔 ${splitKey.name}: "${task.title}"</b></p>

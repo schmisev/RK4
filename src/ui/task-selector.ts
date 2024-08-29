@@ -1,15 +1,6 @@
 import { liveTasks, loadTask } from "..";
-import { STD_TASKS, DEFAULT_TASK, destructureKey } from "../robot/tasks";
-
-// Create new Option
-function createOption(key: string, innerHTML: string, disabled = false): HTMLOptionElement {
-    const newOption = document.createElement("option");
-    newOption.disabled = disabled;
-    newOption.value = key;
-    newOption.innerHTML = innerHTML;
-    newOption.selected = key == DEFAULT_TASK;
-    return newOption;
-}
+import { destructureKey } from "../robot/tasks";
+import { createOption } from "../utils";
 
 // Fill task selector
 export const taskSelector = document.getElementById("load-task") as HTMLSelectElement;

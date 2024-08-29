@@ -1,3 +1,5 @@
+import { DEFAULT_TASK } from "./robot/tasks";
+
 export class Vec2 {
   x: number = 0;
   y: number = 0;
@@ -25,4 +27,14 @@ export const rndi = (min_incl: number, max_non_incl: number) => Math.floor(Math.
 
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Create new Option
+export function createOption(key: string, innerHTML: string, disabled = false, selected = false): HTMLOptionElement {
+    const newOption = document.createElement("option");
+    newOption.disabled = disabled;
+    newOption.value = key;
+    newOption.innerHTML = innerHTML;
+    newOption.selected = selected;
+    return newOption;
 }
