@@ -43,6 +43,6 @@ function storeCode() {
 function loadFromStore() {
     const key = storeSelector.value;
     if (key == "(neu)") return;
-    editor.setValue(codeStore[key]);
+    editor.setValue(codeStore[key], 0);
     console.log("📝📂 Code geladen: " + key);
 }

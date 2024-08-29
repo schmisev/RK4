@@ -362,7 +362,7 @@ select {
     grid-row: 19 / 24;
     padding-top: 5px;
     overflow-y: scroll;
-    font-size: x-small;
+    font-size: small;
     color: lightgreen;
     background-color: black;
     scrollbar-color: lightgreen black;

@@ -175,7 +175,7 @@ export function loadRawTask(key: string, task: Task) {
     <p><b>🤔 ${splitKey.name}: "${task.title}"</b></p>
     <p>${task.description}</p>`;
 
-    preloadEditor.setValue(preloadCode);
+    preloadEditor.setValue(preloadCode, 0);
 
     resetEnv();
     world.loadWorldLog();

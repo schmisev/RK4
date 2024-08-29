@@ -245,7 +245,7 @@ export async function loadExtTasks() {
                 const task: Task = JSON.parse(fileContent);
                 liveTasks[key] = task;
             } catch {
-                console.error("Konnte externe Aufgabe nicht laden...");
+                // do nothing
             }
         }
     }

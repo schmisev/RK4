@@ -49,7 +49,7 @@ function loadFile(evt: InputEvent) {
         switch (ext.toLowerCase()) {
             case "rk":
                 console.log(`Lade Programm '${justName}'`);
-                editor.setValue(event.target.result);
+                editor.setValue(event.target.result, 0);
                 break;
             case "csv":
                 console.log(`Lade Welt '${justName}'`);
