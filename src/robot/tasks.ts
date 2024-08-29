@@ -238,7 +238,6 @@ export async function loadExtTasks() {
         const key = splitFileName.join(".");
 
         if (key && fileExt == "json") {
-            console.log(fileName);
             // request all the files
             const dlFile = await fetch(file.download_url);
             const fileContent = await dlFile.text();
@@ -246,7 +245,7 @@ export async function loadExtTasks() {
                 const task: Task = JSON.parse(fileContent);
                 liveTasks[key] = task;
             } catch {
-                console.error("Konnte externe Aufgabe nicht laden...")
+                console.error("Konnte externe Aufgabe nicht laden...");
             }
         }
     }
