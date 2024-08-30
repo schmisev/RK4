@@ -96,7 +96,7 @@ export function showStructogram(program: Program) {
 }
 
 function structure(astNode: Stmt): string {
-    const view = document.getElementById("diagram-canvas")!;
+    // const view = document.getElementById("diagram-canvas")!;
     switch (astNode.kind) {
         case "Program":
             return structureProgram(astNode);
@@ -111,7 +111,7 @@ function structure(astNode: Stmt): string {
         case "NumericLiteral":
             return makeSpan(astNode.value.toString(), "struct-literal");
         case "StringLiteral":
-            return makeSpan('"' + astNode.value + '"', "struct-literal");
+            return makeSpan('"' + astNode.value + '"', "struct-string");
         case "BooleanLiteral":
             return makeSpan(astNode.value ? "wahr" : "falsch", "struct-literal");
         case "NullLiteral":
@@ -157,6 +157,8 @@ function structure(astNode: Stmt): string {
             return makeSpan("weiter", "struct-cmd");
         case "ReturnCommand":
             return `${makeSpan("zurück", "struct-cmd")} ${structure(astNode.value)}`
+        case "DocComment":
+            return makeDiv(`# ${astNode.content}`, "struct-doc-comment");
         case "EmptyLine":
         default:
             return `<span>&lt${astNode.kind}&gt</span>`

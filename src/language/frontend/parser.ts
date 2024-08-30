@@ -1,4 +1,4 @@
-import { Stmt, Program, Expr, BinaryExpr, NumericLiteral, Identifier, VarDeclaration, ObjDeclaration, FunctionDefinition, UnaryExpr, ShowCommand, AssignmentExpr, IfElseBlock, BreakCommand, ContinueCommand, StringLiteral, ClassDefinition, CallExpr, ParamDeclaration, EmptyLine, MemberExpr, ReturnCommand, ExtMethodDefinition, BooleanLiteral, AlwaysBlock } from "./ast";
+import { Stmt, Program, Expr, BinaryExpr, NumericLiteral, Identifier, VarDeclaration, ObjDeclaration, FunctionDefinition, UnaryExpr, ShowCommand, AssignmentExpr, IfElseBlock, BreakCommand, ContinueCommand, StringLiteral, ClassDefinition, CallExpr, ParamDeclaration, EmptyLine, MemberExpr, ReturnCommand, ExtMethodDefinition, BooleanLiteral, AlwaysBlock, DocComment } from "./ast";
 import { tokenize, Token, TokenType } from "./lexer";
 import { ForBlock } from "./ast";
 import { WhileBlock } from "./ast";
@@ -88,12 +88,24 @@ export default class Parser {
             case TokenType.EndLine:
                 this.eat();
                 return { kind: "EmptyLine" }
+            case TokenType.DocComment:
+                statement = this.parse_doc_comment();
+                break;
             default:
                 statement = this.parse_expr();
                 break;
         }
         this.expect(TokenType.EndLine, "Erwarte neue Zeile nach Anweisung!");
         return statement;
+    }
+
+    parse_doc_comment(): Stmt {
+        const result: DocComment = {
+            kind: "DocComment",
+            content: this.at().value,
+        };
+        this.eat();
+        return result;
     }
 
     parse_show(): Stmt {

@@ -1,10 +1,15 @@
 export type NodeType = Stmt["kind"];
 
-export type Stmt = Program | VarDeclaration | ObjDeclaration | IfElseBlock | ForBlock | WhileBlock | AlwaysBlock | ShowCommand | BreakCommand | ContinueCommand | ReturnCommand | Expr;
+export type Stmt = Program | DocComment | VarDeclaration | ObjDeclaration | IfElseBlock | ForBlock | WhileBlock | AlwaysBlock | ShowCommand | BreakCommand | ContinueCommand | ReturnCommand | Expr;
 
 export interface Program {
     kind: "Program";
     body: Stmt[];
+}
+
+export interface DocComment {
+    kind: "DocComment";
+    content: string;
 }
 
 export interface VarDeclaration {

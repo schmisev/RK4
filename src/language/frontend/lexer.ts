@@ -6,6 +6,7 @@ export enum TokenType {
     Number,
     Identifier,
     String,
+    DocComment,
 
     // Keywords
     Show,
@@ -199,14 +200,18 @@ export function tokenize(sourceCode: string): Token[] {
                 tokens.push(token(str, TokenType.String, lineCount));
             }
             else if (src[0] == "#") {
-                // python style comments
-                let chr = src[0];
-                while (src.length > 0 && chr != "\n") {
-                    src.shift();
-                    chr = src[0];
-                }
-                if (chr == "\n") lineCount ++;
                 src.shift();
+                let chr;
+                let str = "";
+                while(src.length > 0) {
+                    chr = src[0];
+                    if (chr == "\n") {
+                        break;
+                    }
+                    str += chr; // add to doc comment
+                    src.shift(); // NOTICE: we are not shifting newline
+                }
+                tokens.push(token(str, TokenType.DocComment, lineCount));
             }
             /*
             else if (src[0] == "[") {

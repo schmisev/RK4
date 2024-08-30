@@ -73,7 +73,7 @@ ace.define("ace/theme/RKLight-css",["require","exports","module"], function(requ
       }
       
       .ace-RKLight .ace_comment.ace_doc {
-        color: gray;
+        color: darkgoldenrod;
       }
       
       .ace-RKLight .ace_comment.ace_doc.ace_tag {

@@ -1,5 +1,5 @@
 import { RuntimeError } from "../../../errors";
-import { AlwaysBlock, ClassDefinition, EmptyLine, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, VarDeclaration, WhileBlock } from "../../frontend/ast";
+import { AlwaysBlock, ClassDefinition, DocComment, EmptyLine, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, VarDeclaration, WhileBlock } from "../../frontend/ast";
 import { ClassPrototype, Environment, VarHolder } from "../environment";
 import { SteppedEval, evaluate } from "../interpreter";
 import {
@@ -16,6 +16,7 @@ import { Break, Continue, Return } from "./errors";
 export function* eval_program(prog: Program, env: Environment) {
     let lastEvaluated: RuntimeVal = MK_NULL();
     for (const statement of prog.body) {
+        if (statement.kind == "DocComment" || statement.kind == "EmptyLine") continue; // skip these
         try {
             lastEvaluated = yield* evaluate(statement, env);
         } catch (e) {
@@ -308,11 +309,16 @@ export function* eval_bare_statements(
 ): SteppedEval<RuntimeVal> {
     let lastEvaluated: RuntimeVal = MK_NULL();
     for (const statement of body) {
+        if (statement.kind == "DocComment" || statement.kind == "EmptyLine") continue; // skip these
         lastEvaluated = yield* evaluate(statement, env);
     }
     return lastEvaluated;
 }
 
 export function eval_empty_line(node: EmptyLine, env: Environment): RuntimeVal {
+    return MK_NULL();
+}
+
+export function eval_doc_comment(node: DocComment, env: Environment): RuntimeVal {
     return MK_NULL();
 }

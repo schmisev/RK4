@@ -35,7 +35,7 @@ import { updateTaskSelector } from "./ui/task-selector";
 
 // App state variables
 let dt = 50; // ms to sleep between function calls
-let dtIDE = 100;
+let dtIDE = 1000;
 export let isRunning = false;
 export let queueInterrupt = false;
 export let liveTasks = STD_TASKS;
@@ -103,6 +103,7 @@ let autoUpdateIDE = setTimeout(updateIDE, dtIDE);
 editor.on("change", async (e: ace.Ace.Delta) => {
     clearTimeout(autoUpdateIDE);
     autoUpdateIDE = setTimeout(updateIDE, dtIDE);
+    setDebugTimer(true);
 });
 
 // Cmd line input
@@ -112,6 +113,15 @@ document.getElementById("cmd-run")!.onclick = runCmd
 // Start / stop buttons
 document.getElementById("code-start")!.onclick = startCode
 document.getElementById("code-stop")!.onclick = stopCode
+
+// Setting up debug timer
+const debugTimer = document.getElementById("debug-timer")!;
+function setDebugTimer(waiting = false) {
+    if (waiting)
+        debugTimer.innerHTML = "⌛";
+    else
+        debugTimer.innerHTML = "✅";
+}
 
 // Setting error bar
 function setErrorBar(msg: string, errorTypeCss: string) {
@@ -142,10 +152,12 @@ async function updateIDE() {
     setErrorBar("✔️ kein Fehler gefunden", "none");
 
     const code = editor.getValue();
-    if (!code) return;
+    //if (!code) return;
     try {
         program = parse.produceAST(code);
         showStructogram(program);
+        // set debug timer
+        setDebugTimer(false);
     } catch (e) {
         let errorCssClass = "none";
         
