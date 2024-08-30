@@ -16,7 +16,7 @@ var RKScriptHighlightRules = function () {
     this.$rules = {
         "start": [{
                 token: "comment",
-                regex: "#.*$",
+                regex: "\\/\\/.*$",
                 unicode: true,
             }, {
                 token: "string", // " string
@@ -31,9 +31,6 @@ var RKScriptHighlightRules = function () {
                 token: keywordMapper,
                 regex: "[\\p{L}0-9]+\\b",
             }, {
-                token: "keyword.operator",
-                regex: "\\+|-|\\/|:|%|<|>|=|\\*"
-            }, {
                 token: "paren.lparen",
                 regex: "[\\(]"
             }, {
@@ -44,13 +41,16 @@ var RKScriptHighlightRules = function () {
                 regex: "\\s+"
             }, {
                 token: "comment", // multi line comment
-                regex: "\\[",
+                regex: "\\/\\*",
                 next: "comment"
+            }, {
+                token: "keyword.operator",
+                regex: "\\+|-|\\/|:|%|<|>|=|\\*"
             }],
         "comment": [
             {
                 token: "comment", // closing comment
-                regex: "\\]",
+                regex: "\\*\\/",
                 next: "start"
             }, {
                 defaultToken: "comment"

@@ -117,7 +117,7 @@ export function tokenize(sourceCode: string): Token[] {
             tokens.push(token(src.shift(), TokenType.Minus, lineCount));
         } else if (src[0] == '*'){
             tokens.push(token(src.shift(), TokenType.Multiply, lineCount));
-        } else if (src[0] == ':' || src[0] == "/"){
+        } else if (src[0] == ':'){
             tokens.push(token(src.shift(), TokenType.Divide, lineCount));
         } else if (src[0] == '%'){
             tokens.push(token(src.shift(), TokenType.Mod, lineCount));
@@ -147,7 +147,47 @@ export function tokenize(sourceCode: string): Token[] {
             tokens.push(token(src.shift(), TokenType.OpenBrace, lineCount));
         } else {
             // Handle multicharacter tokens
-            if (src[0] == '"') {
+            if (src[0] == "/"){
+                if (src.length <= 1) {
+                    // tailing divide???
+                    tokens.push(token(src.shift(), TokenType.Divide, lineCount));
+                }
+                // c-style comments
+                else {
+                    if (src[1] == "/") {
+                        // single line comment
+                        src.shift();
+                        src.shift(); // get rid of "//"
+                        // loop through until newline
+                        let chr = src[0];
+                        while (src.length > 0 && chr != "\n") {
+                            src.shift();
+                            chr = src[0];
+                        }
+                        if (chr == "\n") lineCount ++;
+                        src.shift();
+                    } else if (src[1] == "*") {
+                        // multi line comment
+                        src.shift();
+                        src.shift(); // get rid of "/*"
+                        // loop through until */
+                        let chr0 = src[0];
+                        let chr1 = src[1];
+                        while (src.length > 1 && chr0 != "*" && chr1 != "/") {
+                            if (chr0 == "\n") lineCount ++;
+                            src.shift();
+                            chr0 = src[0];
+                            chr1 = src[1];
+                        }
+                        src.shift();
+                        src.shift(); // get rid of */
+                    } else {
+                        // nope, its just a divide
+                        tokens.push(token(src.shift(), TokenType.Divide, lineCount));
+                    }
+                }
+            } else if (src[0] == '"') {
+                // strings
                 src.shift();
                 let str = "";
                 while(src.length > 0) {
@@ -159,6 +199,7 @@ export function tokenize(sourceCode: string): Token[] {
                 tokens.push(token(str, TokenType.String, lineCount));
             }
             else if (src[0] == "#") {
+                // python style comments
                 let chr = src[0];
                 while (src.length > 0 && chr != "\n") {
                     src.shift();
@@ -167,6 +208,7 @@ export function tokenize(sourceCode: string): Token[] {
                 if (chr == "\n") lineCount ++;
                 src.shift();
             }
+            /*
             else if (src[0] == "[") {
                 let chr = src[0];
                 while (src.length > 0 && chr != "]") {
@@ -176,6 +218,7 @@ export function tokenize(sourceCode: string): Token[] {
                 }
                 src.shift();
             }
+            */
             else if (isint(src[0])) {
                 let num = "";
                 while(src.length > 0 && isint(src[0])) {

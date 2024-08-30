@@ -54,8 +54,8 @@ export const STD_PRELOAD = "# Nichts vordefiniert\n";
 /**
  * Test code using pretty much all language features
  */
-export const TEST_CODE = `# Großer Testcode
-[ Funktionsdefinition ]
+export const TEST_CODE = `// Großer Testcode
+/* Funktionsdefinition */
 Funktion pow(Zahl basis, Zahl exponent)
     Zahl ausgabe ist 1
     wiederhole exponent mal
@@ -64,7 +64,7 @@ Funktion pow(Zahl basis, Zahl exponent)
     zurück ausgabe
 ende
 
-[ Methodendefinition ]
+/* Methodendefinition */
 Methode stapeln(Zahl n) für Roboter
     wiederhole n mal
         hinlegen()
@@ -86,7 +86,7 @@ Methode zeileAbräumen() für Roboter
     ende
 ende
 
-[ Klassendefinition ]
+/* Klassendefinition */
 Klasse Vektor2
     Zahl x ist 0
     Zahl y ist 0
@@ -102,9 +102,9 @@ Klasse Vektor2
     ende
 ende
 
-[ Hauptprogramm ]
+/* Hauptprogramm */
 wenn welt.teilaufgabe() = 1 dann
-# Erstes Level
+// Erstes Level
 
 zeig pow(3, 5)
 zeig k1.linksDrehen()
@@ -146,7 +146,7 @@ wiederhole solange nicht welt.fertig()
 ende
 
 sonst
-# Zweites Level
+// Zweites Level
 wiederhole 2 mal
     k1.zeileAbräumen()
     k2.zeileAbräumen()

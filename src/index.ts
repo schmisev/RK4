@@ -301,7 +301,7 @@ async function runCode(code: string, stepped: boolean) {
             if (stepped) {
                 lastLineIndex = next.value
                 let markerId = editor.session.addMarker(new ace.Range(lastLineIndex, 0, lastLineIndex, 10), 'exec-marker', 'fullLine');
-        	    await sleep(dt);
+                await sleep(dt);
                 editor.session.removeMarker(markerId);
             }
         }

@@ -23,14 +23,16 @@
                 <select class="text" id="store-data" list="store-data">
                     <option>(neu)</option>
                 </select>
-                <button id="delete-from-store">🗑️</button>
-                <button id="store-code">💾</button>
+                <div id="store-container">
+                    <button title="Lösche Code aus dem Speicher" id="delete-from-store">🗑️</button>
+                    <button title="Lege Code in den Speicher oder überschreibe aktuellen Speicherstand." id="store-code">💾</button>
+                </div>
                 <!-- Preload / library UI -->
                 <div class="preload-title lc30 wsr text">📖 Bibliothek</div>
                 <div class="preload-editor editor" id="preload-editor">Preload</div>
                 <!-- Save / load UI -->
-                <button class="save-world" id="save-code">💾</button>
-                <button class="load-world" id="load-code">📂</button>
+                <button title="Speicher aktuellen Code in einer .rk-Datei und lade sie herunter." class="save-world" id="save-code">⬇️</button>
+                <button title="Lade Code (.rk), Welt (.csv) oder Aufgabe (.json) vom PC." class="load-world" id="load-code">📂</button>
                 <input id="load-file" type="file" accept=".rk, .csv, .json," style="visibility: hidden;">
                 <select class="text" id="load-task">
                     <option selected disabled>Wähle eine Aufgabe</option>
@@ -45,7 +47,7 @@
                 <!-- Step time UI -->
                 <div class="wait-title wsr lc30">⌛ <span class="wait-time" id="wait-time">50 ms</span></div>
                 <div class="wait-slider-container wsr lc30">
-                    <input type="range" min="0" max="250" value="50" step="10" class="wait-slider slider" id="wait-slider">
+                    <input type="range" min="0" max="250" value="50" step="5" class="wait-slider slider" id="wait-slider">
                 </div>
                 <!-- Command line UI -->
                 <input class="cmd-line code-like" id="cmd-line" autocomplete="off">
