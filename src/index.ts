@@ -160,14 +160,22 @@ async function updateIDE() {
         setDebugTimer(false);
     } catch (e) {
         let errorCssClass = "none";
+        let lineIndex = 0;
+        let message = "";
         
         if (e instanceof LexerError) {
             errorCssClass = "lexer";
+            lineIndex = e.lineIndex;
+            message = e.message;
         } else if (e instanceof ParserError) {
-            errorCssClass = "parser"
+            errorCssClass = "parser";
+            lineIndex = e.lineIndex;
+            message = e.message;
         }
 
-        setErrorMarker(`❌ ${e.message} (Zeile ${e.lineIndex+1})`, e.lineIndex, errorCssClass);
+        if (errorCssClass !== "none") {
+            setErrorMarker(`❌ ${message} (Zeile ${lineIndex+1})`, lineIndex, errorCssClass);
+        }
     }
 }
 
@@ -318,9 +326,13 @@ async function runCode(code: string, stepped: boolean) {
             }
         }
     } catch (runtimeError) {
-        console.log("⚠️ " + runtimeError.message);
-        console.error(runtimeError.stack);
-        setErrorMarker(`⚠️ ${runtimeError.message} (Zeile: ${lastLineIndex + 1})`, lastLineIndex, "runtime");
+        if (runtimeError instanceof Error) {
+            console.log("⚠️ " + runtimeError.message);
+            console.error(runtimeError.stack);
+            setErrorMarker(`⚠️ ${runtimeError.message} (Zeile: ${lastLineIndex + 1})`, lastLineIndex, "runtime");
+        } else {
+            throw runtimeError;
+        }
     }
     isRunning = false;
 };

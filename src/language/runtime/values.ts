@@ -1,5 +1,5 @@
 import { ObjDeclaration, ParamDeclaration, Stmt, VarDeclaration } from "../frontend/ast";
-import { ClassPrototype, Environment, GlobalEnvironment, StaticScope, VarHolder } from "./environment";
+import { ClassPrototype, Environment, StaticScope, VarHolder } from "./environment";
 
 export type RuntimeVal = NullVal | NumberVal | BooleanVal | StringVal | NativeFunctionVal | FunctionVal | ClassVal | ObjectVal;
 export type ValueType = RuntimeVal["type"];
@@ -51,6 +51,7 @@ export interface MethodVal {
     type: "method";
     name: string;
     params: ParamDeclaration[];
+    declenv: StaticScope;
     body: Stmt[];
 }
 
@@ -59,7 +60,6 @@ export interface BuiltinClassVal {
     name: string;
     internal: true;
     prototype: ClassPrototype;
-    declenv: GlobalEnvironment;
 }
 
 export interface UserClassVal {
@@ -67,8 +67,7 @@ export interface UserClassVal {
     name: string;
     internal?: false;
     attributes: (VarDeclaration | ObjDeclaration)[];
-    prototype: ClassPrototype,
-    declenv: Environment;
+    prototype: ClassPrototype;
 }
 
 export type ClassVal = BuiltinClassVal | UserClassVal;

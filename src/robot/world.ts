@@ -55,12 +55,11 @@ interface WorldObjVal extends ObjectVal {
 }
 
 export function declareWorldClass(env: GlobalEnvironment): BuiltinClassVal {
-    const prototype = new ClassPrototype(env);
+    const prototype = new ClassPrototype();
     const worldClass: BuiltinClassVal = {
         type: "class",
         name: "Welt",
         internal: true,
-        declenv: this,
         prototype,
     };
 
@@ -108,15 +107,15 @@ export function declareWorld(w: World, varname: string, env: GlobalEnvironment):
 }
 
 export class World {
-    robots: Robot[];
-    fields: Array<Field[]>;
-    L: number;
-    W: number;
-    H: number;
+    robots: Array<Robot> = [];
+    fields: Array<Field[]> = [];
+    L: number = 0;
+    W: number = 0;
+    H: number = 0;
     stages: string[];
-    stageIdx: number;
+    stageIdx: number = -1;
     goalsRemaining: number = 0;
-    
+
     constructor(src: string, stage: number) {
         this.resetWorld();
         this.stages = [];
@@ -128,7 +127,7 @@ export class World {
     }
 
     resetWorld() {
-        this.robots = Array<Robot>();
+        this.robots = [];
         this.fields = [];
         this.L = 0;
         this.W = 0;
