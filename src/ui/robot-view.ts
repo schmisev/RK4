@@ -399,8 +399,10 @@ export function robotSketch(p5: p5) {
             p5.pop();
         }
 
+        const goalReached = f.isGoalReached();
+        
         // goal blocks
-        if (f.goalBlocks != null && !f.isGoalReached()) {
+        if (f.goalBlocks != null && !goalReached) {
             for (const [z, block] of f.goalBlocks.entries()) {
                 p5.push();
                 p5.translate(0, 0, z * BLH);
@@ -432,7 +434,7 @@ export function robotSketch(p5: p5) {
         }
 
         // goal markers
-        if (f.goalMarker != null && !f.isGoalReached()) {
+        if (f.goalMarker != null && !goalReached) {
             if (f.goalMarker != MarkerType.None) {
                 p5.push();
                 p5.translate(0, 0, (-BLH + MRH) * 0.5);

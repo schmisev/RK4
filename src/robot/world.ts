@@ -406,11 +406,11 @@ export class Field {
     checkGoal(): boolean {
         if (!this.isEditable) return true;
         // this first, because no array ops
-        if (this.goalMarker && this.goalMarker != this.marker) {
+        if (this.goalMarker != null && this.goalMarker != this.marker) {
             return false;
         }
         // this is super cheap
-        if (!this.goalBlocks) return true;
+        if (this.goalBlocks == null) return true;
         // this is cheap
         if (this.goalBlocks.length != this.blocks.length) {
             return false;
