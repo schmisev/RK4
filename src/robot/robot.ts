@@ -24,7 +24,7 @@ interface RobotObjVal extends ObjectVal {
 }
 
 export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
-    const prototype = new ClassPrototype(this);
+    const prototype = new ClassPrototype(env);
     const robotCls: BuiltinClassVal = {
         type: "class",
         name: "Roboter",
