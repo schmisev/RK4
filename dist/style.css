@@ -512,8 +512,9 @@ span.line {
 }
 
 .struct-while {
-    outline: 1px black solid;
-    margin-left: 10%;
+    /*outline: 1px black solid;*/
+    padding-left: 20px;
+    width: calc(max-content + 20px);
 }
 
 .struct-ifelse {
@@ -536,7 +537,7 @@ span.line {
     background-color: #ccc;
     display: grid;
     grid-auto-flow: column;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
 .struct-row.left {
