@@ -181,8 +181,8 @@ async function updateIDE() {
     }
 }
 
-export function loadRawTask(key: string, task: Task) {
-    const splitKey = destructureKey(key);
+export function loadRawTask(key: string, task: Task, ignoreTitleInKey = false) {
+    const splitKey = destructureKey(key, ignoreTitleInKey);
 
     preloadCode = task.preload;
     worldSpec = task.world;
@@ -202,12 +202,12 @@ export async function loadTask(key: string) {
     interrupt()
 
     if (key in liveTasks) {
-        loadRawTask(key, liveTasks[key]);
+        loadRawTask(key, liveTasks[key], false);
         return;
     }
     if (key in extTasks) {
         await downloadExtTask(key, extTasks[key]);
-        loadRawTask(key, liveTasks[key]);
+        loadRawTask(key, liveTasks[key], true);
         return;
     }
 }
@@ -264,7 +264,7 @@ async function startCode() {
         editor.setReadOnly(true);
         await runCode(code, true);
         await interrupt(); // for safety
-        
+
         console.log("▢ Ausführung beendet!");
 
         if (!world.isGoalReached()) {

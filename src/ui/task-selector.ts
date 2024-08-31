@@ -106,7 +106,9 @@ export async function downloadExtTask(key: string, dlURL: string) {
     } catch {
         // do nothing
     }
-}export function destructureKey(key: string, containsTitle = false) {
+}
+
+export function destructureKey(key: string, containsTitle = false) {
     const keyParts = key.split("_");
     let title = containsTitle ? (keyParts.pop() || "unbenannt") : "ex. Titel";
     let name = keyParts.pop() || "unbenannt";
