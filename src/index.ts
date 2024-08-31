@@ -5,6 +5,7 @@ import "./ui/console-log";
 import "./ui/save-load-files";
 import "./ui/task-selector";
 import "./ui/store-code";
+import { updateTaskSelector } from "./ui/task-selector";
 import { showStructogram } from './ui/structograms';
 import { addRobotButtons } from './ui/objectigrams';
 
@@ -17,7 +18,9 @@ import { sleep } from "./utils";
 
 // Robot imports
 import { declareWorld, World } from "./robot/world";
-import { STD_PRELOAD, STD_WORLD, STD_TASKS, DEFAULT_TASK, TEST_CODE, Task, destructureKey, loadExtTasks } from "./robot/tasks";
+import { STD_PRELOAD, STD_WORLD, STD_TASKS, DEFAULT_TASK, TEST_CODE, Task } from "./robot/tasks";
+import { destructureKey } from "./ui/task-selector";
+import { loadExtTasks, downloadExtTask } from "./ui/task-selector";
 import { clamp } from './utils';
 
 // ACE imports
@@ -30,8 +33,6 @@ import './assets/ace/theme-rklight.js';
 // General errors 
 // TODO: Split up?
 import { LexerError, ParserError } from './errors';
-import { RuntimeVal } from "./language/runtime/values";
-import { updateTaskSelector } from "./ui/task-selector";
 
 // App state variables
 let dt = 50; // ms to sleep between function calls
@@ -39,6 +40,7 @@ let dtIDE = 1000;
 export let isRunning = false;
 export let queueInterrupt = false;
 export let liveTasks = STD_TASKS;
+export let extTasks: Record<string, string> = {};
 export let taskName: string
 
 let preloadCode = "\n";
@@ -51,7 +53,7 @@ let env: GlobalEnvironment;
 export let world: World
 let program: Program;
 
-// Fetch HTML elements
+// HTML elements
 // Fetch task check
 export const taskCheck = document.getElementById("task-check")!;
 
@@ -160,20 +162,23 @@ async function updateIDE() {
         setDebugTimer(false);
     } catch (e) {
         let errorCssClass = "none";
+        let lineIndex = 0;
+        let message = "";
         
         if (e instanceof LexerError) {
             errorCssClass = "lexer";
+            lineIndex = e.lineIndex;
+            message = e.message;
         } else if (e instanceof ParserError) {
-            errorCssClass = "parser"
+            errorCssClass = "parser";
+            lineIndex = e.lineIndex;
+            message = e.message;
         }
 
-        setErrorMarker(`❌ ${e.message} (Zeile ${e.lineIndex+1})`, e.lineIndex, errorCssClass);
+        if (errorCssClass !== "none") {
+            setErrorMarker(`❌ ${message} (Zeile ${lineIndex+1})`, lineIndex, errorCssClass);
+        }
     }
-}
-
-// Loading tasks
-function isTaskkey(key: string): key is keyof typeof liveTasks {
-    return key in liveTasks; // TASKS was not extended in any way and is a simple record
 }
 
 export function loadRawTask(key: string, task: Task) {
@@ -193,14 +198,18 @@ export function loadRawTask(key: string, task: Task) {
     world.loadWorldLog();
 }
 
-export function loadTask(key: string) {
-    if (!isTaskkey(key)) {
-        preloadCode = STD_PRELOAD;
-        worldSpec = STD_WORLD;
-        console.log("Standardwelt geladen...")
+export async function loadTask(key: string) {
+    interrupt()
+
+    if (key in liveTasks) {
+        loadRawTask(key, liveTasks[key]);
         return;
     }
-    loadRawTask(key, liveTasks[key]);
+    if (key in extTasks) {
+        await downloadExtTask(key, extTasks[key]);
+        loadRawTask(key, liveTasks[key]);
+        return;
+    }
 }
 
 async function resetEnv(stage = 0) {
@@ -318,9 +327,13 @@ async function runCode(code: string, stepped: boolean) {
             }
         }
     } catch (runtimeError) {
-        console.log("⚠️ " + runtimeError.message);
-        console.error(runtimeError.stack);
-        setErrorMarker(`⚠️ ${runtimeError.message} (Zeile: ${lastLineIndex + 1})`, lastLineIndex, "runtime");
+        if (runtimeError instanceof Error) {
+            console.log("⚠️ " + runtimeError.message);
+            console.error(runtimeError.stack);
+            setErrorMarker(`⚠️ ${runtimeError.message} (Zeile: ${lastLineIndex + 1})`, lastLineIndex, "runtime");
+        } else {
+            throw runtimeError;
+        }
     }
     isRunning = false;
 };
@@ -328,6 +341,6 @@ async function runCode(code: string, stepped: boolean) {
 /**
  * Start app
  */
-updateTaskSelector(); // get std tasks
-loadExtTasks().then(updateTaskSelector); // get github tasks
+loadExtTasks().then(updateTaskSelector); // get std tasks
+// loadExtTasks().then(updateTaskSelector); // get github tasks (too expensive)
 loadTask(DEFAULT_TASK);

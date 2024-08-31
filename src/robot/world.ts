@@ -55,12 +55,11 @@ interface WorldObjVal extends ObjectVal {
 }
 
 export function declareWorldClass(env: GlobalEnvironment): BuiltinClassVal {
-    const prototype = new ClassPrototype(this);
+    const prototype = new ClassPrototype();
     const worldClass: BuiltinClassVal = {
         type: "class",
         name: "Welt",
         internal: true,
-        declenv: this,
         prototype,
     };
 
@@ -108,14 +107,15 @@ export function declareWorld(w: World, varname: string, env: GlobalEnvironment):
 }
 
 export class World {
-    robots: Robot[];
-    fields: Array<Field[]>;
-    L: number;
-    W: number;
-    H: number;
+    robots: Array<Robot> = [];
+    fields: Array<Field[]> = [];
+    L: number = 0;
+    W: number = 0;
+    H: number = 0;
     stages: string[];
-    stageIdx: number;
-    
+    stageIdx: number = -1;
+    goalsRemaining: number = 0;
+
     constructor(src: string, stage: number) {
         this.resetWorld();
         this.stages = [];
@@ -127,7 +127,7 @@ export class World {
     }
 
     resetWorld() {
-        this.robots = Array<Robot>();
+        this.robots = [];
         this.fields = [];
         this.L = 0;
         this.W = 0;
@@ -183,7 +183,7 @@ export class World {
                     
                 
                 // create new field
-                const f = new Field(expr == "", expr == "#", this.H);
+                const f = new Field(this, expr == "", expr == "#", this.H);
                 let robotCreated = false;
                 for (const c of expr) {
                     switch (c) {
@@ -250,6 +250,8 @@ export class World {
                 }
                 
                 // add field to line
+                f.lastGoalStatus = f.checkGoal();
+                if (!f.lastGoalStatus) this.addGoal();
                 this.fields[y].push(f);
             }
         }
@@ -287,12 +289,20 @@ export class World {
         return undefined;
     }
 
+    addGoal() {
+        this.goalsRemaining += 1;
+        // console.log(`Feldziel NICHT erfüllt, jetzt noch ${this.goalsRemaining}`);
+    }
+
+    solveGoal() {
+        this.goalsRemaining -= 1;
+        // console.log(`Feldziel ERFÜLLT, noch ${this.goalsRemaining}`);
+    }
+
     isGoalReached() {
-        for (const line of this.fields) {
-            for (const field of line) {
-                if (!field.isGoalReached()) return false;
-            }
-        }
+        if (this.goalsRemaining < 0) throw new RuntimeError("Mit der Welt ist etwas falsch!");
+        if (this.goalsRemaining > 0) return false;
+        // when goalsRemaining is exactly 0
         return true;
     }
 
@@ -306,12 +316,17 @@ export class Field {
     isWall: boolean;
     isEditable: boolean;
     H: number;
+    world: World;
     blocks: BlockType[];
     goalBlocks: BlockType[] | null;
     marker: MarkerType;
     goalMarker: MarkerType | null;
 
-    constructor(isEmpty: boolean, isWall: boolean, H: number) {
+    lastGoalStatus: boolean;
+    wasChanged: boolean;
+
+    constructor(world: World, isEmpty: boolean, isWall: boolean, H: number) {
+        this.world = world;
         this.isEmpty = isEmpty;
         this.isWall = isWall;
         this.isEditable = !(isWall || isEmpty);
@@ -320,17 +335,23 @@ export class Field {
         this.goalBlocks = null;
         this.marker = MarkerType.None;
         this.goalMarker = null;
+
+        this.lastGoalStatus = false;
+        this.wasChanged = true;
     }
 
     addBlock(b: BlockType, goal = false) {
         if (!goal) {
-            this.blocks.push(b);
-            if (!this.isEditable || this.blocks.length > this.H)
+            if (!this.isEditable || this.blocks.length >= this.H)
                 throw new RuntimeError(`Kann hier keinen Block hinlegen!`);
+            this.blocks.push(b);
         } else {
             if (this.goalBlocks == null) this.goalBlocks = Array<BlockType>();
+            if (!this.isEditable || this.goalBlocks.length >= this.H)
+                throw new RuntimeError(`Kann hier keinen Ziel-Block hinlegen!`);
             this.goalBlocks.push(b);
         }
+        this.wasChanged = true;
     }
 
     addMultipleBlocks(n: number, b: BlockType, goal = false) {
@@ -343,6 +364,7 @@ export class Field {
         if (!this.isEditable || this.blocks.length <= 0)
             throw new RuntimeError(`Kann hier keinen Block aufheben!`);
         this.blocks.pop();
+        this.wasChanged = true;
     }
 
     getBlockHeight(): number {
@@ -356,22 +378,49 @@ export class Field {
         else {
             this.goalMarker = m;
         }
+        this.wasChanged = true;
     }
 
     removeMarker() {
         if (!this.isEditable || this.marker == MarkerType.None)
             throw new RuntimeError(`Kann hier keine Marke entfernen!`);
         this.marker = MarkerType.None;
+        this.wasChanged = true;
     }
 
     isGoalReached() {
+        // if nothing changed, the goal status can't have changed
+        if (!this.wasChanged) return this.lastGoalStatus;
+        this.wasChanged = false; // after the following, we know the state of the goal
+
+        const tmpGoalStatus = this.lastGoalStatus;
+        this.lastGoalStatus = this.checkGoal();
+        
+        if (tmpGoalStatus && !this.lastGoalStatus) this.world.addGoal();
+        if (!tmpGoalStatus && this.lastGoalStatus) this.world.solveGoal();
+
+        return this.lastGoalStatus;
+    }
+
+    checkGoal(): boolean {
         if (!this.isEditable) return true;
-        if (this.goalBlocks != null) {
-            if (this.goalBlocks.toString() != this.blocks.toString()) return false;
+        // this first, because no array ops
+        if (this.goalMarker != null && this.goalMarker != this.marker) {
+            return false;
         }
-        if (this.goalMarker != null) {
-            if (this.goalMarker != this.marker) return false;
+        // this is super cheap
+        if (this.goalBlocks == null) return true;
+        // this is cheap
+        if (this.goalBlocks.length != this.blocks.length) {
+            return false;
         }
+        // this is expensive
+        for (let i = 0; i < this.blocks.length; i++) {
+            if (this.blocks[i] != this.goalBlocks[i]) {
+                return false;
+            }
+        }
+        // fallback
         return true;
     }
 }

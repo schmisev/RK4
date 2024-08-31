@@ -13,3 +13,47 @@ sonst wenn b dann
 sonst wenn c dann
     ciao
 ende
+
+wiederhole immer
+    wiederhole solange nicht k1.siehtWand()
+        wiederhole solange k1.siehtZiegel()
+            k1.aufheben()
+        ende
+        k1.schritt()
+    ende
+    k1.linksDrehen()
+    k1.linksDrehen()
+    wiederhole solange nicht k1.siehtWand()
+        wiederhole solange k1.siehtZiegel()
+            k1.aufheben()
+        ende
+        k1.schritt()
+    ende
+    k1.rechtsDrehen()
+    wenn k1.siehtWand() dann
+        zurück "fertig"
+    ende
+    wiederhole solange k1.siehtZiegel()
+        k1.aufheben()
+    ende
+    k1.schritt()
+    k1.rechtsDrehen()
+ende
+
+Methode schrittZurück() für Roboter
+    linksDrehen()
+    linksDrehen()
+    schritt()
+    rechtsDrehen()
+    rechtsDrehen()
+ende
+
+Methode probieren() für Roboter
+    wenn nicht siehtWand() dann
+        hinlegen()
+        schritt()
+        probieren()
+    sonst
+ende
+
+k1.probieren()

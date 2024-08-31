@@ -1,5 +1,6 @@
-import { liveTasks, loadTask } from "..";
-import { destructureKey } from "../robot/tasks";
+import { Octokit } from "@octokit/rest";
+import { extTasks, liveTasks, loadTask } from "..";
+import { Task } from "../robot/tasks";
 import { createOption } from "../utils";
 
 // Fill task selector
@@ -13,18 +14,9 @@ export function updateTaskSelector() {
         taskSelector.remove(i);
     }
 
-    for (const [key, task] of Object.entries(liveTasks).sort(
-        (a, b) => {
-            const ka = destructureKey(a[0]).sortStr;
-            const kb = destructureKey(b[0]).sortStr;
-
-            if (ka < kb) return -1;
-            if (ka > kb) return 1;
-
-            return 0;
-        }
-    )) {
-        const splitKey = destructureKey(key);
+    // First, get the live tasks
+    for (const [key, task] of Object.entries(liveTasks)) {
+        const splitKey = destructureKey(key, false);
 
         if (currentAuthor != splitKey.author) {
             currentAuthor = splitKey.author;
@@ -38,10 +30,105 @@ export function updateTaskSelector() {
 
         taskSelector.append(createOption(key, `&nbsp;&nbsp;&nbsp;&nbsp;🗺️ ${splitKey.name}: "${task.title}"`));
     }
+
+    // Then get the online tasks
+    for (const [key, dlURL] of Object.entries(extTasks)) {
+        const splitKey = destructureKey(key, true);
+
+        if (currentAuthor != splitKey.author) {
+            currentAuthor = splitKey.author;
+            taskSelector.append(createOption("", `👤 ${currentAuthor}`, true));
+
+            currentCategory = splitKey.category;
+            taskSelector.append(createOption("", `&nbsp;&nbsp;🗃️ ${currentCategory}`, true));
+        }
+
+        if (currentCategory != splitKey.category) {
+            currentCategory = splitKey.category;
+            taskSelector.append(createOption("", `&nbsp;&nbsp;🗃️ ${currentCategory}`, true));
+        }
+
+        taskSelector.append(createOption(key, `&nbsp;&nbsp;&nbsp;&nbsp;⬇️ ${splitKey.name}: ${splitKey.title}`));
+    }
 }
+
 // Load new task
 taskSelector.onchange = (e: Event) => {
     console.log();
     console.log("🤔 Lade neue Aufgabe: " + taskSelector.value);
     loadTask(taskSelector.value);
 };
+/**
+ * Get github files
+ */
+// Octokit.js
+// https://github.com/octokit/core.js#readme
+
+
+export async function loadExtTasks() {
+    const octokit = new Octokit({
+        auth: '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'
+    });
+
+    /*
+    const allFiles = await octokit.request("GET /repos/{owner}/{repo}/git/trees/main/tasks", {
+        owner: "schmisev",
+        repo: "RK4Tasks",
+    });
+    */
+    const allFiles = await octokit.request("GET /repos/{owner}/{repo}/contents/tasks/", {
+        owner: "schmisev",
+        repo: "RK4Tasks",
+    });
+
+    for (const file of allFiles.data) {
+        const fileName: string = (file.name satisfies string);
+        const splitFileName = fileName.split(".");
+        const fileExt = splitFileName.pop();
+        const key = splitFileName.join(".");
+
+        if (key && fileExt == "json") {
+            extTasks[key] = file.download_url;
+            /*
+            // request all the files
+            */
+        }
+    }
+    /**/
+}
+
+export async function downloadExtTask(key: string, dlURL: string) {
+    const dlFile = await fetch(dlURL);
+    const fileContent = await dlFile.text();
+    try {
+        const task: Task = JSON.parse(fileContent);
+        liveTasks[key] = task;
+    } catch {
+        // do nothing
+    }
+}export function destructureKey(key: string, containsTitle = false) {
+    const keyParts = key.split("_");
+    let title = containsTitle ? (keyParts.pop() || "unbenannt") : "ex. Titel";
+    let name = keyParts.pop() || "unbenannt";
+    let category = keyParts.pop() || "Standard";
+    let author = keyParts.pop() || "unbekannt";
+
+    return {
+        name: name,
+        category: category,
+        author: author,
+        title: title,
+        sortStr: author + category + name + title,
+    };
+}
+
+export function sortKeys(a: string, b: string) {
+    const ka = destructureKey(a[0]).sortStr;
+    const kb = destructureKey(b[0]).sortStr;
+
+    if (ka < kb) return -1;
+    if (ka > kb) return 1;
+
+    return 0;
+}
+

@@ -159,12 +159,7 @@ export class BoundDynamicScope implements StaticScope {
 }
 
 export class ClassPrototype {
-    private _env: StaticScope;
     private _methods: Map<string, MethodVal | NativeMethodVal> = new Map();
-
-    constructor(declEnv: StaticScope) {
-        this._env = declEnv;
-    }
 
     public declareMethod(name: string, method: MethodVal | NativeMethodVal) {
         if (this._methods.has(name))
@@ -197,7 +192,7 @@ export class ClassPrototype {
                             body: method.body,
                             name: method.name,
                             params: method.params,
-                            declenv: new BoundDynamicScope(this._env, receiver),
+                            declenv: new BoundDynamicScope(method.declenv, receiver),
                         }
                     else if (method.type === "native-method")
                         return {

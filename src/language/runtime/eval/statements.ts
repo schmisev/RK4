@@ -91,16 +91,18 @@ export function* eval_fn_definition(
 
 function eval_method_definition(
     def: FunctionDefinition,
-    env: ClassPrototype,
+    proto: ClassPrototype,
+    env: Environment,
 ) {
     const method: MethodVal = {
         type: "method",
         name: def.name,
         params: def.params,
+        declenv: env,
         body: def.body,
     };
 
-    env.declareMethod(method.name, method);
+    proto.declareMethod(method.name, method);
 }
 
 export function eval_ext_method_definition(
@@ -116,6 +118,7 @@ export function eval_ext_method_definition(
         type: "method",
         body: def.body,
         name: def.name,
+        declenv: env,
         params: def.params,
     });
     return MK_NULL();
@@ -129,9 +132,9 @@ export function eval_class_definition(
         throw new RuntimeError(
             `Du kannst Klassen wie '${def.ident}' nur global definieren!`
         );
-    const prototype = new ClassPrototype(env);
+    const prototype = new ClassPrototype();
     for (const m of def.methods) {
-        eval_method_definition(m, prototype);
+        eval_method_definition(m, prototype, env);
     }
 
     const cl: ClassVal = {
@@ -139,7 +142,6 @@ export function eval_class_definition(
         name: def.ident,
         attributes: def.attributes,
         prototype,
-        declenv: env,
     };
 
     return env.declareVar(def.ident, cl);

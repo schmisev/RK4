@@ -317,9 +317,11 @@ export default class Parser {
             type = "number";
         } else if (this.at().type == TokenType.DeclString) {
             type = "string";
+        } else if (this.at().type == TokenType.DeclObject) {
+            type = "object";
         }
         this.eat();
-        const ident = this.expect(TokenType.Identifier, "Erwarte Variablennamen nach 'Zahl', 'Wahrheitswert' oder 'Objekt'!").value;
+        const ident = this.expect(TokenType.Identifier, "Erwarte Variablennamen nach 'Zahl', 'Wahrheitswert', 'Text' oder 'Objekt'!").value;
         return { kind: "ParamDeclaration", type, ident };
     }
 

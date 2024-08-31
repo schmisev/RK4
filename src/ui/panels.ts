@@ -8,7 +8,7 @@ const wrapper = document.getElementById("panel-row")!;
 const panel = document.getElementById("left-panel")!;
 let isHandlerDragging = false;
 
-function disableSelect(event: MouseEvent) {
+function disableSelect(event: Event) {
     event.preventDefault();
 }
 

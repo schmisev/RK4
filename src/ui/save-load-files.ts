@@ -28,7 +28,7 @@ const fileInput: HTMLInputElement = document.getElementById("load-file")! as HTM
 fileInput.onchange = loadFile;
 
 // Uploading
-function loadFile(evt: InputEvent) {
+function loadFile(evt: Event) {
     const target: HTMLInputElement = evt.target as HTMLInputElement;
     if (!target) return;
     const files = target.files;
