@@ -59,6 +59,7 @@ const translateOperator = (op: string) => {
     switch (op) {
         case "*":
             return "⋅";
+        case ":":
         case "/":
             return "∶";
         case "+":
@@ -71,6 +72,8 @@ const translateOperator = (op: string) => {
             return "∨";
         case "nicht":
             return "¬";
+        case "%":
+            return "mod";
         default:
             return op;
     }
