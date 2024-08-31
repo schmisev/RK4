@@ -113,7 +113,7 @@ export const STD_TASKS: Record<string, Task> = {
         title: "Alles versucht?",
         description: "Lege die Blöcke an die richtigen Stellen - aber Achtung! Wo sie liegen sollen wird jedes Mal ausgewürfelt. Nutze dafür welt.fertig()!",
         preload: "Methode gehen(Zahl n) für Roboter\n    wiederhole n mal\n        schritt()\n    ende\nende",
-        world: "x;5;1;5;\nE;_:.;_:.;_:.;_:.",
+        world: "x;5;1;5;\nE;_:_.;_:_.;_:_.;_:_.",
     },
 };
 

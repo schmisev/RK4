@@ -12,6 +12,7 @@ function downloadCode() {
     const filename = taskName + ".rk";
     downloadTextFile(filename, code);
 }
+
 function downloadTextFile(filename: string, text: string) {
     const element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
@@ -24,6 +25,7 @@ function downloadTextFile(filename: string, text: string) {
 
     document.body.removeChild(element);
 }
+
 const fileInput: HTMLInputElement = document.getElementById("load-file")! as HTMLInputElement;
 fileInput.onchange = loadFile;
 
