@@ -1,5 +1,3 @@
-import { Octokit } from "@octokit/rest";
-import { liveTasks } from "..";
 
 function generateHomogeneousWorld(l: number, w: number, h: number, fieldCode = "_") {
     let result = `x;${l};${w};${h};\n`;
@@ -13,20 +11,6 @@ function generateHomogeneousWorld(l: number, w: number, h: number, fieldCode = "
     return result;
 }
 
-export function destructureKey(key: string) {
-    const keyParts = key.split("_");
-    let name = keyParts.pop() || "unbenannt";
-    let category = keyParts.pop() || "Standard";
-    let author = keyParts.pop() || "unbekannt";
-
-    return {
-        name: name,
-        category: category,
-        author: author,
-        sortStr: author + category + name,
-    };
-}
-
 /**
  * Interface for tasks
  */
@@ -37,129 +21,54 @@ export interface Task {
     preload: string,
 }
 
-/**
- * Standard world
- */
 export const STD_WORLD = `x;4;4;6;
 S;_;_;_
 _;_;_;_
 _;_;_;_
 _;_;_;_`
 
-/**
- * Standard preload code, should be empty
- */
-export const STD_PRELOAD = "# Nichts vordefiniert\n";
 
-/**
- * Test code using pretty much all language features
- */
+export const STD_PRELOAD = "// Nichts vordefiniert\n";
+
+
 export const TEST_CODE = `// Großer Testcode
-/* Funktionsdefinition */
-Funktion pow(Zahl basis, Zahl exponent)
-    Zahl ausgabe ist 1
-    wiederhole exponent mal
-        ausgabe ist ausgabe * basis
-    ende
-    zurück ausgabe
-ende
+Zahl zeilenZähler ist 0
 
-/* Methodendefinition */
-Methode stapeln(Zahl n) für Roboter
-    wiederhole n mal
-        hinlegen()
-    ende
-ende
-
-Methode abräumen() für Roboter
-    wiederhole solange siehtZiegel()
-        aufheben()
-    ende
-ende
-
-Methode zeileAbräumen() für Roboter
-    wiederhole 2 mal
-        wiederhole solange nicht siehtWand()
-            abräumen()
-            schritt()
+# Wiederholungen
+wiederhole 4 mal
+    Zahl n ist 0
+    wiederhole solange n < 10
+        wiederhole solange nicht k1.siehtWand()
+            k1.hinlegen()
+            k1.schritt()
         ende
+        k1.linksDrehen()
+        n ist n + 1
     ende
 ende
 
-/* Klassendefinition */
-Klasse Vektor2
-    Zahl x ist 0
-    Zahl y ist 0
-    
-    Methode plus(Zahl dx, Zahl dy)
-        x ist x + dx
-        y ist y + dy
+Methode zeileAufräumen() für Roboter
+    # Methodendefinition
+    wiederhole solange nicht siehtWand()
+        aufheben()
+        schritt()
     ende
 
-    Methode skalieren(Zahl f)
-        x ist x * f
-        y ist y * f
+    zeilenZähler ist zeilenZähler + 1
+ende
+
+Funktion turmAbräumen(Objekt r)
+    # Funktionsdeinition
+    wiederhole solange r.siehtZiegel()
+        r.zeileAufräumen()
+        r.linksDrehen()
     ende
 ende
 
-/* Hauptprogramm */
-wenn welt.teilaufgabe() = 1 dann
-// Erstes Level
+turmAbräumen(k1)
 
-zeig pow(3, 5)
-zeig k1.linksDrehen()
-zeig k1.stapeln(3)
-
-k2.rechtsDrehen()
-k2.schritt()
-k2.linksDrehen()
-
-wiederhole 3 mal
-    k2.abräumen()
-    k2.linksDrehen()
-    k2.schritt()
-    k2.rechtsDrehen()
-ende
-
-k2.schritt()
-k2.rechtsDrehen()
-k2.schritt()
-k2.markeSetzen()
-
-k1.abräumen()
-k1.schritt()
-k1.linksDrehen()
-k1.schritt()
-k1.markeEntfernen()
-k1.schritt()
-k1.rechtsDrehen()
-
-wiederhole 2 mal
-    k1.abräumen()
-    k1.rechtsDrehen()
-    k1.schritt()
-    k1.linksDrehen()
-ende
-
-wiederhole solange nicht welt.fertig()
-    k1.hinlegen()
-ende
-
-sonst
-// Zweites Level
-wiederhole 2 mal
-    k1.zeileAbräumen()
-    k2.zeileAbräumen()
-    k1.linksDrehen()
-    k2.linksDrehen()
-    k1.abräumen()
-    k2.abräumen()
-    k1.schritt()
-    k2.schritt()
-    k1.linksDrehen()
-    k2.linksDrehen()
-ende
-
+wenn welt.fertig() dann
+    zeig zeilenZähler, "Zeilen abgeräumt!"
 ende
 `
 
@@ -208,49 +117,6 @@ export const STD_TASKS: Record<string, Task> = {
     },
 };
 
-
-/**
- * Get github files
- */
-// Octokit.js
-// https://github.com/octokit/core.js#readme
-export async function loadExtTasks() {
-    const octokit = new Octokit({
-        auth: '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'
-    })
-    
-    /*
-    const allFiles = await octokit.request("GET /repos/{owner}/{repo}/git/trees/main/tasks", {
-        owner: "schmisev",
-        repo: "RK4Tasks",
-    });
-    */
-
-    const allFiles = await octokit.request("GET /repos/{owner}/{repo}/contents/tasks/", {
-        owner: "schmisev",
-        repo: "RK4Tasks",
-    });
-
-    for (const file of allFiles.data) {
-        const fileName: string = (file.name satisfies string);
-        const splitFileName = fileName.split(".")
-        const fileExt = splitFileName.pop();
-        const key = splitFileName.join(".");
-
-        if (key && fileExt == "json") {
-            // request all the files
-            const dlFile = await fetch(file.download_url);
-            const fileContent = await dlFile.text();
-            try {
-                const task: Task = JSON.parse(fileContent);
-                liveTasks[key] = task;
-            } catch {
-                // do nothing
-            }
-        }
-    }
-    /**/
-}
 
 /**
  * Default task loaded on startup
