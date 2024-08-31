@@ -263,7 +263,8 @@ async function startCode() {
         
         editor.setReadOnly(true);
         await runCode(code, true);
-
+        await interrupt(); // for safety
+        
         console.log("▢ Ausführung beendet!");
 
         if (!world.isGoalReached()) {
