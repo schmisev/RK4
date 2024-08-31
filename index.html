@@ -23,15 +23,16 @@
                 <select class="text" id="store-data" list="store-data">
                     <option>(neu)</option>
                 </select>
-                <button id="delete-from-store">🗑️</button>
-                <button id="store-code">💾</button>
+                <div id="store-container">
+                    <button title="Lösche Code aus dem Speicher" id="delete-from-store">🗑️</button>
+                    <button title="Lege Code in den Speicher oder überschreibe aktuellen Speicherstand." id="store-code">💾</button>
+                </div>
                 <!-- Preload / library UI -->
                 <div class="preload-title lc30 wsr text">📖 Bibliothek</div>
                 <div class="preload-editor editor" id="preload-editor">Preload</div>
                 <!-- Save / load UI -->
-                <button class="save-world" id="save-code">💾</button>
-                <button class="load-world" id="load-code">📂</button>
-                <input id="load-file" type="file" accept=".rk, .csv, .json," style="visibility: hidden;">
+                <button title="Speicher aktuellen Code in einer .rk-Datei und lade sie herunter." class="save-world" id="save-code">⬇️</button>
+                <button title="Lade Code (.rk), Welt (.csv) oder Aufgabe (.json) vom PC." class="load-world" id="load-code">📂</button>
                 <select class="text" id="load-task">
                     <option selected disabled>Wähle eine Aufgabe</option>
                 </select>
@@ -45,7 +46,7 @@
                 <!-- Step time UI -->
                 <div class="wait-title wsr lc30">⌛ <span class="wait-time" id="wait-time">50 ms</span></div>
                 <div class="wait-slider-container wsr lc30">
-                    <input type="range" min="0" max="250" value="50" step="10" class="wait-slider slider" id="wait-slider">
+                    <input type="range" min="0" max="250" value="50" step="5" class="wait-slider slider" id="wait-slider">
                 </div>
                 <!-- Command line UI -->
                 <input class="cmd-line code-like" id="cmd-line" autocomplete="off">
@@ -55,22 +56,26 @@
                 <div class="task-description wsr text" id="task-description">Aufgabe</div>
                 <div class="console-log wsr text code-like" id="console-log"></div>
                 <!-- credits -->
-                <div class="wsr lc30 text" id="credits-bar">Mitwirkende: <a href="https://github.com/schmisev">schmisev</a> ● <a href="https://github.com/WorldsEnder">WorldsEnder</a> | 3D-Ansicht: <a href="https://p5js.org/">p5.js</a> ● Editor: <a href="https://ace.c9.io/">Ace Editor</a> </div>
+                <div class="wsr lc30 text" id="credits-bar">Mitwirkende: <a href="https://github.com/schmisev">schmisev</a> ● <a href="https://github.com/WorldsEnder">WorldsEnder</a> 
+                    | 3D-Ansicht: <a href="https://p5js.org/">p5.js</a> (<a href="https://raw.githubusercontent.com/processing/p5.js/main/license.txt">Lizenz</a>)
+                    ● Editor: <a href="https://ace.c9.io/">Ace Editor</a> (<a href="https://raw.githubusercontent.com/ajaxorg/ace/a6ead2fcf2860c8b890f6adbd2e56f2ddc7f6d62/LICENSE">Lizenz</a>) </div>
             </div>
         </div>
         <div class="handler" id="panel-handler"></div>
         <div class="right-panel" id="right-panel">
-            <div class="debug-title wsr lc30 text">🐞 Debug</div>
+            <div class="wsr lc30 text" id="debug-title">🐞 Debug <span id="debug-timer">😶‍🌫️</span></div>
             <div class="grid-container-right">
-                <!-- Structogram view -->
-                <div class="structogram-diagram-title dgr lc30 text">🌳 Struktogramm</div>
-                <div class="structogram-diagram-canvas" id="structogram-diagram-canvas"></div>
                 <!-- Class view -->
                 <div class="class-diagram-title dgr lc30 text">🗃️ Klassen</div>
                 <div class="class-diagram-canvas" id="class-diagram-canvas"></div>
+                <!-- Structogram view -->
+                <div class="structogram-diagram-title dgr lc30 text">🌳 Struktogramm</div>
+                <div class="structogram-diagram-canvas" id="structogram-diagram-canvas"></div>
             </div>
+            <div class="wsr lc30 text" id="debug-bottom-bar">Klassische Karol-Alternative: <a href="https://karol.arrrg.de/">karol.arrrg.de</a></div>
         </div>
     </div>
+    <input id="load-file" type="file" accept=".rk, .csv, .json," style="visibility: hidden;">
 
     <script src="bundle.js"></script>
 </body>
