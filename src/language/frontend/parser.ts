@@ -89,8 +89,7 @@ export default class Parser {
                 this.eat();
                 return { kind: "EmptyLine" }
             case TokenType.DocComment:
-                statement = this.parse_doc_comment();
-                break;
+                return this.parse_doc_comment();
             default:
                 statement = this.parse_expr();
                 break;
@@ -100,11 +99,17 @@ export default class Parser {
     }
 
     parse_doc_comment(): Stmt {
-        const result: DocComment = {
+        let result: DocComment = {
             kind: "DocComment",
-            content: this.at().value,
+            content: "",
         };
-        this.eat();
+
+        while (this.at().type == TokenType.DocComment) {
+            result.content += `${this.at().value}\n`;
+            this.eat();
+            this.expect(TokenType.EndLine, "Erwarte neue Zeile nach #-Dokumentation!");
+        }
+
         return result;
     }
 

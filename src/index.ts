@@ -36,7 +36,7 @@ import { LexerError, ParserError } from './errors';
 
 // App state variables
 let dt = 50; // ms to sleep between function calls
-let dtIDE = 1000;
+let dtIDE = 250;
 export let isRunning = false;
 export let queueInterrupt = false;
 export let liveTasks = STD_TASKS;

@@ -158,7 +158,7 @@ function structure(astNode: Stmt): string {
         case "ReturnCommand":
             return `${makeSpan("zurück", "struct-cmd")} ${structure(astNode.value)}`
         case "DocComment":
-            return makeDiv(`# ${astNode.content}`, "struct-doc-comment");
+            return makeDiv(makeDiv(`${astNode.content.replace(/\n/g, "<br>")}`, "struct-doc-comment"), "struct-doc-wrapper");
         case "EmptyLine":
         default:
             return `<span>&lt${astNode.kind}&gt</span>`

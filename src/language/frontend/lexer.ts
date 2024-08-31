@@ -200,6 +200,7 @@ export function tokenize(sourceCode: string): Token[] {
                 tokens.push(token(str, TokenType.String, lineCount));
             }
             else if (src[0] == "#") {
+                // Doc comments
                 src.shift();
                 let chr;
                 let str = "";
