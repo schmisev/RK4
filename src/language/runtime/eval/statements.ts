@@ -147,34 +147,45 @@ export function eval_class_definition(
     return env.declareVar(def.ident, cl);
 }
 
+function formatValue(value: RuntimeVal): string {
+    // side effect
+    if (value.type == "number") {
+        return value.value.toString();
+    } else if (value.type == "boolean") {
+        const boolVal = value.value;
+        if (boolVal) {
+            return "wahr";
+        } else {
+            return "falsch";
+        }
+    } else if (value.type == "null") {
+        return "nix";
+    } else if (value.type == "string") {
+        return value.value;
+    } else if (value.type == "object") {
+        return `[Object der Klasse ${value.cls.name}]`;
+    } else if (value.type == "class") {
+        return `<Klasse ${value.name}>`;
+    } else if (value.type == "function" || value.type == "native-fn") {
+        return `(Funktion ${value.name})`;
+    }
+    return value satisfies never;
+}
+
 export function* eval_show_command(
     cmd: ShowCommand,
     env: Environment
 ): SteppedEval<RuntimeVal> {
     if (!cmd.values) return MK_NULL();
-    let output = "";
     let result: RuntimeVal = MK_NULL();
+    const fmtOutputs = [];
     for (const val of cmd.values) {
         result = yield* evaluate(val, env);
 
         // side effect
-        if (result.type == "number") {
-            output += result.value.toString();
-        } else if (result.type == "boolean") {
-            const value = result.value;
-            if (value) {
-                output += "wahr";
-            } else {
-                output += "falsch";
-            }
-        } else if (result.type == "null") {
-            output += "nix";
-        } else if (result.type == "string") {
-            output += result.value.toString();
-        }
-        output += " ";
+        fmtOutputs.push(formatValue(result));
     }
-    console.log(output);
+    console.log(fmtOutputs.join(" "));
     return result;
 }
 
