@@ -1,7 +1,5 @@
-import { Stmt, Program, Expr, VarDeclaration, ObjDeclaration, FunctionDefinition, ShowCommand, BreakCommand, ContinueCommand, ClassDefinition, ParamDeclaration, ReturnCommand, ExtMethodDefinition, StmtKind, IfElseBlock_, ForBlock_, WhileBlock_, AlwaysBlock_, AbrubtStmtKind, DocComment } from "./ast";
+import { Stmt, Program, Expr, VarDeclaration, ObjDeclaration, FunctionDefinition, ShowCommand, BreakCommand, ContinueCommand, ClassDefinition, ParamDeclaration, ReturnCommand, ExtMethodDefinition, StmtKind, IfElseBlock, ForBlock, WhileBlock, AlwaysBlock, AbrubtStmtKind, DocComment } from "./ast";
 import { tokenize, Token, TokenType, KEYWORDS } from "./lexer";
-import { ForBlock } from "./ast";
-import { WhileBlock } from "./ast";
 import { ParserError } from "../../errors";
 
 export default class Parser {
@@ -188,7 +186,7 @@ export default class Parser {
         return { kind: StmtKind.ClassDefinition, ident, attributes, methods }
     }
 
-    parse_if_else_block<A extends AbrubtStmtKind>(allowedControl: Set<A>): IfElseBlock_<A> {
+    parse_if_else_block<A extends AbrubtStmtKind>(allowedControl: Set<A>): IfElseBlock<A> {
         const ifTrue: Stmt<A>[] = [];
         const ifFalse: Stmt<A>[] = [];
         this.eat(); // eat 'wenn'
@@ -238,7 +236,7 @@ export default class Parser {
         }
     }
 
-    parse_for_loop<A extends AbrubtStmtKind>(allowedControl: Set<A>): ForBlock_<A> {
+    parse_for_loop<A extends AbrubtStmtKind>(allowedControl: Set<A>): ForBlock<A> {
         const checkedControl = new Set([StmtKind.ContinueCommand, StmtKind.BreakCommand, ...allowedControl] as const);
         const lineIndex = this.at().lineIndex;
         
@@ -253,7 +251,7 @@ export default class Parser {
         };
     }
 
-    parse_while_loop<A extends AbrubtStmtKind>(allowedControl: Set<A>): WhileBlock_<A> {
+    parse_while_loop<A extends AbrubtStmtKind>(allowedControl: Set<A>): WhileBlock<A> {
         const checkedControl = new Set([StmtKind.ContinueCommand, StmtKind.BreakCommand, ...allowedControl] as const);
         const lineIndex = this.at().lineIndex;
 
@@ -268,7 +266,7 @@ export default class Parser {
         };
     }
 
-    parse_always_loop<A extends AbrubtStmtKind>(allowedControl: Set<A>): AlwaysBlock_<A> {
+    parse_always_loop<A extends AbrubtStmtKind>(allowedControl: Set<A>): AlwaysBlock<A> {
         const checkedControl = new Set([StmtKind.ContinueCommand, StmtKind.BreakCommand, ...allowedControl] as const);
         const lineIndex = this.at().lineIndex;
         

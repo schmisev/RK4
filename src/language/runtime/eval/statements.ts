@@ -1,5 +1,5 @@
 import { RuntimeError } from "../../../errors";
-import { AbrubtStmtKind, AlwaysBlock_, ClassDefinition, DocComment, EmptyLine, ExtMethodDefinition, ForBlock_, FunctionDefinition, IfElseBlock_, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, StmtKind, StmtReturn, VarDeclaration, WhileBlock_ } from "../../frontend/ast";
+import { AbrubtStmtKind, AlwaysBlock, ClassDefinition, DocComment, EmptyLine, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, StmtKind, StmtReturn, VarDeclaration, WhileBlock } from "../../frontend/ast";
 import { ClassPrototype, Environment, VarHolder } from "../environment";
 import { SteppedEval, evaluate, evaluate_expr } from "../interpreter";
 import {
@@ -207,7 +207,7 @@ function evaluate_condition_value(
 }
 
 export function* eval_if_else_block<A extends AbrubtStmtKind>(
-    block: IfElseBlock_<A>,
+    block: IfElseBlock<A>,
     env: Environment
 ): SteppedEval<RuntimeVal | StmtReturn<A>> {
     const condition = yield* evaluate_expr(block.condition, env);
@@ -219,7 +219,7 @@ export function* eval_if_else_block<A extends AbrubtStmtKind>(
 }
 
 export function* eval_for_block<A extends AbrubtStmtKind>(
-    block: ForBlock_<A>,
+    block: ForBlock<A>,
     env: Environment
 ): SteppedEval<RuntimeVal | StmtReturn<A>> {
     const counter = yield* evaluate(block.counter, env);
@@ -250,7 +250,7 @@ export function* eval_for_block<A extends AbrubtStmtKind>(
 }
 
 export function* eval_while_block<A extends AbrubtStmtKind>(
-    block: WhileBlock_<A>,
+    block: WhileBlock<A>,
     env: Environment
 ): SteppedEval<RuntimeVal | StmtReturn<A>> {
     let lastEvaluated: RuntimeVal = MK_NULL();
@@ -280,7 +280,7 @@ export function* eval_while_block<A extends AbrubtStmtKind>(
 }
 
 export function* eval_always_block<A extends AbrubtStmtKind>(
-    block: AlwaysBlock_<A>,
+    block: AlwaysBlock<A>,
     env: Environment
 ): SteppedEval<RuntimeVal | StmtReturn<A>> {
     let lastEvaluated: RuntimeVal = MK_NULL();

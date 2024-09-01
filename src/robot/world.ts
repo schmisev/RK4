@@ -1,6 +1,6 @@
 import { RuntimeError, WorldError } from "../errors";
 import { ClassPrototype, GlobalEnvironment, VarHolder } from "../language/runtime/environment";
-import { BuiltinClassVal, MK_BOOL, MK_NATIVE_METHOD, MK_NUMBER, NativeMethodVal, ObjectVal, RuntimeVal } from "../language/runtime/values";
+import { BuiltinClassVal, MK_BOOL, MK_NATIVE_METHOD, MK_NUMBER, ObjectVal, RuntimeVal } from "../language/runtime/values";
 import { ENV } from "../spec";
 import { declareRobot, Robot } from "./robot";
 import { rndi } from "../utils";

@@ -37,7 +37,7 @@ type AbrubtToStmt = {
     [StmtKind.ReturnCommand]: ReturnCommand;
 }
 
-export type Stmt<Ctrl extends AbrubtStmtKind> = | DocComment | VarDeclaration | ObjDeclaration | IfElseBlock_<Ctrl> | ForBlock_<Ctrl> | WhileBlock_<Ctrl> | AlwaysBlock_<Ctrl> | AbrubtToStmt[Ctrl] | ShowCommand | ClassDefinition | FunctionDefinition | ExtMethodDefinition | Expr;
+export type Stmt<Ctrl extends AbrubtStmtKind> = | DocComment |  VarDeclaration | ObjDeclaration | IfElseBlock<Ctrl> | ForBlock<Ctrl> | WhileBlock<Ctrl> | AlwaysBlock<Ctrl> | AbrubtToStmt[Ctrl] | ShowCommand | ClassDefinition | FunctionDefinition | ExtMethodDefinition | Expr;
 export type BareStmt = Stmt<never>;
 export type AnyStmt = Stmt<AbrubtStmtKind>;
 
@@ -76,36 +76,36 @@ export interface EmptyLine {
     kind: StmtKind.EmptyLine;
 }
 
-export interface IfElseBlock_<Ctrl extends AbrubtStmtKind> {
+export interface IfElseBlock<Ctrl extends AbrubtStmtKind> {
     kind: StmtKind.IfElseBlock;
     condition: Expr;
     ifTrue: Stmt<Ctrl>[];
     ifFalse: Stmt<Ctrl>[];
 }
-export type IfElseBlock = IfElseBlock_<AbrubtStmtKind>;
+export type AnyIfElseBlock = IfElseBlock<AbrubtStmtKind>;
 
-export interface ForBlock_<Ctrl extends AbrubtStmtKind> {
+export interface ForBlock<Ctrl extends AbrubtStmtKind> {
     kind: StmtKind.ForBlock;
     lineIndex: number;
     counter: Expr;
     body: Stmt<StmtKind.BreakCommand | StmtKind.ContinueCommand | Ctrl>[];
 }
-export type ForBlock = ForBlock_<AbrubtStmtKind>;
+export type AnyForBlock = ForBlock<AbrubtStmtKind>;
 
-export interface WhileBlock_<Ctrl extends AbrubtStmtKind> {
+export interface WhileBlock<Ctrl extends AbrubtStmtKind> {
     kind: StmtKind.WhileBlock;
     lineIndex: number;
     condition: Expr;
     body: Stmt<StmtKind.BreakCommand | StmtKind.ContinueCommand | Ctrl>[];
 }
-export type WhileBlock = WhileBlock_<AbrubtStmtKind>;
+export type AnyWhileBlock = WhileBlock<AbrubtStmtKind>;
 
-export interface AlwaysBlock_<Ctrl extends AbrubtStmtKind> {
+export interface AlwaysBlock<Ctrl extends AbrubtStmtKind> {
     kind: StmtKind.AlwaysBlock;
     lineIndex: number;
     body: Stmt<StmtKind.BreakCommand | StmtKind.ContinueCommand | Ctrl>[];
 }
-export type AlwaysBlock = AlwaysBlock_<AbrubtStmtKind>;
+export type AnyAlwaysBlock = AlwaysBlock<AbrubtStmtKind>;
 
 export interface ShowCommand {
     kind: StmtKind.ShowCommand;

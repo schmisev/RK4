@@ -1,4 +1,4 @@
-import { AlwaysBlock, AnyStmt, BinaryExpr, ClassDefinition, Expr, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, Program, Stmt, UnaryExpr, WhileBlock } from "../language/frontend/ast";
+import { AnyStmt, BinaryExpr, ClassDefinition, Expr, ExtMethodDefinition, AnyForBlock, FunctionDefinition, AnyIfElseBlock, Program, UnaryExpr, AnyWhileBlock, AnyAlwaysBlock } from "../language/frontend/ast";
 import { ENV } from "../spec";
 
 // Robot class
@@ -227,7 +227,7 @@ function structureSequence(body: AnyStmt[]): string {
     return result;
 }
 
-function structureWhile(node: WhileBlock): string {
+function structureWhile(node: AnyWhileBlock): string {
     const cond = structure(node.condition);
     const result = 
     `<div class="struct-label">
@@ -241,7 +241,7 @@ function structureWhile(node: WhileBlock): string {
     return result;
 }
 
-function structureAlways(node: AlwaysBlock): string {
+function structureAlways(node: AnyAlwaysBlock): string {
     const result = 
     `<div class="struct-label">
     wiederhole ${makeTooltip("immer", "Die folgenden Anweisungen werden auf immer und ewig ausgeführt - außer man benutzt 'abbrechen' oder 'zurück'!")}
@@ -250,7 +250,7 @@ function structureAlways(node: AlwaysBlock): string {
     return result;
 }
 
-function structureFor(node: ForBlock): string {
+function structureFor(node: AnyForBlock): string {
     const count = structure(node.counter)
     const result = 
     `<div class="struct-label">
@@ -262,7 +262,7 @@ function structureFor(node: ForBlock): string {
     return result;
 }
 
-function structureIfElse(node: IfElseBlock): string {
+function structureIfElse(node: AnyIfElseBlock): string {
     const cond = structure(node.condition);
     let bias = "";
     if (node.ifFalse.length == 0 && node.ifTrue.length > 0) {
