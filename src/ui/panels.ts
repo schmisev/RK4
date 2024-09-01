@@ -11,16 +11,18 @@ let isHandlerDragging = false;
 function disableSelect(event: Event) {
     event.preventDefault();
 }
-
-document.addEventListener('mousedown', function(e) {
+function startDrag(e: Event) {
   // If mousedown event is fired from .handler, toggle flag to true
   if (e.target === handler) {
     isHandlerDragging = true;
     window.addEventListener('selectstart', disableSelect);
   }
-});
+}
 
-document.addEventListener('mousemove', function(e) {
+document.addEventListener('mousedown', startDrag);
+document.addEventListener('touchstart', startDrag);
+
+function dragMove(e: MouseEvent | TouchEvent) {
   // Don't do anything if dragging flag is false
   if (!isHandlerDragging) {
     return false;
@@ -30,7 +32,8 @@ document.addEventListener('mousemove', function(e) {
   const containerOffsetLeft = wrapper.getBoundingClientRect().left;
 
   // Get x-coordinate of pointer relative to container
-  const pointerRelativeXpos = e.clientX - containerOffsetLeft;
+  const posX = 'clientX' in e ? e.clientX : e.touches[0].clientX;
+  const pointerRelativeXpos = posX - containerOffsetLeft;
   
   // Arbitrary minimum width set on box A, otherwise its inner content will collapse to width of 0
   const boxAminWidth = 200;
@@ -40,10 +43,14 @@ document.addEventListener('mousemove', function(e) {
   // * Set flex-grow to 0 to prevent it from growing
   panel.style.width = (Math.max(boxAminWidth, pointerRelativeXpos - 8)) + 'px';
   panel.style.flexGrow = "0";
-});
+}
+document.addEventListener('mousemove', dragMove);
+document.addEventListener('touchmove', dragMove);
 
-document.addEventListener('mouseup', function(e) {
-    // Turn off dragging flag when user mouse is up
-    isHandlerDragging = false;
-    window.removeEventListener('selectstart', disableSelect);
-});
+function stopDrag() {
+  // Turn off dragging flag when user mouse is up
+  isHandlerDragging = false;
+  window.removeEventListener('selectstart', disableSelect);
+}
+document.addEventListener('mouseup', stopDrag);
+document.addEventListener('touchend', stopDrag);
