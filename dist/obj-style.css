@@ -24,9 +24,8 @@
 .code-error {
     grid-column: 1 / 8;
     grid-row: 17;
-    font-weight: bold;
     font-family: 'Cascadia Code';
-    font-size: 12px;
+    font-size: 15px;
 }
 
 .code-error.none {

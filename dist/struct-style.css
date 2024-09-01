@@ -63,11 +63,18 @@
 
 .struct-box {
     background-color: white;
+    line-height: 25px;
     overflow-wrap: normal;
     outline: 2px black solid;
     outline-offset: -1px;
     min-height: 25px;
     box-sizing: border-box;
+
+    transition: background-color 0.2s;
+}
+
+.struct-box:hover {
+    background-color: lightblue;
 }
 
 .struct-label {
@@ -81,8 +88,8 @@ span.line {
 
 .struct-while {
     /*outline: 1px black solid;*/
-    padding-left: 20px;
-    width: calc(max-content + 20px);
+    padding-left: 25px;
+    width: calc(max-content + 25px);
 }
 
 .struct-ifelse {
@@ -151,6 +158,12 @@ span.line {
     text-overflow: ellipsis;
     /*white-space: nowrap;*/
     /*overflow: hidden;*/
+
+    transition: background-color 0.2s;
+}
+
+.struct-classname:hover {
+    background-color: #CF9FFF;
 }
 
 .struct-attributes {
@@ -159,6 +172,12 @@ span.line {
     text-overflow: ellipsis;
     /*white-space: nowrap;*/
     /*overflow: hidden;*/
+
+    transition: background-color 0.2s;
+}
+
+.struct-attributes:hover {
+    background-color: lightcoral;
 }
 
 .struct-methods {
@@ -167,6 +186,12 @@ span.line {
     text-overflow: ellipsis;
     /*white-space: nowrap;*/
     /*overflow: hidden;*/
+
+    transition: background-color 0.2s;
+}
+
+.struct-methods:hover {
+    background-color: lightgreen;
 }
 
 .struct-ident {
@@ -187,10 +212,11 @@ span.line {
 }
 
 .struct-cmd {
-    background-color: lightblue;
+    background-color: lightcoral;
     outline: 1px black solid;
     padding-left: 5px;
     padding-right: 5px;
+    border-radius: 5px;
 }
 
 .struct-text {
