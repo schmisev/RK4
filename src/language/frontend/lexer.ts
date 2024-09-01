@@ -165,7 +165,7 @@ export function tokenize(sourceCode: string): Token[] {
                             src.shift();
                             chr = src[0];
                         }
-                        if (chr == "\n") lineCount ++;
+                        //if (chr == "\n") lineCount ++;
                     } else if (src[1] == "*") {
                         // multi line comment
                         src.shift();

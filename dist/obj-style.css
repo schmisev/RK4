@@ -1,0 +1,44 @@
+/* objectigrams */
+.obj-name {
+    outline: 1px black solid;
+    text-align: center;
+    font-weight: bold;
+    padding: 5px;
+    border-radius: 10px 10px 0px 0px;
+    min-width: max-content;
+}
+.obj-attributes {
+    outline: 1px black solid;
+    text-align: left;
+    padding: 5px;
+    min-width: max-content;
+}
+.obj-methods {
+    outline: 1px black solid;
+    text-align: left;
+    padding: 5px;
+    border-radius: 0px 0px 10px 10px;
+}
+
+/* debug */
+.code-error {
+    grid-column: 1 / 8;
+    grid-row: 17;
+    font-weight: bold;
+}
+
+.code-error.none {
+    background-color: lightgreen;
+}
+
+.code-error.runtime {
+    background-color: lightcoral;
+}
+
+.code-error.lexer {
+    background-color: lightblue;
+}
+
+.code-error.parser {
+    background-color: lightgoldenrodyellow;
+}

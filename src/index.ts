@@ -31,24 +31,25 @@ import './assets/ace/mode-rkscript.js';
 import './assets/ace/theme-rklight.js';
 
 // General errors 
-// TODO: Split up?
 import { LexerError, ParserError } from './errors';
 
-// App state variables
+// Global variables
 let dt = 50; // ms to sleep between function calls
-let dtIDE = 250;
+let dtIDE = 250; // ms to wait for IDE update
 export let isRunning = false;
 export let queueInterrupt = false;
 export let liveTasks = STD_TASKS;
 export let extTasks: Record<string, string> = {};
 export let taskName: string
 
+// Code state
 let preloadCode = "\n";
 let code = TEST_CODE;
 let worldSpec = STD_WORLD;
 const errorMarkers: number[] = [];
 
-const parse = new Parser();
+// Parser and environment
+const parser = new Parser();
 let env: GlobalEnvironment;
 export let world: World
 let program: Program;
@@ -88,6 +89,8 @@ const codeError = document.getElementById("code-error")!;
 const cmdLine = document.getElementById("cmd-line") as HTMLInputElement;
 const cmdLineStack: string[] = [];
 let cmdLineStackPointer = -1;
+cmdLine.onkeydown = fetchCmd
+document.getElementById("cmd-run")!.onclick = runCmd
 
 // Fetch task description
 const taskDescription = document.getElementById("task-description") as HTMLElement;
@@ -107,10 +110,6 @@ editor.on("change", async (e: ace.Ace.Delta) => {
     autoUpdateIDE = setTimeout(updateIDE, dtIDE);
     setDebugTimer(true);
 });
-
-// Cmd line input
-cmdLine.onkeydown = fetchCmd
-document.getElementById("cmd-run")!.onclick = runCmd
 
 // Start / stop buttons
 document.getElementById("code-start")!.onclick = startCode
@@ -156,7 +155,7 @@ async function updateIDE() {
     const code = editor.getValue();
     //if (!code) return;
     try {
-        program = parse.produceAST(code);
+        program = parser.produceAST(code);
         showStructogram(program);
         // set debug timer
         setDebugTimer(false);
@@ -310,7 +309,7 @@ async function runCode(code: string, stepped: boolean) {
     isRunning = true;
     let lastLineIndex = -1;
     try {
-        program = parse.produceAST(code);
+        program = parser.produceAST(code);
         let stepper = evaluate(program, env);
         while (true) {
             const next = stepper.next();
@@ -341,9 +340,7 @@ async function runCode(code: string, stepped: boolean) {
     isRunning = false;
 };
 
-/**
- * Start app
- */
+
+// Start app
 loadExtTasks().then(updateTaskSelector); // get std tasks
-// loadExtTasks().then(updateTaskSelector); // get github tasks (too expensive)
 loadTask(DEFAULT_TASK);
