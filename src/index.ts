@@ -178,6 +178,8 @@ async function updateIDE() {
         if (errorCssClass !== "none") {
             setErrorMarker(`❌ ${message} (Zeile ${lineIndex+1})`, lineIndex, errorCssClass);
         }
+
+        //throw e; // temporary
     }
 }
 

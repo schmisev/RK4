@@ -28,7 +28,7 @@ const ROBOT_PSEUDO_CLASS =
         ${makeTooltip(ENV.robot.mth.IS_ON_MARKER, `Gibt <span class="struct-literal">wahr</span> zurück, wenn der Roboter auf einer Marke steht, sonst <span class="struct-literal">falsch</span>. Wenn du eine Farbe angibst, wird nur <span class="struct-literal">wahr</span> zurückgegeben, wenn die Marke diese Farbe hat.`) + `(farbe?)<br>`}
         ${makeTooltip(ENV.robot.mth.SEES_WALL, `Gibt <span class="struct-literal">wahr</span> zurück, wenn der Roboter vor einer Wand steht, sonst <span class="struct-literal">falsch</span>.`) + `()<br>`}
         ${makeTooltip(ENV.robot.mth.SEES_VOID, `Gibt <span class="struct-literal">wahr</span> zurück, wenn der Roboter vor dem Abgrund steht, sonst <span class="struct-literal">falsch</span>.`) + `()<br>`}
-            
+        <div class="struct-dot"></div>
     </div>
 </div>`
 
@@ -80,22 +80,36 @@ const translateOperator = (op: string) => {
 }
 
 let sections: string[] = [];
-let classes: string[] = [];
+let classes: Record<string, HTMLElement> = {};
 
 // Structograms
 export function showStructogram(program: Program) {
     const structogramView = document.getElementById("structogram-diagram-canvas")!;
     const classView = document.getElementById("class-diagram-canvas")!;
-    
-    classes = [];
+
+    let worldElement = document.createElement('div');
+    worldElement.innerHTML = WORLD_PSEUDO_CLASS;
+    let robotElement = document.createElement('div');
+    robotElement.innerHTML = ROBOT_PSEUDO_CLASS;
+
+    classes = {
+        "Welt": worldElement,
+        "Roboter": robotElement,
+    };
+
     sections = [];
     sections.push(structure(program));
 
     structogramView.innerHTML = ""; // reset view
     structogramView.innerHTML = sections.join("<br>") + "<br>";
 
-    classView.innerHTML = WORLD_PSEUDO_CLASS + "<br>" + ROBOT_PSEUDO_CLASS + "<br>"; // reset view
-    classView.innerHTML += classes.join("<br>") + "<br>";
+    // classView.innerHTML = WORLD_PSEUDO_CLASS + "<br>" + ROBOT_PSEUDO_CLASS + "<br>"; // reset view
+    //classView.innerHTML += Object.values(classes).map((e)).join("<br>") + "<br>";
+    classView.innerHTML = "";
+    for (const el of Object.values(classes)) {
+        classView.append(el);
+        classView.innerHTML += "<br>";
+    }
 }
 
 function structure(astNode: Stmt): string {
@@ -146,13 +160,18 @@ function structure(astNode: Stmt): string {
             );
             return makeSpan(`→  ${funcHandle}`, "struct-deemph");
         case "ExtMethodDefinition":
-            const methodHandle = `${astNode.name}(${astNode.params.map((p) => p.ident).join(", ")}) für ${astNode.classname}`
+            const methodHandle = `${astNode.name}(${astNode.params.map((p) => p.ident).join(", ")})`
+            const fullMethodHandle = `${methodHandle} für ${astNode.classname}`
             sections.push(
-                makeDiv(`${makeTooltip("Methode", `Hier wird eine neue Methode für die Klasse ${astNode.classname} definiert, die an anderen Stellen im Code aufgerufen werden kann.`)}: ${methodHandle} ${structureSequence(astNode.body)}`,"struct-program")
+                makeDiv(`${makeTooltip("Methode", `Hier wird eine neue Methode für die Klasse ${astNode.classname} definiert, die an anderen Stellen im Code aufgerufen werden kann.`)}: ${fullMethodHandle} ${structureSequence(astNode.body)}`,"struct-program")
             );
-            return makeSpan(`→ ${methodHandle}`, "struct-deemph");
+            if (astNode.classname in classes)
+                classes[astNode.classname].getElementsByClassName("struct-methods")[0].innerHTML += methodHandle + "<br>";
+            return makeSpan(`→ ${fullMethodHandle}`, "struct-deemph");
         case "ClassDefinition":
-            classes.push(structureClass(astNode));
+            const newClass = new HTMLElement();
+            newClass.outerHTML = structureClass(astNode);
+            classes[astNode.ident] = newClass;
             return makeSpan(`→ ${astNode.ident}`, "struct-deemph");
         case "BreakCommand":
             return makeSpan("abbrechen", "struct-cmd");
@@ -304,6 +323,7 @@ function structureClass(node: ClassDefinition): string {
             node.methods.map((meth) => {
                 return `${meth.name}(${meth.params.map((p) => p.ident).join(", ")})`
             }).join("<br>")}
+            <div class="struct-dot"></div>
         </div>
     </div>`
     return result;
