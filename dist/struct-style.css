@@ -97,6 +97,7 @@ span.line {
     background-repeat:no-repeat;
     background-position:center center;
     background-size: 100% 100%, auto;
+    outline: 1px black solid;
     text-align: center;
 }
 
@@ -204,8 +205,8 @@ span.line {
 }
 
 .struct-dot {
-    color: gray;
-    border-top: 2px gray solid;
+    color: rgba(0, 0, 0, 0.2);
+    border-top: 2px rgba(0, 0, 0, 0.2) solid;
     margin-top: 5px;
     margin-bottom: 5px;
     text-align: center;
