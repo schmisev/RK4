@@ -127,6 +127,9 @@ function setDebugTimer(waiting = false) {
 // Setting error bar
 function setErrorBar(msg: string, errorTypeCss: string) {
     codeError.classList.toggle("none", false);
+    codeError.classList.toggle("runtime", false);
+    codeError.classList.toggle("lexer", false);
+    codeError.classList.toggle("parser", false);
     codeError.classList.toggle(errorTypeCss, true);
     codeError.innerHTML = msg;
 }
