@@ -1,5 +1,5 @@
-import { Stmt, Program, Expr, BinaryExpr, NumericLiteral, Identifier, VarDeclaration, ObjDeclaration, FunctionDefinition, UnaryExpr, ShowCommand, AssignmentExpr, IfElseBlock, BreakCommand, ContinueCommand, StringLiteral, ClassDefinition, CallExpr, ParamDeclaration, EmptyLine, MemberExpr, ReturnCommand, ExtMethodDefinition, BooleanLiteral, AlwaysBlock, DocComment } from "./ast";
-import { tokenize, Token, TokenType } from "./lexer";
+import { Stmt, Program, Expr, VarDeclaration, ObjDeclaration, FunctionDefinition, ShowCommand, BreakCommand, ContinueCommand, ClassDefinition, ParamDeclaration, ReturnCommand, ExtMethodDefinition, StmtKind, IfElseBlock_, ForBlock_, WhileBlock_, AlwaysBlock_, AbrubtStmtKind, DocComment } from "./ast";
+import { tokenize, Token, TokenType, KEYWORDS } from "./lexer";
 import { ForBlock } from "./ast";
 import { WhileBlock } from "./ast";
 import { ParserError } from "../../errors";
@@ -35,38 +35,45 @@ export default class Parser {
     public produceAST(sourceCode: string): Program {
         this.tokens = tokenize(sourceCode);
         const program: Program = {
-            kind: "Program",
+            kind: StmtKind.Program,
             body: [],
         };
 
         // Parse until EOF
         while (this.not_eof()) {
-            program.body.push(this.parse_stmt());
+            program.body.push(this.parse_stmt(new Set<never>()));
         }
 
         return program;
     }
 
-    private parse_stmt(): Stmt {
-        let statement: Stmt
+    private parse_stmt<A extends AbrubtStmtKind>(allowedControl: Set<A>): Stmt<A> {
+        const checkControl: Set<StmtKind> = allowedControl;
+        let statement: Stmt<A>
         switch (this.at().type) {
             case TokenType.ClassDef:
                 statement = this.parse_class_definition();
                 break;
             case TokenType.Repeat:
-                statement = this.parse_loop_block();
+                statement = this.parse_loop_block(allowedControl);
                 break;
             case TokenType.If:
-                statement = this.parse_if_else_block();
+                statement = this.parse_if_else_block(allowedControl);
                 break;
             case TokenType.Break:
-                statement = this.parse_break();
+                if (!checkControl.has(StmtKind.BreakCommand))
+                    throw new ParserError(`PARSER: "${("abbrechen" satisfies keyof typeof KEYWORDS)}" is nur in Schleifen erlaubt.`, this.at().lineIndex);
+                statement = this.parse_break() as any;
                 break;
             case TokenType.Continue:
-                statement = this.parse_continue();
+                if (!checkControl.has(StmtKind.ContinueCommand))
+                    throw new ParserError(`PARSER: "${("weiter" satisfies keyof typeof KEYWORDS)}" is nur in Schleifen erlaubt.`, this.at().lineIndex);
+                statement = this.parse_continue() as any;
                 break;
             case TokenType.Return:
-                statement = this.parse_return();
+                if (!checkControl.has(StmtKind.ReturnCommand))
+                    throw new ParserError(`PARSER: "${("zurück" satisfies keyof typeof KEYWORDS)}" is nur in Funktionen und Methoden erlaubt.`, this.at().lineIndex);
+                statement = this.parse_return() as any;
                 break;
             case TokenType.Show:
                 statement =  this.parse_show();
@@ -87,7 +94,7 @@ export default class Parser {
                 break;
             case TokenType.EndLine:
                 this.eat();
-                return { kind: "EmptyLine" }
+                return { kind: StmtKind.EmptyLine }
             case TokenType.DocComment:
                 return this.parse_doc_comment();
             default:
@@ -98,9 +105,9 @@ export default class Parser {
         return statement;
     }
 
-    parse_doc_comment(): Stmt {
+    parse_doc_comment(): DocComment {
         let result: DocComment = {
-            kind: "DocComment",
+            kind: StmtKind.DocComment,
             content: "",
         };
 
@@ -113,7 +120,7 @@ export default class Parser {
         return result;
     }
 
-    parse_show(): Stmt {
+    parse_show(): ShowCommand {
         const lineIndex = this.at().lineIndex;
 
         this.eat();
@@ -123,39 +130,39 @@ export default class Parser {
             if (this.at().type != TokenType.EndLine) this.expect(TokenType.Comma, "Erwarte Kommas zwischen zu zeigenden Ausdrücken!");
         }
         return {
-            kind: "ShowCommand",
+            kind: StmtKind.ShowCommand,
             lineIndex,
             values,
         };
     }
 
-    parse_break(): Stmt {
+    parse_break(): BreakCommand {
         const lineIndex = this.at().lineIndex;
 
         this.eat();
         return {
-            kind: "BreakCommand",
+            kind: StmtKind.BreakCommand,
             lineIndex,
         };
     }
 
-    parse_continue(): Stmt {
+    parse_continue(): ContinueCommand {
         const lineIndex = this.at().lineIndex;
 
         this.eat();
         return {
-            kind: "ContinueCommand",
+            kind: StmtKind.ContinueCommand,
             lineIndex,
         };
     }
 
-    parse_return(): Stmt {
+    parse_return(): ReturnCommand {
         const lineIndex = this.at().lineIndex;
 
         this.eat();
         const result = this.parse_expr();
         return {
-            kind: "ReturnCommand",
+            kind: StmtKind.ReturnCommand,
             lineIndex,
             value: result,
         }
@@ -178,29 +185,29 @@ export default class Parser {
             methods.push(definition);
         }
         this.eat(); // eat 'ende'
-        return { kind: "ClassDefinition", ident, attributes, methods }
+        return { kind: StmtKind.ClassDefinition, ident, attributes, methods }
     }
 
-    parse_if_else_block(): IfElseBlock {
-        const ifTrue: Stmt[] = [];
-        const ifFalse: Stmt[] = [];
+    parse_if_else_block<A extends AbrubtStmtKind>(allowedControl: Set<A>): IfElseBlock_<A> {
+        const ifTrue: Stmt<A>[] = [];
+        const ifFalse: Stmt<A>[] = [];
         this.eat(); // eat 'wenn'
         const condition = this.parse_expr();
         this.expect(TokenType.Then, "Auf 'wenn' sollte 'dann' folgen!");
         this.expect(TokenType.EndLine, "Nach 'dann' sollte eine neue Zeile beginnen!");
         
         while (this.at().type != TokenType.Else && this.at().type != TokenType.EndBlock) {
-            const statement = this.parse_stmt();
+            const statement = this.parse_stmt(allowedControl);
             ifTrue.push(statement);
         }
         if (this.eat().type == TokenType.EndBlock) {
-            return { kind: "IfElseBlock", condition, ifTrue, ifFalse };
+            return { kind: StmtKind.IfElseBlock, condition, ifTrue, ifFalse };
         }
         if (this.at().type == TokenType.If) {
             // if-else chaining
-            ifFalse.push(this.parse_if_else_block());
+            ifFalse.push(this.parse_if_else_block(allowedControl));
             return {
-                kind: "IfElseBlock", 
+                kind: StmtKind.IfElseBlock, 
                 condition, 
                 ifTrue, 
                 ifFalse,
@@ -209,79 +216,76 @@ export default class Parser {
         this.expect(TokenType.EndLine, "Nach 'sonst' sollte eine neue Zeile beginnen!");
         
         while (this.at().type != TokenType.EndBlock) {
-            const statement = this.parse_stmt();
+            const statement = this.parse_stmt(allowedControl);
             //console.log(statement);
             ifFalse.push(statement);
         }
         this.eat(); // eat 'ende'
 
-        return { kind: "IfElseBlock", condition, ifTrue, ifFalse };
+        return { kind: StmtKind.IfElseBlock, condition, ifTrue, ifFalse };
     }
 
-    parse_loop_block(): Stmt {
+    parse_loop_block<A extends AbrubtStmtKind>(allowedControl: Set<A>): Stmt<A> {
         this.eat(); // eat 'wiederhole'
         if (this.at().type == TokenType.RepWhile) {
             this.eat(); // eat 'solange'
-            return this.parse_while_loop();
+            return this.parse_while_loop(allowedControl);
         } else if (this.at().type == TokenType.RepAlways) {
             this.eat(); // eat immer'
-            return this.parse_always_loop();
+            return this.parse_always_loop(allowedControl);
         } else {
-            return this.parse_for_loop();
+            return this.parse_for_loop(allowedControl);
         }
     }
 
-    parse_for_loop(): ForBlock {
+    parse_for_loop<A extends AbrubtStmtKind>(allowedControl: Set<A>): ForBlock_<A> {
+        const checkedControl = new Set([StmtKind.ContinueCommand, StmtKind.BreakCommand, ...allowedControl] as const);
         const lineIndex = this.at().lineIndex;
         
         const counter = this.parse_expr();
         this.expect(TokenType.RepTimes, "Auf den Zähler sollte 'mal' folgen!");
         this.expect(TokenType.EndLine, "Nach 'mal' sollte eine neue Zeile folgen!");
-        const body: Stmt[] = []
-        while (this.at().type != TokenType.EndBlock) {
-            const statement = this.parse_stmt();
-            body.push(statement);
-        }
-        this.eat(); // eat 'ende'
         return {
-            kind: "ForBlock",
+            kind: StmtKind.ForBlock,
             lineIndex,
             counter,
-            body,
+            body: this.parse_bare_loop(checkedControl)
         };
     }
 
-    parse_while_loop(): WhileBlock {
+    parse_while_loop<A extends AbrubtStmtKind>(allowedControl: Set<A>): WhileBlock_<A> {
+        const checkedControl = new Set([StmtKind.ContinueCommand, StmtKind.BreakCommand, ...allowedControl] as const);
         const lineIndex = this.at().lineIndex;
 
         const condition = this.parse_expr();
         this.expect(TokenType.EndLine, "Nach der Bedingung sollte eine neue Zeile folgen!");
         
         return {
-            kind: "WhileBlock",
+            kind: StmtKind.WhileBlock,
             lineIndex,
             condition,
-            body: this.parse_bare_loop(),
+            body: this.parse_bare_loop(checkedControl),
         };
     }
 
-    parse_always_loop(): AlwaysBlock {
+    parse_always_loop<A extends AbrubtStmtKind>(allowedControl: Set<A>): AlwaysBlock_<A> {
+        const checkedControl = new Set([StmtKind.ContinueCommand, StmtKind.BreakCommand, ...allowedControl] as const);
         const lineIndex = this.at().lineIndex;
         
         this.expect(TokenType.EndLine, "Nach 'immer' sollte eine neue Zeile folgen!");
         
         return {
-            kind: "AlwaysBlock",
+            kind: StmtKind.AlwaysBlock,
             lineIndex,
-            body: this.parse_bare_loop(),
+            body: this.parse_bare_loop(checkedControl),
         };
     }
 
     // helper function
-    parse_bare_loop(): Stmt[] {
-        const body: Stmt[] = [];
+    parse_bare_loop<A extends AbrubtStmtKind>(allowedControl: Set<A>): Stmt<A>[] {
+        const body: Stmt<A>[] = [];
         while (this.at().type != TokenType.EndBlock) {
-            const statement = this.parse_stmt();
+            const statement = this.parse_stmt(allowedControl);
             body.push(statement);
         }
         this.eat();
@@ -307,7 +311,7 @@ export default class Parser {
         const value = this.parse_expr();
 
         return {
-            kind: "VarDeclaration",
+            kind: StmtKind.VarDeclaration,
             ident,
             type,
             value,
@@ -327,7 +331,7 @@ export default class Parser {
         }
         this.eat();
         const ident = this.expect(TokenType.Identifier, "Erwarte Variablennamen nach 'Zahl', 'Wahrheitswert', 'Text' oder 'Objekt'!").value;
-        return { kind: "ParamDeclaration", type, ident };
+        return { type, ident };
     }
 
     parse_fn_definition(): FunctionDefinition {
@@ -343,13 +347,13 @@ export default class Parser {
         }
         this.eat();
         this.expect(TokenType.EndLine, "Erwarte neue Zeile vor Funktionskörper!");
-        const body: Stmt[] = [];
+        const body: Stmt<StmtKind.ReturnCommand>[] = [];
         while (this.at().type != TokenType.EndBlock) {
-            body.push(this.parse_stmt());
+            body.push(this.parse_stmt(new Set([StmtKind.ReturnCommand])));
         }
         this.eat();
 
-        return { kind: "FunctionDefinition", name, params, body };
+        return { kind: StmtKind.FunctionDefinition, name, params, body };
     }
 
     parse_ext_method_definition(): ExtMethodDefinition {
@@ -369,13 +373,13 @@ export default class Parser {
         const classname = this.expect(TokenType.Identifier, "Erwarte Klassenname nach 'für'!").value;
         this.expect(TokenType.EndLine, "Erwarte neue Zeile vor Funktionskörper!");
 
-        const body: Stmt[] = [];
+        const body: Stmt<StmtKind.ReturnCommand>[] = [];
         while (this.at().type != TokenType.EndBlock) {
-            body.push(this.parse_stmt());
+            body.push(this.parse_stmt(new Set([StmtKind.ReturnCommand])));
         }
         this.eat();
 
-        return { kind: "ExtMethodDefinition", name, params, body, classname };
+        return { kind: StmtKind.ExtMethodDefinition, name, params, body, classname };
     }
 
     parse_obj_declaration(): ObjDeclaration {
@@ -385,7 +389,7 @@ export default class Parser {
         const classname = this.expect(TokenType.Identifier, "Erwarte Klassenname nach 'als'!").value;
 
         return {
-            kind: "ObjDeclaration",
+            kind: StmtKind.ObjDeclaration,
             ident,
             type: "object",
             classname,
@@ -414,7 +418,7 @@ export default class Parser {
         if (this.at().type == TokenType.Assign) {
             this.eat();
             const value = this.parse_assignment_expr();
-            return { kind: "AssignmentExpr", value, assigne: left, lineIndex };
+            return { kind: StmtKind.AssignmentExpr, value, assigne: left, lineIndex };
         }
 
         return left;
@@ -426,7 +430,7 @@ export default class Parser {
             const operator = this.eat().value;
             const right = this.parse_comparison_expr();
             left = {
-                kind: "BinaryExpr",
+                kind: StmtKind.BinaryExpr,
                 left,
                 right,
                 operator,
@@ -442,7 +446,7 @@ export default class Parser {
             const operator = this.eat().value;
             const right = this.parse_additive_expr();
             left = {
-                kind: "BinaryExpr",
+                kind: StmtKind.BinaryExpr,
                 left,
                 right,
                 operator,
@@ -458,7 +462,7 @@ export default class Parser {
             const operator = this.eat().value;
             const right = this.parse_multiplicative_expr();
             left = {
-                kind: "BinaryExpr",
+                kind: StmtKind.BinaryExpr,
                 left,
                 right,
                 operator,
@@ -474,7 +478,7 @@ export default class Parser {
             const operator = this.eat().value;
             const right = this.parse_unary_expr();
             left = {
-                kind: "BinaryExpr",
+                kind: StmtKind.BinaryExpr,
                 left,
                 right,
                 operator,
@@ -488,7 +492,7 @@ export default class Parser {
         if (this.at().type == TokenType.Not || this.at().type == TokenType.Minus || this.at().type == TokenType.Plus) {
             const operator = this.eat().value;
             const right = this.parse_call_expr();
-            return { kind: "UnaryExpr", right, operator };
+            return { kind: StmtKind.UnaryExpr, right, operator };
         } else {
             return this.parse_call_expr();
         }
@@ -508,7 +512,7 @@ export default class Parser {
                 this.expect(TokenType.Comma, "Erwarte Kommas zwischen Parametern!");
             }
             this.expect(TokenType.CloseParen, "Erwarte schließende Klammer nach Parametern!"); // eat close paren
-            return { kind: "CallExpr", ident, args, lineIndex };
+            return { kind: StmtKind.CallExpr, ident, args, lineIndex };
         } else {
             return ident;
         }
@@ -523,7 +527,7 @@ export default class Parser {
                 throw new ParserError(`Kann Punktoperator nicht nutzen, wenn rechts kein Name steht!`, this.at().lineIndex);
 
             container = {
-                kind: "MemberExpr",
+                kind: StmtKind.MemberExpr,
                 container,
                 member
             };
@@ -538,11 +542,11 @@ export default class Parser {
         const tk = this.at().type;
         switch (tk) {
             case TokenType.Identifier:
-                return { kind: "Identifier", symbol: this.eat().value };
+                return { kind: StmtKind.Identifier, symbol: this.eat().value };
             case TokenType.Number:
-                return { kind: "NumericLiteral", value: parseInt(this.eat().value) };
+                return { kind: StmtKind.NumericLiteral, value: parseInt(this.eat().value) };
             case TokenType.String:
-                return { kind: "StringLiteral", value: this.eat().value };
+                return { kind: StmtKind.StringLiteral, value: this.eat().value };
             case TokenType.OpenParen: {
                 this.eat(); // eat opening paren
                 const value = this.parse_expr();

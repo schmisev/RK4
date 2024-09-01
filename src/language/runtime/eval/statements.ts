@@ -1,28 +1,22 @@
 import { RuntimeError } from "../../../errors";
-import { AlwaysBlock, ClassDefinition, DocComment, EmptyLine, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, VarDeclaration, WhileBlock } from "../../frontend/ast";
+import { AbrubtStmtKind, AlwaysBlock_, ClassDefinition, DocComment, EmptyLine, ExtMethodDefinition, ForBlock_, FunctionDefinition, IfElseBlock_, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, StmtKind, StmtReturn, VarDeclaration, WhileBlock_ } from "../../frontend/ast";
 import { ClassPrototype, Environment, VarHolder } from "../environment";
-import { SteppedEval, evaluate } from "../interpreter";
+import { SteppedEval, evaluate, evaluate_expr } from "../interpreter";
 import {
     RuntimeVal,
     MK_NULL,
     FunctionVal,
     ClassVal,
     ObjectVal,
-    BooleanVal,
     MethodVal,
+    AbruptReturn,
 } from "../values";
-import { Break, Continue, Return } from "./errors";
 
 export function* eval_program(prog: Program, env: Environment) {
     let lastEvaluated: RuntimeVal = MK_NULL();
     for (const statement of prog.body) {
-        if (statement.kind == "DocComment" || statement.kind == "EmptyLine") continue; // skip these
-        try {
-            lastEvaluated = yield* evaluate(statement, env);
-        } catch (e) {
-            if (e instanceof Return) return e.value;
-            throw e;
-        }
+        if (statement.kind == StmtKind.DocComment || statement.kind == "EmptyLine") continue; // skip these
+        lastEvaluated = yield* evaluate(statement, env);
     }
     return lastEvaluated;
 }
@@ -180,7 +174,7 @@ export function* eval_show_command(
     let result: RuntimeVal = MK_NULL();
     const fmtOutputs = [];
     for (const val of cmd.values) {
-        result = yield* evaluate(val, env);
+        result = yield* evaluate_expr(val, env);
 
         // side effect
         fmtOutputs.push(formatValue(result));
@@ -192,8 +186,11 @@ export function* eval_show_command(
 export function* eval_return_command(
     ret: ReturnCommand,
     env: Environment
-): SteppedEval<RuntimeVal> {
-    throw new Return(yield* evaluate(ret.value, env));
+): SteppedEval<AbruptReturn> {
+    return {
+        type: "return",
+        value: yield* evaluate(ret.value, env),
+    }
 }
 
 function evaluate_condition_value(
@@ -209,11 +206,11 @@ function evaluate_condition_value(
 
 }
 
-export function* eval_if_else_block(
-    block: IfElseBlock,
+export function* eval_if_else_block<A extends AbrubtStmtKind>(
+    block: IfElseBlock_<A>,
     env: Environment
-): SteppedEval<RuntimeVal> {
-    const condition = yield* evaluate(block.condition, env);
+): SteppedEval<RuntimeVal | StmtReturn<A>> {
+    const condition = yield* evaluate_expr(block.condition, env);
     if (evaluate_condition_value(condition)) {
         return yield* eval_bare_statements(block.ifTrue, new Environment(env));
     } else {
@@ -221,109 +218,109 @@ export function* eval_if_else_block(
     }
 }
 
-export function* eval_for_block(
-    block: ForBlock,
+export function* eval_for_block<A extends AbrubtStmtKind>(
+    block: ForBlock_<A>,
     env: Environment
-): SteppedEval<RuntimeVal> {
+): SteppedEval<RuntimeVal | StmtReturn<A>> {
     const counter = yield* evaluate(block.counter, env);
     if (counter.type != "number")
         throw new RuntimeError("Zähler muss eine Zahl sein!");
-    let i = counter.value;
-    let lastEvaluated: RuntimeVal = MK_NULL();
-    if (i < 0) throw new RuntimeError("Zähler muss größer oder gleich 0 sein!");
+    let max = counter.value;
+    if (max < 0) throw new RuntimeError("Zähler muss größer oder gleich 0 sein!");
 
-    try {
-        while (i > 0) {
-            yield block.lineIndex;
-            try {
-                lastEvaluated = yield* eval_bare_statements(
-                    block.body,
-                    new Environment(env)
-                );
-            } catch (e) {
-                if (!(e instanceof Continue)) {
-                    throw e;
-                }
-            }
-            i--;
+    let lastEvaluated: RuntimeVal = MK_NULL();
+    loop: for (let i = 0; i < max; i++) {
+        const bodyValue = yield* eval_bare_statements(
+            block.body,
+            new Environment(env)
+        );
+        switch (bodyValue.type) {
+            case "return":
+                return bodyValue;
+            case "continue":
+                continue loop;
+            case "break":
+                lastEvaluated = MK_NULL();
+                break loop;
+            default:
+                lastEvaluated = bodyValue;
         }
-    } catch (e) {
-        if (!(e instanceof Break)) {
-            throw e;
-        }
-        return MK_NULL();
     }
     return lastEvaluated;
 }
 
-export function* eval_while_block(
-    block: WhileBlock,
+export function* eval_while_block<A extends AbrubtStmtKind>(
+    block: WhileBlock_<A>,
     env: Environment
-): SteppedEval<RuntimeVal> {
+): SteppedEval<RuntimeVal | StmtReturn<A>> {
     let lastEvaluated: RuntimeVal = MK_NULL();
-    try {
-        while (true) {
-            yield block.lineIndex;
-            try {
-                // yield here to prevent infinite loops from being unable to be stopped
-                const condition = yield* evaluate(block.condition, env);
-                if (evaluate_condition_value(condition)) {
-                    lastEvaluated = yield* eval_bare_statements(
-                        block.body,
-                        new Environment(env)
-                    );
-                } else {
-                    return lastEvaluated;
-                }
-            } catch (e) {
-                if (!(e instanceof Continue)) {
-                    throw e;
-                }
-            }
+    loop: while (true) {
+        yield block.lineIndex;
+        // yield here to prevent infinite loops from being unable to be stopped
+        const condition = yield* evaluate_expr(block.condition, env);
+        if (!evaluate_condition_value(condition))
+            break loop;
+        const bodyValue = yield* eval_bare_statements(
+            block.body,
+            new Environment(env)
+        );
+        switch (bodyValue.type) {
+            case "continue":
+                continue loop;
+            case "break":
+                lastEvaluated = MK_NULL();
+                break loop;
+            case "return":
+                return bodyValue;
+            default:
+                lastEvaluated = bodyValue;
         }
-    } catch (e) {
-        if (!(e instanceof Break)) {
-            throw e;
-        }
-        return MK_NULL();
     }
+    return lastEvaluated;
 }
 
-export function* eval_always_block(
-    block: AlwaysBlock,
+export function* eval_always_block<A extends AbrubtStmtKind>(
+    block: AlwaysBlock_<A>,
     env: Environment
-): SteppedEval<RuntimeVal> {
+): SteppedEval<RuntimeVal | StmtReturn<A>> {
     let lastEvaluated: RuntimeVal = MK_NULL();
-    try {
-        while (true) {
-            yield block.lineIndex;
-            try {
-                lastEvaluated = yield* eval_bare_statements(
-                    block.body,
-                    new Environment(env)
-                );
-            } catch (e) {
-                if (!(e instanceof Continue)) {
-                    throw e;
-                }
-            }
+    loop: while (true) {
+        yield block.lineIndex;
+        const bodyValue = yield* eval_bare_statements(
+            block.body,
+            new Environment(env)
+        );
+        switch (bodyValue.type) {
+            case "return":
+                return bodyValue;
+            case "continue":
+                continue loop;
+            case "break":
+                lastEvaluated = MK_NULL();
+                break loop;
+            default:
+                lastEvaluated = bodyValue;
         }
-    } catch (e) {
-        if (!(e instanceof Break)) {
-            throw e;
-        }
-        return MK_NULL();
     }
+    return lastEvaluated;
 }
 
-export function* eval_bare_statements(
-    body: Stmt[],
+export function* eval_bare_statements<A extends AbrubtStmtKind>(
+    body: Stmt<A>[],
     env: Environment
-): SteppedEval<RuntimeVal> {
+): SteppedEval<RuntimeVal | StmtReturn<A>> {
     let lastEvaluated: RuntimeVal = MK_NULL();
     for (const statement of body) {
-        if (statement.kind == "DocComment" || statement.kind == "EmptyLine") continue; // skip these
-        lastEvaluated = yield* evaluate(statement, env);
+        if (statement.kind == StmtKind.DocComment || statement.kind == StmtKind.EmptyLine) continue; // skip these
+        const evaluated = yield* evaluate(statement, env);
+        switch (evaluated.type) {
+            case "break":
+            case "continue":
+            case "return":
+                return evaluated;
+            default:
+                lastEvaluated = evaluated;
+        }
     }
     return lastEvaluated;
 }

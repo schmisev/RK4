@@ -1,5 +1,5 @@
-import { RuntimeVal, MK_NUMBER, MK_STRING, MK_BOOL, MK_NULL } from "./values";
-import { Stmt } from "../frontend/ast";
+import { MK_NUMBER, MK_STRING, MK_BOOL, MK_NULL, RuntimeVal } from "./values";
+import { AbrubtStmtKind, Program, Stmt, StmtKind, StmtReturn } from "../frontend/ast";
 import { Environment } from "./environment";
 import { eval_identifier, eval_binary_expr, eval_assignment_expr, eval_unary_expr, eval_call_expr, eval_member_expr } from "./eval/expressions";
 import { eval_fn_definition, eval_empty_line, eval_for_block, eval_if_else_block, eval_program, eval_show_command, eval_var_declaration, eval_while_block, eval_class_definition, eval_obj_declaration, eval_return_command, eval_ext_method_definition, eval_always_block, eval_doc_comment } from "./eval/statements";
@@ -7,72 +7,76 @@ import { Break, Continue } from "./eval/errors";
 
 export type SteppedEval<T> = Generator<number, T, void>;
 
-function assertUnreachable(x: never): never {
-    throw new Error("Didn't expect to get here");
-}
-export function* evaluate(
-    astNode: Stmt,
+export function evaluate_expr(
+    astNode: Program | Stmt<never>,
     env: Environment
 ): SteppedEval<RuntimeVal> {
+    return evaluate<never>(astNode, env);
+}
 
+export function* evaluate<A extends AbrubtStmtKind>(
+    astNode: Program | Stmt<A>,
+    env: Environment
+): SteppedEval<RuntimeVal | StmtReturn<A>> {
+    const a = astNode.kind;
     switch (astNode.kind) {
-        case "NumericLiteral":
+        case StmtKind.NumericLiteral:
             return MK_NUMBER(astNode.value);
-        case "StringLiteral":
+        case StmtKind.StringLiteral:
             return MK_STRING(astNode.value);
-        case "BooleanLiteral":
+        case StmtKind.BooleanLiteral:
             return MK_BOOL(astNode.value);
-        case "NullLiteral":
+        case StmtKind.NullLiteral:
             return MK_NULL();
-        case "Identifier":
+        case StmtKind.Identifier:
             return eval_identifier(astNode, env);
-        case "BinaryExpr":
+        case StmtKind.BinaryExpr:
             return yield* eval_binary_expr(astNode, env);
-        case "UnaryExpr":
+        case StmtKind.UnaryExpr:
             return yield* eval_unary_expr(astNode, env);
-        case "AssignmentExpr":
+        case StmtKind.AssignmentExpr:
             yield astNode.lineIndex;
             return yield* eval_assignment_expr(astNode, env);
-        case "CallExpr":
+        case StmtKind.CallExpr:
             yield astNode.lineIndex;
             return yield* eval_call_expr(astNode, env);
-        case "MemberExpr":
+        case StmtKind.MemberExpr:
             return yield* eval_member_expr(astNode, env);
-        case "Program":
+        case StmtKind.Program:
             return yield* eval_program(astNode, env);
-        case "WhileBlock":
+        case StmtKind.WhileBlock:
             return yield* eval_while_block(astNode, env);
-        case "AlwaysBlock":
+        case StmtKind.AlwaysBlock:
             return yield* eval_always_block(astNode, env);
-        case "ForBlock":
+        case StmtKind.ForBlock:
             return yield* eval_for_block(astNode, env);
-        case "IfElseBlock":
+        case StmtKind.IfElseBlock:
             return yield* eval_if_else_block(astNode, env);
-        case "VarDeclaration":
+        case StmtKind.VarDeclaration:
             return yield* eval_var_declaration(astNode, env);
-        case "ObjDeclaration":
+        case StmtKind.ObjDeclaration:
             return yield* eval_obj_declaration(astNode, env);
-        case "FunctionDefinition":
+        case StmtKind.FunctionDefinition:
             return yield* eval_fn_definition(astNode, env);
-        case "ExtMethodDefinition":
+        case StmtKind.ExtMethodDefinition:
             return eval_ext_method_definition(astNode, env);
-        case "ClassDefinition":
+        case StmtKind.ClassDefinition:
             return eval_class_definition(astNode, env);
-        case "ShowCommand":
+        case StmtKind.ShowCommand:
             yield astNode.lineIndex;
             return yield* eval_show_command(astNode, env);
-        case "BreakCommand":
+        case StmtKind.BreakCommand:
             yield astNode.lineIndex;
             throw new Break();
-        case "ContinueCommand":
+        case StmtKind.ContinueCommand:
             yield astNode.lineIndex;
             throw new Continue();
-        case "ReturnCommand":
+        case StmtKind.ReturnCommand:
             yield astNode.lineIndex;
-            return yield* eval_return_command(astNode, env);
-        case "EmptyLine":
+            return yield* eval_return_command(astNode, env) as any;
+        case StmtKind.EmptyLine:
             return eval_empty_line(astNode, env);
-        case "DocComment":
+        case StmtKind.DocComment:
             return eval_doc_comment(astNode, env);
     }
     const _UNREACHABLE: never = astNode;

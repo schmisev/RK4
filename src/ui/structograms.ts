@@ -1,5 +1,4 @@
-import { ParserError } from "../errors";
-import { AlwaysBlock, BinaryExpr, ClassDefinition, Expr, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, Program, Stmt, UnaryExpr, WhileBlock } from "../language/frontend/ast";
+import { AlwaysBlock, AnyStmt, BinaryExpr, ClassDefinition, Expr, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, Program, Stmt, UnaryExpr, WhileBlock } from "../language/frontend/ast";
 import { ENV } from "../spec";
 
 // Robot class
@@ -112,7 +111,7 @@ export function showStructogram(program: Program) {
     }
 }
 
-function structure(astNode: Stmt): string {
+function structure(astNode: Program | AnyStmt): string {
     // const view = document.getElementById("diagram-canvas")!;
     switch (astNode.kind) {
         case "Program":
@@ -217,7 +216,7 @@ function structureUnaryExpr(astNode: UnaryExpr) {
     return `${operator}${rightSide}`
 }
 
-function structureSequence(body: Stmt[]): string {
+function structureSequence(body: AnyStmt[]): string {
     let result = "";
     for (const node of body) {
         if (node.kind == "WhileBlock" || node.kind == "ForBlock" || node.kind == "IfElseBlock")
