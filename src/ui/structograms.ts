@@ -1,5 +1,5 @@
 import { ParserError } from "../errors";
-import { AlwaysBlock, BinaryExpr, ClassDefinition, Expr, ForBlock, IfElseBlock, Program, Stmt, UnaryExpr, WhileBlock } from "../language/frontend/ast";
+import { AlwaysBlock, BinaryExpr, ClassDefinition, Expr, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, Program, Stmt, UnaryExpr, WhileBlock } from "../language/frontend/ast";
 import { ENV } from "../spec";
 
 // Robot class
@@ -154,25 +154,11 @@ function structure(astNode: Stmt): string {
         case "ShowCommand":
             return `${makeSpan("zeig", "struct-cmd")} ${astNode.values.map(structure).join(", ")}`
         case "FunctionDefinition":
-            const funcHandle = `${astNode.name}(${astNode.params.map((p) => p.ident).join(", ")})`
-            sections.push(
-                makeDiv(`${makeTooltip("Funktion", "Hier wird eine neue Funktion definiert, die an anderen Stellen im Code aufgerufen werden kann. So muss man nicht immer dieselben Anweisungen schreiben.")}: ${funcHandle} ${structureSequence(astNode.body)}`, "struct-program")
-            );
-            return makeSpan(`→  ${funcHandle}`, "struct-deemph");
+            return structureFunction(astNode);
         case "ExtMethodDefinition":
-            const methodHandle = `${astNode.name}(${astNode.params.map((p) => p.ident).join(", ")})`
-            const fullMethodHandle = `${methodHandle} für ${astNode.classname}`
-            sections.push(
-                makeDiv(`${makeTooltip("Methode", `Hier wird eine neue Methode für die Klasse ${astNode.classname} definiert, die an anderen Stellen im Code aufgerufen werden kann.`)}: ${fullMethodHandle} ${structureSequence(astNode.body)}`,"struct-program")
-            );
-            if (astNode.classname in classes)
-                classes[astNode.classname].getElementsByClassName("struct-methods")[0].innerHTML += methodHandle + "<br>";
-            return makeSpan(`→ ${fullMethodHandle}`, "struct-deemph");
+            return structureMethod(astNode);
         case "ClassDefinition":
-            const newClass = new HTMLElement();
-            newClass.outerHTML = structureClass(astNode);
-            classes[astNode.ident] = newClass;
-            return makeSpan(`→ ${astNode.ident}`, "struct-deemph");
+            return structureClass(astNode);
         case "BreakCommand":
             return makeSpan("abbrechen", "struct-cmd");
         case "ContinueCommand":
@@ -326,5 +312,29 @@ function structureClass(node: ClassDefinition): string {
             <div class="struct-dot"></div>
         </div>
     </div>`
-    return result;
+
+    const newClass = document.createElement("div");
+    newClass.innerHTML = result;
+    classes[node.ident] = newClass;
+    return makeSpan(`→ ${node.ident}`, "struct-deemph");
+}
+
+function structureMethod(astNode: ExtMethodDefinition): string {
+    const methodHandle = `${astNode.name}(${astNode.params.map((p) => p.ident).join(", ")})`
+    const fullMethodHandle = `${methodHandle} für ${astNode.classname}`
+    sections.push(
+        makeDiv(`${makeTooltip("Methode", `Hier wird eine neue Methode für die Klasse ${astNode.classname} definiert, die an anderen Stellen im Code aufgerufen werden kann.`)}: ${fullMethodHandle} ${structureSequence(astNode.body)}`,"struct-program")
+    );
+    // If the class already exists, we can add the method to it
+    if (astNode.classname in classes)
+        classes[astNode.classname].getElementsByClassName("struct-methods")[0].innerHTML += methodHandle + "<br>";
+    return makeSpan(`→ ${fullMethodHandle}`, "struct-deemph");
+}
+
+function structureFunction(astNode: FunctionDefinition) {
+    const funcHandle = `${astNode.name}(${astNode.params.map((p) => p.ident).join(", ")})`
+    sections.push(
+        makeDiv(`${makeTooltip("Funktion", "Hier wird eine neue Funktion definiert, die an anderen Stellen im Code aufgerufen werden kann. So muss man nicht immer dieselben Anweisungen schreiben.")}: ${funcHandle} ${structureSequence(astNode.body)}`, "struct-program")
+    );
+    return makeSpan(`→  ${funcHandle}`, "struct-deemph");
 }
