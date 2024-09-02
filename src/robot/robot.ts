@@ -1,6 +1,6 @@
 import { RuntimeError } from "../errors";
 import { ClassPrototype, GlobalEnvironment, VarHolder } from "../language/runtime/environment";
-import { MK_BOOL, MK_STRING, MK_NUMBER, RuntimeVal, BuiltinClassVal, ObjectVal, MK_NATIVE_METHOD, NativeMethodVal } from "../language/runtime/values";
+import { MK_BOOL, MK_STRING, MK_NUMBER, RuntimeVal, BuiltinClassVal, ObjectVal, MK_NATIVE_METHOD } from "../language/runtime/values";
 import { ENV } from "../spec";
 import { Vec2 } from "../utils";
 import { BlockType, CHAR2BLOCK, CHAR2MARKER, Field, MarkerType, World } from "./world";
@@ -36,65 +36,72 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
         if (!Object.is(self.cls, robotCls))
             throw new RuntimeError(`Diese Methode kann nur auf Robotern ausgeführt werden.`);
     }
-    function mkRobotMethod(m: (r: Robot, args: RuntimeVal[]) => RuntimeVal): NativeMethodVal {
-        return MK_NATIVE_METHOD(function (args) {
+    function mkRobotMethod(name: string, m: (r: Robot, args: RuntimeVal[]) => RuntimeVal) {
+        prototype.declareMethod(name, MK_NATIVE_METHOD(name, function (args) {
             downcastRoboter(this);
             return m(this.r, args);
-        })
+        }))
     }
 
-    prototype.declareMethod(ENV.robot.mth.GET_X, mkRobotMethod(
+    mkRobotMethod(
+        ENV.robot.mth.GET_X,
         (r, args) => {
             if (args.length != 0)
                 throw new RuntimeError(ENV.robot.mth.GET_X + `() erwartet keine Parameter!`);
             return MK_NUMBER(r.pos.x);
         }
-    ));
+    );
 
-    prototype.declareMethod(ENV.robot.mth.GET_Y, mkRobotMethod(
+    mkRobotMethod(
+        ENV.robot.mth.GET_Y,
         (r, args) => {
             if (args.length != 0)
                 throw new RuntimeError(ENV.robot.mth.GET_Y + `() erwartet keine Parameter!`);
             return MK_NUMBER(r.pos.y);
         }
-    ));
+    );
 
-    prototype.declareMethod(ENV.robot.mth.GET_DIR, mkRobotMethod(
+    mkRobotMethod(
+        ENV.robot.mth.GET_DIR,
         (r, args) => {
             if (args.length != 0)
                 throw new RuntimeError(ENV.robot.mth.GET_DIR + `() erwartet keine Parameter!`);
             return MK_STRING(DIR2SHORTGER[r.dir]);
         }
-    ));
+    );
     
-    prototype.declareMethod(ENV.robot.mth.STEP, mkRobotMethod(
+    mkRobotMethod(
+        ENV.robot.mth.STEP,
         (r, args) => {
             if (args.length != 0)
                 throw new RuntimeError(ENV.robot.mth.STEP + `() erwartet keine Parameter!`);
             r.step();
             return MK_STRING(`Schritt nach: ( ${r.pos.x} | ${r.pos.y} )`);
         }
-    ));
+    );
 
-    prototype.declareMethod(ENV.robot.mth.TURN_LEFT, mkRobotMethod(
+    mkRobotMethod(
+        ENV.robot.mth.TURN_LEFT,
         (r, args) => {
             if (args.length != 0)
                 throw new RuntimeError(ENV.robot.mth.TURN_LEFT + `() erwartet keine Parameter!`);
             r.turnLeft();
             return MK_STRING("Gedreht nach: " + DIR2GER[r.dir]);
         }
-    ));
+    );
 
-    prototype.declareMethod(ENV.robot.mth.TURN_RIGHT, mkRobotMethod(
+    mkRobotMethod(
+        ENV.robot.mth.TURN_RIGHT,
         (r, args) => {
             if (args.length != 0)
                 throw new RuntimeError(ENV.robot.mth.TURN_RIGHT + `() erwartet keine Parameter!`);
             r.turnRight();
             return MK_STRING("Gedreht nach: " + DIR2GER[r.dir]);
         }
-    ));
+    );
 
-    prototype.declareMethod(ENV.robot.mth.PLACE_BLOCK, mkRobotMethod(
+    mkRobotMethod(
+        ENV.robot.mth.PLACE_BLOCK,
         (r, args) => {
             if (args.length > 1)
                 throw new RuntimeError(ENV.robot.mth.PLACE_BLOCK + `() erwartet einen oder keine Parameter!`);
@@ -106,18 +113,20 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
             r.placeBlock(CHAR2BLOCK[col.toLowerCase()]);
             return MK_STRING(`Schritt nach: ( ${r.targetPos().x} | ${r.targetPos().y} )`);
         }
-    ));
+    );
 
-    prototype.declareMethod(ENV.robot.mth.PICKUP_BLOCK, mkRobotMethod(
+    mkRobotMethod(
+        ENV.robot.mth.PICKUP_BLOCK,
         (r, args) => {
             if (args.length != 0)
                 throw new RuntimeError(ENV.robot.mth.PICKUP_BLOCK + `() erwartet keine Parameter!`);
             r.pickUpBlock();
             return MK_STRING(`Schritt nach: ( ${r.targetPos().x} | ${r.targetPos().y} )`);
         }
-    ));
+    );
 
-    prototype.declareMethod(ENV.robot.mth.SET_MARKER, mkRobotMethod(
+    mkRobotMethod(
+        ENV.robot.mth.SET_MARKER,
         (r, args) => {
             if (args.length > 1)
                 throw new RuntimeError(ENV.robot.mth.SET_MARKER + `() erwartet einen oder keine Parameter, z.B. markSetzen(blau)!`);
@@ -129,18 +138,20 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
             r.setMarker(CHAR2MARKER[col]);
             return MK_STRING(`Schritt nach: ( ${r.targetPos().x} | ${r.targetPos().y} )`);
         }
-    ));
+    );
 
-    prototype.declareMethod(ENV.robot.mth.REMOVE_MARKER, mkRobotMethod(
+    mkRobotMethod(
+        ENV.robot.mth.REMOVE_MARKER,
         (r, args) => {
             if (args.length != 0)
                 throw new RuntimeError(ENV.robot.mth.REMOVE_MARKER + `() erwartet keine Parameter!`);
             r.removeMarker();
             return MK_STRING(`Schritt nach: ( ${r.targetPos().x} | ${r.targetPos().y} )`);
         }
-    ));
+    );
 
-    prototype.declareMethod(ENV.robot.mth.IS_ON_MARKER, mkRobotMethod(
+    mkRobotMethod(
+        ENV.robot.mth.IS_ON_MARKER,
         (r, args) => {
             if (args.length > 1)
                 throw new RuntimeError(ENV.robot.mth.IS_ON_MARKER +`() erwartet einen oder keine Parameter, z.B. istAufMarke(blau)!`);
@@ -152,9 +163,10 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
                 return MK_BOOL(r.isOnMarker());
             }
         }
-    ));
+    );
 
-    prototype.declareMethod(ENV.robot.mth.SEES_BLOCK, mkRobotMethod(
+    mkRobotMethod(
+        ENV.robot.mth.SEES_BLOCK,
         (r, args) => {
             if (args.length > 1)
                 throw new RuntimeError(ENV.robot.mth.SEES_BLOCK + `() erwartet einen oder keine Parameter, z.B. siehtZiegel(blau)!`);
@@ -166,23 +178,25 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
                 return MK_BOOL(r.seesBlock());
             }
         }
-    ));
+    );
 
-    prototype.declareMethod(ENV.robot.mth.SEES_WALL, mkRobotMethod(
+    mkRobotMethod(
+        ENV.robot.mth.SEES_WALL,
         (r, args) => {
             if (args.length != 0)
                 throw new RuntimeError(ENV.robot.mth.SEES_WALL + `() erwartet keine Parameter!`);
             return MK_BOOL(r.seesWall());
         }
-    ));
+    );
 
-    prototype.declareMethod(ENV.robot.mth.SEES_VOID, mkRobotMethod(
+    mkRobotMethod(
+        ENV.robot.mth.SEES_VOID,
         (r, args) => {
             if (args.length != 0)
                 throw new RuntimeError(ENV.robot.mth.SEES_VOID + `() erwartet keine Parameter!`);
             return MK_BOOL(r.seesVoid());
         }
-    ));
+    );
 
     return robotCls;
 }

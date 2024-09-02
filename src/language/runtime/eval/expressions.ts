@@ -1,7 +1,7 @@
 import { RuntimeError } from "../../../errors";
 import { Identifier, BinaryExpr, UnaryExpr, AssignmentExpr, CallExpr, MemberExpr } from "../../frontend/ast";
 import { Environment } from "../environment";
-import { SteppedEval, evaluate } from "../interpreter";
+import { SteppedEval, evaluate_expr } from "../interpreter";
 import {
     RuntimeVal,
     NumberVal,
@@ -12,7 +12,6 @@ import {
     ObjectVal,
     MK_STRING,
 } from "../values";
-import { Return } from "./errors";
 import { eval_bare_statements } from "./statements";
 
 export function eval_identifier(
@@ -38,9 +37,9 @@ export function* eval_assignment_expr(
     if (node.assigne.kind == "MemberExpr") {
         const assigne = node.assigne;
         const symbol = assigne.member.symbol;
-        const obj = yield* evaluate(assigne.container, env);
+        const obj = yield* evaluate_expr(assigne.container, env);
         expectObject(obj, "nur Objekten können Eigenschaften zugewiesen werden");
-        const value = yield* evaluate(node.value, env);
+        const value = yield* evaluate_expr(node.value, env);
         obj.cls.prototype.assignVar(obj, symbol, value);
         return value;
     }
@@ -53,15 +52,15 @@ export function* eval_assignment_expr(
     }
 
     const varname = node.assigne.symbol;
-    return env.assignVar(varname, yield* evaluate(node.value, env));
+    return env.assignVar(varname, yield* evaluate_expr(node.value, env));
 }
 
 export function* eval_binary_expr(
     binop: BinaryExpr,
     env: Environment
 ): SteppedEval<RuntimeVal> {
-    const lhs = yield* evaluate(binop.left, env);
-    const rhs = yield* evaluate(binop.right, env);
+    const lhs = yield* evaluate_expr(binop.left, env);
+    const rhs = yield* evaluate_expr(binop.right, env);
 
     try {
         if (lhs.type == "number" && rhs.type == "number") {
@@ -155,7 +154,7 @@ export function* eval_unary_expr(
     unop: UnaryExpr,
     env: Environment
 ): SteppedEval<RuntimeVal> {
-    const rhs = yield* evaluate(unop.right, env);
+    const rhs = yield* evaluate_expr(unop.right, env);
 
     try {
         if (rhs.type == "boolean") {
@@ -208,11 +207,11 @@ export function* eval_call_expr(
 ): SteppedEval<RuntimeVal> {
     const args: RuntimeVal[] = [];
     for (const expr of call.args) {
-        const result = yield* evaluate(expr, env);
+        const result = yield* evaluate_expr(expr, env);
         args.push(result);
     }
     //const args = call.args.map((arg) => evaluate(arg, env));
-    const fn = yield* evaluate(call.ident, env);
+    const fn = yield* evaluate_expr(call.ident, env);
 
     if (fn.type == "native-fn") {
         return fn.call(args);
@@ -236,15 +235,11 @@ export function* eval_call_expr(
             scope.declareVar(varname, args[i]);
         }
 
-        try {
-            const result = yield* eval_bare_statements(fn.body, scope);
-            return result;
-        } catch (e) {
-            if (!(e instanceof Return)) {
-                throw e;
-            }
-            return e.value;
+        const result = yield* eval_bare_statements(fn.body, scope);
+        if (result.type === "return") {
+            return result.value;
         }
+        return result;
     }
 
     throw new RuntimeError(`Du versuchst hier ${JSON.stringify(fn)} als Funktion auszuführen!`);
@@ -254,7 +249,7 @@ export function* eval_member_expr(
     expr: MemberExpr,
     env: Environment
 ): SteppedEval<RuntimeVal> {
-    const obj = yield* evaluate(expr.container, env);
+    const obj = yield* evaluate_expr(expr.container, env);
     expectObject(obj, "nur Objekte haben Attribute und Methoden!");
     return obj.cls.prototype.lookupVar(obj, expr.member.symbol);
 }

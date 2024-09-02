@@ -29,6 +29,7 @@ export function declareGlobalEnv(): GlobalEnvironment {
     env.declareVar(ENV.global.const.BLUE, MK_STRING("B"), true);
 
     env.declareVar(ENV.global.fn.RANDOM_NUMBER, MK_NATIVE_FN(
+        ENV.global.fn.RANDOM_NUMBER,
         (args) => {
             let r = 0;
             if (args.length == 0) {
@@ -197,6 +198,7 @@ export class ClassPrototype {
                     else if (method.type === "native-method")
                         return {
                             type: "native-fn",
+                            name: method.name,
                             call: method.call.bind(receiver),
                         }
                     // unreachable!

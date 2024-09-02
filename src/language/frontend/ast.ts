@@ -1,168 +1,233 @@
-export type NodeType = Stmt["kind"];
+import type { AbruptBreak, AbruptContinue, AbruptReturn } from "../runtime/values";
 
-export type Stmt = Program | DocComment | VarDeclaration | ObjDeclaration | IfElseBlock | ForBlock | WhileBlock | AlwaysBlock | ShowCommand | BreakCommand | ContinueCommand | ReturnCommand | Expr;
+export const enum StmtKind {
+    Program = "Program",
+    VarDeclaration = "VarDeclaration",
+    ObjDeclaration = "ObjDeclaration",
+    EmptyLine = "EmptyLine",
+    DocComment = "DocComment",
+    IfElseBlock = "IfElseBlock",
+    ForBlock = "ForBlock",
+    WhileBlock = "WhileBlock",
+    AlwaysBlock = "AlwaysBlock",
+    ShowCommand = "ShowCommand",
+    BreakCommand = "BreakCommand",
+    ContinueCommand = "ContinueCommand",
+    ReturnCommand = "ReturnCommand",
+    AssignmentExpr = "AssignmentExpr",
+    BinaryExpr = "BinaryExpr",
+    UnaryExpr = "UnaryExpr",
+    Identifier = "Identifier",
+    NumericLiteral = "NumericLiteral",
+    NullLiteral = "NullLiteral",
+    BooleanLiteral = "BooleanLiteral",
+    StringLiteral = "StringLiteral",
+    MemberExpr = "MemberExpr",
+    CallExpr = "CallExpr",
+    ClassDefinition = "ClassDefinition",
+    FunctionDefinition = "FunctionDefinition",
+    ExtMethodDefinition = "ExtMethodDefinition",
+};
+export type AbrubtStmtKind = StmtKind.BreakCommand | StmtKind.ContinueCommand | StmtKind.ReturnCommand;
+type AbrubtToStmt = {
+    [StmtKind.BreakCommand]: BreakCommand;
+    [StmtKind.ContinueCommand]: ContinueCommand;
+    [StmtKind.ReturnCommand]: ReturnCommand;
+}
+type AbrubtStmt<Ctrl> = Ctrl extends AbrubtStmtKind ? AbrubtToStmt[Ctrl] : never;
+
+export type Stmt<Ctrl> =
+    | DocComment
+    | VarDeclaration
+    | ObjDeclaration
+    | IfElseBlock<Ctrl>
+    | ForBlock<Ctrl>
+    | WhileBlock<Ctrl>
+    | AlwaysBlock<Ctrl>
+    | AbrubtStmt<Ctrl>
+    | ShowCommand
+    | ClassDefinition
+    | FunctionDefinition
+    | ExtMethodDefinition
+    | EmptyLine
+    | Expr
+    ;
+
+export type BareStmt = Stmt<never>;
+export type AnyStmt = Stmt<AbrubtStmtKind>;
+
+type AbruptToReturn = {
+    [StmtKind.BreakCommand]: AbruptBreak;
+    [StmtKind.ContinueCommand]: AbruptContinue;
+    [StmtKind.ReturnCommand]: AbruptReturn;
+};
+export type AbrubtReturn<Ctrl> = Ctrl extends AbrubtStmtKind ? AbruptToReturn[Ctrl] : never;
 
 export interface Program {
-    kind: "Program";
-    body: Stmt[];
+    kind: StmtKind.Program;
+    body: BareStmt[];
 }
 
 export interface DocComment {
-    kind: "DocComment";
+    kind: StmtKind.DocComment;
     content: string;
 }
 
 export interface VarDeclaration {
-    kind: "VarDeclaration";
+    kind: StmtKind.VarDeclaration;
     ident: string;
     type: "null" | "boolean" | "number" | "string";
     value: Expr;
 }
 
 export interface ObjDeclaration {
-    kind: "ObjDeclaration";
+    kind: StmtKind.ObjDeclaration;
     ident: string;
     type: "object";
     classname: string;
 }
 
 export interface EmptyLine {
-    kind: "EmptyLine";
+    kind: StmtKind.EmptyLine;
 }
 
-export interface IfElseBlock {
-    kind: "IfElseBlock";
+export interface IfElseBlock<Ctrl> {
+    kind: StmtKind.IfElseBlock;
     condition: Expr;
-    ifTrue: Stmt[];
-    ifFalse: Stmt[];
+    ifTrue: Stmt<Ctrl>[];
+    ifFalse: Stmt<Ctrl>[];
 }
+export type AnyIfElseBlock = IfElseBlock<AbrubtStmtKind>;
 
-export interface ForBlock {
-    kind: "ForBlock";
+export interface ForBlock<Ctrl> {
+    kind: StmtKind.ForBlock;
     lineIndex: number;
     counter: Expr;
-    body: Stmt[];
+    body: Stmt<StmtKind.BreakCommand | StmtKind.ContinueCommand | Ctrl>[];
 }
+export type AnyForBlock = ForBlock<AbrubtStmtKind>;
 
-export interface WhileBlock {
-    kind: "WhileBlock";
+export interface WhileBlock<Ctrl> {
+    kind: StmtKind.WhileBlock;
     lineIndex: number;
     condition: Expr;
-    body: Stmt[];
+    body: Stmt<StmtKind.BreakCommand | StmtKind.ContinueCommand | Ctrl>[];
 }
+export type AnyWhileBlock = WhileBlock<AbrubtStmtKind>;
 
-export interface AlwaysBlock {
-    kind: "AlwaysBlock";
+export interface AlwaysBlock<Ctrl> {
+    kind: StmtKind.AlwaysBlock;
     lineIndex: number;
-    body: Stmt[];
+    body: Stmt<StmtKind.BreakCommand | StmtKind.ContinueCommand | Ctrl>[];
 }
+export type AnyAlwaysBlock = AlwaysBlock<AbrubtStmtKind>;
 
 export interface ShowCommand {
-    kind: "ShowCommand";
+    kind: StmtKind.ShowCommand;
     lineIndex: number;
     values: Expr[];
 }
 
 export interface BreakCommand {
-    kind: "BreakCommand";
+    kind: StmtKind.BreakCommand;
     lineIndex: number;
 }
 
 export interface ContinueCommand {
-    kind: "ContinueCommand";
+    kind: StmtKind.ContinueCommand;
     lineIndex: number;
 }
 
 export interface ReturnCommand {
-    kind: "ReturnCommand";
+    kind: StmtKind.ReturnCommand;
     lineIndex: number;
-    value: Stmt;
+    // Do NOT allow control flow expressions in computation for return. This is confusing!
+    value: Expr;
 }
 
-export type Expr = AssignmentExpr | BinaryExpr | UnaryExpr | Identifier | NumericLiteral | NullLiteral | BooleanLiteral | StringLiteral | EmptyLine | MemberExpr | CallExpr | ClassDefinition | FunctionDefinition | ExtMethodDefinition;
+export type Expr = AssignmentExpr | BinaryExpr | UnaryExpr | Identifier | NumericLiteral | NullLiteral | BooleanLiteral | StringLiteral | MemberExpr | CallExpr;
 
 export interface AssignmentExpr {
-    kind: "AssignmentExpr";
+    kind: StmtKind.AssignmentExpr;
     lineIndex: number;
     assigne: Expr;
     value: Expr;
 }
 
 export interface BinaryExpr {
-    kind: "BinaryExpr";
+    kind: StmtKind.BinaryExpr;
     left: Expr;
     right: Expr;
     operator: string;
 }
 
 export interface UnaryExpr {
-    kind: "UnaryExpr";
+    kind: StmtKind.UnaryExpr;
     right: Expr;
     operator: string;
 }
 
 export interface Identifier {
-    kind: "Identifier";
+    kind: StmtKind.Identifier;
     symbol: string;
 }
 
 export interface NumericLiteral {
-    kind: "NumericLiteral";
+    kind: StmtKind.NumericLiteral;
     value: number;
 }
 
 export interface NullLiteral {
-    kind: "NullLiteral";
+    kind: StmtKind.NullLiteral;
     value: "null";
 }
 
 export interface BooleanLiteral {
-    kind: "BooleanLiteral";
+    kind: StmtKind.BooleanLiteral;
     value: boolean;
 }
 
 export interface StringLiteral {
-    kind: "StringLiteral";
+    kind: StmtKind.StringLiteral;
     value: string;
 }
 
 export interface MemberExpr {
-    kind: "MemberExpr";
+    kind: StmtKind.MemberExpr;
     container: Expr;
     member: Identifier;
 }
 
 export interface CallExpr {
-    kind: "CallExpr";
+    kind: StmtKind.CallExpr;
     ident: Expr;
     args: Expr[];
     lineIndex: number;
 }
 
 export interface ClassDefinition {
-    kind: "ClassDefinition";
+    kind: StmtKind.ClassDefinition;
     ident: string;
     attributes: (VarDeclaration | ObjDeclaration)[];
     methods: FunctionDefinition[];
 }
 
 export interface ParamDeclaration {
-    kind: "ParamDeclaration";
     ident: string;
     type: string;
 }
 
 export interface FunctionDefinition {
-    kind: "FunctionDefinition";
+    kind: StmtKind.FunctionDefinition;
     params: ParamDeclaration[];
     name: string;
-    body: Stmt[];
+    body: Stmt<StmtKind.ReturnCommand>[];
 }
 
 export interface ExtMethodDefinition {
-    kind: "ExtMethodDefinition";
+    kind: StmtKind.ExtMethodDefinition;
     params: ParamDeclaration[];
     name: string;
     classname: string;
-    body: Stmt[];
+    body: Stmt<StmtKind.ReturnCommand>[];
 }

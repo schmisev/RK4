@@ -1,5 +1,5 @@
-import { ObjDeclaration, ParamDeclaration, Stmt, VarDeclaration } from "../frontend/ast";
-import { ClassPrototype, Environment, StaticScope, VarHolder } from "./environment";
+import { ObjDeclaration, ParamDeclaration, Stmt, StmtKind, VarDeclaration } from "../frontend/ast";
+import { ClassPrototype, StaticScope, VarHolder } from "./environment";
 
 export type RuntimeVal = NullVal | NumberVal | BooleanVal | StringVal | NativeFunctionVal | FunctionVal | ClassVal | ObjectVal;
 export type ValueType = RuntimeVal["type"];
@@ -28,6 +28,7 @@ export type FunctionCall = (args: RuntimeVal[]) => RuntimeVal;
 
 export interface NativeFunctionVal {
     type: "native-fn";
+    name: string;
     call: FunctionCall;
 }
 
@@ -35,6 +36,7 @@ export type MethodCall = (this: ObjectVal, args: RuntimeVal[]) => RuntimeVal;
 
 export interface NativeMethodVal {
     type: "native-method";
+    name: string;
     call: MethodCall;
 }
 
@@ -43,7 +45,7 @@ export interface FunctionVal {
     name: string;
     params: ParamDeclaration[];
     declenv: StaticScope;
-    body: Stmt[];
+    body: Stmt<StmtKind.ReturnCommand>[];
 }
 
 // A method is an "unbound" function, i.e. without a receiver. Crucially, only a runtime value when it gets bound to a receiver
@@ -52,7 +54,7 @@ export interface MethodVal {
     name: string;
     params: ParamDeclaration[];
     declenv: StaticScope;
-    body: Stmt[];
+    body: Stmt<StmtKind.ReturnCommand>[];
 }
 
 export interface BuiltinClassVal {
@@ -78,17 +80,31 @@ export interface ObjectVal {
     ownMembers: VarHolder;
 }
 
+export interface AbruptBreak {
+    type: "break";
+}
+
+export interface AbruptContinue {
+    type: "continue";
+    value: RuntimeVal;
+}
+
+export interface AbruptReturn {
+    type: "return";
+    value: RuntimeVal;
+}
+
 // MAKROS
 export function MK_STRING(s = "") {
     return { type: "string", value: s } satisfies StringVal;
 }
 
-export function MK_NATIVE_FN(call: FunctionCall) {
-    return { type: "native-fn", call } satisfies NativeFunctionVal;
+export function MK_NATIVE_FN(name: string, call: FunctionCall) {
+    return { type: "native-fn", name, call } satisfies NativeFunctionVal;
 }
 
-export function MK_NATIVE_METHOD(call: MethodCall) {
-    return { type: "native-method", call } satisfies NativeMethodVal;
+export function MK_NATIVE_METHOD(name: string, call: MethodCall) {
+    return { type: "native-method", name, call } satisfies NativeMethodVal;
 }
 
 export function MK_NUMBER(n = 0) {

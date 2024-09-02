@@ -1,6 +1,6 @@
 import { RuntimeError, WorldError } from "../errors";
 import { ClassPrototype, GlobalEnvironment, VarHolder } from "../language/runtime/environment";
-import { BuiltinClassVal, MK_BOOL, MK_NATIVE_METHOD, MK_NUMBER, NativeMethodVal, ObjectVal, RuntimeVal } from "../language/runtime/values";
+import { BuiltinClassVal, MK_BOOL, MK_NATIVE_METHOD, MK_NUMBER, ObjectVal, RuntimeVal } from "../language/runtime/values";
 import { ENV } from "../spec";
 import { declareRobot, Robot } from "./robot";
 import { rndi } from "../utils";
@@ -67,28 +67,30 @@ export function declareWorldClass(env: GlobalEnvironment): BuiltinClassVal {
         if (!Object.is(self.cls, worldClass))
             throw new RuntimeError(`Diese Methode kann nur auf einer Welt ausgeführt werden.`);
     }
-    function mkWorldMethod(m: (r: World, args: RuntimeVal[]) => RuntimeVal): NativeMethodVal {
-        return MK_NATIVE_METHOD(function (args) {
+    function mkWorldMethod(name: string, m: (r: World, args: RuntimeVal[]) => RuntimeVal) {
+        prototype.declareMethod(name, MK_NATIVE_METHOD(name, function (args) {
             downcastWorld(this);
             return m(this.w, args);
-        })
+        }))
     }
 
-    prototype.declareMethod(ENV.world.mth.IS_GOAL_REACHED, mkWorldMethod(
+    mkWorldMethod(
+        ENV.world.mth.IS_GOAL_REACHED,
         (w, args) => {
             if (args.length != 0)
                 throw new RuntimeError(ENV.world.mth.IS_GOAL_REACHED + `() erwartet keine Parameter!`);
             return MK_BOOL(w.isGoalReached());
         }
-    ));
+    );
 
-    prototype.declareMethod(ENV.world.mth.GET_STAGE_INDEX, mkWorldMethod(
+    mkWorldMethod(
+        ENV.world.mth.GET_STAGE_INDEX,
         (w, args) => {
             if (args.length != 0)
                 throw new RuntimeError(ENV.world.mth.GET_STAGE_INDEX + `() erwartet keine Parameter!`);
             return MK_NUMBER(w.getStageIndex() + 1);
         }
-    ));
+    );
 
     return worldClass;
 }
