@@ -3,25 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="struct-style.css">
+    <link rel="stylesheet" type="text/css" href="obj-style.css">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Handlee&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
+
+    <link href="https://fonts.cdnfonts.com/css/cascadia-code" rel="stylesheet">
+    
     <title>🤖 RK4</title>
 </head>
-<body>
-    <div class="panel-row" id="panel-row">
-        <div class="left-panel" id="left-panel">
-            <div class="grid-container-left">
-                <div class="title-bar lc30 wsr text code-like">
+<body class="roboto">
+    <div id="panel-row">
+        <div id="left-panel">
+            <div id="grid-container-left">
+                <div class="lc30 wsr text code-like" id="title-bar">
                     🤖 Robot Karol 4 <i>(beta)</i> | RKBasic, 3D, mehrere Roboter & Aufgaben
-                    <span style="float: right;">
+                    <span class="roboto" style="float: right;">
                         Zieh mich! →</span>
                 </div>
                 <!-- Code editor UI -->
-                <div class="code-title lc30 wsr text">💻 Code-Editor</div>
+                <div class="lc30 wsr text" id="code-title">💻 Code-Editor</div>
                 <button class="code-start" id="code-start">▷</button>
                 <button class="code-stop" id="code-stop">▢</button>
-                <div class="code-editor editor" id="code-editor">Code</div>
+                <div class="editor cascadia" id="code-editor">Code</div>
                 <div class="code-error lc30 wsr text" id="code-error">keine Fehler gefunden</div>
                 <select class="text" id="store-data" list="store-data">
                     <option>(neu)</option>
@@ -31,19 +38,19 @@
                     <button title="Lege Code in den Speicher oder überschreibe aktuellen Speicherstand." id="store-code">💾</button>
                 </div>
                 <!-- Preload / library UI -->
-                <div class="preload-title lc30 wsr text">📖 Bibliothek</div>
-                <div class="preload-editor editor" id="preload-editor">Preload</div>
+                <div class="lc30 wsr text" id="preload-title">📖 Bibliothek</div>
+                <div class="editor cascadia" id="preload-editor">Preload</div>
                 <!-- Save / load UI -->
-                <button title="Speicher aktuellen Code in einer .rk-Datei und lade sie herunter." class="save-world" id="save-code">⬇️</button>
-                <button title="Lade Code (.rk), Welt (.csv) oder Aufgabe (.json) vom PC." class="load-world" id="load-code">📂</button>
+                <button title="Speicher aktuellen Code in einer .rk-Datei und lade sie herunter." id="save-code">⬇️</button>
+                <button title="Lade Code (.rk), Welt (.csv) oder Aufgabe (.json) vom PC." id="load-code">📂</button>
                 <select class="text" id="load-task">
                     <option selected disabled>Wähle eine Aufgabe</option>
                 </select>
                 <!-- 3D Robot view & associated UI -->
-                <div class="robot-canvas" id="robot-canvas"></div>
-                <div class="object-bar" id="object-bar"></div>
-                <div class="object-overlay" id="object-overlay">overlay</div>
-                <div class="" id="task-bar">
+                <div id="robot-canvas"></div>
+                <div id="object-bar"></div>
+                <div id="object-overlay">overlay</div>
+                <div id="task-bar">
                     <div class="wsr lc30" id="task-check">?</div>
                 </div>
                 <!-- Step time UI -->
@@ -52,12 +59,12 @@
                     <input type="range" min="0" max="250" value="50" step="5" class="wait-slider slider" id="wait-slider">
                 </div>
                 <!-- Command line UI -->
-                <input class="cmd-line code-like" id="cmd-line" autocomplete="off">
-                <div class="cmd-start code-like lc30">&gt;&gt;</div>
+                <input class="cmd-line cascadia" id="cmd-line" autocomplete="off">
+                <div class="cmd-start cascadia lc30">&gt;&gt;</div>
                 <button class="cmd-run" id="cmd-run">↩</button>
                 <!-- Task view UI -->
                 <div class="task-description wsr text" id="task-description">Aufgabe</div>
-                <div class="console-log wsr text code-like" id="console-log"></div>
+                <div class="console-log wsr text cascadia" id="console-log"></div>
                 <!-- credits -->
                 <div class="wsr lc30 text" id="credits-bar">Mitwirkende: <a href="https://github.com/schmisev">schmisev</a> ● <a href="https://github.com/WorldsEnder">WorldsEnder</a> 
                     | 3D-Ansicht: <a href="https://p5js.org/">p5.js</a> (<a href="https://raw.githubusercontent.com/processing/p5.js/main/license.txt">Lizenz</a>)
@@ -65,15 +72,15 @@
             </div>
         </div>
         <div class="handler" id="panel-handler"></div>
-        <div class="right-panel" id="right-panel">
+        <div id="right-panel">
             <div class="wsr lc30 text" id="debug-title">🐞 Debug <span id="debug-timer">😶‍🌫️</span></div>
-            <div class="grid-container-right">
+            <div id="grid-container-right">
                 <!-- Class view -->
-                <div class="class-diagram-title dgr lc30 text">🗃️ Klassen</div>
-                <div class="class-diagram-canvas" id="class-diagram-canvas"></div>
+                <div class="shadow dgr lc30 text" id="class-diagram-title">🗃️ Klassen</div>
+                <div id="class-diagram-canvas"></div>
                 <!-- Structogram view -->
-                <div class="structogram-diagram-title dgr lc30 text">🌳 Struktogramm</div>
-                <div class="structogram-diagram-canvas" id="structogram-diagram-canvas"></div>
+                <div class="shadow dgr lc30 text" id="structogram-diagram-title">🌳 Struktogramm</div>
+                <div id="structogram-diagram-canvas"></div>
             </div>
             <div class="wsr lc30 text" id="debug-bottom-bar">Klassische Karol-Alternative: <a href="https://karol.arrrg.de/">karol.arrrg.de</a></div>
         </div>

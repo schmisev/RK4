@@ -1,5 +1,6 @@
 export class RuntimeError extends Error {
 }
+
 export class ParserError extends Error {
     lineIndex: number
     constructor(msg: string, lineIndex: number) {
@@ -7,6 +8,7 @@ export class ParserError extends Error {
         this.lineIndex = lineIndex;
     }
 }
+
 export class LexerError extends Error {
     lineIndex: number
     constructor(msg: string, lineIndex: number) {
@@ -14,4 +16,5 @@ export class LexerError extends Error {
         this.lineIndex = lineIndex;
     }
 }
+
 export class WorldError extends Error {}
