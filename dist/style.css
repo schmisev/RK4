@@ -1,5 +1,14 @@
-html,
-body {
+/* fonts */
+.roboto {
+    font-family: "Roboto", Arial, Helvetica, sans-serif;
+}
+
+.cascadia {
+    font-family: 'Cascadia Code', "Consolas", monospace;
+}
+
+/* general */
+html, body {
     margin: 0;
     box-sizing: border-box;
     height: 100%;
@@ -9,7 +18,7 @@ body {
 body {
     border: 8px solid white;
     /*overflow-x: hidden;*/
-    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 500;
 }
 
 code {
@@ -23,6 +32,7 @@ button {
     font-size: large;
     overflow: hidden;
     white-space: nowrap;
+    font-family: "Roboto";
 }
 
 button:hover {
@@ -75,6 +85,11 @@ select {
     overflow: hidden;
 }
 
+.wsr:hover {
+    outline: 1px rgba(0, 0, 0, .2) solid;
+    outline-offset: -1px;
+}
+
 .dgr {
     background-color: white;
     border: 1px black solid;
@@ -105,17 +120,17 @@ select {
 }
 
 .code-like {
-    font-family: "Consolas";
-    font-weight: bold;
+    font-family: 'Cascadia Code', "Consolas";
+    font-weight: bolder;
 }
 
-.panel-row {
+#panel-row {
     display: flex;
     overflow-x: hidden;
     height: 100%;
 }
 
-.left-panel {
+#left-panel {
     height: fit-content;
     overflow: hidden;
 
@@ -128,7 +143,7 @@ select {
     height: 100%;
 }
 
-.right-panel {
+#right-panel {
     min-width: 0px;
     max-width: 100%;
     height: fit-content;
@@ -162,7 +177,7 @@ select {
     margin: 0 auto;
 }
 
-.grid-container-left {
+#grid-container-left {
     display: grid;
     grid-gap: 10px;
     grid-template-columns: repeat(13, minmax(0, 1fr));
@@ -170,7 +185,7 @@ select {
     height: 100%;
 }
 
-.grid-container-right {
+#grid-container-right {
     display: grid;
     gap: 10px;
     grid-template-columns: 2fr 1fr;
@@ -187,10 +202,11 @@ select {
     grid-column: 1;
 }
 
-.title-bar {
+#title-bar {
     grid-column: 1 / 14;
     grid-row: 1;
     overflow: hidden;
+    font-weight: bolder;
 }
 
 #credits-bar {
@@ -204,7 +220,7 @@ select {
     grid-row: 24;
 }
 
-.code-title {
+#code-title {
     grid-column: 1 / 3;
     grid-row: 2;
 }
@@ -221,29 +237,29 @@ select {
     background-color: lightcoral;
 }
 
-.code-editor {
+#code-editor {
     grid-column: 1 / 8;
     grid-row: 3 / 17;
     font-size: small;
 }
 
-.preload-title {
+#preload-title {
     grid-column: 8 / 14;
     grid-row: 18;
 }
 
-.preload-editor {
+#preload-editor {
     grid-column: 8 / 14;
     grid-row: 19 / 24;
     font-style: italic;
 }
 
-.save-world {
+#save-world {
     grid-column: 8;
     grid-row: 2;
 }
 
-.load-world {
+#load-world {
     grid-column: 9;
     grid-row: 2;
 }
@@ -285,12 +301,12 @@ select {
     grid-row: 2;
 }
 
-.robot-canvas {
+#robot-canvas {
     grid-column: 8 / 14;
     grid-row: 3 / 13;
 }
 
-.object-bar {
+#object-bar {
     grid-column: 8 / 14;
     grid-row: 3;
     border-radius: 0px 0px 5px 5px;
@@ -306,7 +322,7 @@ select {
     background-color: lightblue;
 }
 
-.object-overlay {
+#object-overlay {
     position: absolute; /* Sit on top of the page content */
     display: none; /* Hidden by default */
     width: auto;
@@ -341,13 +357,13 @@ select {
     -o-user-select: none;
 }
 
-.structogram-diagram-title {
-    grid-column: 1;
+#structogram-diagram-title {
+    grid-column: 2;
     grid-row: 1;
 }
 
-.structogram-diagram-canvas {
-    grid-column: 1;
+#structogram-diagram-canvas {
+    grid-column: 2;
     grid-row: 2 / 23;
     grid-gap: 10px;
     padding: 5px;
@@ -356,13 +372,13 @@ select {
     align-items: left;
 }
 
-.class-diagram-title {
-    grid-column: 2;
+#class-diagram-title {
+    grid-column: 3;
     grid-row: 1;
 }
 
-.class-diagram-canvas {
-    grid-column: 2;
+#class-diagram-canvas {
+    grid-column: 3;
     grid-row: 2 / 23;
     grid-gap: 10px;
     padding: 5px;
@@ -477,299 +493,6 @@ select {
 
 .wait-time {
     font-size: small;
-}
-
-/* Structogram divs*/
-.struct-doc-comment {
-    background-color:	#FADA5E;/**/
-    border: 2px #b19b42 solid;
-    /*outline: 1px black solid;/**/
-    padding-left: 5px;
-    padding-right: 5px;
-    /*
-    margin-left: -5px;
-    margin-right: -5px;
-    */
-    /*font-weight: bold;/**/
-    /*font-style: italic;/**/
-    box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, .2);/**/
-    width: fit-content;
-    max-width: 250px;
-    margin: auto;
-    overflow-wrap: anywhere;
-
-    border-top-left-radius: 255px 15px;
-    border-top-right-radius: 15px 225px;
-    border-bottom-right-radius: 225px 15px;
-    border-bottom-left-radius:15px 255px;
-}
-
-.struct-doc-wrapper {
-    text-align: center;
-    /*padding: 5px;/**/
-    padding-top: 5px;
-    padding-bottom: 5px;
-}
-
-.struct-program {
-    border-radius: 5px;
-    background-color: whitesmoke;
-    outline: 2px black dashed;
-    padding: 5px;
-    font-family: Arial, Helvetica, sans-serif;
-    line-height: 1.5em;
-    width: max-content;
-    min-width: 250px;
-    box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, .2);
-}
-
-.struct-class {
-    /*margin-left: 15%;*/
-    /*width: 70%;*/
-    box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, .2);
-    background-color: whitesmoke;
-    outline: 2px black solid;
-    outline-offset: -1px;
-    font-family: Arial, Helvetica, sans-serif;
-    width: max-content;
-}
-
-.struct-box {
-    background-color: white;
-    overflow-wrap: normal;
-    outline: 2px black solid;
-    outline-offset: -1px;
-    min-height: 25px;
-    box-sizing: border-box;
-}
-
-.struct-label {
-    padding-left: 5px;
-    padding-right: 5px;
-}
-
-span.line {
-    display: inline-block;
-}
-
-.struct-while {
-    /*outline: 1px black solid;*/
-    padding-left: 20px;
-    width: calc(max-content + 20px);
-}
-
-.struct-ifelse {
-    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' preserveAspectRatio='none' viewBox='0 0 100 100'><path d='M100 0 L50 100 ' stroke='black' stroke-width='1'/><path d='M0 0 L50 100 ' stroke='black' stroke-width='1'/></svg>");
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: 100% 100%, auto;
-    text-align: center;
-}
-
-.struct-ifelse.left {
-    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' preserveAspectRatio='none' viewBox='0 0 100 100'><path d='M100 0 L80 100 ' stroke='black' stroke-width='1'/><path d='M0 0 L80 100 ' stroke='black' stroke-width='1'/></svg>");
-}
-
-.struct-ifelse.right {
-    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' preserveAspectRatio='none' viewBox='0 0 100 100'><path d='M100 0 L20 100 ' stroke='black' stroke-width='1'/><path d='M0 0 L20 100 ' stroke='black' stroke-width='1'/></svg>");
-}
-
-.struct-row {
-    background-color: #ccc;
-    display: grid;
-    grid-auto-flow: column;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-}
-
-.struct-row.left {
-    grid-template-columns: 4fr 1fr;
-}
-
-.struct-row.right {
-    grid-template-columns: 1fr 4fr;
-}
-
-.struct-column {
-    width: 100%;
-}
-
-.struct-literal {
-    color: blue;
-    font-weight: bold;
-}
-
-.struct-object {
-    color: purple;
-    font-weight: bold;
-}
-
-.struct-classtype {
-    color: red;
-    font-weight: bold;
-}
-
-.struct-string {
-    color: darkgreen;
-}
-
-.struct-type {
-    font-style: italic;
-}
-
-.struct-classname {
-    outline: 1px black solid;
-    text-align: center;
-    font-weight: bold;
-    padding: 5px;
-    text-overflow: ellipsis;
-    /*white-space: nowrap;*/
-    /*overflow: hidden;*/
-}
-
-.struct-attributes {
-    outline: 1px black solid;
-    padding: 5px;
-    text-overflow: ellipsis;
-    /*white-space: nowrap;*/
-    /*overflow: hidden;*/
-}
-
-.struct-methods {
-    outline: 1px black solid;
-    padding: 5px;
-    text-overflow: ellipsis;
-    /*white-space: nowrap;*/
-    /*overflow: hidden;*/
-}
-
-.struct-ident {
-    font-weight: bold;
-}
-
-.struct-deemph {
-    color: gray;
-    font-weight: bold;
-}
-
-.struct-dot {
-    color: gray;
-    border-top: 2px gray solid;
-    margin-top: 5px;
-    margin-bottom: 5px;
-    text-align: center;
-}
-
-.struct-cmd {
-    background-color: lightblue;
-    outline: 1px black solid;
-    padding-left: 5px;
-    padding-right: 5px;
-}
-
-.struct-text {
-    padding: 2px;
-}
-
-.struct-tooltip {
-    position: relative;
-    display: inline-block;
-    text-decoration: underline 1px dotted;
-}
-
-.struct-tooltip .tooltip {
-    display: block;
-    visibility: hidden;
-    opacity: 0%;
-    background-color: rgba(255, 255, 255, .6);
-    backdrop-filter: blur(10px);
-    color: black;
-    text-align: left;
-    padding: 5px 10px 5px 10px;
-    border-radius: 5px;
-    outline: 1px black solid;
-    box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, .2);
-
-    /* Position the tooltip text - see examples below! */
-    position: absolute;
-    z-index: 1;
-
-    width: max-content;
-    max-width: 140px;
-
-    top: calc(100% + 5px);
-    left: 50%;
-    /*margin-left: calc(width / 2 - 10px);*/
-    transform: translateX(-50%);/**/
-    /*transform: translateX(-10%);/**/
-
-    pointer-events: none;
-    transition: visibility 0s linear 0ms, opacity 200ms;
-}
-
-.struct-tooltip .tooltip::after {
-    content: " ";
-    position: absolute;
-    bottom: 100%;  /* At the top of the tooltip */
-    left: 50%;/**/
-    /*left: 10%;/**/
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: transparent transparent black transparent;
-}
-
-.struct-tooltip:hover .tooltip {
-    visibility: visible;
-    opacity: 100%;
-}
-
-/* objectigrams */
-.obj-name {
-    outline: 1px black solid;
-    text-align: center;
-    font-weight: bold;
-    padding: 5px;
-    border-radius: 10px 10px 0px 0px;
-    min-width: max-content;
-}
-
-.obj-attributes {
-    outline: 1px black solid;
-    text-align: left;
-    padding: 5px;
-    min-width: max-content;
-}
-
-.obj-methods {
-    outline: 1px black solid;
-    text-align: left;
-    padding: 5px;
-    border-radius: 0px 0px 10px 10px;
-}
-
-/* debug */
-.code-error {
-    grid-column: 1 / 8;
-    grid-row: 17;
-    font-weight: bold;
-    outline-offset: -4px;
-    outline: 4px gray solid;
-}
-
-.code-error.none {
-    outline-color: lightgreen;
-}
-
-.code-error.runtime {
-    outline-color: lightcoral;
-}
-
-.code-error.lexer {
-    outline-color: lightcoral;
-}
-
-.code-error.parser {
-    outline-color: lightcoral;
 }
 
 /* markers */

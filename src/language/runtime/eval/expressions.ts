@@ -230,7 +230,7 @@ export function* eval_call_expr(
 
             if (param.type != arg.type)
                 throw new RuntimeError(
-                    `${varname} sollte '${param.type}' sein, ist aber '${arg.type}'`
+                    `'${varname}' sollte '${param.type}' sein, ist aber '${arg.type}'`
                 );
             scope.declareVar(varname, args[i]);
         }

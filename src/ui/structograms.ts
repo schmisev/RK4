@@ -232,7 +232,6 @@ function structureWhile(node: AnyWhileBlock): string {
     const result = 
     `<div class="struct-label">
     wiederhole ${makeTooltip("solange", "Die folgenden Anweisungen werden immer wieder ausgeführt, bis die Bedingung <u>" + cond + "</u> nicht mehr wahr ist!")}
-    <br>&nbsp;&nbsp;&nbsp
     <span class="line">
     ${cond} 
     </span>
