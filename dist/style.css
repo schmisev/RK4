@@ -77,6 +77,11 @@ select {
     overflow: hidden;
 }
 
+.wsr:hover {
+    outline: 1px rgba(0, 0, 0, .2) solid;
+    outline-offset: -1px;
+}
+
 .dgr {
     background-color: white;
     border: 1px black solid;
