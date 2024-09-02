@@ -46,7 +46,7 @@ export default class Parser {
     }
 
     private parse_stmt<A extends AbrubtStmtKind>(allowedControl: Set<A>): Stmt<A> {
-        const checkControl: Set<StmtKind> = allowedControl;
+        const checkControl: Set<AbrubtStmtKind> = allowedControl;
         let statement: Stmt<A>
         switch (this.at().type) {
             case TokenType.ClassDef:
@@ -237,7 +237,6 @@ export default class Parser {
     }
 
     parse_for_loop<A extends AbrubtStmtKind>(allowedControl: Set<A>): ForBlock<A> {
-        const checkedControl = new Set([StmtKind.ContinueCommand, StmtKind.BreakCommand, ...allowedControl] as const);
         const lineIndex = this.at().lineIndex;
         
         const counter = this.parse_expr();
@@ -247,12 +246,11 @@ export default class Parser {
             kind: StmtKind.ForBlock,
             lineIndex,
             counter,
-            body: this.parse_bare_loop(checkedControl)
+            body: this.parse_bare_loop(allowedControl)
         };
     }
 
     parse_while_loop<A extends AbrubtStmtKind>(allowedControl: Set<A>): WhileBlock<A> {
-        const checkedControl = new Set([StmtKind.ContinueCommand, StmtKind.BreakCommand, ...allowedControl] as const);
         const lineIndex = this.at().lineIndex;
 
         const condition = this.parse_expr();
@@ -262,12 +260,11 @@ export default class Parser {
             kind: StmtKind.WhileBlock,
             lineIndex,
             condition,
-            body: this.parse_bare_loop(checkedControl),
+            body: this.parse_bare_loop(allowedControl),
         };
     }
 
     parse_always_loop<A extends AbrubtStmtKind>(allowedControl: Set<A>): AlwaysBlock<A> {
-        const checkedControl = new Set([StmtKind.ContinueCommand, StmtKind.BreakCommand, ...allowedControl] as const);
         const lineIndex = this.at().lineIndex;
         
         this.expect(TokenType.EndLine, "Nach 'immer' sollte eine neue Zeile folgen!");
@@ -275,15 +272,16 @@ export default class Parser {
         return {
             kind: StmtKind.AlwaysBlock,
             lineIndex,
-            body: this.parse_bare_loop(checkedControl),
+            body: this.parse_bare_loop(allowedControl),
         };
     }
 
     // helper function
-    parse_bare_loop<A extends AbrubtStmtKind>(allowedControl: Set<A>): Stmt<A>[] {
-        const body: Stmt<A>[] = [];
+    parse_bare_loop<A extends AbrubtStmtKind>(allowedControl: Set<A>): Stmt<StmtKind.ContinueCommand | StmtKind.BreakCommand | A>[] {
+        const allowedInLoop = new Set([StmtKind.ContinueCommand, StmtKind.BreakCommand, ...allowedControl] as const);
+        const body: Stmt<StmtKind.ContinueCommand | StmtKind.BreakCommand | A>[] = [];
         while (this.at().type != TokenType.EndBlock) {
-            const statement = this.parse_stmt(allowedControl);
+            const statement = this.parse_stmt(allowedInLoop);
             body.push(statement);
         }
         this.eat();

@@ -1,7 +1,5 @@
 import type { AbruptBreak, AbruptContinue, AbruptReturn } from "../runtime/values";
 
-export type NodeType = AnyStmt["kind"];
-
 export const enum StmtKind {
     Program = "Program",
     VarDeclaration = "VarDeclaration",
@@ -36,8 +34,9 @@ type AbrubtToStmt = {
     [StmtKind.ContinueCommand]: ContinueCommand;
     [StmtKind.ReturnCommand]: ReturnCommand;
 }
+type AbrubtStmt<Ctrl> = Ctrl extends AbrubtStmtKind ? AbrubtToStmt[Ctrl] : never;
 
-export type Stmt<Ctrl extends AbrubtStmtKind> = | DocComment |  VarDeclaration | ObjDeclaration | IfElseBlock<Ctrl> | ForBlock<Ctrl> | WhileBlock<Ctrl> | AlwaysBlock<Ctrl> | AbrubtToStmt[Ctrl] | ShowCommand | ClassDefinition | FunctionDefinition | ExtMethodDefinition | Expr;
+export type Stmt<Ctrl> = | DocComment |  VarDeclaration | ObjDeclaration | IfElseBlock<Ctrl> | ForBlock<Ctrl> | WhileBlock<Ctrl> | AlwaysBlock<Ctrl> | AbrubtStmt<Ctrl> | ShowCommand | ClassDefinition | FunctionDefinition | ExtMethodDefinition | Expr;
 export type BareStmt = Stmt<never>;
 export type AnyStmt = Stmt<AbrubtStmtKind>;
 
@@ -46,7 +45,7 @@ type AbruptToReturn = {
     [StmtKind.ContinueCommand]: AbruptContinue;
     [StmtKind.ReturnCommand]: AbruptReturn;
 };
-export type StmtReturn<Ctrl extends AbrubtStmtKind> = Ctrl extends AbrubtStmtKind ? AbruptToReturn[Ctrl] : never;
+export type AbrubtReturn<Ctrl> = Ctrl extends AbrubtStmtKind ? AbruptToReturn[Ctrl] : never;
 
 export interface Program {
     kind: StmtKind.Program;
@@ -76,7 +75,7 @@ export interface EmptyLine {
     kind: StmtKind.EmptyLine;
 }
 
-export interface IfElseBlock<Ctrl extends AbrubtStmtKind> {
+export interface IfElseBlock<Ctrl> {
     kind: StmtKind.IfElseBlock;
     condition: Expr;
     ifTrue: Stmt<Ctrl>[];
@@ -84,7 +83,7 @@ export interface IfElseBlock<Ctrl extends AbrubtStmtKind> {
 }
 export type AnyIfElseBlock = IfElseBlock<AbrubtStmtKind>;
 
-export interface ForBlock<Ctrl extends AbrubtStmtKind> {
+export interface ForBlock<Ctrl> {
     kind: StmtKind.ForBlock;
     lineIndex: number;
     counter: Expr;
@@ -92,7 +91,7 @@ export interface ForBlock<Ctrl extends AbrubtStmtKind> {
 }
 export type AnyForBlock = ForBlock<AbrubtStmtKind>;
 
-export interface WhileBlock<Ctrl extends AbrubtStmtKind> {
+export interface WhileBlock<Ctrl> {
     kind: StmtKind.WhileBlock;
     lineIndex: number;
     condition: Expr;
@@ -100,7 +99,7 @@ export interface WhileBlock<Ctrl extends AbrubtStmtKind> {
 }
 export type AnyWhileBlock = WhileBlock<AbrubtStmtKind>;
 
-export interface AlwaysBlock<Ctrl extends AbrubtStmtKind> {
+export interface AlwaysBlock<Ctrl> {
     kind: StmtKind.AlwaysBlock;
     lineIndex: number;
     body: Stmt<StmtKind.BreakCommand | StmtKind.ContinueCommand | Ctrl>[];

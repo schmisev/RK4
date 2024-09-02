@@ -1,5 +1,5 @@
 import { RuntimeError } from "../../../errors";
-import { AbrubtStmtKind, AlwaysBlock, ClassDefinition, DocComment, EmptyLine, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, StmtKind, StmtReturn, VarDeclaration, WhileBlock } from "../../frontend/ast";
+import { AbrubtStmtKind, AlwaysBlock, ClassDefinition, DocComment, EmptyLine, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, StmtKind, AbrubtReturn, VarDeclaration, WhileBlock } from "../../frontend/ast";
 import { ClassPrototype, Environment, VarHolder } from "../environment";
 import { SteppedEval, evaluate, evaluate_expr } from "../interpreter";
 import {
@@ -209,7 +209,7 @@ function evaluate_condition_value(
 export function* eval_if_else_block<A extends AbrubtStmtKind>(
     block: IfElseBlock<A>,
     env: Environment
-): SteppedEval<RuntimeVal | StmtReturn<A>> {
+): SteppedEval<RuntimeVal | AbrubtReturn<A>> {
     const condition = yield* evaluate_expr(block.condition, env);
     if (evaluate_condition_value(condition)) {
         return yield* eval_bare_statements(block.ifTrue, new Environment(env));
@@ -221,7 +221,7 @@ export function* eval_if_else_block<A extends AbrubtStmtKind>(
 export function* eval_for_block<A extends AbrubtStmtKind>(
     block: ForBlock<A>,
     env: Environment
-): SteppedEval<RuntimeVal | StmtReturn<A>> {
+): SteppedEval<RuntimeVal | AbrubtReturn<A>> {
     const counter = yield* evaluate(block.counter, env);
     if (counter.type != "number")
         throw new RuntimeError("Zähler muss eine Zahl sein!");
@@ -252,7 +252,7 @@ export function* eval_for_block<A extends AbrubtStmtKind>(
 export function* eval_while_block<A extends AbrubtStmtKind>(
     block: WhileBlock<A>,
     env: Environment
-): SteppedEval<RuntimeVal | StmtReturn<A>> {
+): SteppedEval<RuntimeVal | AbrubtReturn<A>> {
     let lastEvaluated: RuntimeVal = MK_NULL();
     loop: while (true) {
         yield block.lineIndex;
@@ -282,7 +282,7 @@ export function* eval_while_block<A extends AbrubtStmtKind>(
 export function* eval_always_block<A extends AbrubtStmtKind>(
     block: AlwaysBlock<A>,
     env: Environment
-): SteppedEval<RuntimeVal | StmtReturn<A>> {
+): SteppedEval<RuntimeVal | AbrubtReturn<A>> {
     let lastEvaluated: RuntimeVal = MK_NULL();
     loop: while (true) {
         yield block.lineIndex;
@@ -308,7 +308,7 @@ export function* eval_always_block<A extends AbrubtStmtKind>(
 export function* eval_bare_statements<A extends AbrubtStmtKind>(
     body: Stmt<A>[],
     env: Environment
-): SteppedEval<RuntimeVal | StmtReturn<A>> {
+): SteppedEval<RuntimeVal | AbrubtReturn<A>> {
     let lastEvaluated: RuntimeVal = MK_NULL();
     for (const statement of body) {
         if (statement.kind == StmtKind.DocComment || statement.kind == StmtKind.EmptyLine) continue; // skip these
