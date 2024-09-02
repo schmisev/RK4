@@ -189,7 +189,7 @@ export function* eval_return_command(
 ): SteppedEval<AbruptReturn> {
     return {
         type: "return",
-        value: yield* evaluate(ret.value, env),
+        value: yield* evaluate_expr(ret.value, env),
     }
 }
 

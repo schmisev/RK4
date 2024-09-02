@@ -1,4 +1,4 @@
-import { AnyStmt, BinaryExpr, ClassDefinition, Expr, ExtMethodDefinition, AnyForBlock, FunctionDefinition, AnyIfElseBlock, Program, UnaryExpr, AnyWhileBlock, AnyAlwaysBlock } from "../language/frontend/ast";
+import { AnyStmt, BinaryExpr, ClassDefinition, Expr, ExtMethodDefinition, AnyForBlock, FunctionDefinition, AnyIfElseBlock, Program, UnaryExpr, AnyWhileBlock, AnyAlwaysBlock, StmtKind } from "../language/frontend/ast";
 import { ENV } from "../spec";
 
 // Robot class
@@ -114,59 +114,59 @@ export function showStructogram(program: Program) {
 function structure(astNode: Program | AnyStmt): string {
     // const view = document.getElementById("diagram-canvas")!;
     switch (astNode.kind) {
-        case "Program":
+        case StmtKind.Program:
             return structureProgram(astNode);
-        case "IfElseBlock":
+        case StmtKind.IfElseBlock:
             return structureIfElse(astNode);
-        case "WhileBlock":
+        case StmtKind.WhileBlock:
             return structureWhile(astNode);
-        case "AlwaysBlock":
+        case StmtKind.AlwaysBlock:
             return structureAlways(astNode);
-        case "ForBlock":
+        case StmtKind.ForBlock:
             return structureFor(astNode);
-        case "NumericLiteral":
+        case StmtKind.NumericLiteral:
             return makeSpan(astNode.value.toString(), "struct-literal");
-        case "StringLiteral":
+        case StmtKind.StringLiteral:
             return makeSpan('"' + astNode.value + '"', "struct-string");
-        case "BooleanLiteral":
+        case StmtKind.BooleanLiteral:
             return makeSpan(astNode.value ? "wahr" : "falsch", "struct-literal");
-        case "NullLiteral":
+        case StmtKind.NullLiteral:
             return makeSpan("nix", "struct-literal");
-        case "Identifier":
+        case StmtKind.Identifier:
             if (Object.values(ENV.global.const).includes(astNode.symbol))
                 return makeSpan(astNode.symbol, "struct-literal");
             return makeSpan(astNode.symbol, "struct-ident");
-        case "BinaryExpr":
+        case StmtKind.BinaryExpr:
             return structureBinaryExpr(astNode);
-        case "UnaryExpr":
+        case StmtKind.UnaryExpr:
             return structureUnaryExpr(astNode);
-        case "AssignmentExpr":
+        case StmtKind.AssignmentExpr:
             return `${structure(astNode.assigne)} ist ${structure(astNode.value)}`
-        case "CallExpr":
+        case StmtKind.CallExpr:
             return `${structure(astNode.ident)}(${astNode.args.map(structure).join(", ")})`
-        case "MemberExpr":
+        case StmtKind.MemberExpr:
             return `${makeSpan(structure(astNode.container), "struct-object")}<b>.</b>${structure(astNode.member)}`
-        case "VarDeclaration":
+        case StmtKind.VarDeclaration:
             return `${makeSpan(TYPE2GER[astNode.type], "struct-type")}</span> <span class="struct-ident">${astNode.ident}</span> ist ${structure(astNode.value)}`
-        case "ObjDeclaration":
+        case StmtKind.ObjDeclaration:
             return `${makeSpan("Objekt", "struct-type")} <span class="struct-ident">${astNode.ident}</span> als <span class="struct-classtype">${astNode.classname}</span>`
-        case "ShowCommand":
+        case StmtKind.ShowCommand:
             return `${makeSpan("zeig", "struct-cmd")} ${astNode.values.map(structure).join(", ")}`
-        case "FunctionDefinition":
+        case StmtKind.FunctionDefinition:
             return structureFunction(astNode);
-        case "ExtMethodDefinition":
+        case StmtKind.ExtMethodDefinition:
             return structureMethod(astNode);
-        case "ClassDefinition":
+        case StmtKind.ClassDefinition:
             return structureClass(astNode);
-        case "BreakCommand":
+        case StmtKind.BreakCommand:
             return makeSpan("abbrechen", "struct-cmd");
-        case "ContinueCommand":
+        case StmtKind.ContinueCommand:
             return makeSpan("weiter", "struct-cmd");
-        case "ReturnCommand":
+        case StmtKind.ReturnCommand:
             return `${makeSpan("zurück", "struct-cmd")} ${structure(astNode.value)}`
-        case "DocComment":
+        case StmtKind.DocComment:
             return makeDiv(makeDiv(`${astNode.content.replace(/\n/g, "<br>")}`, "struct-doc-comment"), "struct-doc-wrapper");
-        case "EmptyLine":
+        case StmtKind.EmptyLine:
         default:
             return `<span>&lt${astNode.kind}&gt</span>`
     }

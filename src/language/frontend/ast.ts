@@ -36,7 +36,23 @@ type AbrubtToStmt = {
 }
 type AbrubtStmt<Ctrl> = Ctrl extends AbrubtStmtKind ? AbrubtToStmt[Ctrl] : never;
 
-export type Stmt<Ctrl> = | DocComment |  VarDeclaration | ObjDeclaration | IfElseBlock<Ctrl> | ForBlock<Ctrl> | WhileBlock<Ctrl> | AlwaysBlock<Ctrl> | AbrubtStmt<Ctrl> | ShowCommand | ClassDefinition | FunctionDefinition | ExtMethodDefinition | Expr;
+export type Stmt<Ctrl> =
+    | DocComment
+    | VarDeclaration
+    | ObjDeclaration
+    | IfElseBlock<Ctrl>
+    | ForBlock<Ctrl>
+    | WhileBlock<Ctrl>
+    | AlwaysBlock<Ctrl>
+    | AbrubtStmt<Ctrl>
+    | ShowCommand
+    | ClassDefinition
+    | FunctionDefinition
+    | ExtMethodDefinition
+    | EmptyLine
+    | Expr
+    ;
+
 export type BareStmt = Stmt<never>;
 export type AnyStmt = Stmt<AbrubtStmtKind>;
 
@@ -126,10 +142,10 @@ export interface ReturnCommand {
     kind: StmtKind.ReturnCommand;
     lineIndex: number;
     // Do NOT allow control flow expressions in computation for return. This is confusing!
-    value: BareStmt;
+    value: Expr;
 }
 
-export type Expr = AssignmentExpr | BinaryExpr | UnaryExpr | Identifier | NumericLiteral | NullLiteral | BooleanLiteral | StringLiteral | EmptyLine | MemberExpr | CallExpr;
+export type Expr = AssignmentExpr | BinaryExpr | UnaryExpr | Identifier | NumericLiteral | NullLiteral | BooleanLiteral | StringLiteral | MemberExpr | CallExpr;
 
 export interface AssignmentExpr {
     kind: StmtKind.AssignmentExpr;
