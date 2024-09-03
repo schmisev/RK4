@@ -130,6 +130,18 @@ export function robotSketch(p5: p5) {
     };
 
     p5.draw = () => {
+        // update task status
+        if (!world.isGoalReached()) {
+            taskCheck.style.backgroundColor = "whitesmoke";
+            taskCheck.innerHTML = "❌<br>" + `${world.getStageIndex()} / ${world.getStageCount()}`;
+        } else {
+            taskCheck.style.backgroundColor = "lightgreen";
+            taskCheck.innerHTML = "✔️<br>" + `${world.getStageIndex() + 1} / ${world.getStageCount()}`;
+        }
+
+        // get local copy of world
+        const worldInst = Object.assign(world)
+
         resizeToParent();
 
         // bg color ramping
@@ -152,27 +164,18 @@ export function robotSketch(p5: p5) {
         p5.rotateX(p5.PI * 0.5);
         p5.scale(0.8);
 
-        drawWorld(world);
+        drawWorld(worldInst);
 
         // draw object diagrams
         if (robotDiagramIndex >= 0) {
             //console.log("show");
-            showRobotDiagram(world.robots[robotDiagramIndex], objOverlay, p5.winMouseX, p5.winMouseY);
+            showRobotDiagram(worldInst.robots[robotDiagramIndex], objOverlay, p5.winMouseX, p5.winMouseY);
         } else {
             hideRobotDiagram(objOverlay);
         }
 
-        // update task status
-        if (!world.isGoalReached()) {
-            taskCheck.style.backgroundColor = "whitesmoke";
-            taskCheck.innerHTML = "❌<br>" + `${world.getStageIndex()} / ${world.getStageCount()}`;
-        } else {
-            taskCheck.style.backgroundColor = "lightgreen";
-            taskCheck.innerHTML = "✔️<br>" + `${world.getStageIndex() + 1} / ${world.getStageCount()}`;
-        }
-
         // draw compass
-        drawCompass(world);
+        drawCompass(worldInst);
 
         p5.pop();
 
