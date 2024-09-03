@@ -1,5 +1,5 @@
-import { MK_NUMBER, MK_STRING, MK_BOOL, MK_NULL, RuntimeVal } from "./values";
-import { AbrubtStmtKind, Program, Stmt, StmtKind, AbrubtReturn, Expr } from "../frontend/ast";
+import { MK_NUMBER, MK_STRING, MK_BOOL, MK_NULL, RuntimeVal, AbruptReturn, AbruptBreak } from "./values";
+import { AbruptStmtKind, Program, Stmt, StmtKind, AbruptEvalResult, Expr } from "../frontend/ast";
 import { Environment } from "./environment";
 import { eval_identifier, eval_binary_expr, eval_assignment_expr, eval_unary_expr, eval_call_expr, eval_member_expr } from "./eval/expressions";
 import { eval_fn_definition, eval_empty_line, eval_for_block, eval_if_else_block, eval_program, eval_show_command, eval_var_declaration, eval_while_block, eval_class_definition, eval_obj_declaration, eval_return_command, eval_ext_method_definition, eval_always_block, eval_doc_comment } from "./eval/statements";
@@ -14,10 +14,10 @@ export function evaluate_expr(
     return evaluate<never>(astNode, env);
 }
 
-export function* evaluate<A extends AbrubtStmtKind>(
+export function* evaluate<A extends AbruptStmtKind>(
     astNode: Program | Stmt<A>,
     env: Environment
-): SteppedEval<RuntimeVal | AbrubtReturn<A>> {
+): SteppedEval<RuntimeVal | AbruptEvalResult<A>> {
     const a = astNode.kind;
     switch (astNode.kind) {
         case StmtKind.NumericLiteral:
@@ -67,10 +67,11 @@ export function* evaluate<A extends AbrubtStmtKind>(
             return yield* eval_show_command(astNode, env);
         case StmtKind.BreakCommand:
             yield astNode.lineIndex;
-            throw new Break();
+            // as 'any'? what is this, amateure hour? 
+            return { kind: StmtKind.BreakCommand, lineIndex: astNode.lineIndex } as any
         case StmtKind.ContinueCommand:
             yield astNode.lineIndex;
-            throw new Continue();
+            return { kind: StmtKind.ContinueCommand, lineIndex: astNode.lineIndex } as any
         case StmtKind.ReturnCommand:
             yield astNode.lineIndex;
             return yield* eval_return_command(astNode, env) as any;

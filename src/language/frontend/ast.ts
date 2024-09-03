@@ -28,13 +28,13 @@ export const enum StmtKind {
     FunctionDefinition = "FunctionDefinition",
     ExtMethodDefinition = "ExtMethodDefinition",
 };
-export type AbrubtStmtKind = StmtKind.BreakCommand | StmtKind.ContinueCommand | StmtKind.ReturnCommand;
-type AbrubtToStmt = {
+export type AbruptStmtKind = StmtKind.BreakCommand | StmtKind.ContinueCommand | StmtKind.ReturnCommand;
+type AbruptToStmt = {
     [StmtKind.BreakCommand]: BreakCommand;
     [StmtKind.ContinueCommand]: ContinueCommand;
     [StmtKind.ReturnCommand]: ReturnCommand;
 }
-type AbrubtStmt<Ctrl> = Ctrl extends AbrubtStmtKind ? AbrubtToStmt[Ctrl] : never;
+type AbruptStmt<Ctrl> = Ctrl extends AbruptStmtKind ? AbruptToStmt[Ctrl] : never;
 
 export type Stmt<Ctrl> =
     | DocComment
@@ -44,7 +44,7 @@ export type Stmt<Ctrl> =
     | ForBlock<Ctrl>
     | WhileBlock<Ctrl>
     | AlwaysBlock<Ctrl>
-    | AbrubtStmt<Ctrl>
+    | AbruptStmt<Ctrl>
     | ShowCommand
     | ClassDefinition
     | FunctionDefinition
@@ -54,27 +54,30 @@ export type Stmt<Ctrl> =
     ;
 
 export type BareStmt = Stmt<never>;
-export type AnyStmt = Stmt<AbrubtStmtKind>;
+export type AnyStmt = Stmt<AbruptStmtKind>;
 
 type AbruptToReturn = {
     [StmtKind.BreakCommand]: AbruptBreak;
     [StmtKind.ContinueCommand]: AbruptContinue;
     [StmtKind.ReturnCommand]: AbruptReturn;
 };
-export type AbrubtReturn<Ctrl> = Ctrl extends AbrubtStmtKind ? AbruptToReturn[Ctrl] : never;
+export type AbruptEvalResult<Ctrl> = Ctrl extends AbruptStmtKind ? AbruptToReturn[Ctrl] : never;
 
 export interface Program {
     kind: StmtKind.Program;
+    lineIndex: number;
     body: BareStmt[];
 }
 
 export interface DocComment {
     kind: StmtKind.DocComment;
+    lineIndex: number;
     content: string;
 }
 
 export interface VarDeclaration {
     kind: StmtKind.VarDeclaration;
+    lineIndex: number;
     ident: string;
     type: "null" | "boolean" | "number" | "string";
     value: Expr;
@@ -82,22 +85,25 @@ export interface VarDeclaration {
 
 export interface ObjDeclaration {
     kind: StmtKind.ObjDeclaration;
+    lineIndex: number;
     ident: string;
     type: "object";
     classname: string;
 }
 
 export interface EmptyLine {
+    lineIndex: number;
     kind: StmtKind.EmptyLine;
 }
 
 export interface IfElseBlock<Ctrl> {
     kind: StmtKind.IfElseBlock;
+    lineIndex: number;
     condition: Expr;
     ifTrue: Stmt<Ctrl>[];
     ifFalse: Stmt<Ctrl>[];
 }
-export type AnyIfElseBlock = IfElseBlock<AbrubtStmtKind>;
+export type AnyIfElseBlock = IfElseBlock<AbruptStmtKind>;
 
 export interface ForBlock<Ctrl> {
     kind: StmtKind.ForBlock;
@@ -105,7 +111,7 @@ export interface ForBlock<Ctrl> {
     counter: Expr;
     body: Stmt<StmtKind.BreakCommand | StmtKind.ContinueCommand | Ctrl>[];
 }
-export type AnyForBlock = ForBlock<AbrubtStmtKind>;
+export type AnyForBlock = ForBlock<AbruptStmtKind>;
 
 export interface WhileBlock<Ctrl> {
     kind: StmtKind.WhileBlock;
@@ -113,14 +119,14 @@ export interface WhileBlock<Ctrl> {
     condition: Expr;
     body: Stmt<StmtKind.BreakCommand | StmtKind.ContinueCommand | Ctrl>[];
 }
-export type AnyWhileBlock = WhileBlock<AbrubtStmtKind>;
+export type AnyWhileBlock = WhileBlock<AbruptStmtKind>;
 
 export interface AlwaysBlock<Ctrl> {
     kind: StmtKind.AlwaysBlock;
     lineIndex: number;
     body: Stmt<StmtKind.BreakCommand | StmtKind.ContinueCommand | Ctrl>[];
 }
-export type AnyAlwaysBlock = AlwaysBlock<AbrubtStmtKind>;
+export type AnyAlwaysBlock = AlwaysBlock<AbruptStmtKind>;
 
 export interface ShowCommand {
     kind: StmtKind.ShowCommand;
@@ -156,6 +162,7 @@ export interface AssignmentExpr {
 
 export interface BinaryExpr {
     kind: StmtKind.BinaryExpr;
+    lineIndex: number;
     left: Expr;
     right: Expr;
     operator: string;
@@ -163,50 +170,58 @@ export interface BinaryExpr {
 
 export interface UnaryExpr {
     kind: StmtKind.UnaryExpr;
+    lineIndex: number;
     right: Expr;
     operator: string;
 }
 
 export interface Identifier {
     kind: StmtKind.Identifier;
+    lineIndex: number;
     symbol: string;
 }
 
 export interface NumericLiteral {
     kind: StmtKind.NumericLiteral;
+    lineIndex: number;
     value: number;
 }
 
 export interface NullLiteral {
     kind: StmtKind.NullLiteral;
+    lineIndex: number;
     value: "null";
 }
 
 export interface BooleanLiteral {
     kind: StmtKind.BooleanLiteral;
+    lineIndex: number;
     value: boolean;
 }
 
 export interface StringLiteral {
     kind: StmtKind.StringLiteral;
+    lineIndex: number;
     value: string;
 }
 
 export interface MemberExpr {
     kind: StmtKind.MemberExpr;
+    lineIndex: number;
     container: Expr;
     member: Identifier;
 }
 
 export interface CallExpr {
     kind: StmtKind.CallExpr;
+    lineIndex: number;
     ident: Expr;
     args: Expr[];
-    lineIndex: number;
 }
 
 export interface ClassDefinition {
     kind: StmtKind.ClassDefinition;
+    lineIndex: number;
     ident: string;
     attributes: (VarDeclaration | ObjDeclaration)[];
     methods: FunctionDefinition[];
@@ -215,10 +230,12 @@ export interface ClassDefinition {
 export interface ParamDeclaration {
     ident: string;
     type: string;
+    lineIndex: number;
 }
 
 export interface FunctionDefinition {
     kind: StmtKind.FunctionDefinition;
+    lineIndex: number;
     params: ParamDeclaration[];
     name: string;
     body: Stmt<StmtKind.ReturnCommand>[];
@@ -226,6 +243,7 @@ export interface FunctionDefinition {
 
 export interface ExtMethodDefinition {
     kind: StmtKind.ExtMethodDefinition;
+    lineIndex: number;
     params: ParamDeclaration[];
     name: string;
     classname: string;
