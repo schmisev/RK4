@@ -45,14 +45,15 @@ export function* eval_assignment_expr(
     }
 
     // regular assigments
-    if (node.assigne.kind != "Identifier") {
-        throw new RuntimeError(
-            `Kann den Wert von '${node.assigne.kind}' nicht ändern - weil das Quatsch wäre!`, node.lineIndex
-        );
+    if (node.assigne.kind == "Identifier") {
+        const varname = node.assigne.symbol;
+        const value = env.assignVar(varname, yield* evaluate_expr(node.value, env));
+        return value;
     }
 
-    const varname = node.assigne.symbol;
-    return env.assignVar(varname, yield* evaluate_expr(node.value, env));
+    throw new RuntimeError(
+        `Kann den Wert von '${node.assigne.kind}' nicht ändern - weil das Quatsch wäre!`, node.lineIndex
+    );
 }
 
 export function* eval_binary_expr(
