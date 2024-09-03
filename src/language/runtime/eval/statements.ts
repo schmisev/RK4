@@ -1,5 +1,5 @@
 import { RuntimeError } from "../../../errors";
-import { AbrubtStmtKind, AlwaysBlock, ClassDefinition, DocComment, EmptyLine, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, StmtKind, AbrubtReturn, VarDeclaration, WhileBlock } from "../../frontend/ast";
+import { AbruptStmtKind, AlwaysBlock, ClassDefinition, DocComment, EmptyLine, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, StmtKind, AbruptEvalResult, VarDeclaration, WhileBlock } from "../../frontend/ast";
 import { ClassPrototype, Environment, VarHolder } from "../environment";
 import { SteppedEval, evaluate, evaluate_expr } from "../interpreter";
 import {
@@ -10,6 +10,7 @@ import {
     ObjectVal,
     MethodVal,
     AbruptReturn,
+    AbruptContinue,
 } from "../values";
 
 export function* eval_program(prog: Program, env: Environment) {
@@ -27,12 +28,12 @@ export function* eval_var_declaration(
     declEnv: Environment | VarHolder = evalEnv,
 ): SteppedEval<RuntimeVal> {
     if (!decl.value) {
-        throw new RuntimeError(`Kein Wert gegeben: ${JSON.stringify(decl)}`);
+        throw new RuntimeError(`Kein Wert gegeben: ${JSON.stringify(decl)}`, decl.lineIndex);
     }
     const value = yield* evaluate(decl.value, evalEnv);
     if (value.type != decl.type) {
         throw new RuntimeError(
-            `Datentypen '${value.type}' und '${decl.type}' passen nicht zusammen!`
+            `Datentypen '${value.type}' und '${decl.type}' passen nicht zusammen!`, decl.lineIndex
         );
     }
     declEnv.declareVar(decl.ident, value);
@@ -46,9 +47,9 @@ export function* eval_obj_declaration(
 ): SteppedEval<RuntimeVal> {
     const cl = evalEnv.lookupVar(decl.classname);
     if (cl.type != "class")
-        throw new RuntimeError(`'${decl.classname}' ist kein Klassenname!`);
+        throw new RuntimeError(`'${decl.classname}' ist kein Klassenname!`, decl.lineIndex);
     if (cl.internal)
-        throw new RuntimeError(`Kann kein neues Objekt der Klasse ${decl.classname} erzeugen.`);
+        throw new RuntimeError(`Kann kein neues Objekt der Klasse '${decl.classname}' erzeugen.`, decl.lineIndex);
 
     const obj: ObjectVal = {
         type: "object",
@@ -106,7 +107,7 @@ export function eval_ext_method_definition(
     const cls = env.lookupVar(def.classname);
     if (cls.type != "class")
         throw new RuntimeError(
-            `Erweiterungsmethoden können nur für Klassen definiert werden, nicht für '${cls.type}'!`
+            `Erweiterungsmethoden können nur für Klassen definiert werden, nicht für '${cls.type}'!`, def.lineIndex
         );
     cls.prototype.declareMethod(def.name, {
         type: "method",
@@ -124,7 +125,7 @@ export function eval_class_definition(
 ): RuntimeVal {
     if (!env.isGlobal())
         throw new RuntimeError(
-            `Du kannst Klassen wie '${def.ident}' nur global definieren!`
+            `Du kannst Klassen wie '${def.ident}' nur global definieren!`, def.lineIndex
         );
     const prototype = new ClassPrototype();
     for (const m of def.methods) {
@@ -194,39 +195,40 @@ export function* eval_return_command(
 }
 
 function evaluate_condition_value(
-    condition: RuntimeVal
+    condition: RuntimeVal,
+    lineIndex: number
 ): boolean {
     if (condition.type == "boolean") {
         return condition.value;
     }
     if (condition.type == "number") return condition.value != 0;
     throw new RuntimeError(
-        "Die Bedingung muss eine Zahl oder ein Wahrheitswert sein!"
+        "Die Bedingung muss eine Zahl oder ein Wahrheitswert sein!", lineIndex
     );
 
 }
 
-export function* eval_if_else_block<A extends AbrubtStmtKind>(
+export function* eval_if_else_block<A extends AbruptStmtKind>(
     block: IfElseBlock<A>,
     env: Environment
-): SteppedEval<RuntimeVal | AbrubtReturn<A>> {
+): SteppedEval<RuntimeVal | AbruptEvalResult<A>> {
     const condition = yield* evaluate_expr(block.condition, env);
-    if (evaluate_condition_value(condition)) {
+    if (evaluate_condition_value(condition, block.lineIndex)) {
         return yield* eval_bare_statements(block.ifTrue, new Environment(env));
     } else {
         return yield* eval_bare_statements(block.ifFalse, new Environment(env));
     }
 }
 
-export function* eval_for_block<A extends AbrubtStmtKind>(
+export function* eval_for_block<A extends AbruptStmtKind>(
     block: ForBlock<A>,
     env: Environment
-): SteppedEval<RuntimeVal | AbrubtReturn<A>> {
+): SteppedEval<RuntimeVal | AbruptEvalResult<A>> {
     const counter = yield* evaluate(block.counter, env);
     if (counter.type != "number")
-        throw new RuntimeError("Zähler muss eine Zahl sein!");
+        throw new RuntimeError("Zähler muss eine Zahl sein!", block.lineIndex);
     let max = counter.value;
-    if (max < 0) throw new RuntimeError("Zähler muss größer oder gleich 0 sein!");
+    if (max < 0) throw new RuntimeError("Zähler muss größer oder gleich 0 sein!", block.lineIndex);
 
     let lastEvaluated: RuntimeVal = MK_NULL();
     loop: for (let i = 0; i < max; i++) {
@@ -249,16 +251,16 @@ export function* eval_for_block<A extends AbrubtStmtKind>(
     return lastEvaluated;
 }
 
-export function* eval_while_block<A extends AbrubtStmtKind>(
+export function* eval_while_block<A extends AbruptStmtKind>(
     block: WhileBlock<A>,
     env: Environment
-): SteppedEval<RuntimeVal | AbrubtReturn<A>> {
+): SteppedEval<RuntimeVal | AbruptEvalResult<A>> {
     let lastEvaluated: RuntimeVal = MK_NULL();
     loop: while (true) {
         yield block.lineIndex;
         // yield here to prevent infinite loops from being unable to be stopped
         const condition = yield* evaluate_expr(block.condition, env);
-        if (!evaluate_condition_value(condition))
+        if (!evaluate_condition_value(condition, block.lineIndex))
             break loop;
         const bodyValue = yield* eval_bare_statements(
             block.body,
@@ -279,10 +281,10 @@ export function* eval_while_block<A extends AbrubtStmtKind>(
     return lastEvaluated;
 }
 
-export function* eval_always_block<A extends AbrubtStmtKind>(
+export function* eval_always_block<A extends AbruptStmtKind>(
     block: AlwaysBlock<A>,
     env: Environment
-): SteppedEval<RuntimeVal | AbrubtReturn<A>> {
+): SteppedEval<RuntimeVal | AbruptEvalResult<A>> {
     let lastEvaluated: RuntimeVal = MK_NULL();
     loop: while (true) {
         yield block.lineIndex;
@@ -305,10 +307,10 @@ export function* eval_always_block<A extends AbrubtStmtKind>(
     return lastEvaluated;
 }
 
-export function* eval_bare_statements<A extends AbrubtStmtKind>(
+export function* eval_bare_statements<A extends AbruptStmtKind>(
     body: Stmt<A>[],
     env: Environment
-): SteppedEval<RuntimeVal | AbrubtReturn<A>> {
+): SteppedEval<RuntimeVal | AbruptEvalResult<A>> {
     let lastEvaluated: RuntimeVal = MK_NULL();
     for (const statement of body) {
         if (statement.kind == StmtKind.DocComment || statement.kind == StmtKind.EmptyLine) continue; // skip these

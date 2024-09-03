@@ -1,7 +1,4 @@
-export class RuntimeError extends Error {
-}
-
-export class ParserError extends Error {
+export class DebugError extends Error {
     lineIndex: number
     constructor(msg: string, lineIndex: number) {
         super(msg);
@@ -9,12 +6,14 @@ export class ParserError extends Error {
     }
 }
 
-export class LexerError extends Error {
-    lineIndex: number
-    constructor(msg: string, lineIndex: number) {
-        super(msg);
-        this.lineIndex = lineIndex;
+export class RuntimeError extends DebugError {
+    constructor(msg: string, lineIndex?: number) {
+        super(msg, lineIndex != undefined ? lineIndex : -1)
     }
 }
+
+export class ParserError extends DebugError {}
+
+export class LexerError extends DebugError {}
 
 export class WorldError extends Error {}

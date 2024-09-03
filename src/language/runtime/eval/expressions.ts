@@ -22,10 +22,10 @@ export function eval_identifier(
     return val;
 }
 
-function expectObject(val: RuntimeVal, reason: string): asserts val is ObjectVal {
+function expectObject(val: RuntimeVal, reason: string, lineIndex: number): asserts val is ObjectVal {
     if (val.type != "object") {
         throw new RuntimeError(
-            `Erwartete ein Object, aber bekam '${val.type}' - ${reason}`
+            `Erwartete ein Object, aber bekam '${val.type}' - ${reason}`, lineIndex
         )
     }
 }
@@ -38,7 +38,7 @@ export function* eval_assignment_expr(
         const assigne = node.assigne;
         const symbol = assigne.member.symbol;
         const obj = yield* evaluate_expr(assigne.container, env);
-        expectObject(obj, "nur Objekten können Eigenschaften zugewiesen werden");
+        expectObject(obj, "nur Objekten können Eigenschaften zugewiesen werden", node.lineIndex);
         const value = yield* evaluate_expr(node.value, env);
         obj.cls.prototype.assignVar(obj, symbol, value);
         return value;
@@ -47,7 +47,7 @@ export function* eval_assignment_expr(
     // regular assigments
     if (node.assigne.kind != "Identifier") {
         throw new RuntimeError(
-            `Kann den Wert von '${node.assigne.kind}' nicht ändern - weil das Quatsch wäre!`
+            `Kann den Wert von '${node.assigne.kind}' nicht ändern - weil das Quatsch wäre!`, node.lineIndex
         );
     }
 
@@ -67,29 +67,32 @@ export function* eval_binary_expr(
             return eval_numeric_binary_expr(
                 lhs,
                 rhs,
-                binop.operator
+                binop.operator,
+                binop.lineIndex
             );
         } else if (lhs.type == "boolean" && rhs.type == "boolean") {
             return eval_logical_binary_expr(
                 lhs,
                 rhs,
-                binop.operator
+                binop.operator,
+                binop.lineIndex
             );
         } else if (lhs.type == "string" && rhs.type == "string") {
             return eval_string_binary_expr(
                 lhs,
                 rhs,
-                binop.operator
+                binop.operator,
+                binop.lineIndex
             );
         }
     } catch {
         throw new RuntimeError(
-            `Operator in '${lhs.type} ${binop.operator} ${rhs.type}' ist nicht unterstützt!`
+            `Operator in '${lhs.type} ${binop.operator} ${rhs.type}' ist nicht unterstützt!`, binop.lineIndex
         );
     }
 
     throw new RuntimeError(
-        `Unpassendende Typen im Ausdruck '${lhs.type} ${binop.operator} ${rhs.type}'!`
+        `Unpassendende Typen im Ausdruck '${lhs.type} ${binop.operator} ${rhs.type}'!`, binop.lineIndex
     );
     //return MK_NULL();
 }
@@ -97,7 +100,8 @@ export function* eval_binary_expr(
 export function eval_numeric_binary_expr(
     lhs: NumberVal,
     rhs: NumberVal,
-    operator: string
+    operator: string,
+    lineIndex: number
 ): RuntimeVal {
     // stays numeric
     if (operator == "+") {
@@ -121,33 +125,35 @@ export function eval_numeric_binary_expr(
     }
 
     // nothing worked
-    throw new RuntimeError();
+    throw new RuntimeError(`Operator '${operator}' kann so nicht verwendet werden.`, lineIndex);
 }
 
 export function eval_logical_binary_expr(
     lhs: BooleanVal,
     rhs: BooleanVal,
-    operator: string
+    operator: string,
+    lineIndex: number
 ): BooleanVal {
     if (operator == "und") {
         return MK_BOOL(lhs.value && rhs.value);
     } else if (operator == "oder") {
         return MK_BOOL(lhs.value || rhs.value);
     }
-    throw new RuntimeError();
+    throw new RuntimeError(`Operator '${operator}' kann so nicht verwendet werden.`, lineIndex);
 }
 
 export function eval_string_binary_expr(
     lhs: StringVal,
     rhs: StringVal,
-    operator: string
+    operator: string,
+    lineIndex: number
 ): RuntimeVal {
     if (operator == "+") {
         return MK_STRING(lhs.value + rhs.value);
     } else if (operator == "=") {
         return MK_BOOL(lhs.value === rhs.value);
     }
-    throw new RuntimeError();
+    throw new RuntimeError(`Operator '${operator}' kann so nicht verwendet werden.`, lineIndex);
 }
 
 export function* eval_unary_expr(
@@ -158,31 +164,33 @@ export function* eval_unary_expr(
 
     try {
         if (rhs.type == "boolean") {
-            return eval_logical_unary_expr(rhs, unop.operator);
+            return eval_logical_unary_expr(rhs, unop.operator, unop.lineIndex);
         } else if (rhs.type == "number") {
-            return eval_numeric_unary_expr(rhs, unop.operator);
+            return eval_numeric_unary_expr(rhs, unop.operator, unop.lineIndex);
         } else if (rhs.type == "string") {
-            return eval_string_unary_expr(rhs, unop.operator);
+            return eval_string_unary_expr(rhs, unop.operator, unop.lineIndex);
         }
     } catch {
-        throw new RuntimeError(`Operator in '${unop.operator} ${rhs.type}' ist nicht unterstützt!`);
+        throw new RuntimeError(`Operator in '${unop.operator} ${rhs.type}' ist nicht unterstützt!`, unop.lineIndex);
     }
-    throw new RuntimeError(`Unpassender Typ im Ausdruck '${unop.operator} ${rhs.type}'!`);
+    throw new RuntimeError(`Unpassender Typ im Ausdruck '${unop.operator} ${rhs.type}'!`, unop.lineIndex);
 }
 
 export function eval_logical_unary_expr(
     rhs: BooleanVal,
-    operator: string
+    operator: string,
+    lineIndex: number
 ): BooleanVal {
     if (operator == "nicht") {
         return MK_BOOL(!rhs.value);
     }
-    throw new RuntimeError();
+    throw new RuntimeError(`Operator '${operator}' kann so nicht verwendet werden.`, lineIndex);
 }
 
 export function eval_numeric_unary_expr(
     rhs: NumberVal,
-    operator: string
+    operator: string,
+    lineIndex: number
 ): RuntimeVal {
     if (operator == "nicht") {
         return MK_BOOL(rhs.value == 0);
@@ -191,14 +199,15 @@ export function eval_numeric_unary_expr(
     } else if (operator == "+") {
         return rhs;
     }
-    throw new RuntimeError();
+    throw new RuntimeError(`Operator '${operator}' kann so nicht verwendet werden.`, lineIndex);
 }
 
 export function eval_string_unary_expr(
     rhs: StringVal,
-    operator: string
+    operator: string,
+    lineIndex: number
 ): StringVal {
-    throw new RuntimeError();
+    throw new RuntimeError(`Operator '${operator}' kann so nicht verwendet werden.`, lineIndex);
 }
 
 export function* eval_call_expr(
@@ -221,7 +230,7 @@ export function* eval_call_expr(
         // create variables
         if (args.length != fn.params.length)
             throw new RuntimeError(
-                `Erwarte ${fn.params.length} Parameter, habe aber ${args.length} erhalten!`
+                `Erwarte ${fn.params.length} Parameter, habe aber ${args.length} erhalten!`, call.lineIndex
             );
         for (let i = 0; i < fn.params.length; i++) {
             const param = fn.params[i];
@@ -230,7 +239,7 @@ export function* eval_call_expr(
 
             if (param.type != arg.type)
                 throw new RuntimeError(
-                    `'${varname}' sollte '${param.type}' sein, ist aber '${arg.type}'`
+                    `'${varname}' sollte '${param.type}' sein, ist aber '${arg.type}'`, call.lineIndex
                 );
             scope.declareVar(varname, args[i]);
         }
@@ -242,7 +251,7 @@ export function* eval_call_expr(
         return result;
     }
 
-    throw new RuntimeError(`Du versuchst hier ${JSON.stringify(fn)} als Funktion auszuführen!`);
+    throw new RuntimeError(`Du versuchst hier ${JSON.stringify(fn)} als Funktion auszuführen!`, call.lineIndex);
 }
 
 export function* eval_member_expr(
@@ -250,6 +259,6 @@ export function* eval_member_expr(
     env: Environment
 ): SteppedEval<RuntimeVal> {
     const obj = yield* evaluate_expr(expr.container, env);
-    expectObject(obj, "nur Objekte haben Attribute und Methoden!");
+    expectObject(obj, "nur Objekte haben Attribute und Methoden!", expr.lineIndex);
     return obj.cls.prototype.lookupVar(obj, expr.member.symbol);
 }

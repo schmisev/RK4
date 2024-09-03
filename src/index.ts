@@ -31,7 +31,7 @@ import './assets/ace/mode-rkscript.js';
 import './assets/ace/theme-rklight.js';
 
 // General errors 
-import { LexerError, ParserError } from './errors';
+import { DebugError, LexerError, ParserError, RuntimeError } from './errors';
 
 // Global variables
 let dt = 50; // ms to sleep between function calls
@@ -176,6 +176,8 @@ async function updateIDE() {
             lineIndex = e.lineIndex;
             message = e.message;
         }
+
+        // not runtime errors should appear
 
         if (errorCssClass !== "none") {
             setErrorMarker(`❌ ${message} (Zeile ${lineIndex+1})`, lineIndex, errorCssClass);
@@ -332,10 +334,11 @@ async function runCode(code: string, stepped: boolean) {
             }
         }
     } catch (runtimeError) {
-        if (runtimeError instanceof Error) {
+        if (runtimeError instanceof DebugError) {
+            const errorLineIndex = runtimeError.lineIndex >= 0 ? runtimeError.lineIndex : lastLineIndex
             console.log("⚠️ " + runtimeError.message);
             console.error(runtimeError.stack);
-            setErrorMarker(`⚠️ ${runtimeError.message} (Zeile: ${lastLineIndex + 1})`, lastLineIndex, "runtime");
+            setErrorMarker(`⚠️ ${runtimeError.message} (Zeile: ${errorLineIndex + 1})`, errorLineIndex, "runtime");
         } else {
             throw runtimeError;
         }
