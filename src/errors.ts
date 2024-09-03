@@ -6,9 +6,11 @@ export class DebugError extends Error {
     }
 }
 
-export class RuntimeError extends DebugError {
+export class RuntimeError extends Error {
+    lineIndex?: number
     constructor(msg: string, lineIndex?: number) {
-        super(msg, lineIndex != undefined ? lineIndex : -1)
+        super(msg);
+        this.lineIndex = lineIndex;
     }
 }
 
