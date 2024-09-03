@@ -65,7 +65,7 @@ export function* eval_obj_declaration(
         }
     }
 
-    declEnv.declareVar(decl.ident, obj, true);
+    declEnv.declareVar(decl.ident, obj, false);
     return obj;
 }
 

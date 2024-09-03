@@ -335,7 +335,7 @@ async function runCode(code: string, stepped: boolean) {
         }
     } catch (runtimeError) {
         if (runtimeError instanceof DebugError) {
-            const errorLineIndex = runtimeError.lineIndex ? runtimeError.lineIndex : lastLineIndex
+            const errorLineIndex = runtimeError.lineIndex >= 0 ? runtimeError.lineIndex : lastLineIndex
             console.log("⚠️ " + runtimeError.message);
             console.error(runtimeError.stack);
             setErrorMarker(`⚠️ ${runtimeError.message} (Zeile: ${errorLineIndex + 1})`, errorLineIndex, "runtime");

@@ -10,11 +10,9 @@ export class ParserError extends DebugError {}
 
 export class LexerError extends DebugError {}
 
-export class RuntimeError extends Error {
-    lineIndex?: number
+export class RuntimeError extends DebugError {
     constructor(msg: string, lineIndex?: number) {
-        super(msg);
-        this.lineIndex = lineIndex;
+        super(msg, lineIndex != undefined ? lineIndex : -1);
     }
 }
 

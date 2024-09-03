@@ -111,9 +111,11 @@ export class Environment implements StaticScope {
         const varDef = this.resolveVar(varname);
         if (varDef === undefined)
             throw new RuntimeError(`Variablenname nicht gefunden: ${varname}`);
-        const typeOfVarDef = varDef.get().type
-        if (typeOfVarDef != value.type)
-            throw new RuntimeError(`'Eine Variable mit Typ ${typeOfVarDef}' kann nicht auf '${value.type}' gesetzt werden.`)
+        const varVal = varDef.get()
+        if (varVal.type != value.type)
+            throw new RuntimeError(`Eine Variable mit Typ '${varVal.type}' kann nicht auf '${value.type}' gesetzt werden.`)
+        if (varVal.type == "object" && value.type == "object" && varVal.cls != value.cls)
+            throw new RuntimeError(`Ein Objekt der Klasse '${varVal.cls.name}' kann nicht auf '${value.cls.name}' gesetzt werden.`)
         varDef.set(value);
         return value;
     }
@@ -182,9 +184,11 @@ export class ClassPrototype {
         const varDef = jumpAround(resolveDynamicVar(receiver, varname));
         if (varDef === undefined)
             throw new RuntimeError(`Variablenname nicht gefunden: ${varname}`);
-        const typeOfVarDef = varDef.get().type;
-        if (typeOfVarDef != value.type)
-            throw new RuntimeError(`Eine Variable mit Typ '${typeOfVarDef}' kann nicht auf '${value.type}' gesetzt werden.`)
+        const varVal = varDef.get()
+        if (varVal.type != value.type)
+            throw new RuntimeError(`Eine Variable mit Typ '${varVal.type}' kann nicht auf '${value.type}' gesetzt werden.`)
+        if (varVal.type == "object" && value.type == "object" && varVal.cls != value.cls)
+            throw new RuntimeError(`Ein Objekt der Klasse '${varVal.cls.name}' kann nicht auf '${value.cls.name}' gesetzt werden.`)
         varDef.set(value);
     }
 
