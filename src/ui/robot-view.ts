@@ -11,6 +11,7 @@ import { robotDiagramIndex, showRobotDiagram, hideRobotDiagram } from './objecti
 export function robotSketch(p5: p5) {
     let bg = 0; // Background color
     const canvasDiv = document.getElementById('robot-canvas')!;
+    let canvasW = 0, canvasH = 0;
     let cam: p5.Camera;
     let pan = 0.0;
     let tilt = 0.0;
@@ -111,12 +112,18 @@ export function robotSketch(p5: p5) {
     const resizeToParent = () => {
         const width = canvasDiv.offsetWidth;
         const height = canvasDiv.offsetHeight;
-        p5.resizeCanvas(width, height);
+        if (canvasH != height || canvasW != width) {
+            canvasH = height;
+            canvasW = width;
+            p5.resizeCanvas(width, height);
+        }
     };
 
     p5.setup = () => {
         const width = canvasDiv.offsetWidth;
         const height = canvasDiv.offsetHeight;
+        canvasH = height;
+        canvasW = width;
         const cvs = p5.createCanvas(width, height, p5.WEBGL);
         cam = p5.createCamera();
         cvs.parent("robot-canvas");
