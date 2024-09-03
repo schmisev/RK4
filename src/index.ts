@@ -333,14 +333,14 @@ async function runCode(code: string, stepped: boolean) {
                 editor.session.removeMarker(markerId);
             }
         }
-    } catch (runtimeError) {
-        if (runtimeError instanceof DebugError) {
-            const errorLineIndex = runtimeError.lineIndex >= 0 ? runtimeError.lineIndex : lastLineIndex
-            console.log("⚠️ " + runtimeError.message);
-            console.error(runtimeError.stack);
-            setErrorMarker(`⚠️ ${runtimeError.message} (Zeile: ${errorLineIndex + 1})`, errorLineIndex, "runtime");
+    } catch (e) {
+        if (e instanceof DebugError) {
+            const errorLineIndex = e.lineIndex >= 0 ? e.lineIndex : lastLineIndex
+            console.log("⚠️ " + e.message);
+            console.error(e.stack);
+            setErrorMarker(`⚠️ ${e.message} (Zeile: ${errorLineIndex + 1})`, errorLineIndex, "runtime");
         } else {
-            throw runtimeError;
+            throw e;
         }
     }
     isRunning = false;
