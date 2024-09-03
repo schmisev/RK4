@@ -89,6 +89,7 @@ export interface ObjDeclaration {
     ident: string;
     type: "object";
     classname: string;
+    args: Expr[];
 }
 
 export interface EmptyLine {
@@ -223,6 +224,7 @@ export interface ClassDefinition {
     kind: StmtKind.ClassDefinition;
     lineIndex: number;
     ident: string;
+    params: ParamDeclaration[];
     attributes: (VarDeclaration | ObjDeclaration)[];
     methods: FunctionDefinition[];
 }

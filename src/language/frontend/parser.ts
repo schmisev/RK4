@@ -170,10 +170,21 @@ export default class Parser {
 
     parse_class_definition(): ClassDefinition {
         const lineIndex = this.at().lineIndex;
-
         this.eat();
         const ident = this.expect(TokenType.Identifier, "Erwarte einen Klassennamen nach 'Klasse'!").value;
-        this.expect(TokenType.EndLine, "Nach dem Klassennamen sollte eine neue Zeile beginnen!");
+        const params: ParamDeclaration[] = [] // constructor parameters
+        if (this.at().type == TokenType.OpenParen) {
+            this.eat();
+            // get constructor parameters
+            while (this.at().type != TokenType.CloseParen) {
+                const param = this.parse_param_declaration();
+                params.push(param);
+                if (this.at().type == TokenType.CloseParen) break;
+                this.expect(TokenType.Comma, "Warte Komma nach Paramtern!");
+            }
+            this.eat() // found closed paren
+        }
+        this.expect(TokenType.EndLine, "Nach dem Klassenkopf sollte eine neue Zeile beginnen!");
         const attributes: (VarDeclaration | ObjDeclaration)[] = []; 
         const methods: FunctionDefinition[] = []; 
         while (this.at().type != TokenType.EndBlock && this.at().type != TokenType.MethodDef) {
@@ -187,7 +198,7 @@ export default class Parser {
             methods.push(definition);
         }
         this.eat(); // eat 'ende'
-        return { kind: StmtKind.ClassDefinition, ident, attributes, methods, lineIndex }
+        return { kind: StmtKind.ClassDefinition, ident, attributes, methods, lineIndex, params }
     }
 
     parse_if_else_block<A extends AbruptStmtKind>(allowedControl: Set<A>): IfElseBlock<A> {
@@ -399,13 +410,26 @@ export default class Parser {
         const ident = this.expect(TokenType.Identifier, "Erwarte Objektname nach 'Objekt'").value;
         this.expect(TokenType.Instance, "Erwarte 'als' nach Objektnamen!");
         const classname = this.expect(TokenType.Identifier, "Erwarte Klassenname nach 'als'!").value;
+        
+        const args: Expr[] = [];
+        if(this.at().type == TokenType.OpenParen) {
+            this.eat();
+            while(this.at().type != TokenType.CloseParen) {
+                const arg = this.parse_expr();
+                args.push(arg);
+                if (this.at().type == TokenType.CloseParen) break;
+                this.expect(TokenType.Comma, "Erwarte Kommas zwischen Parametern!");
+            }
+            this.expect(TokenType.CloseParen, "Erwarte schließende Klammer nach Parametern!"); // eat close paren
+        }
 
         return {
             kind: StmtKind.ObjDeclaration,
             ident,
             type: "object",
             classname,
-            lineIndex
+            args,
+            lineIndex,
         };
     }
 
