@@ -26,8 +26,30 @@
                 </div>
                 <!-- Code editor UI -->
                 <div class="lc30 wsr text" id="code-title">💻 Code-Editor</div>
-                <button class="code-start" id="code-start">▷</button>
-                <button class="code-stop" id="code-stop">▢</button>
+                <div class="lc30 text" id="code-helper">
+                    <span class="hover-helper">*️⃣
+                        <div class="tooltip" style="text-align: right;">
+                        Speichern:&nbsp;&nbsp;<span class="keystroke">Strg</span> + <span class="keystroke">S</span><br>
+                        Rückgängig:&nbsp;&nbsp;<span class="keystroke">Strg</span> + <span class="keystroke">Z</span><br>
+                        <div class="struct-dot"></div>
+                        Kopieren:&nbsp;&nbsp;<span class="keystroke">Strg</span> + <span class="keystroke">C</span><br>
+                        Einfügen:&nbsp;&nbsp;<span class="keystroke">Strg</span> + <span class="keystroke">V</span><br>
+                        <div class="struct-dot"></div>
+                        Bereiche auswählen:<br>
+                        <span class="keystroke">⇧ Shift</span> + 
+                        <span class="keystroke">▴</span>
+                        <span class="keystroke">◂</span>
+                        <span class="keystroke">▸</span>
+                        <span class="keystroke">▾</span>
+                        <br>
+                        <div class="struct-dot"></div>
+                        Einrücken (Tab):&nbsp;
+                        <span class="keystroke">&nbsp;&nbsp;⇥&nbsp;&nbsp;</span>
+                        </div>
+                    </span>
+                </div>
+                <button title="Lade die Welt neu und starte die Ausführung!" class="code-start" id="code-start">▷</button>
+                <button title="Beende die Ausführung und lade die Welt neu!" class="code-stop" id="code-stop">▢</button>
                 <div class="editor cascadia" id="code-editor">Code</div>
                 <div class="code-error lc30 wsr text" id="code-error">keine Fehler gefunden</div>
                 <select class="text" id="store-data" list="store-data">
