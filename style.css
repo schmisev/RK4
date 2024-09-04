@@ -190,6 +190,7 @@ select {
     grid-column: 1 / 14;
     grid-row: 1;
     overflow: hidden;
+    font-weight: bolder;
 }
 
 #credits-bar {
