@@ -19,6 +19,21 @@ export const DIR2SHORTGER: Record<string, string> = {
     "W": "W"
 }
 
+export const BLOCK2STR: Record<BlockType, string> = {
+    0: "R",
+    1: "G",
+    2: "B",
+    3: "Y",
+}
+
+export const MARKER2STR: Record<MarkerType, string> = {
+    0: "",
+    1: "R",
+    2: "G",
+    3: "B",
+    4: "Y",
+}
+
 interface RobotObjVal extends ObjectVal {
     r: Robot,
 }
@@ -76,7 +91,7 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
             if (args.length != 0)
                 throw new RuntimeError(ENV.robot.mth.STEP + `() erwartet keine Parameter!`);
             r.step();
-            return MK_STRING(`Schritt nach: ( ${r.pos.x} | ${r.pos.y} )`);
+            return MK_STRING(`( ${r.pos.x} | ${r.pos.y} )`);
         }
     );
 
@@ -86,7 +101,7 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
             if (args.length != 0)
                 throw new RuntimeError(ENV.robot.mth.TURN_LEFT + `() erwartet keine Parameter!`);
             r.turnLeft();
-            return MK_STRING("Gedreht nach: " + DIR2GER[r.dir]);
+            return MK_STRING(DIR2GER[r.dir]);
         }
     );
 
@@ -96,7 +111,7 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
             if (args.length != 0)
                 throw new RuntimeError(ENV.robot.mth.TURN_RIGHT + `() erwartet keine Parameter!`);
             r.turnRight();
-            return MK_STRING("Gedreht nach: " + DIR2GER[r.dir]);
+            return MK_STRING(DIR2GER[r.dir]);
         }
     );
 
@@ -111,7 +126,7 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
                 col = args[0].value;
             }
             r.placeBlock(CHAR2BLOCK[col.toLowerCase()]);
-            return MK_STRING(`Schritt nach: ( ${r.targetPos().x} | ${r.targetPos().y} )`);
+            return MK_STRING(`( ${r.targetPos().x} | ${r.targetPos().y} )`);
         }
     );
 
@@ -120,8 +135,10 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
         (r, args) => {
             if (args.length != 0)
                 throw new RuntimeError(ENV.robot.mth.PICKUP_BLOCK + `() erwartet keine Parameter!`);
-            r.pickUpBlock();
-            return MK_STRING(`Schritt nach: ( ${r.targetPos().x} | ${r.targetPos().y} )`);
+            const pickedBlock = r.pickUpBlock();
+            if (pickedBlock == undefined)
+                throw new RuntimeError("Irgendetwas ist schiefgegangen...");
+            return MK_STRING(BLOCK2STR[pickedBlock]);
         }
     );
 
@@ -136,7 +153,7 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
                 col = args[0].value;
             }
             r.setMarker(CHAR2MARKER[col]);
-            return MK_STRING(`Schritt nach: ( ${r.targetPos().x} | ${r.targetPos().y} )`);
+            return MK_STRING(`( ${r.targetPos().x} | ${r.targetPos().y} )`);
         }
     );
 
@@ -145,8 +162,10 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
         (r, args) => {
             if (args.length != 0)
                 throw new RuntimeError(ENV.robot.mth.REMOVE_MARKER + `() erwartet keine Parameter!`);
-            r.removeMarker();
-            return MK_STRING(`Schritt nach: ( ${r.targetPos().x} | ${r.targetPos().y} )`);
+            const removedMarker = r.removeMarker();
+            if (removedMarker == undefined)
+                throw new RuntimeError("Irgendetwas ist schiefgegangen...");
+            return MK_STRING(MARKER2STR[removedMarker]);
         }
     );
 
@@ -307,7 +326,7 @@ export class Robot {
         const target = this.targetPos();
         const field = this.world.getField(target.x, target.y);
         if (this.canPickUpFrom(field)) {
-            field.removeBlock();
+            return field.removeBlock();
         }
     }
 
@@ -323,7 +342,7 @@ export class Robot {
         const target = this.pos;
         const field = this.world.getField(target.x, target.y);
         if (this.canUnmarkAt(field)) {
-            field.removeMarker();
+            return field.removeMarker();
         }
     }
 

@@ -362,11 +362,15 @@ export class Field {
         }
     }
 
-    removeBlock() {
+    removeBlock(): BlockType {
         if (!this.isEditable || this.blocks.length <= 0)
             throw new RuntimeError(`Kann hier keinen Block aufheben!`);
-        this.blocks.pop();
+        const oldBlock = this.blocks.pop();
+        if (oldBlock == undefined)
+            throw new RuntimeError(`Kein Block auf dem Stapel...?`);
+        // register change
         this.wasChanged = true;
+        return oldBlock;
     }
 
     getBlockHeight(): number {
@@ -383,11 +387,14 @@ export class Field {
         this.wasChanged = true;
     }
 
-    removeMarker() {
+    removeMarker(): MarkerType {
         if (!this.isEditable || this.marker == MarkerType.None)
             throw new RuntimeError(`Kann hier keine Marke entfernen!`);
+        const oldMarker = this.marker;
         this.marker = MarkerType.None;
+        // register change
         this.wasChanged = true;
+        return oldMarker;
     }
 
     isGoalReached() {
