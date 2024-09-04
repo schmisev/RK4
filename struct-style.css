@@ -74,7 +74,7 @@
 }
 
 .struct-box:hover {
-    background-color: lightblue;
+    background-color: #d7ebf2;
 }
 
 .struct-label {
@@ -178,7 +178,7 @@ span.line {
 }
 
 .struct-attributes:hover {
-    background-color: lightcoral;
+    background-color: #fdc0be;
 }
 
 .struct-methods {
@@ -192,7 +192,7 @@ span.line {
 }
 
 .struct-methods:hover {
-    background-color: lightgreen;
+    background-color: #cbf7c7;
 }
 
 .struct-ident {
