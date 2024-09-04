@@ -261,6 +261,8 @@ async function startCode() {
     const code = editor.getValue();
     if (!code) return;
 
+    setErrorBar("✔️ kein Fehler gefunden", "none");
+
     for (let i = 0; i < world.getStageCount(); i++) {
         await resetEnv(i);
         if (i > 0) {
