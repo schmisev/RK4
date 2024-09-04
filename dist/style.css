@@ -479,20 +479,20 @@ select {
 
 /* markers */
 .error-marker {
-    background-color: lightcoral;
+    background-color: #fdc0be;
     position: absolute;
 }
 
 .error-marker.runtime {
-    background-color: lightcoral;
+    background-color: #fdc0be;
 }
 
 .error-marker.lexer {
-    background-color: lightcoral;
+    background-color: #fdc0be;
 }
 
 .error-marker.parser {
-    background-color: lightcoral;
+    background-color: #fdc0be;
 }
 
 .exec-marker {
