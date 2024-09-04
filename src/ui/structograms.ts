@@ -155,7 +155,7 @@ function structure(astNode: Program | AnyStmt): string {
         case StmtKind.FunctionDefinition:
             return structureFunction(astNode);
         case StmtKind.ExtMethodDefinition:
-            return structureMethod(astNode);
+            return structureExtMethod(astNode);
         case StmtKind.ClassDefinition:
             return structureClass(astNode);
         case StmtKind.BreakCommand:
@@ -288,6 +288,12 @@ function structureIfElse(node: AnyIfElseBlock): string {
 }
 
 function structureClass(node: ClassDefinition): string {
+    // structure methods within
+    for (const meth of node.methods) {
+        structureMethod(meth, node.ident);
+    }
+    
+    // create class diagram
     const result = 
     `<div class="struct-class">
         <div class="struct-classname">
@@ -317,11 +323,19 @@ function structureClass(node: ClassDefinition): string {
     return makeSpan(`→ ${node.ident}`, "struct-deemph");
 }
 
-function structureMethod(astNode: ExtMethodDefinition): string {
+function structureMethod(astNode: FunctionDefinition, classname: string): void {
+    const methodHandle = `${astNode.name}(${astNode.params.map((p) => p.ident).join(", ")})`
+    const fullMethodHandle = `${methodHandle} in ${classname}`
+    sections.push(
+        makeDiv(`${makeTooltip("Methode", `Hier ist eine Methode in der Klasse ${classname} definiert, die an anderen Stellen im Code aufgerufen werden kann.`)}: ${fullMethodHandle} ${structureSequence(astNode.body)}`,"struct-program method")
+    );
+}
+
+function structureExtMethod(astNode: ExtMethodDefinition): string {
     const methodHandle = `${astNode.name}(${astNode.params.map((p) => p.ident).join(", ")})`
     const fullMethodHandle = `${methodHandle} für ${astNode.classname}`
     sections.push(
-        makeDiv(`${makeTooltip("Methode", `Hier wird eine neue Methode für die Klasse ${astNode.classname} definiert, die an anderen Stellen im Code aufgerufen werden kann.`)}: ${fullMethodHandle} ${structureSequence(astNode.body)}`,"struct-program")
+        makeDiv(`${makeTooltip("Methode", `Hier wird eine neue Methode für die Klasse ${astNode.classname} definiert, die an anderen Stellen im Code aufgerufen werden kann.`)}: ${fullMethodHandle} ${structureSequence(astNode.body)}`,"struct-program method")
     );
     // If the class already exists, we can add the method to it
     if (astNode.classname in classes)
@@ -332,7 +346,7 @@ function structureMethod(astNode: ExtMethodDefinition): string {
 function structureFunction(astNode: FunctionDefinition) {
     const funcHandle = `${astNode.name}(${astNode.params.map((p) => p.ident).join(", ")})`
     sections.push(
-        makeDiv(`${makeTooltip("Funktion", "Hier wird eine neue Funktion definiert, die an anderen Stellen im Code aufgerufen werden kann. So muss man nicht immer dieselben Anweisungen schreiben.")}: ${funcHandle} ${structureSequence(astNode.body)}`, "struct-program")
+        makeDiv(`${makeTooltip("Funktion", "Hier wird eine neue Funktion definiert, die an anderen Stellen im Code aufgerufen werden kann. So muss man nicht immer dieselben Anweisungen schreiben.")}: ${funcHandle} ${structureSequence(astNode.body)}`, "struct-program function")
     );
     return makeSpan(`→  ${funcHandle}`, "struct-deemph");
 }
