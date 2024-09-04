@@ -26,6 +26,10 @@
     grid-row: 17;
     font-family: 'Cascadia Code';
     font-size: 15px;
+    white-space: nowrap;
+    overflow-x: scroll;
+    scrollbar-width: none;
+    text-overflow: unset;
 }
 
 .code-error.none {

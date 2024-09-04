@@ -26,7 +26,7 @@ import { clamp } from './utils';
 // ACE imports
 import * as ace from "ace-builds";
 import "ace-builds/esm-resolver";
-import "ace-builds/src-noconflict/ext-language_tools";
+const aceLangTools = require("ace-builds/src-noconflict/ext-language_tools");
 import './assets/ace/mode-rkscript.js';
 import './assets/ace/theme-rklight.js';
 
@@ -36,6 +36,7 @@ import { DebugError, LexerError, ParserError, RuntimeError } from './errors';
 // Global variables
 let dt = 50; // ms to sleep between function calls
 let dtIDE = 250; // ms to wait for IDE update
+let frameLagSum = 0; // running sum of frame lag
 export let isRunning = false;
 export let queueInterrupt = false;
 export let liveTasks = STD_TASKS;
@@ -71,6 +72,8 @@ const preloadEditor = ace.edit("preload-editor", {
     readOnly: true,
 });
 
+// deactivate text completer
+aceLangTools.setCompleters([aceLangTools.snippetCompleter, aceLangTools.keyWordCompleter])
 export const editor = ace.edit("code-editor", {
     minLines: 30,
     mode: "ace/mode/RKScript",
@@ -290,6 +293,7 @@ async function startCode() {
 // Stop code via button
 async function stopCode() {
     // if (!isRunning) return;
+    resetErrorMarkers();
     await interrupt();
     await resetEnv();
 }
@@ -312,6 +316,7 @@ function fetchCmd(e: KeyboardEvent) {
 // Run ANY code
 async function runCode(code: string, stepped: boolean) {
     isRunning = true;
+    let skippedSleep = 0;
     let lastLineIndex = -1;
     try {
         program = parser.produceAST(code);
@@ -329,7 +334,16 @@ async function runCode(code: string, stepped: boolean) {
             if (stepped) {
                 lastLineIndex = next.value
                 let markerId = editor.session.addMarker(new ace.Range(lastLineIndex, 0, lastLineIndex, 10), 'exec-marker', 'fullLine');
-                await sleep(dt);
+                
+                if (skippedSleep > frameLagSum) {
+                    // we overshot the framelag, so the apparent lag is smaller
+                    frameLagSum = - (skippedSleep - frameLagSum);
+                    skippedSleep = 0;
+                    
+                    await sleep(dt);
+                } else {
+                    skippedSleep += dt;
+                }   
                 editor.session.removeMarker(markerId);
             }
         }
@@ -345,6 +359,15 @@ async function runCode(code: string, stepped: boolean) {
     }
     isRunning = false;
 };
+
+// updating lag sum
+export function updateLagSum(dt: number) {
+    frameLagSum += dt;
+}
+
+export function resetLagSum() {
+    frameLagSum = 0;
+}
 
 
 // Start app

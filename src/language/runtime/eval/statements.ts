@@ -1,5 +1,5 @@
 import { RuntimeError } from "../../../errors";
-import { AbruptStmtKind, AlwaysBlock, ClassDefinition, DocComment, EmptyLine, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, StmtKind, AbruptEvalResult, VarDeclaration, WhileBlock } from "../../frontend/ast";
+import { AbruptStmtKind, AlwaysBlock, ClassDefinition, DocComment, EmptyLine, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, StmtKind, AbruptEvalResult, VarDeclaration, WhileBlock, ContinueCommand, BreakCommand } from "../../frontend/ast";
 import { ClassPrototype, Environment, VarHolder } from "../environment";
 import { SteppedEval, evaluate, evaluate_expr } from "../interpreter";
 import {
@@ -11,6 +11,7 @@ import {
     MethodVal,
     AbruptReturn,
     AbruptContinue,
+    AbruptBreak,
 } from "../values";
 
 export function* eval_program(prog: Program, env: Environment) {
@@ -191,6 +192,24 @@ export function* eval_return_command(
     return {
         type: "return",
         value: yield* evaluate_expr(ret.value, env),
+    }
+}
+
+export function* eval_break_command(
+    brk: BreakCommand,
+    env: Environment
+): SteppedEval<AbruptBreak> {
+    return {
+        type: "break",
+    }
+}
+
+export function* eval_continue_command(
+    cnt: ContinueCommand,
+    env: Environment
+): SteppedEval<AbruptContinue> {
+    return {
+        type: "continue",
     }
 }
 
