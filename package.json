@@ -7,7 +7,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack serve --open",
     "build": "webpack",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "cleanup": "(del-cli dist/node_modules*.js) && (del-cli dist/vendors-node_modules*.js)",
+    "del-bundle": "(del-cli dist/bundle.js)",
+    "upload": "npm run build && npm run cleanup && npm run deploy && npm run del-bundle"
   },
   "author": "",
   "license": "ISC",
@@ -32,6 +35,7 @@
     "@octokit/rest": "^21.0.2",
     "@types/node": "^22.1.0",
     "ace-builds": "^1.35.4",
+    "del-cli": "^5.1.0",
     "fs": "^0.0.1-security",
     "p5": "^1.10.0"
   }
