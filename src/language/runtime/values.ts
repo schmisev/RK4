@@ -86,7 +86,6 @@ export interface AbruptBreak {
 
 export interface AbruptContinue {
     type: "continue";
-    value: RuntimeVal;
 }
 
 export interface AbruptReturn {

@@ -1,8 +1,7 @@
 import * as p5 from 'p5';
 
-import { isRunning, queueInterrupt, world, objOverlay, taskCheck } from '..';
+import { isRunning, queueInterrupt, world, objOverlay, taskCheck, updateLagSum, resetLagSum } from '..';
 import { Robot } from '../robot/robot';
-import { lerp } from '../utils';
 import { CR, CY, CG, CB, BlockType, MarkerType, World, CBOT, CBOT2, Field } from '../robot/world';
 import { robotDiagramIndex, showRobotDiagram, hideRobotDiagram } from './objectigrams';
 
@@ -130,6 +129,13 @@ export function robotSketch(p5: p5) {
     };
 
     p5.draw = () => {
+        // update sum of frame lag
+        if (isRunning) {
+            updateLagSum(p5.deltaTime);
+        } else {
+            resetLagSum();
+        }
+
         // update task status
         if (!world.isGoalReached()) {
             taskCheck.style.backgroundColor = "whitesmoke";
@@ -139,8 +145,7 @@ export function robotSketch(p5: p5) {
             taskCheck.innerHTML = "✔️<br>" + `${world.getStageIndex() + 1} / ${world.getStageCount()}`;
         }
 
-        // get local copy of world
-        const worldInst = Object.assign(world)
+        const worldInst = world
 
         resizeToParent();
 
