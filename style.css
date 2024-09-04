@@ -111,22 +111,6 @@ select {
     background-color: transparent;
 }
 
-#version-label {
-    position: relative;
-    line-height: 15px;
-    font-size: 15px;
-    display: inline-block;
-    transform: translateY(-5%) rotate(10deg);
-    padding: 0px 5px;
-    font-weight: 400;
-
-    transition: transform 0.5s;
-}
-
-#version-label:hover {
-    transform: rotate(0deg);
-}
-
 .code-like {
     font-family: 'Cascadia Code', "Consolas";
     font-weight: bolder;
@@ -209,6 +193,22 @@ select {
     font-weight: bolder;
 }
 
+#version-label {
+    position: relative;
+    line-height: 15px;
+    font-size: 15px;
+    display: inline-block;
+    transform: translateY(-5%) rotate(10deg);
+    padding: 0px 5px;
+    font-weight: 400;
+
+    transition: transform 0.5s;
+}
+
+#version-label:hover {
+    transform: rotate(0deg);
+}
+
 #credits-bar {
     grid-column: 1 / 14;
     grid-row: 24;
@@ -226,12 +226,24 @@ select {
 }
 
 #code-helper {
-    grid-column: 7;
+    grid-column: 1/8;
     grid-row: 3;
     z-index: 100;
     text-align: right;
     padding-right: 20px;
     pointer-events: none;
+}
+
+.turning {
+    transform: rotate(0deg);
+    transition: transform 0.2s;
+    pointer-events: all;
+    position: relative;
+    display: inline-block;
+}
+
+.turning:hover {
+    transform: rotate(45deg);
 }
 
 /*helper on hover*/
