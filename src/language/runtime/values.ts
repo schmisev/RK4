@@ -70,6 +70,7 @@ export interface UserClassVal {
     internal?: false;
     attributes: (VarDeclaration | ObjDeclaration)[];
     prototype: ClassPrototype;
+    params: ParamDeclaration[]; // for constructor
 }
 
 export type ClassVal = BuiltinClassVal | UserClassVal;

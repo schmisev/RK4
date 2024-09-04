@@ -58,11 +58,37 @@ export function* eval_obj_declaration(
         ownMembers: new VarHolder(),
     };
 
+    // calculate arguments of constructor
+    const args: RuntimeVal[] = [];
+    for (const expr of decl.args) {
+        const result = yield* evaluate_expr(expr, evalEnv);
+        args.push(result);
+    }
+
+    const constructorEnv = new Environment(evalEnv);
+
+    // create variables
+    if (args.length != cl.params.length)
+        throw new RuntimeError(
+            `Erwarte ${cl.params.length} Parameter, habe aber ${args.length} erhalten!`, decl.lineIndex
+        );
+    for (let i = 0; i < cl.params.length; i++) {
+        const param = cl.params[i];
+        const varname = param.ident;
+        const arg = args[i];
+
+        if (param.type != arg.type)
+            throw new RuntimeError(
+                `'${varname}' sollte '${param.type}' sein, ist aber '${arg.type}'`, decl.lineIndex
+            );
+        constructorEnv.declareVar(varname, args[i]);
+    }
+    
     for (const attr of cl.attributes) {
         if (attr.type == "object") {
-            yield* eval_obj_declaration(attr, evalEnv, obj.ownMembers);
+            yield* eval_obj_declaration(attr, constructorEnv, obj.ownMembers);
         } else {
-            yield* eval_var_declaration(attr, evalEnv, obj.ownMembers);
+            yield* eval_var_declaration(attr, constructorEnv, obj.ownMembers);
         }
     }
 
@@ -137,6 +163,7 @@ export function eval_class_definition(
         type: "class",
         name: def.ident,
         attributes: def.attributes,
+        params: def.params,
         prototype,
     };
 
