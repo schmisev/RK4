@@ -46,7 +46,7 @@ a {
 }
 
 a:hover {
-    text-decoration: wavy;
+    text-decoration: underline
 }
 
 select {
