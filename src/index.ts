@@ -26,7 +26,7 @@ import { clamp } from './utils';
 // ACE imports
 import * as ace from "ace-builds";
 import "ace-builds/esm-resolver";
-import "ace-builds/src-noconflict/ext-language_tools";
+const aceLangTools = require("ace-builds/src-noconflict/ext-language_tools");
 import './assets/ace/mode-rkscript.js';
 import './assets/ace/theme-rklight.js';
 
@@ -72,6 +72,8 @@ const preloadEditor = ace.edit("preload-editor", {
     readOnly: true,
 });
 
+// deactivate text completer
+aceLangTools.setCompleters([aceLangTools.snippetCompleter, aceLangTools.keyWordCompleter])
 export const editor = ace.edit("code-editor", {
     minLines: 30,
     mode: "ace/mode/RKScript",
