@@ -5,6 +5,20 @@ import { Robot } from '../robot/robot';
 import { CR, CY, CG, CB, BlockType, MarkerType, World, CBOT, CBOT2, Field } from '../robot/world';
 import { robotDiagramIndex, showRobotDiagram, hideRobotDiagram } from './objectigrams';
 
+let isTabVisible = document.visibilityState == "visible";
+document.addEventListener('visibilitychange', () => {
+    switch (document.visibilityState) {
+        case "hidden": {
+            isTabVisible = false;
+            break;
+        }
+        case "visible": {
+            isTabVisible = true;
+            break;
+        }
+    }
+  });
+  
 
 // Setup robot sketch
 export function robotSketch(p5: p5) {
@@ -105,6 +119,7 @@ export function robotSketch(p5: p5) {
     };
 
     p5.draw = () => {
+        if (!isTabVisible) return;
         window.performance.mark('draw-start');
         // update sum of frame lag
         if (isRunning) {
