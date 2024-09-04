@@ -276,6 +276,7 @@ async function startCode() {
 
         console.log("▢ Ausführung beendet!");
 
+        await sleep(500); // wait a bit until goal has updated
         if (!world.isGoalReached()) {
             console.log(`❌ Du hast die Teilaufgabe ${i+1} NICHT erfüllt!`);
             editor.setReadOnly(false);
@@ -283,7 +284,7 @@ async function startCode() {
         }
         console.log(`✔️ Du hast die Teilaufgabe ${i+1} erfüllt!`);
         
-        await sleep(1000);
+        await sleep(500);
         editor.setReadOnly(false);
     }
     console.log("🏅 Du hast alle Teilaufgaben erfüllt!");
