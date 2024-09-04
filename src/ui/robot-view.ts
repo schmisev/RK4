@@ -10,13 +10,11 @@ import { robotDiagramIndex, showRobotDiagram, hideRobotDiagram } from './objecti
 export function robotSketch(p5: p5) {
     let bg = 0; // Background color
     const canvasDiv = document.getElementById('robot-canvas')!;
-    let canvasW = 0, canvasH = 0;
     let cam: p5.Camera;
     let pan = 0.0;
     let tilt = 0.0;
     let worldGoalReached = false;
 
-    const CPS = 100; // Compass size
     const TSZ = 50; // Tilesize
     const BLH = 30; // Block height
     const MRH = 1; // Marker height
@@ -27,7 +25,6 @@ export function robotSketch(p5: p5) {
     const RBW = 35;
 
     const HUDF: number = 100; // HUD-factor
-    const SQHUDF: number = p5.sqrt(HUDF);
 
     const createXTexture = (col: string) => {
         const xt = p5.createGraphics(TSZ, TSZ);
@@ -36,22 +33,6 @@ export function robotSketch(p5: p5) {
         xt.line(TSZ * 0.25, TSZ * 0.25, TSZ * 0.75, TSZ * 0.75);
         xt.line(TSZ * 0.75, TSZ * 0.25, TSZ * 0.25, TSZ * 0.75);
         return xt;
-    };
-
-    const createCompassTexture = () => {
-        const ct = p5.createGraphics(CPS, CPS);
-        ct.strokeWeight(3);
-        ct.stroke(255);
-
-        ct.line(0.5 * CPS, 0, 0.5 * CPS, CPS);
-        ct.line(0, 0.5 * CPS, CPS, 0.5 * CPS);
-        ct.line(0.75 * CPS, 0.25 * CPS, 0.25 * CPS, 0.75 * CPS);
-        ct.line(0.25 * CPS, 0.25 * CPS, 0.75 * CPS, 0.75 * CPS);
-
-        ct.textAlign(p5.CENTER);
-        ct.text("N", 0.5 * CPS, 0.1 * CPS);
-
-        return ct;
     };
 
     const createTextTexture = (str: string) => {
@@ -68,8 +49,6 @@ export function robotSketch(p5: p5) {
     const XY = createXTexture(CY);
     const XG = createXTexture(CG);
     const XB = createXTexture(CB);
-
-    const CMP = createCompassTexture();
 
     const NT = createTextTexture("N");
     const WT = createTextTexture("W");
@@ -108,27 +87,25 @@ export function robotSketch(p5: p5) {
 
     const numberPlates: Record<number, p5.Graphics> = {};
 
-    const resizeToParent = () => {
-        const width = canvasDiv.offsetWidth;
-        const height = canvasDiv.offsetHeight;
-        if (canvasH != height || canvasW != width) {
-            canvasH = height;
-            canvasW = width;
-            p5.resizeCanvas(width, height);
-        }
-    };
-
     p5.setup = () => {
         const width = canvasDiv.offsetWidth;
         const height = canvasDiv.offsetHeight;
-        canvasH = height;
-        canvasW = width;
         const cvs = p5.createCanvas(width, height, p5.WEBGL);
+        let canvasW = 0, canvasH = 0;
+        const observer = new ResizeObserver((entries) => {
+            const {width, height} = entries[0].contentRect;
+            if (canvasH != height || canvasW != width)
+                p5.resizeCanvas(width, height);
+            canvasH = height;
+            canvasW = width;
+        });
+        observer.observe(canvasDiv, { box: 'content-box' });
         cam = p5.createCamera();
-        cvs.parent("robot-canvas");
+        cvs.parent(canvasDiv);
     };
 
     p5.draw = () => {
+        window.performance.mark('draw-start');
         // update sum of frame lag
         if (isRunning) {
             updateLagSum(p5.deltaTime);
@@ -137,17 +114,19 @@ export function robotSketch(p5: p5) {
         }
 
         // update task status
-        if (!world.isGoalReached()) {
-            taskCheck.style.backgroundColor = "whitesmoke";
-            taskCheck.innerHTML = "❌<br>" + `${world.getStageIndex()} / ${world.getStageCount()}`;
-        } else {
-            taskCheck.style.backgroundColor = "lightgreen";
-            taskCheck.innerHTML = "✔️<br>" + `${world.getStageIndex() + 1} / ${world.getStageCount()}`;
+        const goalReachedNow = world.isGoalReached();
+        if (worldGoalReached != goalReachedNow) {
+            worldGoalReached = goalReachedNow;
+            if (!worldGoalReached) {
+                taskCheck.style.backgroundColor = "whitesmoke";
+                taskCheck.innerHTML = "❌<br>" + `${world.getStageIndex()} / ${world.getStageCount()}`;
+            } else {
+                taskCheck.style.backgroundColor = "lightgreen";
+                taskCheck.innerHTML = "✔️<br>" + `${world.getStageIndex() + 1} / ${world.getStageCount()}`;
+            }
         }
 
-        const worldInst = world
-
-        resizeToParent();
+        const worldInst = world;
 
         // bg color ramping
         if (isRunning && bg == 0) {
@@ -186,6 +165,9 @@ export function robotSketch(p5: p5) {
 
         // draw heads up display
         drawHUD();
+
+        window.performance.mark('draw-end');
+        window.performance.measure('draw', { start: 'draw-start', end: 'draw-end' });
     };
 
     const drawHUD = () => {
