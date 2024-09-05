@@ -3,7 +3,7 @@ import { declareRobotClass } from "../../robot/robot";
 import { declareWorldClass } from "../../robot/world";
 import { ENV } from "../../spec";
 import { Trampoline, jump, jumpAround, jumpBind, land } from "./trampoline";
-import { BuiltinClassVal, ClassVal, MK_STRING, MethodVal, NativeMethodVal, ObjectVal } from "./values";
+import { BuiltinClassVal, ClassVal, MK_STRING, MethodVal, NativeMethodVal, ObjectVal, ValueAlias } from "./values";
 import { MK_BOOL, MK_NATIVE_FN, MK_NULL, MK_NUMBER, RuntimeVal } from "./values";
 
 export interface GlobalEnvironment extends Environment {
@@ -35,7 +35,7 @@ export function declareGlobalEnv(): GlobalEnvironment {
             if (args.length == 0) {
                 r = 100;
             } else if (args.length == 1) {
-                if (args[0].type != "number")
+                if (args[0].type != ValueAlias.Number)
                     throw new RuntimeError(`Erwarte eine Zahl als Parameter, nicht '${args[0].type}'!`);
                 r = args[0].value;
             }
@@ -114,7 +114,7 @@ export class Environment implements StaticScope {
         const varVal = varDef.get()
         if (varVal.type != value.type)
             throw new RuntimeError(`Eine Variable mit Typ '${varVal.type}' kann nicht auf '${value.type}' gesetzt werden.`)
-        if (varVal.type == "object" && value.type == "object" && varVal.cls != value.cls)
+        if (varVal.type == ValueAlias.Object && value.type == ValueAlias.Object && varVal.cls != value.cls)
             throw new RuntimeError(`Ein Objekt der Klasse '${varVal.cls.name}' kann nicht auf '${value.cls.name}' gesetzt werden.`)
         varDef.set(value);
         return value;
@@ -187,7 +187,7 @@ export class ClassPrototype {
         const varVal = varDef.get()
         if (varVal.type != value.type)
             throw new RuntimeError(`Eine Variable mit Typ '${varVal.type}' kann nicht auf '${value.type}' gesetzt werden.`)
-        if (varVal.type == "object" && value.type == "object" && varVal.cls != value.cls)
+        if (varVal.type == ValueAlias.Object && value.type == ValueAlias.Object && varVal.cls != value.cls)
             throw new RuntimeError(`Ein Objekt der Klasse '${varVal.cls.name}' kann nicht auf '${value.cls.name}' gesetzt werden.`)
         varDef.set(value);
     }
@@ -197,17 +197,17 @@ export class ClassPrototype {
         if (method !== undefined) {
             return land({
                 get: () => {
-                    if (method.type === "method")
+                    if (method.type === ValueAlias.Method)
                         return {
-                            type: "function",
+                            type: ValueAlias.Function,
                             body: method.body,
                             name: method.name,
                             params: method.params,
                             declenv: new BoundDynamicScope(method.declenv, receiver),
                         }
-                    else if (method.type === "native-method")
+                    else if (method.type === ValueAlias.NativeMethod)
                         return {
-                            type: "native-fn",
+                            type: ValueAlias.NativeFunction,
                             name: method.name,
                             call: method.call.bind(receiver),
                         }

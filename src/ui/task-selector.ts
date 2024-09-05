@@ -66,9 +66,7 @@ taskSelector.onchange = (e: Event) => {
 
 
 export async function loadExtTasks() {
-    const octokit = new Octokit({
-        auth: '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'
-    });
+    const octokit = new Octokit();
 
     /*
     const allFiles = await octokit.request("GET /repos/{owner}/{repo}/git/trees/main/tasks", {

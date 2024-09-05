@@ -190,6 +190,7 @@ async function updateIDE() {
     }
 }
 
+// loading tasks
 export function loadRawTask(key: string, task: Task, ignoreTitleInKey = false) {
     const splitKey = destructureKey(key, ignoreTitleInKey);
 
@@ -208,7 +209,7 @@ export function loadRawTask(key: string, task: Task, ignoreTitleInKey = false) {
 }
 
 export async function loadTask(key: string) {
-    interrupt()
+    await interrupt()
 
     if (key in liveTasks) {
         loadRawTask(key, liveTasks[key], false);
@@ -221,6 +222,7 @@ export async function loadTask(key: string) {
     }
 }
 
+// Resetting the environment
 async function resetEnv(stage = 0) {
     env = declareGlobalEnv();
     // create new world and register it in the global environment
@@ -232,6 +234,7 @@ async function resetEnv(stage = 0) {
     await runCode(preloadCode, false);
 };
 
+// Run cmds
 async function runCmd() {
     const cmdCode = cmdLine.value;
     cmdLine.value = "";
@@ -248,59 +251,6 @@ async function runCmd() {
     await runCode(cmdCode, true);
 };
 
-async function interrupt() {
-    queueInterrupt = true;
-    await sleep(dt); // wait long enough for execution loop to exit
-    if (queueInterrupt) queueInterrupt = false;
-}
-
-// Start code button
-async function startCode() {
-    await interrupt();
-
-    const code = editor.getValue();
-    if (!code) return;
-
-    setErrorBar("✔️ kein Fehler gefunden", "none");
-
-    for (let i = 0; i < world.getStageCount(); i++) {
-        await resetEnv(i);
-        if (i > 0) {
-            console.log();
-            world.loadWorldLog();
-        }
-        console.log();
-        console.log("▷ Code wird ausgeführt!");
-        
-        editor.setReadOnly(true);
-        await runCode(code, true);
-        await interrupt(); // for safety
-
-        console.log("▢ Ausführung beendet!");
-
-        await sleep(500); // wait a bit until goal has updated
-        if (!world.isGoalReached()) {
-            console.log(`❌ Du hast die Teilaufgabe ${i+1} NICHT erfüllt!`);
-            editor.setReadOnly(false);
-            return;
-        }
-        console.log(`✔️ Du hast die Teilaufgabe ${i+1} erfüllt!`);
-        
-        await sleep(500);
-        editor.setReadOnly(false);
-    }
-    console.log("🏅 Du hast alle Teilaufgaben erfüllt!");
-    return;
-};
-
-// Stop code via button
-async function stopCode() {
-    // if (!isRunning) return;
-    resetErrorMarkers();
-    await interrupt();
-    await resetEnv();
-}
-
 // Get past commands via keyboard
 function fetchCmd(e: KeyboardEvent) {
     if (e.key == "ArrowUp") {
@@ -316,26 +266,97 @@ function fetchCmd(e: KeyboardEvent) {
     }
 }
 
+// Start code via button
+async function startCode() {
+    resetErrorMarkers();
+    
+    await interrupt();
+
+    const code = editor.getValue();
+    if (!code) return;
+
+    setErrorBar("✔️ kein Fehler gefunden", "none");
+
+    editor.setReadOnly(true);
+    for (let i = 0; i < world.getStageCount(); i++) {
+        await resetEnv(i);
+        if (i > 0) {
+            console.log();
+            world.loadWorldLog();
+        }
+        console.log("\n▷ Code wird ausgeführt!");
+        
+        if (await runCode(code, true)) {
+            editor.setReadOnly(false);
+            return; // return immediatly if codeRun was interrupted
+        }
+        // await interrupt(); // for safety
+        console.log("▢ Ausführung beendet!");
+
+        await sleep(250); // wait a bit until goal has updated
+        if (isRunning) {
+            editor.setReadOnly(false);
+            return;
+        }
+
+        if (!world.isGoalReached()) {
+            console.log(`❌ Du hast die Teilaufgabe ${i+1} NICHT erfüllt!`);
+            editor.setReadOnly(false);
+            return;
+        } else {
+            console.log(`✔️ Du hast die Teilaufgabe ${i+1} erfüllt!`);
+        }
+        
+        await sleep(250);
+        if (isRunning) {
+            editor.setReadOnly(false);
+            return;
+        }
+    }
+    console.log("🏅 Du hast alle Teilaufgaben erfüllt!");
+    editor.setReadOnly(false);
+    return;
+};
+
+// Stop code via button
+async function stopCode() {
+    // if (!isRunning) return;
+    resetErrorMarkers();
+    await interrupt();
+    await resetEnv();
+}
+
+// interrupts for run code
+async function interrupt() {
+    if (!isRunning) return;
+    queueInterrupt = true;
+    while (isRunning) {
+        await sleep(10); // wait long enough for execution loop to exit
+    }
+    queueInterrupt = false;
+}
+
 // Run ANY code
-async function runCode(code: string, stepped: boolean) {
-    isRunning = true;
+async function runCode(code: string, stepped: boolean): Promise<boolean> {
     let skippedSleep = 0;
     let lastLineIndex = -1;
     try {
         program = parser.produceAST(code);
         let stepper = evaluate(program, env);
+
+        isRunning = true;
         while (true) {
             const next = stepper.next();
             if (next.done) break;
 
             if (queueInterrupt) {
                 console.log("▽ Ausführung wird abgebrochen!");
-                queueInterrupt = false;
-                break;
+                isRunning = false;
+                return true; // returns true if interrupted
             }
 
             if (stepped) {
-                lastLineIndex = next.value
+                lastLineIndex = next.value;
                 let markerId = editor.session.addMarker(new ace.Range(lastLineIndex, 0, lastLineIndex, 10), 'exec-marker', 'fullLine');
                 
                 if (skippedSleep > frameLagSum) {
@@ -356,11 +377,18 @@ async function runCode(code: string, stepped: boolean) {
             console.log("⚠️ " + e.message);
             console.error(e.stack);
             setErrorMarker(`⚠️ ${e.message} (Zeile: ${errorLineIndex + 1})`, errorLineIndex, "runtime");
+        } else if (e instanceof Error) {
+            // throw e;
+            console.log("⚠️ " + e.message);
+            console.error(e.stack);
+            setErrorMarker(`⚠️ ${e.message} (Zeile: ${lastLineIndex + 1})`, lastLineIndex, "runtime");
         } else {
-            throw e;
+            // do nothing?
         }
     }
+
     isRunning = false;
+    return false;
 };
 
 // updating lag sum

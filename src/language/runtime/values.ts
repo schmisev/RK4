@@ -1,33 +1,52 @@
 import { ObjDeclaration, ParamDeclaration, Stmt, StmtKind, VarDeclaration } from "../frontend/ast";
 import { ClassPrototype, StaticScope, VarHolder } from "./environment";
 
+export const enum ValueAlias {
+    Null = "Nix",
+    Number = "Zahl",
+    Boolean = "Wahrheitswert",
+    String = "Text",
+    NativeFunction = "NativeFunktion",
+    NativeMethod = "NativeMethode",
+    Function = "Funktion",
+    Method = "Methode",
+    Class = "Klasse",
+    Object = "Objekt",
+};
+
+export const enum AbruptAlias {
+    Continue = "weiter",
+    Break = "abbrechen",
+    Return = "return",
+}
+
 export type RuntimeVal = NullVal | NumberVal | BooleanVal | StringVal | NativeFunctionVal | FunctionVal | ClassVal | ObjectVal;
 export type ValueType = RuntimeVal["type"];
 
 export interface NullVal {
-    type: "null";
+    type: ValueAlias.Null;
     value: null;
 }
 
 export interface NumberVal {
-    type: "number";
+    type: ValueAlias.Number;
     value: number;
 }
 
 export interface BooleanVal {
-    type: "boolean";
+    type: ValueAlias.Boolean;
     value: boolean;
 }
 
 export interface StringVal {
-    type: "string";
+    type: ValueAlias.String;
     value: string;
 }
 
 export type FunctionCall = (args: RuntimeVal[]) => RuntimeVal;
 
 export interface NativeFunctionVal {
-    type: "native-fn";
+    type: ValueAlias.NativeFunction;
     name: string;
     call: FunctionCall;
 }
@@ -35,13 +54,13 @@ export interface NativeFunctionVal {
 export type MethodCall = (this: ObjectVal, args: RuntimeVal[]) => RuntimeVal;
 
 export interface NativeMethodVal {
-    type: "native-method";
+    type: ValueAlias.NativeMethod;
     name: string;
     call: MethodCall;
 }
 
 export interface FunctionVal {
-    type: "function";
+    type: ValueAlias.Function;
     name: string;
     params: ParamDeclaration[];
     declenv: StaticScope;
@@ -50,7 +69,7 @@ export interface FunctionVal {
 
 // A method is an "unbound" function, i.e. without a receiver. Crucially, only a runtime value when it gets bound to a receiver
 export interface MethodVal {
-    type: "method";
+    type: ValueAlias.Method;
     name: string;
     params: ParamDeclaration[];
     declenv: StaticScope;
@@ -58,14 +77,14 @@ export interface MethodVal {
 }
 
 export interface BuiltinClassVal {
-    type: "class";
+    type: ValueAlias.Class;
     name: string;
     internal: true;
     prototype: ClassPrototype;
 }
 
 export interface UserClassVal {
-    type: "class";
+    type: ValueAlias.Class;
     name: string;
     internal?: false;
     attributes: (VarDeclaration | ObjDeclaration)[];
@@ -76,48 +95,48 @@ export interface UserClassVal {
 export type ClassVal = BuiltinClassVal | UserClassVal;
 
 export interface ObjectVal {
-    type: "object";
+    type: ValueAlias.Object;
     cls: ClassVal,
     ownMembers: VarHolder;
 }
 
 export interface AbruptBreak {
-    type: "break";
+    type: AbruptAlias.Break;
 }
 
 export interface AbruptContinue {
-    type: "continue";
+    type: AbruptAlias.Continue;
 }
 
 export interface AbruptReturn {
-    type: "return";
+    type: AbruptAlias.Return;
     value: RuntimeVal;
 }
 
 // MAKROS
 export function MK_STRING(s = "") {
-    return { type: "string", value: s } satisfies StringVal;
+    return { type: ValueAlias.String, value: s } satisfies StringVal;
 }
 
 export function MK_NATIVE_FN(name: string, call: FunctionCall) {
-    return { type: "native-fn", name, call } satisfies NativeFunctionVal;
+    return { type: ValueAlias.NativeFunction, name, call } satisfies NativeFunctionVal;
 }
 
 export function MK_NATIVE_METHOD(name: string, call: MethodCall) {
-    return { type: "native-method", name, call } satisfies NativeMethodVal;
+    return { type: ValueAlias.NativeMethod, name, call } satisfies NativeMethodVal;
 }
 
 export function MK_NUMBER(n = 0) {
-    return { type: "number", value: n } satisfies NumberVal;
+    return { type: ValueAlias.Number, value: n } satisfies NumberVal;
 }
 
-const NULL_VAL: NullVal = { type: "null", value: null };
+const NULL_VAL: NullVal = { type: ValueAlias.Null, value: null };
 export function MK_NULL() {
     return NULL_VAL;
 }
 
-const TRUE_VAL: BooleanVal = { type: "boolean", value: true };
-const FALSE_VAL: BooleanVal = { type: "boolean", value: false };
+const TRUE_VAL: BooleanVal = { type: ValueAlias.Boolean, value: true };
+const FALSE_VAL: BooleanVal = { type: ValueAlias.Boolean, value: false };
 export function MK_BOOL(v = true) {
     return v ? TRUE_VAL : FALSE_VAL;
 }

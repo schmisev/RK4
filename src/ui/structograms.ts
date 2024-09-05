@@ -1,4 +1,5 @@
 import { AnyStmt, BinaryExpr, ClassDefinition, Expr, ExtMethodDefinition, AnyForBlock, FunctionDefinition, AnyIfElseBlock, Program, UnaryExpr, AnyWhileBlock, AnyAlwaysBlock, StmtKind } from "../language/frontend/ast";
+import { ValueAlias } from "../language/runtime/values";
 import { ENV } from "../spec";
 
 // Robot class
@@ -45,14 +46,6 @@ const WORLD_PSEUDO_CLASS =
         ${makeTooltip(ENV.world.mth.GET_STAGE_INDEX, `Gibt die aktuelle Teilaufgabe als Zahl aus, also <span class="struct-literal">1</span>, <span class="struct-literal">2</span>, <span class="struct-literal">3</span>, usw.`) + "()<br>"}
     </div>
 </div>`
-
-// Type alias
-const TYPE2GER: Record<string, string> = {
-    "number": "Zahl",
-    "boolean": "Wahrheitswert",
-    "string": "Text",
-    "null": "Nix",
-}
 
 const translateOperator = (op: string) => {
     switch (op) {
@@ -147,7 +140,7 @@ function structure(astNode: Program | AnyStmt): string {
         case StmtKind.MemberExpr:
             return `${makeSpan(structure(astNode.container), "struct-object")}<b>.</b>${structure(astNode.member)}`
         case StmtKind.VarDeclaration:
-            return `${makeSpan(TYPE2GER[astNode.type], "struct-type")}</span> <span class="struct-ident">${astNode.ident}</span> ist ${structure(astNode.value)}`
+            return `${makeSpan(astNode.type, "struct-type")}</span> <span class="struct-ident">${astNode.ident}</span> ist ${structure(astNode.value)}`
         case StmtKind.ObjDeclaration:
             return `${makeSpan("Objekt", "struct-type")} <span class="struct-ident">${astNode.ident}</span> als <span class="struct-classtype">${astNode.classname}</span>`
         case StmtKind.ShowCommand:
@@ -175,7 +168,7 @@ function structure(astNode: Program | AnyStmt): string {
 function encapsulateExpr(astNode: Expr, right = false) {
     const expr = structure(astNode)
 
-    if (astNode.kind == "BinaryExpr" || astNode.kind == "UnaryExpr")
+    if (astNode.kind == StmtKind.BinaryExpr || astNode.kind == StmtKind.UnaryExpr)
         return "(" + expr + ")";
     return expr;
 }
@@ -219,7 +212,7 @@ function structureUnaryExpr(astNode: UnaryExpr) {
 function structureSequence(body: AnyStmt[]): string {
     let result = "";
     for (const node of body) {
-        if (node.kind == "WhileBlock" || node.kind == "ForBlock" || node.kind == "IfElseBlock")
+        if (node.kind == StmtKind.WhileBlock || node.kind == StmtKind.ForBlock || node.kind == StmtKind.IfElseBlock)
             result += `<div class="struct-box">${structure(node)}</div>`;
         else 
             result += `<div class="struct-box lpad rpad">${structure(node)}</div>`;
@@ -274,14 +267,21 @@ function structureIfElse(node: AnyIfElseBlock): string {
     const result =
     `
     <div class="struct-ifelse ${bias}">${cond} ? <br><br>
+        
         <div style="display: flex;">
             <div style="flex: 50%; padding-left: 5px; text-align: left;">${makeTooltip("W", "Wenn die Bedingung <u>" + cond + "</u> zutrifft, wird die linke Spalte ausgeführt!")}</div>
             <div style="flex: 50%; padding-right: 5px; text-align: right;">${makeTooltip("F", "Wenn die Bedingung <u>" + cond + "</u> nicht zutrifft, wird die rechte Spalte ausgeführt!")}</div>
         </div>
     </div>
     <div class="struct-row ${bias}">
-        <div class="struct-column">${structureSequence(node.ifTrue)}</div>
-        <div class="struct-column">${structureSequence(node.ifFalse)}</div>
+        <div class="struct-column">
+            <div class="struct-if"></div>
+            ${structureSequence(node.ifTrue)}
+        </div>
+        <div class="struct-column">
+            <div class="struct-else"></div>
+            ${structureSequence(node.ifFalse)}
+        </div>
     </div>
     `
     return result;
@@ -302,10 +302,10 @@ function structureClass(node: ClassDefinition): string {
         
         <div class="struct-attributes">
             ${node.attributes.map((attr) => {
-                if (attr.type == "object")
+                if (attr.type == ValueAlias.Object)
                     return `<span class="struct-type">${attr.classname}</span> ${attr.ident}`
                 else
-                    return `<span class="struct-type">${TYPE2GER[attr.type]}</span> ${attr.ident}`
+                    return `<span class="struct-type">${attr.type}</span> ${attr.ident}`
             }).join("<br>")}
         </div>
         
@@ -325,7 +325,7 @@ function structureClass(node: ClassDefinition): string {
 
 function structureMethod(astNode: FunctionDefinition, classname: string): void {
     const methodHandle = `${astNode.name}(${astNode.params.map((p) => p.ident).join(", ")})`
-    const fullMethodHandle = `${methodHandle} in ${classname}`
+    const fullMethodHandle = `${methodHandle} in <span class="struct-classtype">${classname}</span>`
     sections.push(
         makeDiv(`${makeTooltip("Methode", `Hier ist eine Methode in der Klasse ${classname} definiert, die an anderen Stellen im Code aufgerufen werden kann.`)}: ${fullMethodHandle} ${structureSequence(astNode.body)}`,"struct-program method")
     );
@@ -333,7 +333,7 @@ function structureMethod(astNode: FunctionDefinition, classname: string): void {
 
 function structureExtMethod(astNode: ExtMethodDefinition): string {
     const methodHandle = `${astNode.name}(${astNode.params.map((p) => p.ident).join(", ")})`
-    const fullMethodHandle = `${methodHandle} für ${astNode.classname}`
+    const fullMethodHandle = `${methodHandle} für <span class="struct-classtype">${astNode.classname}</span>`
     sections.push(
         makeDiv(`${makeTooltip("Methode", `Hier wird eine neue Methode für die Klasse ${astNode.classname} definiert, die an anderen Stellen im Code aufgerufen werden kann.`)}: ${fullMethodHandle} ${structureSequence(astNode.body)}`,"struct-program method")
     );
