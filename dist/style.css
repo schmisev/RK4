@@ -234,6 +234,19 @@ select {
     pointer-events: none;
 }
 
+#debug-title {
+    overflow: visible;
+}
+
+#debug-helper {
+    grid-column: 1/8;
+    grid-row: 3;
+    z-index: 100;
+    text-align: left;
+    padding-left: 0;
+    pointer-events: none;
+}
+
 .turning {
     transform: rotate(0deg);
     transition: transform 0.2s;
@@ -590,4 +603,38 @@ select {
 .exec-marker {
     background-color: lightblue;
     position: absolute;
+}
+
+/* legend */
+.legend {
+    outline: 2px black solid;
+    opacity: 100%;
+    margin-left: 10px;
+    padding: 0 10px;
+}
+
+.legend.dashed {
+    border-radius: 5px;
+    outline-style: dashed;
+}
+
+.legend.empty {
+    outline: none;
+    background-color: transparent;
+}
+
+.legend.classname {
+    background-color: #CF9FFF;
+}
+
+.legend.attributes {
+    background-color: #fdc0be;
+}
+
+.legend.methods {
+    background-color: #cbf7c7;
+}
+
+.legend.functions {
+    background-color: lightblue;
 }

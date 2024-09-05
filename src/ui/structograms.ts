@@ -1,3 +1,4 @@
+import html2canvas from "html2canvas";
 import { AnyStmt, BinaryExpr, ClassDefinition, Expr, ExtMethodDefinition, AnyForBlock, FunctionDefinition, AnyIfElseBlock, Program, UnaryExpr, AnyWhileBlock, AnyAlwaysBlock, StmtKind } from "../language/frontend/ast";
 import { ValueAlias } from "../language/runtime/values";
 import { ENV } from "../spec";

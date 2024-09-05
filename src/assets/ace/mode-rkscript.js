@@ -82,6 +82,8 @@ oop.inherits(Mode, TextMode);
 exports.Mode = Mode;
 
 });
+
+
     
 (function() {
     ace.require(["ace/mode/RKScript"], function(m) {

@@ -8,10 +8,9 @@ let codeStore: Record<string, string> = {
 // enable saving 
 document.getElementById("code-editor")!.onkeydown = (e) => {
     if (e.ctrlKey && e.key === 's') {
-      // Prevent the Save dialog to open
-      e.preventDefault();
-      // Place your code here
-      storeCode();
+        // Prevent the Save dialog to open
+        e.preventDefault();
+        storeCode();
     }
 }
 
