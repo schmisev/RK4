@@ -275,16 +275,15 @@ async function startCode() {
 
     setErrorBar("✔️ kein Fehler gefunden", "none");
 
+    editor.setReadOnly(true);
     for (let i = 0; i < world.getStageCount(); i++) {
         await resetEnv(i);
         if (i > 0) {
             console.log();
             world.loadWorldLog();
         }
-        console.log();
-        console.log("▷ Code wird ausgeführt!");
+        console.log("\n▷ Code wird ausgeführt!");
         
-        editor.setReadOnly(true);
         if (await runCode(code, true)) {
             editor.setReadOnly(false);
             return; // return immediatly if codeRun was interrupted
@@ -292,18 +291,28 @@ async function startCode() {
         // await interrupt(); // for safety
         console.log("▢ Ausführung beendet!");
 
-        await sleep(500); // wait a bit until goal has updated
+        await sleep(250); // wait a bit until goal has updated
+        if (isRunning) {
+            editor.setReadOnly(false);
+            return;
+        }
+
         if (!world.isGoalReached()) {
             console.log(`❌ Du hast die Teilaufgabe ${i+1} NICHT erfüllt!`);
             editor.setReadOnly(false);
             return;
+        } else {
+            console.log(`✔️ Du hast die Teilaufgabe ${i+1} erfüllt!`);
         }
-        console.log(`✔️ Du hast die Teilaufgabe ${i+1} erfüllt!`);
         
-        await sleep(500);
-        editor.setReadOnly(false);
+        await sleep(250);
+        if (isRunning) {
+            editor.setReadOnly(false);
+            return;
+        }
     }
     console.log("🏅 Du hast alle Teilaufgaben erfüllt!");
+    editor.setReadOnly(false);
     return;
 };
 
