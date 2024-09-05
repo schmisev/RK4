@@ -1,27 +1,12 @@
-let consoleBuffer: string = ""
+const maxLogChars = 2000;
 const log: HTMLElement = document.querySelector("#console-log")!;
 
-/*
 console.log = (function (old_log, log: HTMLElement) {
     return function () {
-        log.innerText += Array.prototype.slice.call(arguments).join(' ') + "\n";
+        let overhang = log.textContent!.length - maxLogChars;
+        if (overhang > 0) log.textContent = log.innerText.slice(overhang)
+        log.textContent += Array.prototype.slice.call(arguments).join(' ') + "\r\n";
         old_log.apply(arguments);
         log.scrollTop = log.scrollHeight;
     };
-} (console.log.bind(console), document.querySelector('#console-log')!));
-*/
-
-// Console log replacement
-console.log = (function (old_log) {
-    return function () {
-        consoleBuffer += Array.prototype.slice.call(arguments).join(' ') + "\n";
-        old_log.apply(arguments);
-    };
-} (console.log.bind(console)));
-
-export function updateConsoleLog() {
-    if (!log || consoleBuffer.length == 0) return;
-    log.innerText += consoleBuffer;
-    log.scrollTop = log.scrollHeight;
-    consoleBuffer = "";
-}
+} (console.log.bind(console), log));

@@ -500,6 +500,7 @@ select {
     background-color: black;
     scrollbar-color: lightgreen black;
     scrollbar-width: thin;
+    white-space: pre-line;
 }
 
 .wait-title {

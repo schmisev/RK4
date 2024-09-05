@@ -190,6 +190,7 @@ async function updateIDE() {
     }
 }
 
+// loading tasks
 export function loadRawTask(key: string, task: Task, ignoreTitleInKey = false) {
     const splitKey = destructureKey(key, ignoreTitleInKey);
 
@@ -208,7 +209,7 @@ export function loadRawTask(key: string, task: Task, ignoreTitleInKey = false) {
 }
 
 export async function loadTask(key: string) {
-    interrupt()
+    await interrupt()
 
     if (key in liveTasks) {
         loadRawTask(key, liveTasks[key], false);
@@ -221,6 +222,7 @@ export async function loadTask(key: string) {
     }
 }
 
+// Resetting the environment
 async function resetEnv(stage = 0) {
     env = declareGlobalEnv();
     // create new world and register it in the global environment
@@ -232,6 +234,7 @@ async function resetEnv(stage = 0) {
     await runCode(preloadCode, false);
 };
 
+// Run cmds
 async function runCmd() {
     const cmdCode = cmdLine.value;
     cmdLine.value = "";
@@ -248,13 +251,22 @@ async function runCmd() {
     await runCode(cmdCode, true);
 };
 
-async function interrupt() {
-    queueInterrupt = true;
-    await sleep(dt); // wait long enough for execution loop to exit
-    if (queueInterrupt) queueInterrupt = false;
+// Get past commands via keyboard
+function fetchCmd(e: KeyboardEvent) {
+    if (e.key == "ArrowUp") {
+        if (cmdLineStackPointer == -1) return;
+        cmdLineStackPointer = clamp(cmdLineStackPointer - 1, 0, cmdLineStackPointer);
+        cmdLine.value = cmdLineStack[cmdLineStackPointer];
+    } else if (e.key == "ArrowDown") {
+        if (cmdLineStack.length == 0) return;
+        cmdLineStackPointer = clamp(cmdLineStackPointer + 1, cmdLineStackPointer, cmdLineStack.length - 1);
+        cmdLine.value = cmdLineStack[cmdLineStackPointer];
+    } else if (e.key == "Enter") {
+        runCmd();
+    }
 }
 
-// Start code button
+// Start code via button
 async function startCode() {
     await interrupt();
 
@@ -273,9 +285,11 @@ async function startCode() {
         console.log("▷ Code wird ausgeführt!");
         
         editor.setReadOnly(true);
-        await runCode(code, true);
-        await interrupt(); // for safety
-
+        if (await runCode(code, true)) {
+            editor.setReadOnly(false);
+            return; // return immediatly if codeRun was interrupted
+        }
+        // await interrupt(); // for safety
         console.log("▢ Ausführung beendet!");
 
         await sleep(500); // wait a bit until goal has updated
@@ -301,41 +315,37 @@ async function stopCode() {
     await resetEnv();
 }
 
-// Get past commands via keyboard
-function fetchCmd(e: KeyboardEvent) {
-    if (e.key == "ArrowUp") {
-        if (cmdLineStackPointer == -1) return;
-        cmdLineStackPointer = clamp(cmdLineStackPointer - 1, 0, cmdLineStackPointer);
-        cmdLine.value = cmdLineStack[cmdLineStackPointer];
-    } else if (e.key == "ArrowDown") {
-        if (cmdLineStack.length == 0) return;
-        cmdLineStackPointer = clamp(cmdLineStackPointer + 1, cmdLineStackPointer, cmdLineStack.length - 1);
-        cmdLine.value = cmdLineStack[cmdLineStackPointer];
-    } else if (e.key == "Enter") {
-        runCmd();
+// interrupts for run code
+async function interrupt() {
+    if (!isRunning) return;
+    queueInterrupt = true;
+    while (isRunning) {
+        await sleep(10); // wait long enough for execution loop to exit
     }
+    queueInterrupt = false;
 }
 
 // Run ANY code
-async function runCode(code: string, stepped: boolean) {
-    isRunning = true;
+async function runCode(code: string, stepped: boolean): Promise<boolean> {
     let skippedSleep = 0;
     let lastLineIndex = -1;
     try {
         program = parser.produceAST(code);
         let stepper = evaluate(program, env);
+
+        isRunning = true;
         while (true) {
             const next = stepper.next();
             if (next.done) break;
 
             if (queueInterrupt) {
                 console.log("▽ Ausführung wird abgebrochen!");
-                queueInterrupt = false;
-                break;
+                isRunning = false;
+                return true; // returns true if interrupted
             }
 
             if (stepped) {
-                lastLineIndex = next.value
+                lastLineIndex = next.value;
                 let markerId = editor.session.addMarker(new ace.Range(lastLineIndex, 0, lastLineIndex, 10), 'exec-marker', 'fullLine');
                 
                 if (skippedSleep > frameLagSum) {
@@ -356,11 +366,18 @@ async function runCode(code: string, stepped: boolean) {
             console.log("⚠️ " + e.message);
             console.error(e.stack);
             setErrorMarker(`⚠️ ${e.message} (Zeile: ${errorLineIndex + 1})`, errorLineIndex, "runtime");
+        } else if (e instanceof Error) {
+            // throw e;
+            console.log("⚠️ " + e.message);
+            console.error(e.stack);
+            setErrorMarker(`⚠️ ${e.message} (Zeile: ${lastLineIndex + 1})`, lastLineIndex, "runtime");
         } else {
-            throw e;
+            // do nothing?
         }
     }
+
     isRunning = false;
+    return false;
 };
 
 // updating lag sum
