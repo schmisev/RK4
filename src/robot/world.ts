@@ -6,11 +6,18 @@ import { declareRobot, Robot } from "./robot";
 import { rndi } from "../utils";
 
 export enum BlockType {
-    r, g, b, y
+    r = "R", 
+    g = "G", 
+    b = "B", 
+    y = "Y"
 }
 
 export enum MarkerType {
-    None, R, G, B, Y
+    None = "", 
+    R = "R", 
+    G = "G", 
+    B = "B", 
+    Y = "Y"
 }
 
 export const CBOT = "#b1b1bb";

@@ -19,21 +19,6 @@ export const DIR2SHORTGER: Record<string, string> = {
     "W": "W"
 }
 
-export const BLOCK2STR: Record<BlockType, string> = {
-    0: "R",
-    1: "G",
-    2: "B",
-    3: "Y",
-}
-
-export const MARKER2STR: Record<MarkerType, string> = {
-    0: "",
-    1: "R",
-    2: "G",
-    3: "B",
-    4: "Y",
-}
-
 interface RobotObjVal extends ObjectVal {
     r: Robot,
 }
@@ -138,7 +123,7 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
             const pickedBlock = r.pickUpBlock();
             if (pickedBlock == undefined)
                 throw new RuntimeError("Irgendetwas ist schiefgegangen...");
-            return MK_STRING(BLOCK2STR[pickedBlock]);
+            return MK_STRING(pickedBlock);
         }
     );
 
@@ -165,7 +150,7 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
             const removedMarker = r.removeMarker();
             if (removedMarker == undefined)
                 throw new RuntimeError("Irgendetwas ist schiefgegangen...");
-            return MK_STRING(MARKER2STR[removedMarker]);
+            return MK_STRING(removedMarker);
         }
     );
 

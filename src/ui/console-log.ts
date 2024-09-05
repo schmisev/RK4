@@ -1,7 +1,6 @@
 let consoleBuffer: string = ""
 const log: HTMLElement = document.querySelector("#console-log")!;
 
-// Console log replacement
 /*
 console.log = (function (old_log, log: HTMLElement) {
     return function () {
@@ -12,6 +11,7 @@ console.log = (function (old_log, log: HTMLElement) {
 } (console.log.bind(console), document.querySelector('#console-log')!));
 */
 
+// Console log replacement
 console.log = (function (old_log) {
     return function () {
         consoleBuffer += Array.prototype.slice.call(arguments).join(' ') + "\n";

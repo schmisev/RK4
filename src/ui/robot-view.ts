@@ -78,33 +78,33 @@ export function robotSketch(p5: p5) {
     const ST = createTextTexture("S");
 
     const BLOCK2COLOR: Record<BlockType, string> = {
-        "0": CR,
-        "1": CG,
-        "2": CB,
-        "3": CY,
+        [BlockType.r]: CR,
+        [BlockType.g]: CG,
+        [BlockType.b]: CB,
+        [BlockType.y]: CY,
     };
 
     const BLOCK2XTEXTURE: Record<BlockType, p5.Graphics> = {
-        "0": XR,
-        "1": XG,
-        "2": XB,
-        "3": XY,
+        [BlockType.r]: XR,
+        [BlockType.g]: XG,
+        [BlockType.b]: XB,
+        [BlockType.y]: XY,
     };
 
     const MARKER2COLOR: Record<MarkerType, string> = {
-        "0": "#000000",
-        "1": CR,
-        "2": CG,
-        "3": CB,
-        "4": CY,
+        [MarkerType.None]: "#000000",
+        [MarkerType.R]: CR,
+        [MarkerType.G]: CG,
+        [MarkerType.B]: CB,
+        [MarkerType.Y]: CY,
     };
 
     const MARKER2XTEXTURE: Record<MarkerType, p5.Graphics> = {
-        "0": XNone,
-        "1": XR,
-        "2": XG,
-        "3": XB,
-        "4": XY,
+        [MarkerType.None]: XNone,
+        [MarkerType.R]: XR,
+        [MarkerType.G]: XG,
+        [MarkerType.B]: XB,
+        [MarkerType.Y]: XY,
     };
 
     const numberPlates: Record<number, p5.Graphics> = {};
