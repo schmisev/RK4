@@ -268,6 +268,8 @@ function fetchCmd(e: KeyboardEvent) {
 
 // Start code via button
 async function startCode() {
+    resetErrorMarkers();
+    
     await interrupt();
 
     const code = editor.getValue();

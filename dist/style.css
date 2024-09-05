@@ -243,7 +243,7 @@ select {
 }
 
 .turning:hover {
-    transform: rotate(45deg);
+    transform: rotate(90deg);
 }
 
 /*helper on hover*/
@@ -374,6 +374,11 @@ select {
 #robot-canvas {
     grid-column: 8 / 14;
     grid-row: 3 / 13;
+    cursor: grab;
+}
+
+#robot-canvas:active {
+    cursor: grabbing;
 }
 
 #object-bar {
