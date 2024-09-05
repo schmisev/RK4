@@ -148,7 +148,7 @@ span.line {
 }
 
 .struct-classtype {
-    color: red;
+    /*color: purple;*/
     font-weight: bold;
 }
 
@@ -210,7 +210,7 @@ span.line {
 
 .struct-deemph {
     color: gray;
-    font-weight: bold;
+    /*font-weight: bold;*/
 }
 
 .struct-dot {

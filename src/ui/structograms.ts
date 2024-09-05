@@ -52,6 +52,7 @@ const TYPE2GER: Record<string, string> = {
     "boolean": "Wahrheitswert",
     "string": "Text",
     "null": "Nix",
+    "object": "Objekt",
 }
 
 const translateOperator = (op: string) => {
@@ -325,7 +326,7 @@ function structureClass(node: ClassDefinition): string {
 
 function structureMethod(astNode: FunctionDefinition, classname: string): void {
     const methodHandle = `${astNode.name}(${astNode.params.map((p) => p.ident).join(", ")})`
-    const fullMethodHandle = `${methodHandle} in ${classname}`
+    const fullMethodHandle = `${methodHandle} in <span class="struct-classtype">${classname}</span>`
     sections.push(
         makeDiv(`${makeTooltip("Methode", `Hier ist eine Methode in der Klasse ${classname} definiert, die an anderen Stellen im Code aufgerufen werden kann.`)}: ${fullMethodHandle} ${structureSequence(astNode.body)}`,"struct-program method")
     );
@@ -333,7 +334,7 @@ function structureMethod(astNode: FunctionDefinition, classname: string): void {
 
 function structureExtMethod(astNode: ExtMethodDefinition): string {
     const methodHandle = `${astNode.name}(${astNode.params.map((p) => p.ident).join(", ")})`
-    const fullMethodHandle = `${methodHandle} für ${astNode.classname}`
+    const fullMethodHandle = `${methodHandle} für <span class="struct-classtype">${astNode.classname}</span>`
     sections.push(
         makeDiv(`${makeTooltip("Methode", `Hier wird eine neue Methode für die Klasse ${astNode.classname} definiert, die an anderen Stellen im Code aufgerufen werden kann.`)}: ${fullMethodHandle} ${structureSequence(astNode.body)}`,"struct-program method")
     );
