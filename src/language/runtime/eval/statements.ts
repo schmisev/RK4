@@ -12,12 +12,14 @@ import {
     AbruptReturn,
     AbruptContinue,
     AbruptBreak,
+    AbruptAlias,
+    ValueAlias,
 } from "../values";
 
 export function* eval_program(prog: Program, env: Environment) {
     let lastEvaluated: RuntimeVal = MK_NULL();
     for (const statement of prog.body) {
-        if (statement.kind == StmtKind.DocComment || statement.kind == "EmptyLine") continue; // skip these
+        if (statement.kind == StmtKind.DocComment || statement.kind == StmtKind.EmptyLine) continue; // skip these
         lastEvaluated = yield* evaluate(statement, env);
     }
     return lastEvaluated;
@@ -47,13 +49,13 @@ export function* eval_obj_declaration(
     declEnv: Environment | VarHolder = evalEnv,
 ): SteppedEval<RuntimeVal> {
     const cl = evalEnv.lookupVar(decl.classname);
-    if (cl.type != "class")
+    if (cl.type != ValueAlias.Class)
         throw new RuntimeError(`'${decl.classname}' ist kein Klassenname!`, decl.lineIndex);
     if (cl.internal)
         throw new RuntimeError(`Kann kein neues Objekt der Klasse '${decl.classname}' erzeugen.`, decl.lineIndex);
 
     const obj: ObjectVal = {
-        type: "object",
+        type: ValueAlias.Object,
         cls: cl,
         ownMembers: new VarHolder(),
     };
@@ -85,7 +87,7 @@ export function* eval_obj_declaration(
     }
     
     for (const attr of cl.attributes) {
-        if (attr.type == "object") {
+        if (attr.type == ValueAlias.Object) {
             yield* eval_obj_declaration(attr, constructorEnv, obj.ownMembers);
         } else {
             yield* eval_var_declaration(attr, constructorEnv, obj.ownMembers);
@@ -101,7 +103,7 @@ export function* eval_fn_definition(
     env: Environment
 ): SteppedEval<RuntimeVal> {
     const fn: FunctionVal = {
-        type: "function",
+        type: ValueAlias.Function,
         name: def.name,
         params: def.params,
         declenv: env,
@@ -117,7 +119,7 @@ function eval_method_definition(
     env: Environment,
 ) {
     const method: MethodVal = {
-        type: "method",
+        type: ValueAlias.Method,
         name: def.name,
         params: def.params,
         declenv: env,
@@ -132,12 +134,12 @@ export function eval_ext_method_definition(
     env: Environment
 ): RuntimeVal {
     const cls = env.lookupVar(def.classname);
-    if (cls.type != "class")
+    if (cls.type != ValueAlias.Class)
         throw new RuntimeError(
             `Erweiterungsmethoden können nur für Klassen definiert werden, nicht für '${cls.type}'!`, def.lineIndex
         );
     cls.prototype.declareMethod(def.name, {
-        type: "method",
+        type: ValueAlias.Method,
         body: def.body,
         name: def.name,
         declenv: env,
@@ -160,7 +162,7 @@ export function eval_class_definition(
     }
 
     const cl: ClassVal = {
-        type: "class",
+        type: ValueAlias.Class,
         name: def.ident,
         attributes: def.attributes,
         params: def.params,
@@ -172,24 +174,24 @@ export function eval_class_definition(
 
 function formatValue(value: RuntimeVal): string {
     // side effect
-    if (value.type == "number") {
+    if (value.type == ValueAlias.Number) {
         return value.value.toString();
-    } else if (value.type == "boolean") {
+    } else if (value.type == ValueAlias.Boolean) {
         const boolVal = value.value;
         if (boolVal) {
             return "wahr";
         } else {
             return "falsch";
         }
-    } else if (value.type == "null") {
+    } else if (value.type == ValueAlias.Null) {
         return "nix";
-    } else if (value.type == "string") {
+    } else if (value.type == ValueAlias.String) {
         return value.value;
-    } else if (value.type == "object") {
-        return `[Object der Klasse ${value.cls.name}]`;
-    } else if (value.type == "class") {
+    } else if (value.type == ValueAlias.Object) {
+        return `[Objekt der Klasse ${value.cls.name}]`;
+    } else if (value.type == ValueAlias.Class) {
         return `<Klasse ${value.name}>`;
-    } else if (value.type == "function" || value.type == "native-fn") {
+    } else if (value.type == ValueAlias.Function || value.type == ValueAlias.NativeFunction) {
         return `(Funktion ${value.name})`;
     }
     return value satisfies never;
@@ -217,7 +219,7 @@ export function* eval_return_command(
     env: Environment
 ): SteppedEval<AbruptReturn> {
     return {
-        type: "return",
+        type: AbruptAlias.Return,
         value: yield* evaluate_expr(ret.value, env),
     }
 }
@@ -227,7 +229,7 @@ export function* eval_break_command(
     env: Environment
 ): SteppedEval<AbruptBreak> {
     return {
-        type: "break",
+        type: AbruptAlias.Break,
     }
 }
 
@@ -236,7 +238,7 @@ export function* eval_continue_command(
     env: Environment
 ): SteppedEval<AbruptContinue> {
     return {
-        type: "continue",
+        type: AbruptAlias.Continue,
     }
 }
 
@@ -244,10 +246,10 @@ function evaluate_condition_value(
     condition: RuntimeVal,
     lineIndex: number
 ): boolean {
-    if (condition.type == "boolean") {
+    if (condition.type == ValueAlias.Boolean) {
         return condition.value;
     }
-    if (condition.type == "number") return condition.value != 0;
+    if (condition.type == ValueAlias.Number) return condition.value != 0;
     throw new RuntimeError(
         "Die Bedingung muss eine Zahl oder ein Wahrheitswert sein!", lineIndex
     );
@@ -271,7 +273,7 @@ export function* eval_for_block<A extends AbruptStmtKind>(
     env: Environment
 ): SteppedEval<RuntimeVal | AbruptEvalResult<A>> {
     const counter = yield* evaluate(block.counter, env);
-    if (counter.type != "number")
+    if (counter.type != ValueAlias.Number)
         throw new RuntimeError("Zähler muss eine Zahl sein!", block.lineIndex);
     let max = counter.value;
     if (max < 0) throw new RuntimeError("Zähler muss größer oder gleich 0 sein!", block.lineIndex);
@@ -283,11 +285,11 @@ export function* eval_for_block<A extends AbruptStmtKind>(
             new Environment(env)
         );
         switch (bodyValue.type) {
-            case "return":
+            case AbruptAlias.Return:
                 return bodyValue;
-            case "continue":
+            case AbruptAlias.Continue:
                 continue loop;
-            case "break":
+            case AbruptAlias.Break:
                 lastEvaluated = MK_NULL();
                 break loop;
             default:
@@ -313,12 +315,12 @@ export function* eval_while_block<A extends AbruptStmtKind>(
             new Environment(env)
         );
         switch (bodyValue.type) {
-            case "continue":
+            case AbruptAlias.Continue:
                 continue loop;
-            case "break":
+            case AbruptAlias.Break:
                 lastEvaluated = MK_NULL();
                 break loop;
-            case "return":
+            case AbruptAlias.Return:
                 return bodyValue;
             default:
                 lastEvaluated = bodyValue;
@@ -339,11 +341,11 @@ export function* eval_always_block<A extends AbruptStmtKind>(
             new Environment(env)
         );
         switch (bodyValue.type) {
-            case "return":
+            case AbruptAlias.Return:
                 return bodyValue;
-            case "continue":
+            case AbruptAlias.Continue:
                 continue loop;
-            case "break":
+            case AbruptAlias.Break:
                 lastEvaluated = MK_NULL();
                 break loop;
             default:
@@ -362,9 +364,9 @@ export function* eval_bare_statements<A extends AbruptStmtKind>(
         if (statement.kind == StmtKind.DocComment || statement.kind == StmtKind.EmptyLine) continue; // skip these
         const evaluated = yield* evaluate(statement, env);
         switch (evaluated.type) {
-            case "break":
-            case "continue":
-            case "return":
+            case AbruptAlias.Break:
+            case AbruptAlias.Continue:
+            case AbruptAlias.Return:
                 return evaluated;
             default:
                 lastEvaluated = evaluated;

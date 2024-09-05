@@ -1,6 +1,6 @@
 import { RuntimeError } from "../errors";
 import { ClassPrototype, GlobalEnvironment, VarHolder } from "../language/runtime/environment";
-import { MK_BOOL, MK_STRING, MK_NUMBER, RuntimeVal, BuiltinClassVal, ObjectVal, MK_NATIVE_METHOD } from "../language/runtime/values";
+import { MK_BOOL, MK_STRING, MK_NUMBER, RuntimeVal, BuiltinClassVal, ObjectVal, MK_NATIVE_METHOD, ValueAlias } from "../language/runtime/values";
 import { ENV } from "../spec";
 import { Vec2 } from "../utils";
 import { BlockType, CHAR2BLOCK, CHAR2MARKER, Field, MarkerType, World } from "./world";
@@ -26,7 +26,7 @@ interface RobotObjVal extends ObjectVal {
 export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
     const prototype = new ClassPrototype();
     const robotCls: BuiltinClassVal = {
-        type: "class",
+        type: ValueAlias.Class,
         name: "Roboter",
         internal: true,
         prototype,
@@ -107,7 +107,7 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
                 throw new RuntimeError(ENV.robot.mth.PLACE_BLOCK + `() erwartet einen oder keine Parameter!`);
             let col = "R";
             if (args.length == 1) {
-                if (args[0].type != "string") throw new RuntimeError("Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!");
+                if (args[0].type != ValueAlias.String) throw new RuntimeError("Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!");
                 col = args[0].value;
             }
             r.placeBlock(CHAR2BLOCK[col.toLowerCase()]);
@@ -134,7 +134,7 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
                 throw new RuntimeError(ENV.robot.mth.SET_MARKER + `() erwartet einen oder keine Parameter, z.B. markSetzen(blau)!`);
             let col = "Y";
             if (args.length == 1) {
-                if (args[0].type != "string") throw new RuntimeError("Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!");
+                if (args[0].type != ValueAlias.String) throw new RuntimeError("Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!");
                 col = args[0].value;
             }
             r.setMarker(CHAR2MARKER[col]);
@@ -160,7 +160,7 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
             if (args.length > 1)
                 throw new RuntimeError(ENV.robot.mth.IS_ON_MARKER +`() erwartet einen oder keine Parameter, z.B. istAufMarke(blau)!`);
             if (args.length == 1) {
-                if (args[0].type != "string") throw new RuntimeError("Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!");
+                if (args[0].type != ValueAlias.String) throw new RuntimeError("Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!");
                 const col = args[0].value;
                 return MK_BOOL(r.isOnMarker(CHAR2MARKER[col]));
             } else {
@@ -175,7 +175,7 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
             if (args.length > 1)
                 throw new RuntimeError(ENV.robot.mth.SEES_BLOCK + `() erwartet einen oder keine Parameter, z.B. siehtZiegel(blau)!`);
             if (args.length == 1) {
-                if (args[0].type != "string") throw new RuntimeError("Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!");
+                if (args[0].type != ValueAlias.String) throw new RuntimeError("Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!");
                 const col = args[0].value;
                 return MK_BOOL(r.seesBlock(CHAR2BLOCK[col.toLowerCase()]));
             } else {
@@ -208,7 +208,7 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
 export function declareRobot(r: Robot, varname: string, env: GlobalEnvironment): void {
     const karol_env = new VarHolder();
     const robot: RobotObjVal = {
-        type: "object",
+        type: ValueAlias.Object,
         cls: env.robotClass,
         ownMembers: karol_env,
         r,

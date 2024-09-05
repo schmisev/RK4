@@ -1,32 +1,32 @@
-import type { AbruptBreak, AbruptContinue, AbruptReturn } from "../runtime/values";
+import type { AbruptBreak, AbruptContinue, AbruptReturn, ValueAlias } from "../runtime/values";
 
 export const enum StmtKind {
-    Program = "Program",
-    VarDeclaration = "VarDeclaration",
-    ObjDeclaration = "ObjDeclaration",
-    EmptyLine = "EmptyLine",
-    DocComment = "DocComment",
-    IfElseBlock = "IfElseBlock",
-    ForBlock = "ForBlock",
-    WhileBlock = "WhileBlock",
-    AlwaysBlock = "AlwaysBlock",
-    ShowCommand = "ShowCommand",
-    BreakCommand = "BreakCommand",
-    ContinueCommand = "ContinueCommand",
-    ReturnCommand = "ReturnCommand",
-    AssignmentExpr = "AssignmentExpr",
-    BinaryExpr = "BinaryExpr",
-    UnaryExpr = "UnaryExpr",
-    Identifier = "Identifier",
-    NumericLiteral = "NumericLiteral",
-    NullLiteral = "NullLiteral",
-    BooleanLiteral = "BooleanLiteral",
-    StringLiteral = "StringLiteral",
-    MemberExpr = "MemberExpr",
-    CallExpr = "CallExpr",
-    ClassDefinition = "ClassDefinition",
-    FunctionDefinition = "FunctionDefinition",
-    ExtMethodDefinition = "ExtMethodDefinition",
+    Program = "Programm",
+    VarDeclaration = "VarDeklaration",
+    ObjDeclaration = "ObjDeklaration",
+    EmptyLine = "LeereZeile",
+    DocComment = "DokuKommentar",
+    IfElseBlock = "WennDannBlock",
+    ForBlock = "MalBlock",
+    WhileBlock = "SolangeBlock",
+    AlwaysBlock = "ImmerBlock",
+    ShowCommand = "ZeigAnweisung",
+    BreakCommand = "AbbrechenAnweisung",
+    ContinueCommand = "WeiterAnweisung",
+    ReturnCommand = "ZurückAnweisung",
+    AssignmentExpr = "ZuweisungsAusdruck",
+    BinaryExpr = "BinärerAusdruck",
+    UnaryExpr = "UnärerAusdruck",
+    Identifier = "Bezeichner",
+    NumericLiteral = "NumerischerLiteral",
+    NullLiteral = "NixLiteral",
+    BooleanLiteral = "WahrheitswertLiteral",
+    StringLiteral = "TextLiteral",
+    MemberExpr = "MitgliedsAudruck",
+    CallExpr = "AufrufsAusdruck",
+    ClassDefinition = "KlassenDefinition",
+    FunctionDefinition = "FunktionsDefinition",
+    ExtMethodDefinition = "ExtMethodenDefinition",
 };
 export type AbruptStmtKind = StmtKind.BreakCommand | StmtKind.ContinueCommand | StmtKind.ReturnCommand;
 type AbruptToStmt = {
@@ -79,7 +79,7 @@ export interface VarDeclaration {
     kind: StmtKind.VarDeclaration;
     lineIndex: number;
     ident: string;
-    type: "null" | "boolean" | "number" | "string";
+    type: ValueAlias.Null | ValueAlias.Boolean | ValueAlias.Number | ValueAlias.String;
     value: Expr;
 }
 
@@ -87,7 +87,7 @@ export interface ObjDeclaration {
     kind: StmtKind.ObjDeclaration;
     lineIndex: number;
     ident: string;
-    type: "object";
+    type: ValueAlias.Object;
     classname: string;
     args: Expr[];
 }
@@ -191,7 +191,7 @@ export interface NumericLiteral {
 export interface NullLiteral {
     kind: StmtKind.NullLiteral;
     lineIndex: number;
-    value: "null";
+    value: ValueAlias.Null;
 }
 
 export interface BooleanLiteral {

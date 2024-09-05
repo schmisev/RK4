@@ -1,6 +1,7 @@
 import { Stmt, Program, Expr, VarDeclaration, ObjDeclaration, FunctionDefinition, ShowCommand, BreakCommand, ContinueCommand, ClassDefinition, ParamDeclaration, ReturnCommand, ExtMethodDefinition, StmtKind, IfElseBlock, ForBlock, WhileBlock, AlwaysBlock, AbruptStmtKind, DocComment } from "./ast";
 import { tokenize, Token, TokenType, KEYWORDS } from "./lexer";
 import { ParserError } from "../../errors";
+import { ValueAlias } from "../runtime/values";
 
 export default class Parser {
     private tokens: Token[] = [];
@@ -309,13 +310,13 @@ export default class Parser {
     parse_var_declaration(): VarDeclaration | ObjDeclaration {
         const lineIndex = this.at().lineIndex;
 
-        let type: VarDeclaration["type"] = "null";
+        let type: VarDeclaration["type"] = ValueAlias.Null;
         if (this.at().type == TokenType.DeclBoolean) {
-            type = "boolean";
+            type = ValueAlias.Boolean;
         } else if (this.at().type == TokenType.DeclNumber) {
-            type = "number";
+            type = ValueAlias.Number;
         } else if (this.at().type == TokenType.DeclString) {
-            type = "string";
+            type = ValueAlias.String;
         } else if (this.at().type == TokenType.DeclObject) {
             return this.parse_obj_declaration();
         }
@@ -336,15 +337,15 @@ export default class Parser {
     parse_param_declaration(): ParamDeclaration {
         const lineIndex = this.at().lineIndex;
         
-        let type = "null";
+        let type = ValueAlias.Null;
         if (this.at().type == TokenType.DeclBoolean) {
-            type = "boolean";
+            type = ValueAlias.Boolean;
         } else if (this.at().type == TokenType.DeclNumber) {
-            type = "number";
+            type = ValueAlias.Number;
         } else if (this.at().type == TokenType.DeclString) {
-            type = "string";
+            type = ValueAlias.String;
         } else if (this.at().type == TokenType.DeclObject) {
-            type = "object";
+            type = ValueAlias.Object;
         }
         this.eat();
         const ident = this.expect(TokenType.Identifier, "Erwarte Variablennamen nach 'Zahl', 'Wahrheitswert', 'Text' oder 'Objekt'!").value;
@@ -426,7 +427,7 @@ export default class Parser {
         return {
             kind: StmtKind.ObjDeclaration,
             ident,
-            type: "object",
+            type: ValueAlias.Object,
             classname,
             args,
             lineIndex,
@@ -576,7 +577,7 @@ export default class Parser {
         while (this.at().type == TokenType.Period) {
             this.eat();
             const member = this.parse_primary_expr(); // has to be identifier
-            if (member.kind != "Identifier")
+            if (member.kind != StmtKind.Identifier)
                 throw new ParserError(`Kann Punktoperator nicht nutzen, wenn rechts kein Name steht!`, this.at().lineIndex);
 
             container = {

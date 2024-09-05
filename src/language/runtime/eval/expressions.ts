@@ -1,5 +1,5 @@
 import { RuntimeError } from "../../../errors";
-import { Identifier, BinaryExpr, UnaryExpr, AssignmentExpr, CallExpr, MemberExpr } from "../../frontend/ast";
+import { Identifier, BinaryExpr, UnaryExpr, AssignmentExpr, CallExpr, MemberExpr, StmtKind } from "../../frontend/ast";
 import { Environment } from "../environment";
 import { SteppedEval, evaluate_expr } from "../interpreter";
 import {
@@ -11,6 +11,8 @@ import {
     MK_NUMBER,
     ObjectVal,
     MK_STRING,
+    AbruptAlias,
+    ValueAlias,
 } from "../values";
 import { eval_bare_statements } from "./statements";
 
@@ -23,7 +25,7 @@ export function eval_identifier(
 }
 
 function expectObject(val: RuntimeVal, reason: string, lineIndex: number): asserts val is ObjectVal {
-    if (val.type != "object") {
+    if (val.type != ValueAlias.Object) {
         throw new RuntimeError(
             `Erwartete ein Object, aber bekam '${val.type}' - ${reason}`, lineIndex
         )
@@ -34,7 +36,7 @@ export function* eval_assignment_expr(
     node: AssignmentExpr,
     env: Environment
 ): SteppedEval<RuntimeVal> {
-    if (node.assigne.kind == "MemberExpr") {
+    if (node.assigne.kind == StmtKind.MemberExpr) {
         const assigne = node.assigne;
         const symbol = assigne.member.symbol;
         const obj = yield* evaluate_expr(assigne.container, env);
@@ -45,7 +47,7 @@ export function* eval_assignment_expr(
     }
 
     // regular assigments
-    if (node.assigne.kind == "Identifier") {
+    if (node.assigne.kind == StmtKind.Identifier) {
         const varname = node.assigne.symbol;
         const value = env.assignVar(varname, yield* evaluate_expr(node.value, env));
         return value;
@@ -64,21 +66,21 @@ export function* eval_binary_expr(
     const rhs = yield* evaluate_expr(binop.right, env);
 
     try {
-        if (lhs.type == "number" && rhs.type == "number") {
+        if (lhs.type == ValueAlias.Number && rhs.type == ValueAlias.Number) {
             return eval_numeric_binary_expr(
                 lhs,
                 rhs,
                 binop.operator,
                 binop.lineIndex
             );
-        } else if (lhs.type == "boolean" && rhs.type == "boolean") {
+        } else if (lhs.type == ValueAlias.Boolean && rhs.type == ValueAlias.Boolean) {
             return eval_logical_binary_expr(
                 lhs,
                 rhs,
                 binop.operator,
                 binop.lineIndex
             );
-        } else if (lhs.type == "string" && rhs.type == "string") {
+        } else if (lhs.type == ValueAlias.String && rhs.type == ValueAlias.String) {
             return eval_string_binary_expr(
                 lhs,
                 rhs,
@@ -164,11 +166,11 @@ export function* eval_unary_expr(
     const rhs = yield* evaluate_expr(unop.right, env);
 
     try {
-        if (rhs.type == "boolean") {
+        if (rhs.type == ValueAlias.Boolean) {
             return eval_logical_unary_expr(rhs, unop.operator, unop.lineIndex);
-        } else if (rhs.type == "number") {
+        } else if (rhs.type == ValueAlias.Number) {
             return eval_numeric_unary_expr(rhs, unop.operator, unop.lineIndex);
-        } else if (rhs.type == "string") {
+        } else if (rhs.type == ValueAlias.String) {
             return eval_string_unary_expr(rhs, unop.operator, unop.lineIndex);
         }
     } catch {
@@ -223,9 +225,9 @@ export function* eval_call_expr(
     //const args = call.args.map((arg) => evaluate(arg, env));
     const fn = yield* evaluate_expr(call.ident, env);
 
-    if (fn.type == "native-fn") {
+    if (fn.type == ValueAlias.NativeFunction) {
         return fn.call(args);
-    } else if (fn.type == "function") {
+    } else if (fn.type == ValueAlias.Function) {
         const scope = new Environment(fn.declenv);
 
         // create variables
@@ -246,7 +248,7 @@ export function* eval_call_expr(
         }
 
         const result = yield* eval_bare_statements(fn.body, scope);
-        if (result.type === "return") {
+        if (result.type === AbruptAlias.Return) {
             return result.value;
         }
         return result;
