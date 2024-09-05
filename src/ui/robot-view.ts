@@ -4,6 +4,7 @@ import { isRunning, queueInterrupt, world, objOverlay, taskCheck, updateLagSum, 
 import { Robot } from '../robot/robot';
 import { CR, CY, CG, CB, BlockType, MarkerType, World, CBOT, CBOT2, Field } from '../robot/world';
 import { robotDiagramIndex, showRobotDiagram, hideRobotDiagram } from './objectigrams';
+import { updateConsoleLog } from './console-log';
 
 
 // Setup robot sketch
@@ -135,6 +136,9 @@ export function robotSketch(p5: p5) {
         } else {
             resetLagSum();
         }
+
+        // update console log
+        updateConsoleLog();
 
         // update task status
         if (!world.isGoalReached()) {
