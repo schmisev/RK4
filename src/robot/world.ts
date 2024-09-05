@@ -117,6 +117,7 @@ export class World {
     stages: string[];
     stageIdx: number = -1;
     goalsRemaining: number = 0;
+    generation: number = 0;
 
     constructor(src: string, stage: number) {
         this.resetWorld();
@@ -353,6 +354,7 @@ export class Field {
                 throw new RuntimeError(`Kann hier keinen Ziel-Block hinlegen!`);
             this.goalBlocks.push(b);
         }
+        this.world.generation++;
         this.wasChanged = true;
     }
 
@@ -366,6 +368,7 @@ export class Field {
         if (!this.isEditable || this.blocks.length <= 0)
             throw new RuntimeError(`Kann hier keinen Block aufheben!`);
         this.blocks.pop();
+        this.world.generation++;
         this.wasChanged = true;
     }
 
@@ -380,6 +383,7 @@ export class Field {
         else {
             this.goalMarker = m;
         }
+        this.world.generation++;
         this.wasChanged = true;
     }
 
@@ -387,6 +391,7 @@ export class Field {
         if (!this.isEditable || this.marker == MarkerType.None)
             throw new RuntimeError(`Kann hier keine Marke entfernen!`);
         this.marker = MarkerType.None;
+        this.world.generation++;
         this.wasChanged = true;
     }
 

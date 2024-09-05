@@ -18,7 +18,6 @@ document.addEventListener('visibilitychange', () => {
         }
     }
   });
-  
 
 // Setup robot sketch
 export function robotSketch(p5: p5) {
@@ -28,7 +27,9 @@ export function robotSketch(p5: p5) {
     let pan = 0.0;
     let tilt = 0.0;
     let worldGoalReached = false;
-
+    let worldGeoms: Model[] = [];
+    let worldGeneriation: number = -1;
+    
     const TSZ = 50; // Tilesize
     const BLH = 30; // Block height
     const MRH = 1; // Marker height
@@ -101,6 +102,176 @@ export function robotSketch(p5: p5) {
 
     const numberPlates: Record<number, p5.Graphics> = {};
 
+    type CoordMap<Key extends PropertyKey, Coords> = Partial<Record<Key, Coords[]>>;
+    interface Model {
+        setup(p5: p5): void;
+        readonly geom: p5.Geometry;
+    }
+    
+    class BatchedBoxes {
+        length: number = 0;
+        width: number = 0;
+        height: number = 0;
+    
+        hasFloor: boolean[] = [];
+        goalReached: boolean[] = [];
+        walls: [number, number][] = []; // (x, y) coordinates of wall blocks
+    
+        blocks: CoordMap<BlockType, [number, number, number]> = {};
+        mismatchedBlocks: CoordMap<BlockType, [number, number, number]> = {};
+        goalBlocks: CoordMap<BlockType, [number, number, number]> = {};
+    
+        markers: CoordMap<MarkerType, [number, number]> = {};
+        mismatchedMarkers: CoordMap<MarkerType, [number, number]> = {};
+        goalMarkers: CoordMap<MarkerType, [number, number]> = {};
+    
+        init(length: number, width: number, height: number) {
+            this.length = length;
+            this.width = width;
+            this.height = height;
+            this.hasFloor = new Array(width * length);
+            this.goalReached = new Array(width * length);
+        }
+        floor(x: number, y: number, isF: boolean) {
+            this.hasFloor[x * this.width + y] = isF;
+        }
+        goal(x: number, y: number, reached: boolean) {
+            this.goalReached[x * this.width + y] = reached;
+        }
+        wall(x: number, y: number) {
+            this.walls.push([x, y]);
+        }
+        static _add<B extends PropertyKey, C>(map: CoordMap<B, C>, typ: B, coord: C) {
+            let list = map[typ];
+            if (!list)
+                list = (map[typ] = []);
+            list.push(coord);
+        }
+        block(x: number, y: number, z: number, type: BlockType) {
+            BatchedBoxes._add(this.blocks, type, [x, y, z]);
+        }
+        badBlock(x: number, y: number, z: number, type: BlockType) {
+            BatchedBoxes._add(this.mismatchedBlocks, type, [x, y, z]);
+        }
+        goalBlock(x: number, y: number, z: number, type: BlockType) {
+            BatchedBoxes._add(this.goalBlocks, type, [x, y, z]);
+        }
+        marker(x: number, y: number, type: MarkerType) {
+            BatchedBoxes._add(this.markers, type, [x, y]);
+        }
+        badMarker(x: number, y: number, type: MarkerType) {
+            BatchedBoxes._add(this.mismatchedMarkers, type, [x, y]);
+        }
+        goalMarker(x: number, y: number, type: MarkerType) {
+            BatchedBoxes._add(this.mismatchedMarkers, type, [x, y]);
+        }
+        static iBox(p5: p5, x: number, y: number, z: number, w: number, l: number, h: number) {
+            p5.push();
+            p5.translate(x, y, z);
+            p5.box(w, l, h);
+            p5.pop();
+        }
+        draw(p5: p5): Model[] {
+            const offX = (1 - this.length) * 0.5 * TSZ,
+                offY = (1 - this.width) * 0.5 * TSZ,
+                offZ = (1 - this.height) * 0.5 * BLH;
+            const geoms: Model[] = [];
+            // floor
+            p5.beginGeometry();
+            p5.noStroke();
+            for (let x = 0; x < this.length; x++) {
+                for (let y = 0; y < this.width; y++) {
+                    if (!this.hasFloor[x * this.width + y])
+                        continue;
+                    BatchedBoxes.iBox(p5, offX + x * TSZ, offY + y * TSZ, offZ + (-BLH - FLH) * 0.5, TSZ, TSZ, FLH);
+                }
+            }
+            geoms.push({
+                setup: p5 => {
+                    p5.fill(250);
+                    p5.stroke(200);
+                },
+                geom: p5.endGeometry(),
+            });
+
+            // goal reached
+            p5.beginGeometry();
+            p5.noStroke();
+            for (let x = 0; x < this.length; x++) {
+                for (let y = 0; y < this.width; y++) {
+                    if (!this.hasFloor[x * this.width + y])
+                        continue;
+                    const goalDone = this.goalReached[x * this.width + y];
+                    if (goalDone) {
+                        p5.fill(0, 255, 0);
+                    } else {
+                        p5.fill(255, 0, 0);
+                    }
+                    BatchedBoxes.iBox(p5, offX + x * TSZ, offY + y * TSZ, offZ - 3 * FLH, TSZ * 0.4, TSZ * 0.4, FLH);
+                }
+            }
+            geoms.push({
+                setup: p5 => {
+                    p5.noStroke();
+                },
+                geom: p5.endGeometry()
+            });
+
+            // walls
+            if (this.walls.length > 0) {
+                p5.beginGeometry();
+                p5.noStroke();
+                for (const [x, y] of this.walls) {
+                    BatchedBoxes.iBox(p5, offX + x * TSZ, offY + y * TSZ, offZ + (-BLH + WLH) * 0.5, TSZ, TSZ, WLH);
+                }
+                geoms.push({
+                    setup: p5 => {
+                        p5.fill(200);
+                        p5.stroke(0);
+                    },
+                    geom: p5.endGeometry(),
+                });
+            }
+            // blocks
+            for (const [type, coords] of Object.entries(this.blocks)) {
+                if (coords.length == 0) continue;
+                p5.beginGeometry();
+                p5.noStroke();
+                for (const [x, y, z] of coords) {
+                    BatchedBoxes.iBox(p5, offX + x * TSZ, offY + y * TSZ, offZ + z * BLH, TSZ, TSZ, BLH);
+                }
+                geoms.push({
+                    setup: p5 => {
+                        p5.fill(BLOCK2COLOR[type as any as BlockType]);
+                        p5.stroke(0, 0, 0);
+                    },
+                    geom: p5.endGeometry()
+                });
+            }
+            // mismatched blocks
+            for (const [type, coords] of Object.entries(this.mismatchedBlocks)) {
+                if (coords.length == 0) continue;
+                p5.beginGeometry();
+                p5.noStroke();
+                for (const [x, y, z] of coords) {
+                    BatchedBoxes.iBox(p5, offX + x * TSZ, offY + y * TSZ, offZ + z * BLH, TSZ, TSZ, BLH);
+                }
+                geoms.push({
+                    setup: p5 => {
+                        p5.texture(BLOCK2XTEXTURE[type as any as BlockType]);
+                        p5.stroke(0, 0, 0);
+                    },
+                    geom: p5.endGeometry()
+                });
+            }
+            // TODO: goal blocks, markers
+            for (const g of geoms) {
+                (g.geom as any).edges = [[0, 0]];
+            }
+            return geoms;
+        }
+    }
+
     p5.setup = () => {
         const width = canvasDiv.offsetWidth;
         const height = canvasDiv.offsetHeight;
@@ -127,7 +298,6 @@ export function robotSketch(p5: p5) {
         } else {
             resetLagSum();
         }
-
         // update task status
         const goalReachedNow = world.isGoalReached();
         if (worldGoalReached != goalReachedNow) {
@@ -353,124 +523,79 @@ export function robotSketch(p5: p5) {
     };
 
     const drawWorldFields = (w: World) => {
-        p5.push();
-        p5.translate((1 - w.L) * 0.5 * TSZ, (1 - w.W) * 0.5 * TSZ);
-        for (const [y, line] of w.fields.entries()) {
-            for (const [x, field] of line.entries()) {
-                p5.push();
-                p5.translate(x * TSZ, y * TSZ, 0);
-                // debug
-                //drawFieldBoundary(field);
-                drawField(field);
-                p5.pop();
+        if (worldGeneriation != w.generation) {
+            worldGeneriation = w.generation;
+            const boxes = new BatchedBoxes();
+            boxes.init(w.L, w.W, w.H);
+            for (const [y, line] of w.fields.entries()) {
+                for (const [x, field] of line.entries()) {
+                    // debug
+                    //drawFieldBoundary(x, y, field);
+                    drawField(boxes, x, y, field);
+                }
             }
+            worldGeoms = boxes.draw(p5);
         }
-        p5.pop();
+        for (const model of worldGeoms) {
+            model.setup(p5);
+            p5.model(model.geom);
+        }
+
     };
 
-    const drawField = (f: Field) => {
-        p5.push();
-        p5.translate(0, 0, (1 - f.H) * 0.5 * BLH);
-
+    const drawField = (boxes: BatchedBoxes, x: number, y: number, f: Field) => {
         // field goal
-        drawGoalStatus(f);
+        const goalReached = drawGoalStatus(f);
+        boxes.goal(x, y, goalReached);
 
         // draw floor
-        if (!f.isEmpty) {
-            p5.push();
-            p5.fill(250);
-            p5.stroke(200);
-            p5.translate(0, 0, (-BLH - FLH) * 0.5);
-            p5.box(TSZ, TSZ, FLH);
-            p5.pop();
-        }
+        boxes.floor(x, y, !f.isEmpty);
 
         // draw wall
         if (f.isWall) {
-            p5.push();
-            p5.fill(200);
-            p5.stroke(0);
-            p5.translate(0, 0, (-BLH + WLH) * 0.5);
-            p5.box(TSZ, TSZ, WLH);
-            p5.pop();
+            boxes.wall(x, y);
         }
 
 
         for (const [z, block] of f.blocks.entries()) {
-            p5.push();
-            p5.translate(0, 0, z * BLH);
-            p5.fill(BLOCK2COLOR[block]);
-            p5.stroke(0, 0, 0);
-            //p5.texture(BLOCK2XTEXTURE[block]);
+            let mismatchToGoal = false;
             if (f.goalBlocks != null) {
-                if (f.goalBlocks.length <= z || f.goalBlocks[z] != block) {
-                    p5.texture(BLOCK2XTEXTURE[block]);
-                }
+                // either goal wants no block here, or block is wrong
+                mismatchToGoal = f.goalBlocks.length <= z || f.goalBlocks[z] != block;
             }
-            p5.box(TSZ, TSZ, BLH);
-            p5.pop();
+            if (mismatchToGoal) {
+                boxes.badBlock(x, y, z, block);
+            } else {
+                boxes.block(x, y, z, block);
+            }
         }
-
-        const goalReached = f.isGoalReached();
         
         // goal blocks
         if (f.goalBlocks != null && !goalReached) {
-            for (const [z, block] of f.goalBlocks.entries()) {
-                p5.push();
-                p5.translate(0, 0, z * BLH);
-                p5.rotateZ(p5.frameCount * 0.02 + z);
-                p5.translate(
-                    0,
-                    0,
-                    p5.sin(p5.frameCount * 0.05 + z) * BLH * 0.2
-                );
-                p5.scale(0.5);
-                p5.fill(BLOCK2COLOR[block]);
-                p5.stroke(0, 0, 0);
-                p5.box(TSZ, TSZ, BLH);
-                p5.pop();
+            for (const [z, block] of f.goalBlocks.slice(f.blocks.length).entries()) {
+                boxes.goalBlock(x, y, z, block);
             }
         }
 
         // markers
         if (f.marker != MarkerType.None) {
-            p5.push();
-            p5.translate(0, 0, (-BLH + MRH) * 0.5);
-            const h = f.blocks.length;
-            p5.translate(0, 0, h * BLH);
-            p5.fill(MARKER2COLOR[f.marker]);
-            if (f.goalMarker != null && f.goalMarker != f.marker) p5.texture(MARKER2XTEXTURE[f.marker]);
-            p5.stroke(0);
-            p5.box(MSZ, MSZ, MRH);
-            p5.pop();
-        }
-
-        // goal markers
-        if (f.goalMarker != null && !goalReached) {
-            if (f.goalMarker != MarkerType.None) {
-                p5.push();
-                p5.translate(0, 0, (-BLH + MRH) * 0.5);
-                const h = f.blocks.length;
-                p5.translate(0, 0, h * BLH);
-                p5.scale(0.5);
-                p5.rotateZ(p5.frameCount * 0.02 + h);
-                p5.translate(
-                    0,
-                    0,
-                    p5.sin(p5.frameCount * 0.05) * BLH * 0.4 + BLH * 0.5
-                );
-                p5.fill(MARKER2COLOR[f.goalMarker]);
-                p5.stroke(0);
-                p5.box(MSZ, MSZ, MRH);
-                p5.pop();
+            const mismatchToGoal = f.goalMarker != null && f.goalMarker != f.marker;
+            if (mismatchToGoal) {
+                boxes.badMarker(x, y, f.marker);
+            } else {
+                boxes.marker(x, y, f.marker);
             }
         }
 
-        p5.pop();
+        // goal markers
+        if (f.goalMarker != null && !goalReached && f.goalMarker != MarkerType.None) {
+            boxes.goalMarker(x, y, f.marker);
+        }
     };
 
-    const drawFieldBoundary = (f: Field) => {
+    const drawFieldBoundary = (x: number, y: number, f: Field) => {
         p5.push();
+        p5.translate(x * TSZ, y * TSZ, 0);
         p5.noFill();
         p5.scale(0.98);
         if (f.isGoalReached()) {
@@ -483,20 +608,9 @@ export function robotSketch(p5: p5) {
     };
 
     const drawGoalStatus = (f: Field) => {
-        if (f.isEmpty) return;
-        p5.push();
-        p5.translate(0, 0, (-FLH));
-        p5.translate(0, 0, -2 * FLH);
-        p5.rotateX(p5.PI * 0.5);
-        p5.noStroke();
-
-        if (f.isGoalReached()) {
-            p5.fill(0, 255, 0);
-        } else {
-            p5.fill(255, 0, 0);
-        }
-        p5.box(TSZ * 0.4, FLH, TSZ * 0.4);
-        p5.pop();
+        if (f.isEmpty) return true;
+        const goalDone = f.isGoalReached();
+        return goalDone;
     };
 
 }
