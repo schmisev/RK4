@@ -267,14 +267,21 @@ function structureIfElse(node: AnyIfElseBlock): string {
     const result =
     `
     <div class="struct-ifelse ${bias}">${cond} ? <br><br>
+        
         <div style="display: flex;">
             <div style="flex: 50%; padding-left: 5px; text-align: left;">${makeTooltip("W", "Wenn die Bedingung <u>" + cond + "</u> zutrifft, wird die linke Spalte ausgeführt!")}</div>
             <div style="flex: 50%; padding-right: 5px; text-align: right;">${makeTooltip("F", "Wenn die Bedingung <u>" + cond + "</u> nicht zutrifft, wird die rechte Spalte ausgeführt!")}</div>
         </div>
     </div>
     <div class="struct-row ${bias}">
-        <div class="struct-column">${structureSequence(node.ifTrue)}</div>
-        <div class="struct-column">${structureSequence(node.ifFalse)}</div>
+        <div class="struct-column">
+            <div class="struct-if"></div>
+            ${structureSequence(node.ifTrue)}
+        </div>
+        <div class="struct-column">
+            <div class="struct-else"></div>
+            ${structureSequence(node.ifFalse)}
+        </div>
     </div>
     `
     return result;
