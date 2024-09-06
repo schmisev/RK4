@@ -274,12 +274,34 @@ export function* eval_switch_block<A extends AbruptStmtKind>(
     block: SwitchBlock<A>,
     env: Environment
 ): SteppedEval<RuntimeVal | AbruptEvalResult<A>> {
-    const lastEvaluated: RuntimeVal = MK_NULL();
+    let lastEvaluated: RuntimeVal = MK_NULL();
     const selectedVal = yield* evaluate_expr(block.selection, env);
-    for (const caseBlock of block.cases) {
+
+    loop: for (const caseBlock of block.cases) {
         const compVal = yield* evaluate_expr(caseBlock.comp, env);
         const cond = eval_pure_binary_expr(selectedVal, compVal, "=", block.lineIndex);
+        if (cond.type != ValueAlias.Boolean)
+            throw new RuntimeError(`Vergleich in Fallunterscheidung fehlgeschlagen.`, block.lineIndex);
+        
+        if (!cond.value) continue // skip block if not equal
+        
+        const bodyValue = yield* eval_bare_statements(caseBlock.body, new Environment(env));
+        
+        switch (bodyValue.type) {
+            case AbruptAlias.Return:
+                return bodyValue;
+            case AbruptAlias.Break:
+                lastEvaluated = MK_NULL(); // maybe unnecessary
+                break loop; // explicit break is allowed
+            case AbruptAlias.Continue:
+                continue loop; // explicit continue is forced
+            default:
+                lastEvaluated = bodyValue;
+                break loop; // break by default
+        }
+        // TODO: Implement default, implement fallthrough
     }
+    return lastEvaluated;
 }
 
 export function* eval_for_block<A extends AbruptStmtKind>(

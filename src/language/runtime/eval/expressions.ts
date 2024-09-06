@@ -99,12 +99,12 @@ export function eval_pure_binary_expr(
         }
     } catch {
         throw new RuntimeError(
-            `Operator in '${lhs.type} ${binop.operator} ${rhs.type}' ist nicht unterstützt!`, binop.lineIndex
+            `Operator in '${lhs.type} ${operator} ${rhs.type}' ist nicht unterstützt!`, lineIndex
         );
     }
 
     throw new RuntimeError(
-        `Unpassendende Typen im Ausdruck '${lhs.type} ${binop.operator} ${rhs.type}'!`, binop.lineIndex
+        `Unpassendende Typen im Ausdruck '${lhs.type} ${operator} ${rhs.type}'!`, lineIndex
     );
     //return MK_NULL();
 }
