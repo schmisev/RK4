@@ -1,5 +1,5 @@
 import { RuntimeError } from "../../../errors";
-import { AbruptStmtKind, AlwaysBlock, ClassDefinition, DocComment, EmptyLine, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, StmtKind, AbruptEvalResult, VarDeclaration, WhileBlock, ContinueCommand, BreakCommand } from "../../frontend/ast";
+import { AbruptStmtKind, AlwaysBlock, ClassDefinition, DocComment, EmptyLine, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, StmtKind, AbruptEvalResult, VarDeclaration, WhileBlock, ContinueCommand, BreakCommand, SwitchBlock } from "../../frontend/ast";
 import { ClassPrototype, Environment, VarHolder } from "../environment";
 import { SteppedEval, evaluate, evaluate_expr } from "../interpreter";
 import {
@@ -14,7 +14,9 @@ import {
     AbruptBreak,
     AbruptAlias,
     ValueAlias,
+    NumberVal,
 } from "../values";
+import { eval_binary_expr, eval_numeric_binary_expr, eval_pure_binary_expr } from "./expressions";
 
 export function* eval_program(prog: Program, env: Environment) {
     let lastEvaluated: RuntimeVal = MK_NULL();
@@ -265,6 +267,18 @@ export function* eval_if_else_block<A extends AbruptStmtKind>(
         return yield* eval_bare_statements(block.ifTrue, new Environment(env));
     } else {
         return yield* eval_bare_statements(block.ifFalse, new Environment(env));
+    }
+}
+
+export function* eval_switch_block<A extends AbruptStmtKind>(
+    block: SwitchBlock<A>,
+    env: Environment
+): SteppedEval<RuntimeVal | AbruptEvalResult<A>> {
+    const lastEvaluated: RuntimeVal = MK_NULL();
+    const selectedVal = yield* evaluate_expr(block.selection, env);
+    for (const caseBlock of block.cases) {
+        const compVal = yield* evaluate_expr(caseBlock.comp, env);
+        const cond = eval_pure_binary_expr(selectedVal, compVal, "=", block.lineIndex);
     }
 }
 

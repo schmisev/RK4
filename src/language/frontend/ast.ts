@@ -7,6 +7,8 @@ export const enum StmtKind {
     EmptyLine = "LeereZeile",
     DocComment = "DokuKommentar",
     IfElseBlock = "WennDannBlock",
+    SwitchBlock = "UnterscheidungsBlock",
+    CaseBlock = "FallBlock",
     ForBlock = "MalBlock",
     WhileBlock = "SolangeBlock",
     AlwaysBlock = "ImmerBlock",
@@ -41,6 +43,7 @@ export type Stmt<Ctrl> =
     | VarDeclaration
     | ObjDeclaration
     | IfElseBlock<Ctrl>
+    | SwitchBlock<Ctrl>
     | ForBlock<Ctrl>
     | WhileBlock<Ctrl>
     | AlwaysBlock<Ctrl>
@@ -105,6 +108,21 @@ export interface IfElseBlock<Ctrl> {
     ifFalse: Stmt<Ctrl>[];
 }
 export type AnyIfElseBlock = IfElseBlock<AbruptStmtKind>;
+
+export interface SwitchBlock<Ctrl> {
+    kind: StmtKind.SwitchBlock;
+    lineIndex: number;
+    selection: Expr;
+    cases: CaseBlock<Ctrl>[];
+    fallback: Stmt<Ctrl>[];
+}
+
+export interface CaseBlock<Ctrl> {
+    kind: StmtKind.CaseBlock;
+    lineIndex: number;
+    comp: Expr;
+    body: Stmt<StmtKind.ContinueCommand | StmtKind.BreakCommand | Ctrl>[];
+}
 
 export interface ForBlock<Ctrl> {
     kind: StmtKind.ForBlock;

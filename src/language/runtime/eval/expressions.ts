@@ -65,27 +65,36 @@ export function* eval_binary_expr(
     const lhs = yield* evaluate_expr(binop.left, env);
     const rhs = yield* evaluate_expr(binop.right, env);
 
+    return eval_pure_binary_expr(lhs, rhs, binop.operator, binop.lineIndex);
+}
+
+export function eval_pure_binary_expr(
+    lhs: RuntimeVal,
+    rhs: RuntimeVal,
+    operator: string,
+    lineIndex: number,
+): RuntimeVal {
     try {
         if (lhs.type == ValueAlias.Number && rhs.type == ValueAlias.Number) {
             return eval_numeric_binary_expr(
                 lhs,
                 rhs,
-                binop.operator,
-                binop.lineIndex
+                operator,
+                lineIndex
             );
         } else if (lhs.type == ValueAlias.Boolean && rhs.type == ValueAlias.Boolean) {
             return eval_logical_binary_expr(
                 lhs,
                 rhs,
-                binop.operator,
-                binop.lineIndex
+                operator,
+                lineIndex
             );
         } else if (lhs.type == ValueAlias.String && rhs.type == ValueAlias.String) {
             return eval_string_binary_expr(
                 lhs,
                 rhs,
-                binop.operator,
-                binop.lineIndex
+                operator,
+                lineIndex
             );
         }
     } catch {
