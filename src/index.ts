@@ -32,6 +32,7 @@ import './assets/ace/theme-rklight.js';
 
 // General errors 
 import { DebugError, LexerError, ParserError, RuntimeError } from './errors';
+import { Session } from "inspector";
 
 // Global variables
 let dt = 50; // ms to sleep between function calls
@@ -84,6 +85,7 @@ export const editor = ace.edit("code-editor", {
     enableSnippets: true,
     enableLiveAutocompletion: true,
 });
+
 
 // Fetch code error bar
 const codeError = document.getElementById("code-error")!;

@@ -5,7 +5,6 @@ ace.define("ace/mode/RKScript_highlight_rules",["require","exports","module","ac
 var oop = require("../lib/oop");
 var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
 var RKScriptHighlightRules = function () {
-    var builtinFunctions = Object.values(ENV.global.fn).concat(Object.values(ENV.robot.mth)).concat(ENV.world.mth).join("|");
     var keywordMapper = this.createKeywordMapper({
         "support.function": Object.values(ENV.global.fn).join("|"),
         "support.class": ENV.robot.cls + "|" + ENV.world.cls,
