@@ -96,13 +96,13 @@ export async function loadExtTasks() {
 }
 
 export async function downloadExtTask(key: string, dlURL: string) {
-    const dlFile = await fetch(dlURL);
-    const fileContent = await dlFile.text();
     try {
+        const dlFile = await fetch(dlURL);
+        const fileContent = await dlFile.text();
         const task: Task = JSON.parse(fileContent);
         liveTasks[key] = task;
     } catch {
-        // do nothing
+        return; // who cares, if it fails it fails
     }
 }
 
