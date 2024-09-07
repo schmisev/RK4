@@ -114,15 +114,17 @@ export interface SwitchBlock<Ctrl> {
     lineIndex: number;
     selection: Expr;
     cases: CaseBlock<Ctrl>[];
-    fallback: Stmt<Ctrl>[];
+    fallback: Stmt<StmtKind.BreakCommand | StmtKind.ContinueCommand | Ctrl>[];
 }
+export type AnySwitchBlock = SwitchBlock<AbruptStmtKind>;
 
 export interface CaseBlock<Ctrl> {
     kind: StmtKind.CaseBlock;
     lineIndex: number;
     comp: Expr;
-    body: Stmt<StmtKind.ContinueCommand | StmtKind.BreakCommand | Ctrl>[];
+    body: Stmt<StmtKind.BreakCommand | StmtKind.ContinueCommand | Ctrl>[];
 }
+export type AnyCaseBlock = CaseBlock<AbruptStmtKind>;
 
 export interface ForBlock<Ctrl> {
     kind: StmtKind.ForBlock;
