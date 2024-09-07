@@ -123,7 +123,7 @@ export function eval_numeric_binary_expr(
     } else if (operator == "*") {
         return MK_NUMBER(lhs.value * rhs.value);
     } else if (operator == "/" || operator == ":") {
-        return MK_NUMBER(Math.floor(lhs.value / rhs.value));
+        return MK_NUMBER(Math.trunc(lhs.value / rhs.value));
     } else if (operator == "%") {
         return MK_NUMBER(lhs.value % rhs.value);
     }
