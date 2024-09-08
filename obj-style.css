@@ -19,31 +19,3 @@
     padding: 5px;
     border-radius: 0px 0px 10px 10px;
 }
-
-/* debug */
-.code-error {
-    grid-column: 1 / 8;
-    grid-row: 17;
-    font-family: 'Cascadia Code';
-    font-size: 15px;
-    white-space: nowrap;
-    overflow-x: scroll;
-    scrollbar-width: none;
-    text-overflow: unset;
-}
-
-.code-error.none {
-    background-color: lightgreen;
-}
-
-.code-error.runtime {
-    background-color: lightcoral;
-}
-
-.code-error.lexer {
-    background-color: lightblue;
-}
-
-.code-error.parser {
-    background-color: lightgoldenrodyellow;
-}
