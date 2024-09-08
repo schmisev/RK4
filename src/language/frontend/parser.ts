@@ -261,6 +261,7 @@ export default class Parser {
         }
         if (this.at().type == TokenType.Else) {
             this.eat() // eat 'sonst'
+            this.expect(TokenType.EndLine, "Erwarte eine neue Zeile nach 'sonst'!");
             while (this.at().type != TokenType.EndBlock) {
                 const statement = this.parse_stmt(allowedInSwitch);
                 fallback.push(statement);

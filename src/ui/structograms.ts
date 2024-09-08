@@ -1,4 +1,4 @@
-import { AnyStmt, BinaryExpr, ClassDefinition, Expr, ExtMethodDefinition, AnyForBlock, FunctionDefinition, AnyIfElseBlock, Program, UnaryExpr, AnyWhileBlock, AnyAlwaysBlock, StmtKind } from "../language/frontend/ast";
+import { AnyStmt, BinaryExpr, ClassDefinition, Expr, ExtMethodDefinition, AnyForBlock, FunctionDefinition, AnyIfElseBlock, Program, UnaryExpr, AnyWhileBlock, AnyAlwaysBlock, StmtKind, SwitchBlock, AnySwitchBlock, AnyCaseBlock } from "../language/frontend/ast";
 import { ValueAlias } from "../language/runtime/values";
 import { ENV } from "../spec";
 
@@ -111,6 +111,8 @@ function structure(astNode: Program | AnyStmt): string {
             return structureProgram(astNode);
         case StmtKind.IfElseBlock:
             return structureIfElse(astNode);
+        case StmtKind.SwitchBlock:
+            return structureSwitchCase(astNode);
         case StmtKind.WhileBlock:
             return structureWhile(astNode);
         case StmtKind.AlwaysBlock:
@@ -212,7 +214,7 @@ function structureUnaryExpr(astNode: UnaryExpr) {
 function structureSequence(body: AnyStmt[]): string {
     let result = "";
     for (const node of body) {
-        if (node.kind == StmtKind.WhileBlock || node.kind == StmtKind.ForBlock || node.kind == StmtKind.IfElseBlock)
+        if (node.kind == StmtKind.WhileBlock || node.kind == StmtKind.ForBlock || node.kind == StmtKind.IfElseBlock || node.kind == StmtKind.SwitchBlock)
             result += `<div class="struct-box">${structure(node)}</div>`;
         else 
             result += `<div class="struct-box lpad rpad">${structure(node)}</div>`;
@@ -287,6 +289,72 @@ function structureIfElse(node: AnyIfElseBlock): string {
     return result;
 }
 
+function structureSwitchCase(node: AnySwitchBlock): string {
+    const selection = structure(node.selection);
+    let h = node.cases.length - 1;
+
+    let result = `
+    <div class="struct-switch"> ${selection} ?<br>
+        <div style="display: flex;">
+            <div style="flex: 50%; padding-left: 5px; text-align: left;"></div>
+            <div style="flex: 50%; padding-right: 5px; text-align: right;"></div>
+        </div>
+    </div>
+    <div class="struct-row">
+        <div class="struct-column">
+            <div class="struct-switch-step">
+            <br>
+            ${structureCase(node, 0)}
+            </div>
+        </div>
+    <div class="struct-column">
+        <div class="struct-switch-step" style="height: ${h * 25}px">
+        ${"<br>".repeat(h)}
+        <div class="struct-default" style="height: ${h * 25}px; margin-bottom: ${- h * 25}px">${"<br>".repeat(h - 1)}sonst</div>
+        ${structureSequence(node.fallback)}
+        </div>
+    </div>
+    </div>
+    `
+
+    return result;
+}
+
+function structureCase(node: AnySwitchBlock, index: number): string {
+    let nextCase: string
+    let h = index + 1
+
+    console.log(node.cases.length, index)
+
+    if (index >= node.cases.length - 1) {
+        return "";
+    } else {
+        nextCase = `
+        <div class="struct-column">
+            <div class="struct-switch-step">
+                <br>
+                ${structureCase(node, index + 1)}
+            </div>
+        </div>
+        `
+    }
+
+    return `
+    <div class="struct-row">
+        <div class="struct-column">
+            <div class="struct-case">
+                <span class="struct-emph shadow">
+                    &nbsp${structure(node.cases[index].comp)}&nbsp
+                </span>
+            </div>
+            ${structureSequence(node.cases[index].body)}
+        </div>
+        ${nextCase}
+    </div>
+    `
+}
+
+
 function structureClass(node: ClassDefinition): string {
     // structure methods within
     for (const meth of node.methods) {
@@ -350,3 +418,4 @@ function structureFunction(astNode: FunctionDefinition) {
     );
     return makeSpan(`→  ${funcHandle}`, "struct-deemph");
 }
+

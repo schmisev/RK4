@@ -101,18 +101,20 @@ span.line {
 }
 
 .struct-ifelse {
-    /*
-    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' preserveAspectRatio='none' viewBox='0 0 100 100'><path d='M100 0 L50 100 ' stroke='black' stroke-width='1'/><path d='M0 0 L50 100 ' stroke='black' stroke-width='1'/></svg>");
-    */
     background-repeat:no-repeat;
     background-position:center center;
     background-size: 100% 100%, auto;
     outline: 1px black solid;
     text-align: center;
+    height: 75px;
 }
 
 .struct-if {
     background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' preserveAspectRatio='none' viewBox='0 0 100 100'><path d='M0 0 L100 100 ' stroke='black' stroke-width='2' vector-effect='non-scaling-stroke'/></svg>");
+    background-repeat:no-repeat;
+    background-position:center center;
+    background-size: 100% 100%, auto;
+
     position: relative;
     margin-bottom: -75px;
     height: 75px;
@@ -122,11 +124,61 @@ span.line {
 
 .struct-else {
     background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' preserveAspectRatio='none' viewBox='0 0 100 100'><path d='M0 100 L100 0 ' stroke='black' stroke-width='2' vector-effect='non-scaling-stroke'/></svg>");
+    background-repeat:no-repeat;
+    background-position:center center;
+    background-size: 100% 100%, auto;
+    
     position: relative;
     margin-bottom: -75px;
     height: 75px;
     transform: translateY(-100%);
     pointer-events: none;
+}
+
+.struct-switch {
+    /* outline: 1px black solid; */
+    text-align: center;
+    height: 25px;
+}
+
+.struct-switch-step {
+    background-color: white;
+    text-align: center;
+    min-height: 25px;
+}
+
+.struct-switch-step:hover {
+    background-color: #d7ebf2;
+}
+
+.struct-case {
+    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' preserveAspectRatio='none' viewBox='0 0 100 100'><path d='M0 0 L100 100 ' stroke='black' stroke-width='2' vector-effect='non-scaling-stroke'/></svg>");
+    background-repeat:no-repeat;
+    background-position:center center;
+    background-size: 100% 100%, auto;
+
+    position: relative;
+    margin-bottom: -25px;
+    height: 25px;
+    transform: translateY(-100%);
+    pointer-events: none;
+
+    padding: 0 5px;
+    text-align: center;
+}
+
+.struct-default {
+    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' preserveAspectRatio='none' viewBox='0 0 100 100'><path d='M0 100 L100 0 ' stroke='black' stroke-width='2' vector-effect='non-scaling-stroke'/></svg>");
+    background-repeat:no-repeat;
+    background-position:center center;
+    background-size: 100% 100%, auto;
+    
+    position: relative;
+    transform: translateY(-100%);
+    pointer-events: none;
+
+    padding: 0 5px;
+    text-align: center;
 }
 
 .struct-row {
@@ -223,6 +275,11 @@ span.line {
 .struct-deemph {
     color: gray;
     /*font-weight: bold;*/
+}
+
+.struct-emph {
+    background-color: rgba(255, 255, 255, .8);
+    border-radius: 5px;
 }
 
 .struct-dot {

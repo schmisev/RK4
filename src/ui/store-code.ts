@@ -119,3 +119,24 @@ ende
 wiederhole 20 mal
     zeig fib.letzteZahl()
 ende`, false)
+
+storeRawCode("Demo: Unterscheide",
+`Zahl x ist 1
+unterscheide x + 1
+    falls 1
+        zeig "0"
+        weiter
+    falls 2
+        zeig "1"
+        weiter
+    falls 3
+        zeig "2"
+    falls 4
+        zeig "3"
+    falls 5
+        abbrechen
+        zeig "4"
+    sonst
+        zeig "?"
+ende
+`, false)
