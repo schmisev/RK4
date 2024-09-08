@@ -10,8 +10,10 @@
     "deploy": "gh-pages -d dist",
     "cleanup": "(del-cli dist/node_modules*.js) && (del-cli dist/vendors-node_modules*.js)",
     "del-bundle": "(del-cli dist/bundle.js)",
-    "upload": "npm run build && npm run cleanup && npm run deploy && npm run del-bundle"
+    "upload": "npm run build && npm run cleanup && npm run deploy && npm run del-bundle",
+    "electron-start": "npm run build && npm run cleanup && electron ."
   },
+  "main": "main.js",
   "author": "",
   "license": "ISC",
   "devDependencies": {
@@ -19,6 +21,7 @@
     "@types/ace": "^0.0.52",
     "@types/node": "^22.1.0",
     "@types/p5": "^1.7.6",
+    "electron": "^32.0.2",
     "eslint": "^9.9.0",
     "gh-pages": "^6.1.1",
     "globals": "^15.9.0",
@@ -26,7 +29,7 @@
     "typedoc": "^0.26.6",
     "typescript": "^5.5.4",
     "typescript-eslint": "^8.2.0",
-    "webpack": "^5.93.0",
+    "webpack": "^5.94.0",
     "webpack-cleanup-plugin": "^0.5.1",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.0.4"
