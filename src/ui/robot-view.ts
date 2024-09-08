@@ -126,7 +126,7 @@ export function robotSketch(p5: p5) {
         const observer = new ResizeObserver((entries) => {
             const {width, height} = entries[0].contentRect;
             if (canvasH != height || canvasW != width)
-                // p5.resizeCanvas(width, height);
+                p5.resizeCanvas(width, height);
             canvasH = height;
             canvasW = width;
         });
