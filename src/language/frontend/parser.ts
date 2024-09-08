@@ -1,4 +1,4 @@
-import { Stmt, Program, Expr, VarDeclaration, ObjDeclaration, FunctionDefinition, ShowCommand, BreakCommand, ContinueCommand, ClassDefinition, ParamDeclaration, ReturnCommand, ExtMethodDefinition, StmtKind, IfElseBlock, ForBlock, WhileBlock, AlwaysBlock, AbruptStmtKind, DocComment } from "./ast";
+import { Stmt, Program, Expr, VarDeclaration, ObjDeclaration, FunctionDefinition, ShowCommand, BreakCommand, ContinueCommand, ClassDefinition, ParamDeclaration, ReturnCommand, ExtMethodDefinition, StmtKind, IfElseBlock, ForBlock, WhileBlock, AlwaysBlock, AbruptStmtKind, DocComment, CaseBlock, SwitchBlock } from "./ast";
 import { tokenize, Token, TokenType, KEYWORDS } from "./lexer";
 import { ParserError } from "../../errors";
 import { ValueAlias } from "../runtime/values";
@@ -59,6 +59,9 @@ export default class Parser {
                 break;
             case TokenType.If:
                 statement = this.parse_if_else_block(allowedControl);
+                break;
+            case TokenType.Switch:
+                statement = this.parse_switch_block(allowedControl);
                 break;
             case TokenType.Break:
                 if (!checkControl.has(StmtKind.BreakCommand))
@@ -240,6 +243,66 @@ export default class Parser {
         this.eat(); // eat 'ende'
 
         return { kind: StmtKind.IfElseBlock, condition, ifTrue, ifFalse, lineIndex };
+    }
+
+    parse_switch_block<A extends AbruptStmtKind>(allowedControl: Set<A>): SwitchBlock<A> {
+        const lineIndex = this.at().lineIndex;
+        const allowedInSwitch = new Set([StmtKind.BreakCommand, ...allowedControl] as const);
+        
+        const cases: CaseBlock<A>[] = [];
+        const fallback: Stmt<StmtKind.BreakCommand | A>[] = [];
+
+        this.eat(); // eat 'unterscheide'
+        const selection = this.parse_expr();
+        this.expect(TokenType.EndLine, "Nach 'unterscheide' sollte auf den Wert eine neue Zeile folgen!");
+
+        while (this.at().type == TokenType.Case) {
+            cases.push(this.parse_case_block(allowedControl));
+        }
+        if (this.at().type == TokenType.Else) {
+            this.eat() // eat 'sonst'
+            this.expect(TokenType.EndLine, "Erwarte eine neue Zeile nach 'sonst'!");
+            while (this.at().type != TokenType.EndBlock) {
+                const statement = this.parse_stmt(allowedInSwitch);
+                fallback.push(statement);
+            }
+        }
+        this.expect(TokenType.EndBlock, "Erwarte 'ende' nach Unterscheidung!"); // eat 'ende'
+
+        return {
+            kind: StmtKind.SwitchBlock,
+            selection,
+            cases,
+            fallback,
+            lineIndex,
+        };
+    }
+
+    parse_case_block<A extends AbruptStmtKind>(allowedControl: Set<A>): CaseBlock<A> {
+        const lineIndex = this.at().lineIndex;
+        
+        const allowedInCase = new Set([StmtKind.ContinueCommand, StmtKind.BreakCommand, ...allowedControl] as const);
+
+        this.eat() // eat 'falls'
+        const comp = this.parse_expr();
+        this.expect(TokenType.EndLine, "Nach 'falls' sollte auf den Wert eine neue Zeile folgen.");
+        const body: Stmt<StmtKind.ContinueCommand | StmtKind.BreakCommand | A>[] = [];
+
+        while (
+            this.at().type != TokenType.Case && 
+            this.at().type != TokenType.Else && 
+            this.at().type != TokenType.EndBlock
+        ) {
+            const statement = this.parse_stmt(allowedInCase);
+            body.push(statement);
+        }
+
+        return {
+            kind: StmtKind.CaseBlock,
+            comp,
+            body,
+            lineIndex,
+        }
     }
 
     parse_loop_block<A extends AbruptStmtKind>(allowedControl: Set<A>): Stmt<A> {

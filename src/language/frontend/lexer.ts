@@ -16,6 +16,7 @@ export enum TokenType {
     If, Then, IfElse, Else,
     Return,
     Repeat, RepTimes, RepWhile, RepAlways, Break, Continue,
+    Switch, Case,
 
     // Operations
     OpenParen, CloseParen,
@@ -76,6 +77,9 @@ export const KEYWORDS: Record<string, TokenType> = {
     Klasse: TokenType.ClassDef,
     Methode: TokenType.MethodDef,
     für: TokenType.MethodFor,
+
+    unterscheide: TokenType.Switch,
+    falls: TokenType.Case,
 }
 
 export interface Token {

@@ -1,5 +1,5 @@
 import { RuntimeError } from "../../../errors";
-import { AbruptStmtKind, AlwaysBlock, ClassDefinition, DocComment, EmptyLine, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, StmtKind, AbruptEvalResult, VarDeclaration, WhileBlock, ContinueCommand, BreakCommand } from "../../frontend/ast";
+import { AbruptStmtKind, AlwaysBlock, ClassDefinition, DocComment, EmptyLine, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, StmtKind, AbruptEvalResult, VarDeclaration, WhileBlock, ContinueCommand, BreakCommand, SwitchBlock } from "../../frontend/ast";
 import { ClassPrototype, Environment, VarHolder } from "../environment";
 import { SteppedEval, evaluate, evaluate_expr } from "../interpreter";
 import {
@@ -14,7 +14,9 @@ import {
     AbruptBreak,
     AbruptAlias,
     ValueAlias,
+    NumberVal,
 } from "../values";
+import { eval_binary_expr, eval_numeric_binary_expr, eval_pure_binary_expr } from "./expressions";
 
 export function* eval_program(prog: Program, env: Environment) {
     let lastEvaluated: RuntimeVal = MK_NULL();
@@ -266,6 +268,59 @@ export function* eval_if_else_block<A extends AbruptStmtKind>(
     } else {
         return yield* eval_bare_statements(block.ifFalse, new Environment(env));
     }
+}
+
+export function* eval_switch_block<A extends AbruptStmtKind>(
+    block: SwitchBlock<A>,
+    env: Environment
+): SteppedEval<RuntimeVal | AbruptEvalResult<A>> {
+    let lastEvaluated: RuntimeVal = MK_NULL();
+    let lastCond: boolean = false;
+    const selectedVal = yield* evaluate_expr(block.selection, env);
+
+    loop: for (const caseBlock of block.cases) {
+        const compVal = yield* evaluate_expr(caseBlock.comp, env);
+        const cond = eval_pure_binary_expr(selectedVal, compVal, "=", block.lineIndex);
+        if (cond.type != ValueAlias.Boolean)
+            throw new RuntimeError(`Vergleich in Fallunterscheidung fehlgeschlagen.`, block.lineIndex);
+        
+        if (cond.value) lastCond = cond.value;
+        if (!lastCond) continue; // skip block if not equal
+        
+        const bodyValue = yield* eval_bare_statements(caseBlock.body, new Environment(env));
+        
+        switch (bodyValue.type) {
+            case AbruptAlias.Return:
+                return bodyValue;
+            case AbruptAlias.Break:
+                lastEvaluated = MK_NULL(); // maybe unnecessary
+                break loop; // explicit break is allowed
+            case AbruptAlias.Continue:
+                continue loop; // explicit continue is forced
+            default:
+                lastEvaluated = bodyValue;
+                break loop; // break by default
+        }
+        // TODO: Implement default, implement fallthrough
+    }
+    
+    if (!lastCond) {
+        // default case
+        const defaultValue = yield* eval_bare_statements(block.fallback, new Environment(env));
+        switch (defaultValue.type) {
+            case AbruptAlias.Return:
+                return defaultValue;
+            case AbruptAlias.Break:
+                lastEvaluated = MK_NULL();
+                break;
+            case AbruptAlias.Continue:
+                break; // acts as break in this case
+            default:
+                lastEvaluated = defaultValue;
+        }
+    }
+
+    return lastEvaluated;
 }
 
 export function* eval_for_block<A extends AbruptStmtKind>(

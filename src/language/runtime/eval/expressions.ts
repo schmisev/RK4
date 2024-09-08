@@ -65,37 +65,46 @@ export function* eval_binary_expr(
     const lhs = yield* evaluate_expr(binop.left, env);
     const rhs = yield* evaluate_expr(binop.right, env);
 
+    return eval_pure_binary_expr(lhs, rhs, binop.operator, binop.lineIndex);
+}
+
+export function eval_pure_binary_expr(
+    lhs: RuntimeVal,
+    rhs: RuntimeVal,
+    operator: string,
+    lineIndex: number,
+): RuntimeVal {
     try {
         if (lhs.type == ValueAlias.Number && rhs.type == ValueAlias.Number) {
             return eval_numeric_binary_expr(
                 lhs,
                 rhs,
-                binop.operator,
-                binop.lineIndex
+                operator,
+                lineIndex
             );
         } else if (lhs.type == ValueAlias.Boolean && rhs.type == ValueAlias.Boolean) {
             return eval_logical_binary_expr(
                 lhs,
                 rhs,
-                binop.operator,
-                binop.lineIndex
+                operator,
+                lineIndex
             );
         } else if (lhs.type == ValueAlias.String && rhs.type == ValueAlias.String) {
             return eval_string_binary_expr(
                 lhs,
                 rhs,
-                binop.operator,
-                binop.lineIndex
+                operator,
+                lineIndex
             );
         }
     } catch {
         throw new RuntimeError(
-            `Operator in '${lhs.type} ${binop.operator} ${rhs.type}' ist nicht unterstützt!`, binop.lineIndex
+            `Operator in '${lhs.type} ${operator} ${rhs.type}' ist nicht unterstützt!`, lineIndex
         );
     }
 
     throw new RuntimeError(
-        `Unpassendende Typen im Ausdruck '${lhs.type} ${binop.operator} ${rhs.type}'!`, binop.lineIndex
+        `Unpassendende Typen im Ausdruck '${lhs.type} ${operator} ${rhs.type}'!`, lineIndex
     );
     //return MK_NULL();
 }
@@ -114,7 +123,7 @@ export function eval_numeric_binary_expr(
     } else if (operator == "*") {
         return MK_NUMBER(lhs.value * rhs.value);
     } else if (operator == "/" || operator == ":") {
-        return MK_NUMBER(Math.floor(lhs.value / rhs.value));
+        return MK_NUMBER(Math.trunc(lhs.value / rhs.value));
     } else if (operator == "%") {
         return MK_NUMBER(lhs.value % rhs.value);
     }

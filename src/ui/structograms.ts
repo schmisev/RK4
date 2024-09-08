@@ -1,6 +1,34 @@
-import { AnyStmt, BinaryExpr, ClassDefinition, Expr, ExtMethodDefinition, AnyForBlock, FunctionDefinition, AnyIfElseBlock, Program, UnaryExpr, AnyWhileBlock, AnyAlwaysBlock, StmtKind } from "../language/frontend/ast";
+import { updateIDE } from "..";
+import { AnyStmt, BinaryExpr, ClassDefinition, Expr, ExtMethodDefinition, AnyForBlock, FunctionDefinition, AnyIfElseBlock, Program, UnaryExpr, AnyWhileBlock, AnyAlwaysBlock, StmtKind, SwitchBlock, AnySwitchBlock, AnyCaseBlock } from "../language/frontend/ast";
 import { ValueAlias } from "../language/runtime/values";
 import { ENV } from "../spec";
+
+interface Toggle {
+    button: HTMLElement;
+    active: boolean;
+}
+
+function makeDebugToggle(id: string, init: boolean) {
+    const button = document.getElementById(id)!;
+    const toggle: Toggle = {
+        button: button,
+        active: init,
+    }
+
+    button.classList.toggle("active", init);
+    button.onclick = () => {
+        button.classList.toggle("active");
+        toggle.active = !toggle.active;
+        updateIDE();
+    }
+
+    return toggle;
+}
+
+let toggleDefs = makeDebugToggle("debug-show-defs", false);
+let toggleLabels = makeDebugToggle("debug-show-labels", true);
+let toggleFunctions = makeDebugToggle("debug-show-functions", true);
+let toggleMethods = makeDebugToggle("debug-show-methods", true);
 
 // Robot class
 const ROBOT_PSEUDO_CLASS = 
@@ -111,6 +139,8 @@ function structure(astNode: Program | AnyStmt): string {
             return structureProgram(astNode);
         case StmtKind.IfElseBlock:
             return structureIfElse(astNode);
+        case StmtKind.SwitchBlock:
+            return structureSwitchCase(astNode);
         case StmtKind.WhileBlock:
             return structureWhile(astNode);
         case StmtKind.AlwaysBlock:
@@ -212,7 +242,12 @@ function structureUnaryExpr(astNode: UnaryExpr) {
 function structureSequence(body: AnyStmt[]): string {
     let result = "";
     for (const node of body) {
-        if (node.kind == StmtKind.WhileBlock || node.kind == StmtKind.ForBlock || node.kind == StmtKind.IfElseBlock)
+        if (!toggleDefs.active && (node.kind == StmtKind.ClassDefinition || node.kind == StmtKind.FunctionDefinition || node.kind == StmtKind.ExtMethodDefinition)) {
+            structure(node);
+            continue;
+        }
+        if (!toggleLabels.active && node.kind == StmtKind.DocComment) continue;
+        if (node.kind == StmtKind.WhileBlock || node.kind == StmtKind.ForBlock || node.kind == StmtKind.IfElseBlock || node.kind == StmtKind.SwitchBlock)
             result += `<div class="struct-box">${structure(node)}</div>`;
         else 
             result += `<div class="struct-box lpad rpad">${structure(node)}</div>`;
@@ -287,6 +322,70 @@ function structureIfElse(node: AnyIfElseBlock): string {
     return result;
 }
 
+function structureSwitchCase(node: AnySwitchBlock): string {
+    const selection = structure(node.selection);
+    let h = node.cases.length - 1;
+
+    let result = `
+    <div class="struct-switch"> ${selection} ?<br>
+        <div style="display: flex;">
+            <div style="flex: 50%; padding-left: 5px; text-align: left;"></div>
+            <div style="flex: 50%; padding-right: 5px; text-align: right;"></div>
+        </div>
+    </div>
+    <div class="struct-row">
+        <div class="struct-column">
+            <div class="struct-switch-step">
+            <br>
+            ${structureCase(node, 0)}
+            </div>
+        </div>
+    <div class="struct-column">
+        <div class="struct-switch-step" style="height: ${h * 25}px">
+        ${"<br>".repeat(h)}
+        <div class="struct-default" style="height: ${h * 25}px; margin-bottom: ${- h * 25}px">${"<br>".repeat(h - 1)}sonst</div>
+        ${structureSequence(node.fallback)}
+        </div>
+    </div>
+    </div>
+    `
+
+    return result;
+}
+
+function structureCase(node: AnySwitchBlock, index: number): string {
+    let nextCase: string
+    let h = index + 1
+
+    if (index >= node.cases.length - 1) {
+        return "";
+    } else {
+        nextCase = `
+        <div class="struct-column">
+            <div class="struct-switch-step">
+                <br>
+                ${structureCase(node, index + 1)}
+            </div>
+        </div>
+        `
+    }
+
+    return `
+    <div class="struct-row">
+        <div class="struct-column">
+            <div class="struct-case">
+                <span class="struct-emph shadow">
+                    &nbsp${structure(node.cases[index].comp)}&nbsp
+                </span>
+            </div>
+            ${structureSequence(node.cases[index].body)}
+        </div>
+        ${nextCase}
+    </div>
+    `
+}
+
+
 function structureClass(node: ClassDefinition): string {
     // structure methods within
     for (const meth of node.methods) {
@@ -320,33 +419,37 @@ function structureClass(node: ClassDefinition): string {
     const newClass = document.createElement("div");
     newClass.innerHTML = result;
     classes[node.ident] = newClass;
-    return makeSpan(`→ ${node.ident}`, "struct-deemph");
+    return makeSpan(`▢ ${node.ident}`, "struct-deemph");
 }
 
 function structureMethod(astNode: FunctionDefinition, classname: string): void {
     const methodHandle = `${astNode.name}(${astNode.params.map((p) => p.ident).join(", ")})`
     const fullMethodHandle = `${methodHandle} in <span class="struct-classtype">${classname}</span>`
-    sections.push(
-        makeDiv(`${makeTooltip("Methode", `Hier ist eine Methode in der Klasse ${classname} definiert, die an anderen Stellen im Code aufgerufen werden kann.`)}: ${fullMethodHandle} ${structureSequence(astNode.body)}`,"struct-program method")
-    );
+    if (toggleMethods.active)
+        sections.push(
+            makeDiv(`${makeTooltip("Methode", `Hier ist eine Methode in der Klasse ${classname} definiert, die an anderen Stellen im Code aufgerufen werden kann.`)}: ${fullMethodHandle} ${structureSequence(astNode.body)}`,"struct-program method")
+        );
 }
 
 function structureExtMethod(astNode: ExtMethodDefinition): string {
     const methodHandle = `${astNode.name}(${astNode.params.map((p) => p.ident).join(", ")})`
     const fullMethodHandle = `${methodHandle} für <span class="struct-classtype">${astNode.classname}</span>`
-    sections.push(
-        makeDiv(`${makeTooltip("Methode", `Hier wird eine neue Methode für die Klasse ${astNode.classname} definiert, die an anderen Stellen im Code aufgerufen werden kann.`)}: ${fullMethodHandle} ${structureSequence(astNode.body)}`,"struct-program method")
-    );
+    if (toggleMethods.active)
+        sections.push(
+            makeDiv(`${makeTooltip("Methode", `Hier wird eine neue Methode für die Klasse ${astNode.classname} definiert, die an anderen Stellen im Code aufgerufen werden kann.`)}: ${fullMethodHandle} ${structureSequence(astNode.body)}`,"struct-program method")
+        );
     // If the class already exists, we can add the method to it
     if (astNode.classname in classes)
         classes[astNode.classname].getElementsByClassName("struct-methods")[0].innerHTML += methodHandle + "<br>";
-    return makeSpan(`→ ${fullMethodHandle}`, "struct-deemph");
+    return makeSpan(`▱ ${fullMethodHandle}`, "struct-deemph");
 }
 
 function structureFunction(astNode: FunctionDefinition) {
     const funcHandle = `${astNode.name}(${astNode.params.map((p) => p.ident).join(", ")})`
-    sections.push(
-        makeDiv(`${makeTooltip("Funktion", "Hier wird eine neue Funktion definiert, die an anderen Stellen im Code aufgerufen werden kann. So muss man nicht immer dieselben Anweisungen schreiben.")}: ${funcHandle} ${structureSequence(astNode.body)}`, "struct-program function")
-    );
-    return makeSpan(`→  ${funcHandle}`, "struct-deemph");
+    if (toggleFunctions.active)
+        sections.push(
+            makeDiv(`${makeTooltip("Funktion", "Hier wird eine neue Funktion definiert, die an anderen Stellen im Code aufgerufen werden kann. So muss man nicht immer dieselben Anweisungen schreiben.")}: ${funcHandle} ${structureSequence(astNode.body)}`, "struct-program function")
+        );
+    return makeSpan(`▷  ${funcHandle}`, "struct-deemph");
 }
+
