@@ -71,6 +71,7 @@ const preloadEditor = ace.edit("preload-editor", {
     mode: "ace/mode/RKScript",
 	theme: "ace/theme/RKLight",
     readOnly: true,
+    showPrintMargin: false,
 });
 
 // deactivate text completer
