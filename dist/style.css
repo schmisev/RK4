@@ -8,8 +8,18 @@
 }
 
 /* general */
+html {
+    margin: 0;
+    height: 100%;
+    overflow-y: hidden;
+}
+
 body {
     /*overflow-x: hidden;*/
+    margin: 0;
+    padding: 8px;
+    height: 100%;
+    box-sizing: border-box;
     font-weight: 500;
 }
 
@@ -158,13 +168,11 @@ input[type="checkbox"] {
 #panel-row {
     display: flex;
     overflow-x: hidden;
-    height: fit-content;
+    height: 100%;
 }
 
 #left-panel {
-    height: fit-content;
-    overflow: hidden;
-    float: left;
+    height: 100%;
 
     /* Use box-sizing so that element's outerwidth will match width property */
     box-sizing: border-box;
@@ -177,13 +185,15 @@ input[type="checkbox"] {
 #right-panel {
     min-width: 0px;
     max-width: 100%;
-    height: fit-content;
+    height: 100%;
 
     /* Use box-sizing so that element's outerwidth will match width property */
     box-sizing: border-box;
     
     /* Allow box to grow and shrink, and ensure they are all equally sized */
     flex: 1;
+    display: grid;
+    grid-template-rows: 30px repeat(22, minmax(0, 1fr)) 30px;
 }
 
 .handler {
@@ -207,16 +217,18 @@ input[type="checkbox"] {
     display: grid;
     gap: 5px;
     grid-template-columns: repeat(13, minmax(0, 1fr));
-    grid-auto-rows: 30px;
-    height: auto;
+    grid-template-rows: 30px 30px repeat(8, minmax(0, 1fr)) 30px 30px 30px repeat(3, minmax(0, 1fr)) 30px 30px repeat(5, minmax(0, 1fr)) 30px;
+    height: 100%;
 }
 
 #grid-container-right {
+    grid-row: 2 / 24;
     display: grid;
     gap: 5px;
     grid-template-columns: repeat(4, 1fr);
-    grid-auto-rows: 30px;
-    height: auto;
+    grid-template-rows: repeat(22, minmax(min-content, max-content));
+    height: 100%;
+    margin-bottom: 5px;
     /*align-items: center;*/
     justify-items: center; /* adjusted */
 
@@ -253,8 +265,6 @@ input[type="checkbox"] {
 }
 
 #debug-bottom-bar {
-    margin-top: 5px;
-    grid-column: 1 / 3;
     grid-row: 24;
 }
 
@@ -273,6 +283,7 @@ input[type="checkbox"] {
 }
 
 #debug-title {
+    grid-row: 1;
     overflow: visible;
     margin-bottom: 5px;
 }
@@ -468,7 +479,8 @@ input[type="checkbox"] {
 
 #task-bar {
     grid-column: 8;
-    grid-row: 11/12;
+    grid-row: 11 / 13;
+    padding-bottom: 5px;
 }
 
 #task-check {
