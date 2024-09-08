@@ -154,7 +154,7 @@ function setErrorMarker(msg: string, lineIndex: number, errorTypeCss: string) {
 }
 
 // Updating IDE
-async function updateIDE() {
+export async function updateIDE() {
     resetErrorMarkers();
 
     // reset error bar
