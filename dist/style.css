@@ -217,7 +217,7 @@ input[type="checkbox"] {
     display: grid;
     gap: 5px;
     grid-template-columns: repeat(13, minmax(0, 1fr));
-    grid-template-rows: 30px 30px repeat(8, minmax(0, 1fr)) 30px 30px 30px repeat(3, minmax(0, 1fr)) 30px 30px repeat(5, minmax(0, 1fr)) 30px;
+    grid-template-rows: 30px 30px repeat(8, minmax(0, 1fr)) 30px 30px 30px repeat(3, minmax(0, 1fr)) minmax(0, 1fr) 30px repeat(3, minmax(0, 1fr)) 30px 30px 30px;
     height: 100%;
 }
 

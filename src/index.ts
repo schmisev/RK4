@@ -425,5 +425,5 @@ export function resetLagSum() {
 
 
 // Start app
-loadExtTasks().then(updateTaskSelector); // get std tasks
+loadExtTasks().catch(e => console.error(e)).then(updateTaskSelector); // get std tasks
 loadTask(DEFAULT_TASK);
