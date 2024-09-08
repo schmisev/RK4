@@ -120,6 +120,27 @@ editor.on("change", async (e: ace.Ace.Delta) => {
 document.getElementById("code-start")!.onclick = startCode
 document.getElementById("code-stop")!.onclick = stopCode
 
+// Setup tabs
+const consoleTab = document.getElementById("console-title")!;
+const preloadTab = document.getElementById("preload-title")!;
+
+consoleTab.onclick = () => {
+    document.getElementById("console-log")!.style.visibility = "visible";
+    document.getElementById("preload-editor")!.style.visibility = "hidden";
+
+    consoleTab.classList.toggle("active", true);
+    preloadTab.classList.toggle("active", false);
+}
+
+preloadTab.onclick = () => {
+    document.getElementById("console-log")!.style.visibility = "hidden";
+    document.getElementById("preload-editor")!.style.visibility = "visible";
+
+    consoleTab.classList.toggle("active", false);
+    preloadTab.classList.toggle("active", true);
+}
+
+// App logic
 // Setting up debug timer
 const debugTimer = document.getElementById("debug-timer")!;
 function setDebugTimer(waiting = false) {

@@ -50,7 +50,7 @@
                         <span class="keystroke">&nbsp;&nbsp;⇥&nbsp;&nbsp;</span>
                         <div class="struct-dot"></div>
                         Zeile löschen:&nbsp;&nbsp;<span class="keystroke">Strg</span> + <span class="keystroke">D</span><br>
-                        Duplizieren:<span class="keystroke">Strg</span> + <span class="keystroke">⇧ Shift</span> + <span class="keystroke">D</span><br>
+                        Duplizieren:&nbsp;&nbsp;<span class="keystroke">Strg</span> + <span class="keystroke">⇧ Shift</span> + <span class="keystroke">D</span><br>
                         </div>
                     </span>
                 </div>
@@ -66,8 +66,8 @@
                     <button title="Lege Code in den Speicher oder überschreibe aktuellen Speicherstand." id="store-code">💾</button>
                 </div>
                 <!-- Preload / library UI -->
-                <div class="lc30 wsr text" id="preload-title">📖 Bibliothek</div>
-                <div class="editor cascadia" id="preload-editor">Preload</div>
+                <button class="tab-button" id="preload-title">📖 Bibliothek</button>
+                <div class="editor cascadia" id="preload-editor" style="visibility: hidden;">Preload</div>
                 <!-- Save / load UI -->
                 <button title="Speicher aktuellen Code in einer .rk-Datei und lade sie herunter." id="save-code">⬇️</button>
                 <button title="Lade Code (.rk), Welt (.csv) oder Aufgabe (.json) vom PC." id="load-code">📂</button>
@@ -92,7 +92,9 @@
                 <button class="cmd-run" id="cmd-run">↩</button>
                 <!-- Task view UI -->
                 <div class="task-description wsr text" id="task-description">Aufgabe</div>
-                <div class="console-log wsr text cascadia" id="console-log"></div>
+                <!-- Console -->
+                <button class="tab-button active" id="console-title">📥 Konsole</button>
+                <div class="console-log text cascadia" id="console-log"></div>
                 <!-- credits -->
                 <div class="wsr lc30 text" id="credits-bar">Mitwirkende: <a href="https://github.com/schmisev">schmisev</a> ● <a href="https://github.com/WorldsEnder">WorldsEnder</a> 
                     | 3D-Ansicht: <a href="https://p5js.org/">p5.js</a> (<a href="https://raw.githubusercontent.com/processing/p5.js/main/license.txt">Lizenz</a>)
