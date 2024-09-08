@@ -165,6 +165,7 @@ span.line {
 
     padding: 0 5px;
     text-align: center;
+    border-left: 1px black solid;
 }
 
 .struct-default {
