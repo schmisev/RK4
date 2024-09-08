@@ -57,6 +57,48 @@ function loadFromStore() {
 }
 
 // insert some Demo Code
+storeRawCode("Demo: Alles mögliche",
+`// Großer Testcode
+Zahl zeilenZähler ist 0
+
+# Wiederholungen
+wiederhole 4 mal
+    Zahl n ist 0
+    wiederhole solange n < 10
+        wiederhole solange nicht k1.siehtWand()
+            k1.hinlegen()
+            k1.schritt()
+        ende
+        k1.linksDrehen()
+        n ist n + 1
+    ende
+ende
+
+Methode zeileAufräumen() für Roboter
+    # Methodendefinition
+    wiederhole solange nicht siehtWand()
+        aufheben()
+        schritt()
+    ende
+
+    zeilenZähler ist zeilenZähler + 1
+ende
+
+Funktion turmAbräumen(Objekt r)
+    # Funktionsdeinition
+    wiederhole solange r.siehtZiegel()
+        r.zeileAufräumen()
+        r.linksDrehen()
+    ende
+ende
+
+turmAbräumen(k1)
+
+wenn welt.fertig() dann
+    zeig zeilenZähler, "Zeilen abgeräumt!"
+ende
+`, false);
+
 storeRawCode("Demo: Datentypen",
 `Zahl a ist 5
 Zahl b ist -7

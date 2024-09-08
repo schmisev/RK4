@@ -18,7 +18,7 @@ import { sleep } from "./utils";
 
 // Robot imports
 import { declareWorld, World } from "./robot/world";
-import { STD_PRELOAD, STD_WORLD, STD_TASKS, DEFAULT_TASK, TEST_CODE, Task } from "./robot/tasks";
+import { STD_PRELOAD, STD_WORLD, STD_TASKS, DEFAULT_TASK, STD_CODE, Task } from "./robot/tasks";
 import { destructureKey } from "./ui/task-selector";
 import { loadExtTasks, downloadExtTask } from "./ui/task-selector";
 import { clamp } from './utils';
@@ -45,8 +45,8 @@ export let extTasks: Record<string, string> = {};
 export let taskName: string
 
 // Code state
-let preloadCode = "\n";
-let code = TEST_CODE;
+let preloadCode = STD_PRELOAD;
+let code = STD_CODE;
 let worldSpec = STD_WORLD;
 const errorMarkers: number[] = [];
 

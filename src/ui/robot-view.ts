@@ -126,8 +126,8 @@ export function robotSketch(p5: p5) {
         const observer = new ResizeObserver((entries) => {
             const {width, height} = entries[0].contentRect;
             if (canvasH != height || canvasW != width)
-                p5.resizeCanvas(width, height);
-            canvasH = height - 1;
+                // p5.resizeCanvas(width, height);
+            canvasH = height;
             canvasW = width;
         });
         observer.observe(canvasDiv, { box: 'content-box' });
@@ -143,9 +143,6 @@ export function robotSketch(p5: p5) {
             resetLagSum();
         }
 
-        // update console log
-        // updateConsoleLog();
-
         // update task status
         if (!world.isGoalReached()) {
             taskCheck.style.backgroundColor = "whitesmoke";
@@ -156,8 +153,6 @@ export function robotSketch(p5: p5) {
         }
 
         const worldInst = world
-
-        resizeToParent();
 
         // bg color ramping
         if (isRunning && bg == 0) {
