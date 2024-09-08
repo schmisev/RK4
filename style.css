@@ -39,6 +39,23 @@ button:active {
     outline-offset: -2px;
 }
 
+.toggle-button {
+    background-color: white;
+    border-radius: 5px;
+    border: none;
+    font-size: medium;
+    overflow: hidden;
+    white-space: nowrap;
+    font-family: "Roboto";
+}
+
+.toggle-button.active {
+    background-color: black;
+    color: white;
+    outline: 1px black solid;
+    outline-offset: -1px;
+}
+
 a {
     font-weight: bold;
     color: lightcoral;
@@ -50,6 +67,10 @@ a:hover {
 }
 
 select {
+    border-radius: 5px;
+}
+
+input[type="checkbox"] {
     border-radius: 5px;
 }
 
@@ -166,7 +187,7 @@ select {
 
 #grid-container-left {
     display: grid;
-    gap: 10px;
+    gap: 5px;
     grid-template-columns: repeat(13, minmax(0, 1fr));
     grid-auto-rows: 30px;
     height: auto;
@@ -174,14 +195,13 @@ select {
 
 #grid-container-right {
     display: grid;
-    gap: 10px;
+    gap: 5px;
     grid-template-columns: repeat(4, 1fr);
     grid-auto-rows: 30px;
     height: auto;
     /*align-items: center;*/
     justify-items: center; /* adjusted */
 
-    padding-top: 10px;
     overflow: hidden scroll;
     scrollbar-width: thin;
 }
@@ -215,7 +235,7 @@ select {
 }
 
 #debug-bottom-bar {
-    margin-top: 10px;
+    margin-top: 5px;
     grid-column: 1 / 3;
     grid-row: 24;
 }
@@ -231,6 +251,20 @@ select {
     z-index: 100;
     text-align: right;
     padding-right: 20px;
+    pointer-events: none;
+}
+
+#debug-title {
+    overflow: visible;
+    margin-bottom: 5px;
+}
+
+#debug-helper {
+    grid-column: 1/8;
+    grid-row: 3;
+    z-index: 100;
+    text-align: left;
+    padding-left: 0;
     pointer-events: none;
 }
 
@@ -419,7 +453,7 @@ select {
 }
 
 #task-check {
-    margin: 5px;
+    margin: 0 5px;
     height: 60px;
     width: 60px;
     text-align: center;
@@ -590,4 +624,38 @@ select {
 .exec-marker {
     background-color: lightblue;
     position: absolute;
+}
+
+/* legend */
+.legend {
+    outline: 2px black solid;
+    opacity: 100%;
+    margin-left: 10px;
+    padding: 0 10px;
+}
+
+.legend.dashed {
+    border-radius: 5px;
+    outline-style: dashed;
+}
+
+.legend.empty {
+    outline: none;
+    background-color: transparent;
+}
+
+.legend.classname {
+    background-color: #CF9FFF;
+}
+
+.legend.attributes {
+    background-color: #fdc0be;
+}
+
+.legend.methods {
+    background-color: #cbf7c7;
+}
+
+.legend.functions {
+    background-color: lightblue;
 }

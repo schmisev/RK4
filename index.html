@@ -22,9 +22,9 @@
         <div id="left-panel">
             <div id="grid-container-left">
                 <div class="lc30 wsr text" id="title-bar">
-                    🤖 Robot Karol 4&nbsp;&nbsp;<div id="version-label" class="struct-doc-comment">beta</div>&nbsp;&nbsp;| RKBasic, 3D, mehrere Roboter & Aufgaben
+                    🤖 Robot Karol 4&nbsp;&nbsp;<div id="version-label" class="struct-doc-comment">BETA</div>&nbsp;&nbsp;| RKBasic, 3D, mehrere Roboter und Aufgaben
                     <span class="roboto" style="float: right;">
-                        Zieh mich! →</span>
+                        Zieh mich! ▸</span>
                 </div>
                 <!-- Code editor UI -->
                 <div class="lc30 wsr text" id="code-title">💻 Code-Editor</div>
@@ -36,6 +36,7 @@
                         <div class="struct-dot"></div>
                         Kopieren:&nbsp;&nbsp;<span class="keystroke">Strg</span> + <span class="keystroke">C</span><br>
                         Einfügen:&nbsp;&nbsp;<span class="keystroke">Strg</span> + <span class="keystroke">V</span><br>
+                        Alles auswählen:&nbsp;&nbsp;<span class="keystroke">Strg</span> + <span class="keystroke">A</span><br>
                         <div class="struct-dot"></div>
                         Bereiche auswählen:<br>
                         <span class="keystroke">⇧ Shift</span> + 
@@ -47,11 +48,14 @@
                         <div class="struct-dot"></div>
                         Einrücken (Tab):&nbsp;
                         <span class="keystroke">&nbsp;&nbsp;⇥&nbsp;&nbsp;</span>
+                        <div class="struct-dot"></div>
+                        Zeile löschen:&nbsp;&nbsp;<span class="keystroke">Strg</span> + <span class="keystroke">D</span><br>
+                        Duplizieren:<span class="keystroke">Strg</span> + <span class="keystroke">⇧ Shift</span> + <span class="keystroke">D</span><br>
                         </div>
                     </span>
                 </div>
                 <button title="Lade die Welt neu und starte die Ausführung!" class="code-start" id="code-start">▷</button>
-                <button title="Beende die Ausführung und lade die Welt neu!" class="code-stop" id="code-stop">▢</button>
+                <button title="Beende die Ausführung und lade die Welt neu!" class="code-stop" id="code-stop">▢ ↺</button>
                 <div class="editor cascadia" id="code-editor">Code</div>
                 <div class="code-error lc30 wsr text" id="code-error">keine Fehler gefunden</div>
                 <select class="text" id="store-data" list="store-data">
@@ -97,7 +101,25 @@
         </div>
         <div class="handler" id="panel-handler"></div>
         <div id="right-panel">
-            <div class="wsr lc30 text" id="debug-title">🐞 Debug <span id="debug-timer">😶‍🌫️</span></div>
+            <div class="wsr lc30 text" id="debug-title">🐞 Debug 
+                <span id="debug-timer">😶‍🌫️</span>
+                <span class="lc30 text" id="debug-helper">
+                    <span class="hover-helper"><span class="turning">*️⃣</span>
+                        <div class="tooltip" style="text-align: right;">
+                            <div style="display: block; text-align: center;">Legende</div>
+                            <div class="struct-dot"></div>
+                            Klassennamen: <span class="legend classname"></span> <span class="legend empty"></span><br>
+                            Attribute: <span class="legend attributes"></span> <span class="legend empty"></span><br>
+                            Methoden: <span class="legend methods"></span> <span class="legend methods dashed"></span> <br>
+                            Funktionen: <span class="legend functions"></span> <span class="legend functions dashed"></span> <br>
+                        </div>
+                    </span>
+                </span>
+                <button id="debug-show-defs" class="toggle-button">Definitionen</button>
+                <button id="debug-show-labels" class="toggle-button">Kommentare</button>
+                <button id="debug-show-functions" class="toggle-button">Funktionen</button>
+                <button id="debug-show-methods" class="toggle-button">Methoden</button>
+            </div>
             <div id="grid-container-right">
                 <!-- Class view -->
                 <div class="shadow dgr lc30 text" id="class-diagram-title">🗃️ Klassen</div>
