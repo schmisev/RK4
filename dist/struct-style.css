@@ -138,7 +138,6 @@ span.line {
 .struct-switch {
     /* outline: 1px black solid; */
     text-align: center;
-    height: 25px;
 }
 
 .struct-switch-step {
@@ -152,20 +151,8 @@ span.line {
 }
 
 .struct-case {
-    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' preserveAspectRatio='none' viewBox='0 0 100 100'><path d='M0 0 L100 100 ' stroke='black' stroke-width='2' vector-effect='non-scaling-stroke'/></svg>");
-    background-repeat:no-repeat;
-    background-position:center center;
-    background-size: 100% 100%, auto;
-
-    position: relative;
-    margin-bottom: -25px;
-    height: 25px;
-    transform: translateY(-100%);
-    pointer-events: none;
-
-    padding: 0 5px;
-    text-align: center;
-    border-left: 1px black solid;
+    padding-left: 10px;
+    width: calc(max-content + 25px);
 }
 
 .struct-default {

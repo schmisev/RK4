@@ -334,55 +334,32 @@ function structureSwitchCase(node: AnySwitchBlock): string {
         </div>
     </div>
     <div class="struct-row">
-        <div class="struct-column">
-            <div class="struct-switch-step">
-            <br>
-            ${structureCase(node, 0)}
-            </div>
+    `
+
+    for (const c of node.cases) {
+        result += `<div class="struct-column">
+        <div class="struct-box" style="text-align: center">
+        = ${structure(c.comp)}
+        <div class="struct-case">
+        ${structureSequence(c.body)}
         </div>
-    <div class="struct-column">
-        <div class="struct-switch-step" style="height: ${h * 25}px">
-        ${"<br>".repeat(h)}
-        <div class="struct-default" style="height: ${h * 25}px; margin-bottom: ${- h * 25}px">${"<br>".repeat(h - 1)}sonst</div>
+        </div>
+        </div>`
+    }
+    if (node.fallback.length > 0) {
+        result += `<div class="struct-column">
+        <div class="struct-box" style="text-align: center">
+        sonst
+        <div class="struct-case">
         ${structureSequence(node.fallback)}
         </div>
-    </div>
-    </div>
-    `
-
-    return result;
-}
-
-function structureCase(node: AnySwitchBlock, index: number): string {
-    let nextCase: string
-    let h = index + 1
-
-    if (index >= node.cases.length - 1) {
-        return "";
-    } else {
-        nextCase = `
-        <div class="struct-column">
-            <div class="struct-switch-step">
-                <br>
-                ${structureCase(node, index + 1)}
-            </div>
         </div>
-        `
+        </div>`
     }
 
-    return `
-    <div class="struct-row">
-        <div class="struct-column">
-            <div class="struct-case">
-                <span class="struct-emph shadow">
-                    &nbsp${structure(node.cases[index].comp)}&nbsp
-                </span>
-            </div>
-            ${structureSequence(node.cases[index].body)}
-        </div>
-        ${nextCase}
-    </div>
-    `
+    result += "</div>"
+
+    return result;
 }
 
 
