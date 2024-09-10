@@ -152,22 +152,23 @@ span.line {
 }
 
 .struct-case {
-    padding-left: 10px;
-    width: calc(max-content + 25px);
+    padding-left: 0px;
+    padding-right: 0px;
+    width: calc(max-content + 0px);
 }
 
-.struct-default {
-    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' preserveAspectRatio='none' viewBox='0 0 100 100'><path d='M0 100 L100 0 ' stroke='black' stroke-width='2' vector-effect='non-scaling-stroke'/></svg>");
-    background-repeat:no-repeat;
-    background-position:center center;
-    background-size: 100% 100%, auto;
-    
-    position: relative;
-    transform: translateY(-100%);
-    pointer-events: none;
+.struct-switch-condition {
+    padding-left: 10px;
+    text-align: left;
+    height: 100%;
+    border-left: 2px black solid;
+    margin-left: -1px;
+    background-image: linear-gradient(white, #ccc);
+    border-top: 2px rgba(0, 0, 0, 0.2) dotted;
+}
 
-    padding: 0 5px;
-    text-align: center;
+.struct-switch-condition:hover {
+    background-image: linear-gradient(#d7ebf2, #ccc);
 }
 
 .struct-row {

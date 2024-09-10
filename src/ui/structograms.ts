@@ -338,7 +338,7 @@ function structureSwitchCase(node: AnySwitchBlock): string {
 
     for (const c of node.cases) {
         result += `<div class="struct-column">
-        <div class="struct-box" style="text-align: center">
+        <div class="struct-switch-condition">
         = ${structure(c.comp)}
         <div class="struct-case">
         ${structureSequence(c.body)}
@@ -348,7 +348,7 @@ function structureSwitchCase(node: AnySwitchBlock): string {
     }
     if (node.fallback.length > 0) {
         result += `<div class="struct-column">
-        <div class="struct-box" style="text-align: center">
+        <div class="struct-switch-condition">
         sonst
         <div class="struct-case">
         ${structureSequence(node.fallback)}
