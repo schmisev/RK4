@@ -182,11 +182,11 @@ function structure(astNode: Program | AnyStmt): string {
         case StmtKind.ClassDefinition:
             return structureClass(astNode);
         case StmtKind.BreakCommand:
-            return makeSpan("abbrechen", "struct-cmd");
+            return makeSpan("abbrechen ▢", "struct-cmd break");
         case StmtKind.ContinueCommand:
-            return makeSpan("weiter", "struct-cmd");
+            return makeSpan("weiter ↺", "struct-cmd continue");
         case StmtKind.ReturnCommand:
-            return `${makeSpan("zurück", "struct-cmd")} ${structure(astNode.value)}`
+            return `${makeSpan("↩ zurück", "struct-cmd return")} ${structure(astNode.value)}`
         case StmtKind.DocComment:
             return makeDiv(makeDiv(`${astNode.content.replace(/\n/g, "<br>")}`, "struct-doc-comment"), "struct-doc-wrapper");
         case StmtKind.EmptyLine:
