@@ -57,6 +57,8 @@ button:active {
     overflow: hidden;
     white-space: nowrap;
     font-family: "Roboto";
+
+    transition: background-color 0.2s, outline-color 0.2s;
 }
 
 .toggle-button.active {
@@ -64,6 +66,24 @@ button:active {
     color: white;
     outline: 1px black solid;
     outline-offset: -1px;
+}
+
+#debug-show-functions.active {
+    background-color: lightblue;
+    outline-color: #3ca2c3;
+    color: black;
+}
+
+#debug-show-methods.active {
+    background-color: lightgreen;
+    outline-color: #73BE73;
+    color: black;
+}
+
+#debug-show-labels.active {
+    background-color: #FADA5E;
+    outline-color: #b19b42;
+    color: black;
 }
 
 .tab-button {
