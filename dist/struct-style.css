@@ -160,15 +160,13 @@ span.line {
 .struct-switch-condition {
     padding-left: 10px;
     text-align: left;
-    height: 100%;
-    border-left: 2px black solid;
-    margin-left: -1px;
-    background-image: linear-gradient(white, #ccc);
-    border-top: 2px rgba(0, 0, 0, 0.2) dotted;
+    background-color: white;
+    outline: 2px black solid;
+    outline-offset: -1px;
 }
 
 .struct-switch-condition:hover {
-    background-image: linear-gradient(#d7ebf2, #ccc);
+    background-color: #d7ebf2;
 }
 
 .struct-row {

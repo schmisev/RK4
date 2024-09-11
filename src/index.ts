@@ -369,6 +369,8 @@ async function runCode(code: string, stepped: boolean): Promise<boolean> {
         let stepper = evaluate(program, env);
 
         isRunning = true;
+        await sleep(dt);
+        frameLagSum = 0;
         while (true) {
             const next = stepper.next();
             if (next.done) break;
@@ -385,8 +387,9 @@ async function runCode(code: string, stepped: boolean): Promise<boolean> {
                 
                 if (skippedSleep > frameLagSum) {
                     // we overshot the framelag, so the apparent lag is smaller
-                    frameLagSum = - (skippedSleep - frameLagSum);
-                    skippedSleep = 0;
+                    const lastFrameLag = frameLagSum;
+                    skippedSleep = skippedSleep - frameLagSum;
+                    frameLagSum = - skippedSleep;
                     
                     await sleep(dt);
                 } else {
