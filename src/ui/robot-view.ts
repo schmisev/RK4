@@ -178,7 +178,6 @@ export function robotSketch(p5: p5) {
 
         // draw object diagrams
         if (robotDiagramIndex >= 0) {
-            //console.log("show");
             showRobotDiagram(worldInst.robots[robotDiagramIndex], objOverlay, p5.winMouseX, p5.winMouseY);
         } else {
             hideRobotDiagram(objOverlay);

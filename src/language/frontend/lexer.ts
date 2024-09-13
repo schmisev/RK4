@@ -63,6 +63,7 @@ export const KEYWORDS: Record<string, TokenType> = {
     dann: TokenType.Then,
     sonst: TokenType.Else,
     ist: TokenType.Assign,
+    sei: TokenType.Assign,
     als: TokenType.Instance,
     wiederhole: TokenType.Repeat,
     solange: TokenType.RepWhile,

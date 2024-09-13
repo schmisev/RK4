@@ -12,8 +12,9 @@ export function addRobotButtons(div: HTMLElement, overlay: HTMLElement, world: W
         const el = document.createElement("button");
         el.classList.add("object-button");
 
-        el.onmousedown = () => {robotDiagramIndex = i};
-        el.onmouseleave = () => {robotDiagramIndex = -1};
+        el.onmousedown = () => {
+            robotDiagramIndex == i ? robotDiagramIndex = -1 : robotDiagramIndex = i;
+        };
 
         el.innerHTML = `🤖 ${r.name}`;
         div.appendChild(el);
