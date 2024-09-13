@@ -3,7 +3,7 @@ import * as p5 from 'p5';
 import { isRunning, queueInterrupt, world, objOverlay, taskCheck, updateLagSum, resetLagSum } from '..';
 import { Robot } from '../robot/robot';
 import { CR, CY, CG, CB, BlockType, MarkerType, World, CBOT, CBOT2, Field } from '../robot/world';
-import { robotDiagramIndex, showRobotDiagram, hideRobotDiagram } from './objectigrams';
+import { robotDiagramIndex, showRobotDiagram, hideRobotDiagram, updateRobotDiagram } from './objectigrams';
 
 
 // Setup robot sketch
@@ -177,10 +177,12 @@ export function robotSketch(p5: p5) {
         drawWorld(worldInst);
 
         // draw object diagrams
-        if (robotDiagramIndex >= 0) {
-            showRobotDiagram(worldInst.robots[robotDiagramIndex], objOverlay, p5.winMouseX, p5.winMouseY);
-        } else {
+        if (robotDiagramIndex >= world.robots.length) {
             hideRobotDiagram(objOverlay);
+        }
+
+        if (robotDiagramIndex >= 0) {
+            updateRobotDiagram(worldInst.robots[robotDiagramIndex], objOverlay);
         }
 
         // draw compass

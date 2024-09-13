@@ -1,19 +1,25 @@
+import { objOverlay } from "..";
 import { DIR2SHORTGER, Robot } from "../robot/robot";
 import { World } from "../robot/world";
+import { Vec2 } from "../utils";
 
 export let robotDiagramIndex = -1
 
 export function addRobotButtons(div: HTMLElement, overlay: HTMLElement, world: World) {
-    robotDiagramIndex = -1;
-
+    
     div.innerHTML = "";
 
     for (const [i, r] of world.robots.entries()) {
         const el = document.createElement("button");
         el.classList.add("object-button");
 
-        el.onmousedown = () => {
+        el.onclick = (e: MouseEvent) => {
             robotDiagramIndex == i ? robotDiagramIndex = -1 : robotDiagramIndex = i;
+            if (robotDiagramIndex >= 0) {
+                showRobotDiagram(objOverlay, e.clientX, e.clientY);
+            } else {
+                hideRobotDiagram(objOverlay);
+            }
         };
 
         el.innerHTML = `🤖 ${r.name}`;
@@ -21,11 +27,7 @@ export function addRobotButtons(div: HTMLElement, overlay: HTMLElement, world: W
     }
 }
 
-export function showRobotDiagram(r: Robot, overlay: HTMLElement, mx: number, my: number) {
-    overlay.style.display = "block";
-    overlay.style.transform = `translateX(${mx}px)`
-    overlay.style.transform += `translateY(${my}px)`
-
+export function updateRobotDiagram(r: Robot, overlay: HTMLElement) {
     overlay.innerHTML = 
     `<div>
         <div class="obj-name"><span class="struct-object">${r.name}</span> : Roboter</div>
@@ -36,6 +38,12 @@ export function showRobotDiagram(r: Robot, overlay: HTMLElement, mx: number, my:
         </div>
         <div class="obj-methods">...</div>
     </div>`;
+}
+
+export function showRobotDiagram(overlay: HTMLElement, mx: number, my: number) {
+    overlay.style.display = "block";
+    overlay.style.transform = `translateX(${mx}px)`
+    overlay.style.transform += `translateY(${my}px)`
     //console.log(r.name);
 }
 
