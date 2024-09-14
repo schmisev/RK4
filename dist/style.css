@@ -547,6 +547,7 @@ input[type="checkbox"] {
 }
 
 #structogram-diagram-canvas {
+    visibility: hidden; /* CHANGE!!! */
     grid-column: 2;
     grid-row: 2 / 23;
     padding: 5px;
@@ -561,12 +562,33 @@ input[type="checkbox"] {
 }
 
 #class-diagram-canvas {
+    visibility: hidden; /* CHANGE!!! */
     grid-column: 3;
     grid-row: 2 / 23;
     padding: 5px;
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+#flowchart-diagram-title {
+    grid-column: 2/4;
+    grid-row: 1;
+}
+
+#flowchart-diagram-canvas {
+    grid-column: 2/4;
+    grid-row: 2;
+    width: 100%;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.mermaid {
+    width: 100%;
+    text-align: center;
 }
 
 .cmd-line {

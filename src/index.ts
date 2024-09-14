@@ -8,6 +8,7 @@ import "./ui/store-code";
 import { updateTaskSelector } from "./ui/task-selector";
 import { showStructogram } from './ui/structograms';
 import { addRobotButtons } from './ui/objectigrams';
+import "./ui/flowcharts";
 
 // language imports
 import Parser from "./language/frontend/parser";
@@ -33,6 +34,7 @@ import './assets/ace/theme-rklight.js';
 // General errors 
 import { DebugError, LexerError, ParserError, RuntimeError } from './errors';
 import { Session } from "inspector";
+import { showFlowchart } from "./ui/flowcharts";
 
 // Global variables
 let dt = 50; // ms to sleep between function calls
@@ -187,6 +189,7 @@ export async function updateIDE() {
     try {
         program = parser.produceAST(code);
         showStructogram(program);
+        showFlowchart(program);
         // set debug timer
         setDebugTimer(false);
     } catch (e) {
