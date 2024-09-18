@@ -2,6 +2,7 @@ import mermaid from "mermaid"
 import { AnyAlwaysBlock, AnyForBlock, AnyIfElseBlock, AnyStmt, AnySwitchBlock, AnyWhileBlock, Expr, ForBlock, IfElseBlock, Program, StmtKind, SwitchBlock } from "../language/frontend/ast";
 import { content } from "html2canvas/dist/types/css/property-descriptors/content";
 import { skip } from "node:test";
+import { stringify } from "node:querystring";
 mermaid.initialize({ startOnLoad: true });
 
 // state
@@ -9,16 +10,24 @@ let idCounter = 0;
 let declStack: string[] = []; // all node names
 let connStack: string[] = []; // all node connections
 
-enum Info {
-    Program,
-    Regular,
-    Return,
-    Break,
-    Continue,
-    Call,
-    Ignore,
-    Disconnect,
-    Unwrapped,
+enum FlowInfo {
+    Program = "Prg",
+    Regular = "Reg",
+    Return = "Ret",
+    Break = "Brk",
+    Resolved = "Res",
+    Continue = "Cnt",
+    Call = "Cll",
+    Ignore =  "Ign",
+    Disconnect = "Dsc",
+    Unwrapped = "Uwr",
+}
+
+interface ChartNode {
+    info: FlowInfo;
+    id?: string;
+    str?: string;
+    outLabel?: string
 }
 
 function nextId() {
@@ -26,22 +35,33 @@ function nextId() {
     return "" + idCounter;
 }
 
-function declare(content: string, info = Info.Regular, lb = "[", rb = "]"): [string, Info] {
+function declare(content: string, info = FlowInfo.Regular, lb = "[", rb = "]"): ChartNode {
     const id = nextId();
     declStack.push(id + lb + '"`' + content + '`"' + rb);
-    return [id, info];
+    return {str: content, id, info};
 }
 
 function connect(seq: string) {
     connStack.push(seq);
 }
 
-const declTerm = (content: string, info = Info.Regular) => declare(content, info, "([", "])");
-const declIO = (content: string, info = Info.Regular) => declare(content, info, "[/", "/]");
-const declCall = (content: string, info = Info.Regular) => declare(content, info, "[[", "]]");
-const declCon = (content: string, info = Info.Regular) => declare(content, info, "((", "))");
-const declProc = (content: string, info = Info.Regular) => declare(content, info, "[", "]");
-const declDec = (content: string, info = Info.Regular) => declare(content, info, "{{", "}}");
+function connectTwo(nodeA: ChartNode, nodeB: ChartNode): ChartNode {
+    if (!nodeA.id || !nodeB.id || nodeB.info == FlowInfo.Ignore) return nodeA;
+    if (nodeA.outLabel) {
+        connect(`${nodeA.id} -->|${nodeA.outLabel}| ${nodeB.id}`);
+    } else {
+        connect(`${nodeA.id} --> ${nodeB.id}`);
+    }
+    return nodeB;
+}
+
+const declTerm = (content: string, info = FlowInfo.Regular) => declare(content, info, "([", "])");
+const declIO = (content: string, info = FlowInfo.Regular) => declare(content, info, "[/", "/]");
+const declCall = (content: string, info = FlowInfo.Regular) => declare(content, info, "[[", "]]");
+const declCon = (content: string, info = FlowInfo.Regular) => declare(content, info, "((", "))");
+const declProc = (content: string, info = FlowInfo.Regular) => declare(content, info, "[", "]");
+const declDec = (content: string, info = FlowInfo.Regular) => declare(content, info, "{{", "}}");
+const declCtrl = (content: string, info: FlowInfo.Break | FlowInfo.Return | FlowInfo.Continue) => declare(content, info, "(", ")");
 
 export function showFlowchart(program: Program) {
     const flowchartView = document.getElementById("code-flowchart")!;
@@ -57,7 +77,7 @@ function makeFlowchart(program: Program) {
     declStack = [];
     connStack = [];
     // make new flowchart
-    connect(chartProgram(program)[0]);
+    chartProgram(program);
     const fullStr = declStack.join("\n") + "\n" + connStack.join("\n");
     // reset
     idCounter = 0;
@@ -67,34 +87,34 @@ function makeFlowchart(program: Program) {
     return fullStr;
 }
 
-function chart(stmt: AnyStmt): [string, Info] {
+function chart(stmt: AnyStmt, entry: ChartNode): ChartNode {
     switch (stmt.kind) {
         case StmtKind.VarDeclaration:
-            return declProc(stmt.ident + " := " + chartExpr(stmt.value)[0]);
+            return connectTwo(entry, declProc(stmt.ident + " := " + chartExpr(stmt.value).str));
         case StmtKind.ObjDeclaration:
-            return declProc(stmt.ident + " := " +  + "(" + stmt.args.map(chartExpr).map((a) => a[0]).join(", ") + ")");
+            return connectTwo(entry, declProc(stmt.ident + " := " + stmt.classname + "(" + stmt.args.map(chartExpr).map((a) => a.str).join(", ") + ")"));
         case StmtKind.EmptyLine:
-            return ["", Info.Ignore];
+            return connectTwo(entry, {info: FlowInfo.Ignore});
         case StmtKind.DocComment:
-            return ["", Info.Ignore];
+            return connectTwo(entry, {info: FlowInfo.Ignore});
         case StmtKind.IfElseBlock:
-            return ["", Info.Ignore];
+            return chartIfElse(stmt, entry);
         case StmtKind.SwitchBlock:
-            return ["", Info.Ignore];
+            return connectTwo({info: FlowInfo.Ignore}, entry);
         case StmtKind.ForBlock:
-            return chartForLoop(stmt);
+            return chartForLoop(stmt, entry);
         case StmtKind.WhileBlock:
-            return chartWhileLoop(stmt);
+            return chartWhileLoop(stmt, entry);
         case StmtKind.AlwaysBlock:
-            return chartAlwaysLoop(stmt);
+            return chartAlwaysLoop(stmt, entry);
         case StmtKind.ShowCommand:
-            return declIO(stmt.values.map(chartExpr).map((a) => a[0]).join("\n"));
+            return connectTwo(entry, declIO(stmt.values.map(chartExpr).map((a) => a.str).join("\n")));
         case StmtKind.BreakCommand:
-            return ["", Info.Break];
+            return connectTwo(entry, declTerm("abbrechen", FlowInfo.Break));
         case StmtKind.ContinueCommand:
-            return ["", Info.Continue];
+            return connectTwo(entry, declTerm("weiter", FlowInfo.Continue));
         case StmtKind.ReturnCommand:
-            return ["", Info.Return];
+            return connectTwo(entry, declTerm("zurück", FlowInfo.Break));
         case StmtKind.ClassDefinition:
         case StmtKind.FunctionDefinition:
         case StmtKind.ExtMethodDefinition:
@@ -109,110 +129,59 @@ function chart(stmt: AnyStmt): [string, Info] {
         case StmtKind.StringLiteral:
         case StmtKind.MemberExpr:
         case StmtKind.CallExpr:
-            return chartExpr(stmt);
+            return connectTwo(entry, chartExpr(stmt));
     }
-    return ["", Info.Ignore];
+    return connectTwo(entry,{info: FlowInfo.Ignore});
 }
 
-function chartExpr(expr: Expr): [string, Info] {
+function chartExpr(expr: Expr): ChartNode {
     switch (expr.kind) {
         case StmtKind.AssignmentExpr:
             const val = chartExpr(expr.value);
-            return [chartExpr(expr.assigne)[0] + " := " + val[0], val[1]];
+            return {str: chartExpr(expr.assigne).str + " := " + val.str, info: val.info};
         case StmtKind.BinaryExpr:
-            return [chartExpr(expr.left)[0] + " " + expr.operator + " " + chartExpr(expr.right)[0], Info.Unwrapped];
+            return {str: chartExpr(expr.left).str + " " + expr.operator + " " + chartExpr(expr.right).str, info: FlowInfo.Unwrapped};
         case StmtKind.UnaryExpr:
-            return [expr.operator + " " + chartExpr(expr.right)[0], Info.Unwrapped];
+            return {str: expr.operator + " " + chartExpr(expr.right).str, info: FlowInfo.Unwrapped};
         case StmtKind.Identifier:
-            return [expr.symbol, Info.Unwrapped];
+            return {str: expr.symbol, info: FlowInfo.Unwrapped};
         case StmtKind.NumericLiteral:
-            return [`${expr.value}`, Info.Unwrapped];
+            return {str: `${expr.value}`, info: FlowInfo.Unwrapped};
         case StmtKind.NullLiteral:
-            return [`nix`, Info.Unwrapped];
+            return {str: `nix`, info: FlowInfo.Unwrapped};
         case StmtKind.BooleanLiteral:
-            return [`${expr.value ? "wahr" : "falsch"}`, Info.Unwrapped];
+            return {str: `${expr.value ? "wahr" : "falsch"}`, info: FlowInfo.Unwrapped};
         case StmtKind.StringLiteral:
-            return [`#quot;${expr.value}#quot;`, Info.Unwrapped];
+            return {str: `#quot;${expr.value}#quot;`, info: FlowInfo.Unwrapped};
         case StmtKind.MemberExpr:
             const member = chartExpr(expr.member);
-            return [chartExpr(expr.container)[0] + "." + member[0], member[1]];
+            return {str: chartExpr(expr.container).str + "." + member.str, info: member.info};
         case StmtKind.CallExpr:
-            return [chartExpr(expr.ident)[0] + "(" + expr.args.map(chartExpr).map((a) => a[0]).join(", ") + ")", Info.Call];
+            return {str: chartExpr(expr.ident).str + "(" + expr.args.map(chartExpr).map((a) => a.str).join(", ") + ")", info: FlowInfo.Call};
     }
-    return ["", Info.Ignore];
+    return {info: FlowInfo.Ignore};
 }
 
-function chartProgram(program: Program): [string, Info] {
-    const seq = chartSequence(program.body, declTerm("Start"));
-    const end = declTerm("Ende");
-    if (seq[0].slice(-1) != "\n") return [seq[0] + "-->" + end[0], Info.Program]; 
-    return [seq[0] + end[0], Info.Program];
+function chartProgram(program: Program): ChartNode {
+    return {info: FlowInfo.Ignore};
 }
 
-function chartSequence(body: AnyStmt[], start: [string, Info]): [string, Info] {
-    let flow = start[0];
-    let info = start[1];
-    loop: for (const stmt of body) {
-        let [f, i] = chart(stmt);
-        switch (i) {
-            case Info.Return:
-            case Info.Break:
-            case Info.Continue:
-                return [flow, i];
-            case Info.Call:
-                [f, i] = declCall(f);
-                break;
-            case Info.Ignore:
-                continue loop;
-            case Info.Disconnect:
-                if (flow.slice(-1) != "\n") flow += "-->|??|";
-                flow += f + "\n";
-                continue loop;
-            case Info.Unwrapped:
-                [f, i] = declProc(f);
-                break;
-        }
-        if (flow.slice(-1) != "\n") flow += "-->|?|";
-        flow += f;
-        info = i;
-    }
-    return [flow, info];
+function chartSequence(body: AnyStmt[], entry: ChartNode): ChartNode {
+    return {info: FlowInfo.Ignore};
 }
 
-function chartLoop(dec: [string, Info], body: AnyStmt[], onLoop: string, onExit: string): [string, Info] {
-    const [df, di] = dec;
-    let [f, i] = chartSequence(body, [df + "--" + onLoop, di]);
-    switch (i) {
-        case Info.Return:
-        case Info.Break:
-            break;
-        default:
-            f += "-->" + df;
-    }
-    return [f + "--" + onExit, i];
+function chartForLoop(loop: AnyForBlock, entry: ChartNode): ChartNode {
+    return entry;
 }
 
-function chartForLoop(loop: AnyForBlock): [string, Info] {
-    const dec = declDec(chartExpr(loop.counter)[0] + " mal?");
-    return chartLoop(dec, loop.body, "❌", "✔️");
+function chartWhileLoop(loop: AnyWhileBlock, entry: ChartNode): ChartNode {
+    return entry;
 }
 
-function chartWhileLoop(loop: AnyWhileBlock): [string, Info] {
-    const dec = declDec(chartExpr(loop.condition)[0] + " ?");
-    return chartLoop(dec, loop.body, "✔️", "❌");
+function chartAlwaysLoop(loop: AnyAlwaysBlock, entry: ChartNode): ChartNode {
+    return entry;
 }
 
-function chartAlwaysLoop(loop: AnyAlwaysBlock): [string, Info] {
-    const [cf, ci] = declCon("↺");
-    let [f, i] = chartSequence(loop.body, [cf, ci]);
-    switch (i) {
-        case Info.Return:
-        case Info.Break:
-            break;
-        case Info.Disconnect:
-            return [f, Info.Disconnect];
-        default:
-            f += "-->|!!|" + cf;
-    }
-    return [f, Info.Disconnect];
+function chartIfElse(block: AnyIfElseBlock, entry: ChartNode): ChartNode {
+    return entry;
 }
