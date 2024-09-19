@@ -36,6 +36,7 @@ const styleMap: Record<string, [string, Array<string>]> = {
     "Call": ["fill:lightblue", []],
     "Con": ["fill:black", []],
     "Proc": ["fill:whitesmoke", []],
+    "Ctrl": ["fill:lightcoral", []],
 }
 
 function flushStyleMap() {
@@ -160,7 +161,7 @@ const declCall = (content: string, info = Type.Call) => declare(content, info, "
 const declCon = (content: string, info = Type.Regular) => declare(content, info, "((", "))", "Con");
 const declProc = (content: string, info = Type.Regular) => declare(content, info, "[", "]", "Proc");
 const declDec = (content: string, info = Type.Regular) => declare(content, info, "{{", "}}", "Dec");
-const declCtrl = (content: string, info: Type.Break | Type.Return | Type.Continue) => declare(content, info, "(", ")");
+const declCtrl = (content: string, info: Type.Break | Type.Return | Type.Continue) => declare(content, info, "(", ")", "Ctrl");
 
 function mkIgnore(): ChartNode | undefined { return undefined; }
 
