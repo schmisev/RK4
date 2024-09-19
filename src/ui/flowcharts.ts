@@ -1,7 +1,7 @@
 import mermaid from "mermaid"
 import { AnyAlwaysBlock, AnyForBlock, AnyIfElseBlock, AnyStmt, AnySwitchBlock, AnyWhileBlock, Expr, ExtMethodDefinition, FunctionDefinition, Program, StmtKind } from "../language/frontend/ast";
 import { RuntimeError } from "../errors";
-import { toggleFunctions } from "./toggle-buttons";
+import { toggleFunctions, toggleMethods } from "./toggle-buttons";
 mermaid.initialize({ startOnLoad: true });
 
 // diagram formatting
@@ -232,7 +232,7 @@ function chartSimpleStmt(stmt: AnyStmt): ChartNode | undefined {
         case StmtKind.ClassDefinition:
             return mkIgnore();
         case StmtKind.ExtMethodDefinition:
-            if (toggleFunctions.active)    
+            if (toggleMethods.active)    
                 chartMethod(stmt);
             return mkIgnore();
         case StmtKind.AssignmentExpr:
