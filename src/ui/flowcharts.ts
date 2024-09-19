@@ -1,6 +1,7 @@
 import mermaid from "mermaid"
-import { AnyAlwaysBlock, AnyForBlock, AnyIfElseBlock, AnyStmt, AnySwitchBlock, AnyWhileBlock, Expr, Program, StmtKind } from "../language/frontend/ast";
+import { AnyAlwaysBlock, AnyForBlock, AnyIfElseBlock, AnyStmt, AnySwitchBlock, AnyWhileBlock, Expr, ExtMethodDefinition, FunctionDefinition, Program, StmtKind } from "../language/frontend/ast";
 import { RuntimeError } from "../errors";
+import { toggleFunctions } from "./toggle-buttons";
 mermaid.initialize({ startOnLoad: true });
 
 // diagram formatting
@@ -14,7 +15,7 @@ const frontmatter = `%%{
             'primaryBorderColor': 'rgba(0, 0, 0, 0.5)',
             'lineColor': '#000',
             'secondaryColor': 'rgba(255, 255, 255, 0.2)',
-            'tertiaryColor': 'rgba(255, 255, 255, 0.2)'
+            'tertiaryColor': '#d7ebf2'
         },
         'layout':'elk'
     }
@@ -174,6 +175,11 @@ export function showFlowchart(program: Program) {
     mermaid.contentLoaded();
 }
 
+export function setFlowchartVisibility(visible: boolean) {
+    document.getElementById("flowchart-diagram-canvas")!.style.visibility = visible ? "visible" : "hidden";
+    document.getElementById("flowchart-diagram-title")!.style.visibility = visible ? "visible" : "hidden";
+}
+
 function makeFlowchart(program: Program) {
     // reset
     declStack = [];
@@ -219,9 +225,15 @@ function chartSimpleStmt(stmt: AnyStmt): ChartNode | undefined {
             return declCtrl("weiter", Type.Continue);
         case StmtKind.ReturnCommand:
             return declCtrl("zurück", Type.Break);
-        case StmtKind.ClassDefinition:
         case StmtKind.FunctionDefinition:
+            if (toggleFunctions.active)    
+                chartFunction(stmt);
+            return mkIgnore();
+        case StmtKind.ClassDefinition:
+            return mkIgnore();
         case StmtKind.ExtMethodDefinition:
+            if (toggleFunctions.active)    
+                chartMethod(stmt);
             return mkIgnore();
         case StmtKind.AssignmentExpr:
         case StmtKind.BinaryExpr:
@@ -278,6 +290,32 @@ function chartProgram(program: Program): void {
     // assert: looseEnds.continue.length == 0
     // assert: looseEnds.break.length == 0
     tieNodeToEnds(looseEnds, endNode);
+}
+
+function chartFunction(func: FunctionDefinition): void {
+    connect("subgraph " + nextId() + ' ["`' + func.name + "(" + func.params.map((p) => p.ident).join(", ") + ')`"]')
+    const startNode = declTerm("START");
+    const connections = startEnds(startNode);
+    const looseEnds = chartSequence(func.body, connections);
+    const endNode = declTerm("ENDE");
+    // assert: looseEnds.return.length == 0
+    // assert: looseEnds.continue.length == 0
+    // assert: looseEnds.break.length == 0
+    tieNodeToEnds(looseEnds, endNode);
+    connect("end\n");
+}
+
+function chartMethod(meth: ExtMethodDefinition): void {
+    connect("subgraph " + nextId() + ' ["`' + meth.classname + "." + meth.name + "(" + meth.params.map((p) => p.ident).join(", ") + ')`"]')
+    const startNode = declTerm("START");
+    const connections = startEnds(startNode);
+    const looseEnds = chartSequence(meth.body, connections);
+    const endNode = declTerm("ENDE");
+    // assert: looseEnds.return.length == 0
+    // assert: looseEnds.continue.length == 0
+    // assert: looseEnds.break.length == 0
+    tieNodeToEnds(looseEnds, endNode);
+    connect("end\n");
 }
 
 function chartSequence(body: AnyStmt[], ends: LooseEnds): LooseEnds {

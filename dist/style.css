@@ -547,7 +547,6 @@ input[type="checkbox"] {
 }
 
 #structogram-diagram-canvas {
-    visibility: hidden; /* CHANGE!!! */
     grid-column: 2;
     grid-row: 2 / 23;
     padding: 5px;
@@ -562,7 +561,6 @@ input[type="checkbox"] {
 }
 
 #class-diagram-canvas {
-    visibility: hidden; /* CHANGE!!! */
     grid-column: 3;
     grid-row: 2 / 23;
     padding: 5px;
