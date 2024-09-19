@@ -1,9 +1,6 @@
 import mermaid from "mermaid"
-import { AnyAlwaysBlock, AnyForBlock, AnyIfElseBlock, AnyStmt, AnySwitchBlock, AnyWhileBlock, Expr, ForBlock, IfElseBlock, Program, StmtKind, SwitchBlock } from "../language/frontend/ast";
-import { content } from "html2canvas/dist/types/css/property-descriptors/content";
-import { skip } from "node:test";
-import { stringify } from "node:querystring";
-import { error } from "node:console";
+import { AnyAlwaysBlock, AnyForBlock, AnyIfElseBlock, AnyStmt, AnySwitchBlock, AnyWhileBlock, Expr, Program, StmtKind } from "../language/frontend/ast";
+import { RuntimeError } from "../errors";
 mermaid.initialize({ startOnLoad: true });
 
 // state
@@ -18,21 +15,25 @@ enum Type {
     Break = "Brk",
     Continue = "Cnt",
     Call = "Cll",
-    Ignore =  "Ign",
     Unwrapped = "Uwr",
     Error = "Err"
 }
 
 interface ChartNode {
     type: Type;
-    id?: string;
+    id: string;
     str?: string;
-    outLabel?: string
+}
+
+interface Port {
+    type?: Type;
+    id: string;
+    outLabel?: string;
 }
 
 function nextId() {
     idCounter ++;
-    return "" + idCounter;
+    return `n${idCounter}`;
 }
 
 function declare(content: string, info = Type.Regular, lb = "[", rb = "]"): ChartNode {
@@ -45,62 +46,96 @@ function connect(seq: string) {
     connStack.push(seq);
 }
 
-function connectTwo(nodeA: ChartNode, nodeB: ChartNode): ChartNode {
-    if (!nodeA.id) return mkError();
-    if (!nodeB.id || nodeB.type == Type.Ignore) return nodeA;
-    if (nodeA.outLabel) {
-        connect(`${nodeA.id} -->|${nodeA.outLabel}| ${nodeB.id}`);
+function connectForward(port: Port, nodeB: ChartNode): Port {
+    if (port.outLabel) {
+        connect(`${port.id} -->|${port.outLabel}| ${nodeB.id}`);
     } else {
-        connect(`${nodeA.id} --> ${nodeB.id}`);
+        connect(`${port.id} --> ${nodeB.id}`);
     }
-    return nodeB;
+    return { ...nodeB };
 }
 
-function connectAll(fromNodes: ChartNode[], toNode: ChartNode): ChartNode[] {
-    const looseEnds = new Set<ChartNode>();
-    if (!toNode.id || toNode.type == Type.Ignore) return fromNodes;
-    for (const node of fromNodes) {
-        looseEnds.add(connectTwo(node, toNode));
+function connectAll(fromPorts: Port[], toNode: ChartNode) {
+    for (const port of fromPorts) {
+        connectForward(port, toNode);
     }
-    return Array.from(looseEnds);
+}
+
+interface LooseEnds {
+    return?: Port[],
+    continue?: Port[],
+    break?: Port[],
+    runover: Port[],
+}
+const startEnds = (node: ChartNode, outLabel?: string): LooseEnds => {
+    return { runover: [{ id: node.id, outLabel }] } 
+}
+const tieEndsSequentially = (first: LooseEnds, follow: LooseEnds): LooseEnds => {
+    const ret = first.return || follow.return ? [...(first.return || []), ...(follow.return || [])] : undefined;
+    const cont = first.continue || follow.continue ? [...(first.continue || []), ...(follow.continue || [])] : undefined;
+    const brk = first.break || follow.break ? [...(first.break || []), ...(follow.break || [])] : undefined;
+    return { return: ret, continue: cont, break: brk, runover: follow.runover };
+}
+const tieEndsParallel = (first: LooseEnds, second: LooseEnds): LooseEnds => {
+    const ret = first.return || second.return ? [...(first.return || []), ...(second.return || [])] : undefined;
+    const cont = first.continue || second.continue ? [...(first.continue || []), ...(second.continue || [])] : undefined;
+    const brk = first.break || second.break ? [...(first.break || []), ...(second.break || [])] : undefined;
+    return { return: ret, continue: cont, break: brk, runover: [...first.runover, ...second.runover] };
+
+}
+const tieNodeToEnds = (ends: LooseEnds, node?: ChartNode, outLabel?: string): LooseEnds => {
+    if (!node) return ends;
+    connectAll(ends.runover, node);
+    const follow = { id: node.id, outLabel };
+    switch (node.type) {
+        case Type.Break:
+            return { ...ends, break: (ends.break || []).concat(follow), runover: [] };
+        case Type.Continue:
+            return { ...ends, continue: (ends.continue || []).concat(follow), runover: [] };
+        case Type.Return:
+            return { ...ends, return: (ends.return || []).concat(follow), runover: [] };
+        default:
+            return { ...ends, runover: [follow] }
+    }
+}
+const tieUpLoop = (ends: LooseEnds, loopCtrl: ChartNode): LooseEnds => {
+    // In a loop, any runover or continue gets connected to the loop control
+    connectAll([...ends.runover, ...(ends.continue || [])], loopCtrl);
+    return { return: ends.return, runover: ends.break || [] }
 }
 
 const declTerm = (content: string, info = Type.Regular) => declare(content, info, "([", "])");
 const declIO = (content: string, info = Type.Regular) => declare(content, info, "[/", "/]");
-const declCall = (content: string, info = Type.Regular) => declare(content, info, "[[", "]]");
+const declCall = (content: string, info = Type.Call) => declare(content, info, "[[", "]]");
 const declCon = (content: string, info = Type.Regular) => declare(content, info, "((", "))");
 const declProc = (content: string, info = Type.Regular) => declare(content, info, "[", "]");
 const declDec = (content: string, info = Type.Regular) => declare(content, info, "{{", "}}");
 const declCtrl = (content: string, info: Type.Break | Type.Return | Type.Continue) => declare(content, info, "(", ")");
 
-function mkIgnore(): ChartNode { return { type: Type.Ignore }; }
-function mkError() { return { type: Type.Error }; }
+function mkIgnore(): ChartNode | undefined { return undefined; }
 
 export function showFlowchart(program: Program) {
     const flowchartView = document.getElementById("code-flowchart")!;
     flowchartView.innerHTML = "flowchart TD\n" + makeFlowchart(program);
-    console.log(flowchartView.innerText);
     flowchartView.removeAttribute("data-processed")
     mermaid.contentLoaded();
 }
 
 function makeFlowchart(program: Program) {
     // reset
-    idCounter = 0;
     declStack = [];
     connStack = [];
     // make new flowchart
     chartProgram(program);
     const fullStr = declStack.join("\n") + "\n" + connStack.join("\n");
     // reset
-    idCounter = 0;
     declStack = [];
     connStack = [];
     
     return fullStr;
 }
 
-function chart(stmt: AnyStmt): ChartNode {
+function chartSimpleStmt(stmt: AnyStmt): ChartNode | undefined {
     switch (stmt.kind) {
         case StmtKind.VarDeclaration:
             return declProc(stmt.ident + " := " + chartExpr(stmt.value).str);
@@ -115,19 +150,19 @@ function chart(stmt: AnyStmt): ChartNode {
         case StmtKind.ForBlock:
         case StmtKind.WhileBlock:
         case StmtKind.AlwaysBlock:
-            return mkError();
+            throw new RuntimeError("a control flow block is not a simple statement!");
         case StmtKind.ShowCommand:
             return declIO(stmt.values.map(chartExpr).map((a) => a.str).join("\n"));
         case StmtKind.BreakCommand:
-            return declTerm("abbrechen", Type.Break);
+            return declCtrl("abbrechen", Type.Break);
         case StmtKind.ContinueCommand:
-            return declTerm("weiter", Type.Continue);
+            return declCtrl("weiter", Type.Continue);
         case StmtKind.ReturnCommand:
-            return declTerm("zurück", Type.Break);
+            return declCtrl("zurück", Type.Break);
         case StmtKind.ClassDefinition:
         case StmtKind.FunctionDefinition:
         case StmtKind.ExtMethodDefinition:
-            break;
+            return mkIgnore();
         case StmtKind.AssignmentExpr:
         case StmtKind.BinaryExpr:
         case StmtKind.UnaryExpr:
@@ -137,13 +172,16 @@ function chart(stmt: AnyStmt): ChartNode {
         case StmtKind.BooleanLiteral:
         case StmtKind.StringLiteral:
         case StmtKind.MemberExpr:
+            const val = chartExpr(stmt);
+            return declare(val.str, val.type);
         case StmtKind.CallExpr:
-            return chartExpr(stmt);
+            const callVal = chartExpr(stmt);
+            return declCall(callVal.str);
     }
-    return mkIgnore();
+    const _unreachable: never = stmt;
 }
 
-function chartExpr(expr: Expr): ChartNode {
+function chartExpr(expr: Expr): { str: string, type: Type } {
     switch (expr.kind) {
         case StmtKind.AssignmentExpr:
             const val = chartExpr(expr.value);
@@ -168,70 +206,93 @@ function chartExpr(expr: Expr): ChartNode {
         case StmtKind.CallExpr:
             return {str: chartExpr(expr.ident).str + "(" + expr.args.map(chartExpr).map((a) => a.str).join(", ") + ")", type: Type.Call};
     }
-    return {type: Type.Ignore};
+    const _unreachable: never = expr;
 }
 
 function chartProgram(program: Program): void {
     const startNode = declTerm("START");
-    connectAll(chartSequence(program.body, [startNode]), declTerm("ENDE"));
+    const connections = startEnds(startNode);
+    const looseEnds = chartSequence(program.body, connections);
+    const endNode = declTerm("ENDE");
+    // assert: looseEnds.return.length == 0
+    // assert: looseEnds.continue.length == 0
+    // assert: looseEnds.break.length == 0
+    tieNodeToEnds(looseEnds, endNode);
 }
 
-function chartSequence(body: AnyStmt[], entry: ChartNode[]): ChartNode[] {
-    let looseEnds: ChartNode[] = []
-    let lastNodes = entry;
+function chartSequence(body: AnyStmt[], ends: LooseEnds): LooseEnds {
     for (const stmt of body) {
         switch (stmt.kind) {
             case StmtKind.ForBlock:
-                lastNodes = chartForLoop(stmt, lastNodes);
+                const innerEnds = chartForLoop(stmt, ends);
+                ends = tieEndsSequentially(ends, innerEnds);
                 break;
             case StmtKind.IfElseBlock:
-            case StmtKind.SwitchBlock:
+                ends = chartIfElse(stmt, ends);
+                break;
             case StmtKind.WhileBlock:
+                ends = chartWhileLoop(stmt, ends);
+                break;
             case StmtKind.AlwaysBlock:
-                lastNodes = connectAll(lastNodes, declProc("Platzhalter: " + stmt.kind));
-                continue; // ignore for now
+                ends = chartAlwaysLoop(stmt, ends);
+                break;
+            case StmtKind.SwitchBlock:
+                ends = chartSwitch(stmt, ends);
+                break;
             default:
-                const singleNode = chart(stmt);
-                lastNodes = connectAll(lastNodes, singleNode);
+                const singleNode = chartSimpleStmt(stmt);
+                ends = tieNodeToEnds(ends, singleNode);
         }
     }
-    looseEnds = looseEnds.concat(lastNodes);
-    return looseEnds;
+    return ends;
 }
 
-function chartForLoop(loop: AnyForBlock, entry: ChartNode[]): ChartNode[] {
-    const looseEnds: ChartNode[] = [];
-    const repeatSeq: ChartNode[] = [];
-    
-    const dec = connectAll(entry, declDec(chartExpr(loop.counter).str + " mal?"))[0];
-    dec.outLabel = "✔️";
-    const seq = chartSequence(loop.body, [dec]);
+function chartForLoop(loop: AnyForBlock, ends: LooseEnds): LooseEnds {
+    const loopControl = declDec(chartExpr(loop.counter).str + " mal?");
+    const endsCtrl = tieNodeToEnds(ends, loopControl, "✔️");
+    const seq = chartSequence(loop.body, endsCtrl);
+    seq.break = [...(seq.break || []), { id: loopControl.id, outLabel: "❌" }];
+    return tieUpLoop(seq, loopControl);
+}
 
-    for (const s of seq) {
-        switch (s.type) {
-            case Type.Return:
-            case Type.Break:
-            case Type.Continue:
-                looseEnds.push(declProc("Strg"));
-                continue;
-            default:
-                repeatSeq.push(s);
-        }
+function chartWhileLoop(loop: AnyWhileBlock, ends: LooseEnds): LooseEnds {
+    const loopControl = declDec(chartExpr(loop.condition).str + "?");
+    const endsCtrl = tieNodeToEnds(ends, loopControl, "✔️");
+    const seq = chartSequence(loop.body, endsCtrl);
+    seq.break = [...(seq.break || []), { id: loopControl.id, outLabel: "❌" }];
+    return tieUpLoop(seq, loopControl);
+}
+
+function chartAlwaysLoop(loop: AnyAlwaysBlock, ends: LooseEnds): LooseEnds {
+    const loopControl = declDec("immer");
+    const endsCtrl = tieNodeToEnds(ends, loopControl);
+    const seq = chartSequence(loop.body, endsCtrl);
+    return tieUpLoop(seq, loopControl);
+}
+
+function chartIfElse(block: AnyIfElseBlock, ends: LooseEnds): LooseEnds {
+    const choice = declDec(chartExpr(block.condition).str + "?");
+    const endsCtrl = tieNodeToEnds(ends, choice, "✔️");
+    const trueEnds = chartSequence(block.ifTrue, endsCtrl);
+    endsCtrl.runover[0].outLabel = "❌";
+    const falseEnds = chartSequence(block.ifFalse, endsCtrl);
+    return tieEndsParallel(trueEnds, falseEnds);
+}
+
+function chartSwitch(block: AnySwitchBlock, ends: LooseEnds): LooseEnds {
+    const choice = declDec(chartExpr(block.selection).str + "?");
+    const endsCtrl = tieNodeToEnds(ends, choice, "<to be replaced>");
+    let overallRets: Port[] = [];
+    let switchRunover: Port[] = [];
+
+    for (const cas of block.cases) {
+        endsCtrl.runover[0].outLabel = chartExpr(cas.comp).str;
+        const { runover: caseRunover, break: caseBreak = [], continue: caseContinue = [], return: caseReturn = [] } = chartSequence(cas.body, endsCtrl);
+        // fallthrough to next case
+        endsCtrl.runover = [endsCtrl.runover[0], ...caseContinue];
+        overallRets.push(...caseReturn);
+        switchRunover.push(...caseRunover, ...caseBreak);
     }
-
-    dec.outLabel = "❌";
-    const exit = connectAll(repeatSeq, dec);
-    return exit;
-}
-
-function chartWhileLoop(loop: AnyWhileBlock, entry: ChartNode): ChartNode[] {
-    return [entry];
-}
-
-function chartAlwaysLoop(loop: AnyAlwaysBlock, entry: ChartNode): ChartNode[] {
-    return [entry];
-}
-
-function chartIfElse(block: AnyIfElseBlock, entry: ChartNode): ChartNode[] {
-    return [entry];
+    const returns = overallRets.length > 0 ? overallRets : undefined;
+    return { runover: switchRunover, return: returns };
 }
