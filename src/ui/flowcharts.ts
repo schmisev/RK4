@@ -3,11 +3,60 @@ import { AnyAlwaysBlock, AnyForBlock, AnyIfElseBlock, AnyStmt, AnySwitchBlock, A
 import { RuntimeError } from "../errors";
 mermaid.initialize({ startOnLoad: true });
 
+// diagram formatting
+
+const frontmatter = `%%{
+    init: {
+        'theme':'base',
+        'themeVariables': {
+            'primaryColor': '#f5f5f5',
+            'primaryTextColor': '#000',
+            'primaryBorderColor': 'rgba(0, 0, 0, 0.5)',
+            'lineColor': '#000',
+            'secondaryColor': 'rgba(255, 255, 255, 0.2)',
+            'tertiaryColor': 'rgba(255, 255, 255, 0.2)'
+        },
+        'layout':'elk'
+    }
+}%%
+flowchart TD
+`;
+
 // state
 let idCounter = 0;
 let declStack: string[] = []; // all node names
 let connStack: string[] = []; // all node connections
+let lateConnStack: string[] = []; // late connections
 
+// style mapping
+const styleMap: Record<string, [string, Array<string>]> = {
+    "Dec": ["fill:#FADA5E", []],
+    "Term": ["fill:lightgreen", []],
+    "IO": ["fill:#CF9FFF", []],
+    "Call": ["fill:lightblue", []],
+    "Con": ["fill:black", []],
+    "Proc": ["fill:whitesmoke", []],
+}
+
+function flushStyleMap() {
+    for (const k of Object.keys(styleMap)) {
+        styleMap[k][1] = [];
+    }
+}
+
+function generateStyleStr() {
+    let styleStr = ""
+    for (const k of Object.keys(styleMap)) {
+        const [css, nodes] = styleMap[k];
+        if (nodes.length > 0) {
+            styleStr += "classDef " + k + " " + css + "\n";
+            styleStr += "class " + nodes.join(",") + " " + k + "\n";
+        }
+    }
+    return styleStr;
+}
+
+// node logic
 enum Type {
     Program = "Prg",
     Regular = "Reg",
@@ -36,9 +85,10 @@ function nextId() {
     return `n${idCounter}`;
 }
 
-function declare(content: string, info = Type.Regular, lb = "[", rb = "]"): ChartNode {
+function declare(content: string, info = Type.Regular, lb = "[", rb = "]", cls?: string): ChartNode {
     const id = nextId();
     declStack.push(id + lb + '"`' + content + '`"' + rb);
+    if (cls) styleMap[cls][1].push(id);
     return {str: content, id, type: info};
 }
 
@@ -104,19 +154,21 @@ const tieUpLoop = (ends: LooseEnds, loopCtrl: ChartNode): LooseEnds => {
     return { return: ends.return, runover: ends.break || [] }
 }
 
-const declTerm = (content: string, info = Type.Regular) => declare(content, info, "([", "])");
-const declIO = (content: string, info = Type.Regular) => declare(content, info, "[/", "/]");
-const declCall = (content: string, info = Type.Call) => declare(content, info, "[[", "]]");
-const declCon = (content: string, info = Type.Regular) => declare(content, info, "((", "))");
-const declProc = (content: string, info = Type.Regular) => declare(content, info, "[", "]");
-const declDec = (content: string, info = Type.Regular) => declare(content, info, "{{", "}}");
+const declTerm = (content: string, info = Type.Regular) => declare(content, info, "([", "])", "Term");
+const declIO = (content: string, info = Type.Regular) => declare(content, info, "[/", "/]", "IO");
+const declCall = (content: string, info = Type.Call) => declare(content, info, "[[", "]]", "Call");
+const declCon = (content: string, info = Type.Regular) => declare(content, info, "((", "))", "Con");
+const declProc = (content: string, info = Type.Regular) => declare(content, info, "[", "]", "Proc");
+const declDec = (content: string, info = Type.Regular) => declare(content, info, "{{", "}}", "Dec");
 const declCtrl = (content: string, info: Type.Break | Type.Return | Type.Continue) => declare(content, info, "(", ")");
 
 function mkIgnore(): ChartNode | undefined { return undefined; }
 
 export function showFlowchart(program: Program) {
     const flowchartView = document.getElementById("code-flowchart")!;
-    flowchartView.innerHTML = "flowchart TD\n" + makeFlowchart(program);
+    const flowchartStr = frontmatter + makeFlowchart(program);
+    flowchartView.innerHTML = flowchartStr;
+    console.log(flowchartStr);
     flowchartView.removeAttribute("data-processed")
     mermaid.contentLoaded();
 }
@@ -125,12 +177,19 @@ function makeFlowchart(program: Program) {
     // reset
     declStack = [];
     connStack = [];
+    flushStyleMap();
     // make new flowchart
     chartProgram(program);
-    const fullStr = declStack.join("\n") + "\n" + connStack.join("\n");
+    const styleStr = generateStyleStr();
+    const fullStr = 
+        declStack.join("\n") + "\n" + 
+        connStack.join("\n") + "\n" + 
+        lateConnStack.join("\n") + "\n" + 
+        styleStr;
     // reset
     declStack = [];
     connStack = [];
+    flushStyleMap();
     
     return fullStr;
 }
@@ -249,9 +308,9 @@ function chartSequence(body: AnyStmt[], ends: LooseEnds): LooseEnds {
 
 function chartForLoop(loop: AnyForBlock, ends: LooseEnds): LooseEnds {
     const loopControl = declDec(chartExpr(loop.counter).str + " mal?");
-    const endsCtrl = tieNodeToEnds(ends, loopControl, "✔️");
+    const endsCtrl = tieNodeToEnds(ends, loopControl, "❌");
     const seq = chartSequence(loop.body, endsCtrl);
-    seq.break = [...(seq.break || []), { id: loopControl.id, outLabel: "❌" }];
+    seq.break = [...(seq.break || []), { id: loopControl.id, outLabel: "✔️" }];
     return tieUpLoop(seq, loopControl);
 }
 
