@@ -222,7 +222,7 @@ export async function updateIDE() {
             setErrorMarker(`❌ ${message} (Zeile ${lineIndex+1})`, lineIndex, errorCssClass);
         }
 
-        throw e; // temporary
+        //throw e; // temporary
     }
 }
 

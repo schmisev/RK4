@@ -25,5 +25,4 @@ export let toggleDefs = makeDebugToggle("debug-show-defs", false);
 export let toggleLabels = makeDebugToggle("debug-show-labels", true);
 export let toggleFunctions = makeDebugToggle("debug-show-functions", true);
 export let toggleMethods = makeDebugToggle("debug-show-methods", true);
-
 export let toggleFlowchart = makeDebugToggle("debug-show-flowchart", false);

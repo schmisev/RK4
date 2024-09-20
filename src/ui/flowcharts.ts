@@ -165,7 +165,6 @@ function mkIgnore(): ChartNode | undefined { return undefined; }
 export function showFlowchart(program: Program) {
     const flowchartView = document.getElementById("code-flowchart")!;
     const flowchartStr = frontmatter + makeFlowchart(program);
-    console.log(flowchartStr);
     flowchartView.innerHTML = flowchartStr;
     flowchartView.removeAttribute("data-processed")
     mermaid.contentLoaded();
