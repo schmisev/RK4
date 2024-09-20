@@ -1,5 +1,5 @@
 import mermaid from "mermaid"
-import { AnyAlwaysBlock, AnyForBlock, AnyIfElseBlock, AnyStmt, AnySwitchBlock, AnyWhileBlock, Expr, ExtMethodDefinition, FunctionDefinition, Program, StmtKind } from "../language/frontend/ast";
+import { AnyAlwaysBlock, AnyForBlock, AnyIfElseBlock, AnyStmt, AnySwitchBlock, AnyWhileBlock, ClassDefinition, Expr, ExtMethodDefinition, FunctionDefinition, Program, StmtKind } from "../language/frontend/ast";
 import { RuntimeError } from "../errors";
 import { toggleFunctions, toggleMethods } from "./toggle-buttons";
 mermaid.initialize({ startOnLoad: true });
@@ -9,15 +9,6 @@ mermaid.initialize({ startOnLoad: true });
 const frontmatter = `%%{
     init: {
         'theme':'base',
-        'themeVariables': {
-            'primaryColor': '#f5f5f5',
-            'primaryTextColor': '#000',
-            'primaryBorderColor': 'rgba(0, 0, 0, 0.5)',
-            'lineColor': '#000',
-            'secondaryColor': 'rgba(255, 255, 255, 0.2)',
-            'tertiaryColor': '#d7ebf2'
-        },
-        'layout':'elk'
     }
 }%%
 flowchart TD
@@ -27,31 +18,32 @@ flowchart TD
 let idCounter = 0;
 let declStack: string[] = []; // all node names
 let connStack: string[] = []; // all node connections
-let lateConnStack: string[] = []; // late connections
+let lateConnStack: string[] = []; // late connections, not used right now
 
 // style mapping
-const styleMap: Record<string, [string, Array<string>]> = {
-    "Dec": ["fill:#FADA5E", []],
-    "Term": ["fill:lightgreen", []],
-    "IO": ["fill:#CF9FFF", []],
-    "Call": ["fill:lightblue", []],
-    "Con": ["fill:black", []],
-    "Proc": ["fill:whitesmoke", []],
-    "Ctrl": ["fill:lightcoral", []],
+const styleMap: Record<string, Array<string>> = {
+    "flow-dec":  [],
+    "flow-term": [],
+    "flow-io":   [],
+    "flow-call": [],
+    "flow-con":  [],
+    "flow-proc": [],
+    "flow-ctrl": [],
+    "flow-meth": [],
+    "flow-func": [],
 }
 
 function flushStyleMap() {
     for (const k of Object.keys(styleMap)) {
-        styleMap[k][1] = [];
+        styleMap[k] = [];
     }
 }
 
 function generateStyleStr() {
     let styleStr = ""
     for (const k of Object.keys(styleMap)) {
-        const [css, nodes] = styleMap[k];
+        const nodes = styleMap[k];
         if (nodes.length > 0) {
-            styleStr += "classDef " + k + " " + css + "\n";
             styleStr += "class " + nodes.join(",") + " " + k + "\n";
         }
     }
@@ -90,7 +82,7 @@ function nextId() {
 function declare(content: string, info = Type.Regular, lb = "[", rb = "]", cls?: string): ChartNode {
     const id = nextId();
     declStack.push(id + lb + '"`' + content + '`"' + rb);
-    if (cls) styleMap[cls][1].push(id);
+    if (cls) styleMap[cls].push(id);
     return {str: content, id, type: info};
 }
 
@@ -119,15 +111,18 @@ interface LooseEnds {
     break?: Port[],
     runover: Port[],
 }
+
 const startEnds = (node: ChartNode, outLabel?: string): LooseEnds => {
     return { runover: [{ id: node.id, outLabel }] } 
 }
+
 const tieEndsSequentially = (first: LooseEnds, follow: LooseEnds): LooseEnds => {
     const ret = first.return || follow.return ? [...(first.return || []), ...(follow.return || [])] : undefined;
     const cont = first.continue || follow.continue ? [...(first.continue || []), ...(follow.continue || [])] : undefined;
     const brk = first.break || follow.break ? [...(first.break || []), ...(follow.break || [])] : undefined;
     return { return: ret, continue: cont, break: brk, runover: follow.runover };
 }
+
 const tieEndsParallel = (first: LooseEnds, second: LooseEnds): LooseEnds => {
     const ret = first.return || second.return ? [...(first.return || []), ...(second.return || [])] : undefined;
     const cont = first.continue || second.continue ? [...(first.continue || []), ...(second.continue || [])] : undefined;
@@ -135,6 +130,7 @@ const tieEndsParallel = (first: LooseEnds, second: LooseEnds): LooseEnds => {
     return { return: ret, continue: cont, break: brk, runover: [...first.runover, ...second.runover] };
 
 }
+
 const tieNodeToEnds = (ends: LooseEnds, node?: ChartNode, outLabel?: string): LooseEnds => {
     if (!node) return ends;
     connectAll(ends.runover, node);
@@ -156,21 +152,21 @@ const tieUpLoop = (ends: LooseEnds, loopCtrl: ChartNode): LooseEnds => {
     return { return: ends.return, runover: ends.break || [] }
 }
 
-const declTerm = (content: string, info = Type.Regular) => declare(content, info, "([", "])", "Term");
-const declIO = (content: string, info = Type.Regular) => declare(content, info, "[/", "/]", "IO");
-const declCall = (content: string, info = Type.Call) => declare(content, info, "[[", "]]", "Call");
-const declCon = (content: string, info = Type.Regular) => declare(content, info, "((", "))", "Con");
-const declProc = (content: string, info = Type.Regular) => declare(content, info, "[", "]", "Proc");
-const declDec = (content: string, info = Type.Regular) => declare(content, info, "{{", "}}", "Dec");
-const declCtrl = (content: string, info: Type.Break | Type.Return | Type.Continue) => declare(content, info, "(", ")", "Ctrl");
+const declTerm = (content: string, info = Type.Regular) => declare(content, info, "([", "])", "flow-term");
+const declIO = (content: string, info = Type.Regular) => declare(content, info, "[/", "/]", "flow-io");
+const declCall = (content: string, info = Type.Call) => declare(content, info, "[[", "]]", "flow-call");
+const declCon = (content: string, info = Type.Regular) => declare(content, info, "((", "))", "flow-con");
+const declProc = (content: string, info = Type.Regular) => declare(content, info, "[", "]", "flow-proc");
+const declDec = (content: string, info = Type.Regular) => declare(content, info, "{{", "}}", "flow-dec");
+const declCtrl = (content: string, info: Type.Break | Type.Return | Type.Continue) => declare(content, info, "(", ")", "flow-ctrl");
 
 function mkIgnore(): ChartNode | undefined { return undefined; }
 
 export function showFlowchart(program: Program) {
     const flowchartView = document.getElementById("code-flowchart")!;
     const flowchartStr = frontmatter + makeFlowchart(program);
-    flowchartView.innerHTML = flowchartStr;
     console.log(flowchartStr);
+    flowchartView.innerHTML = flowchartStr;
     flowchartView.removeAttribute("data-processed")
     mermaid.contentLoaded();
 }
@@ -230,10 +226,12 @@ function chartSimpleStmt(stmt: AnyStmt): ChartNode | undefined {
                 chartFunction(stmt);
             return mkIgnore();
         case StmtKind.ClassDefinition:
+            if (toggleMethods.active)    
+                chartClass(stmt);
             return mkIgnore();
         case StmtKind.ExtMethodDefinition:
             if (toggleMethods.active)    
-                chartMethod(stmt);
+                chartExtMethod(stmt);
             return mkIgnore();
         case StmtKind.AssignmentExpr:
         case StmtKind.BinaryExpr:
@@ -292,29 +290,59 @@ function chartProgram(program: Program): void {
     tieNodeToEnds(looseEnds, endNode);
 }
 
-function chartFunction(func: FunctionDefinition): void {
-    connect("subgraph " + nextId() + ' ["`' + func.name + "(" + func.params.map((p) => p.ident).join(", ") + ')`"]')
+function chartFunction(func: FunctionDefinition, classname?: string): void {
+    const id = nextId();
+
+    connect("subgraph " + id + ' ["`' + (classname ? classname + "." : "") + func.name + "(" + func.params.map((p) => p.ident).join(", ") + ')`"]');
+    styleMap["flow-func"].push(id);
+
     const startNode = declTerm("START");
     const connections = startEnds(startNode);
     const looseEnds = chartSequence(func.body, connections);
     const endNode = declTerm("ENDE");
-    // assert: looseEnds.return.length == 0
-    // assert: looseEnds.continue.length == 0
-    // assert: looseEnds.break.length == 0
     tieNodeToEnds(looseEnds, endNode);
+
     connect("end\n");
 }
 
-function chartMethod(meth: ExtMethodDefinition): void {
-    connect("subgraph " + nextId() + ' ["`' + meth.classname + "." + meth.name + "(" + meth.params.map((p) => p.ident).join(", ") + ')`"]')
+function chartMethod(func: FunctionDefinition, classname?: string): void {
+    const id = nextId();
+
+    connect("subgraph " + id + ' ["`' + (classname ? classname + "." : "") + func.name + "(" + func.params.map((p) => p.ident).join(", ") + ')`"]');
+    styleMap["flow-meth"].push(id);
+
+    const startNode = declTerm("START");
+    const connections = startEnds(startNode);
+    const looseEnds = chartSequence(func.body, connections);
+    const endNode = declTerm("ENDE");
+    tieNodeToEnds(looseEnds, endNode);
+
+    connect("end\n");
+}
+
+function chartExtMethod(meth: ExtMethodDefinition): void {
+    const id = nextId();
+
+    connect("subgraph " + id + ' ["`' + meth.classname + "." + meth.name + "(" + meth.params.map((p) => p.ident).join(", ") + ')`"]')
+    styleMap["flow-meth"].push(id);
+
     const startNode = declTerm("START");
     const connections = startEnds(startNode);
     const looseEnds = chartSequence(meth.body, connections);
     const endNode = declTerm("ENDE");
-    // assert: looseEnds.return.length == 0
-    // assert: looseEnds.continue.length == 0
-    // assert: looseEnds.break.length == 0
     tieNodeToEnds(looseEnds, endNode);
+
+    connect("end\n");
+}
+
+function chartClass(cls: ClassDefinition): void {
+    const id = nextId();
+    connect("subgraph " + id + ' ["`' + cls.ident + '`"]')
+
+    for (const meth of cls.methods) {
+        chartMethod(meth, cls.ident);
+    }
+
     connect("end\n");
 }
 

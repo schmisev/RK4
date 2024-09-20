@@ -53,7 +53,8 @@ button:active {
 .toggle-button {
     background-color: white;
     border-radius: 5px;
-    border: none;
+    outline: 1px rgba(0, 0, 0, 0.2) solid;
+    outline-offset: -1px;
     font-size: medium;
     overflow: hidden;
     white-space: nowrap;
@@ -570,12 +571,12 @@ input[type="checkbox"] {
 }
 
 #flowchart-diagram-title {
-    grid-column: 2/4;
+    grid-column: 1/5;
     grid-row: 1;
 }
 
 #flowchart-diagram-canvas {
-    grid-column: 2/4;
+    grid-column: 1/5;
     grid-row: 2;
     width: 100%;
     padding: 5px;
