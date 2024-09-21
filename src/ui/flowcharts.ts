@@ -11,7 +11,7 @@ const frontmatter = `%%{
         'theme':'base',
     }
 }%%
-flowchart TD
+graph TD
 `;
 
 // state

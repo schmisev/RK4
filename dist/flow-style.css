@@ -64,10 +64,12 @@
     fill:#DAF9DA !important;
     stroke:lightgreen !important;
     stroke-width:2px !important;
+    rx:5px;
 }
 
 .flow-func > rect {
     fill:#d7ebf2 !important;
     stroke:lightblue !important;
     stroke-width:2px !important;
+    rx:10px;
 }
