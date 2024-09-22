@@ -204,7 +204,7 @@ function structureSequence(body: AnyStmt[]): string {
             continue;
         }
         if (!toggleLabels.active && node.kind == StmtKind.DocComment) continue;
-        if (node.kind == StmtKind.WhileBlock || node.kind == StmtKind.ForBlock || node.kind == StmtKind.IfElseBlock || node.kind == StmtKind.SwitchBlock)
+        if (node.kind == StmtKind.WhileBlock || node.kind == StmtKind.ForBlock || node.kind == StmtKind.AlwaysBlock || node.kind == StmtKind.IfElseBlock || node.kind == StmtKind.SwitchBlock)
             result += `<div class="struct-box">${structure(node)}</div>`;
         else 
             result += `<div class="struct-box lpad rpad">${structure(node)}</div>`;

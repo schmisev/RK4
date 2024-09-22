@@ -76,7 +76,10 @@ ende
 
 Methode zeileAufräumen() für Roboter
     # Methodendefinition
-    wiederhole solange nicht siehtWand()
+    wiederhole immer
+        wenn nicht siehtWand() dann
+            abbrechen
+        ende
         aufheben()
         schritt()
     ende
@@ -186,52 +189,64 @@ ende
 storeRawCode("Debug: Wiederhole",
 `wiederhole 1 mal
 ende
+
 wiederhole 2 mal
     zeig "stmt1"
     zeig "stmt2"
 ende
+
 wiederhole 3 mal
     zeig "stmt1"
     abbrechen
     zeig "stmt2"
 ende
+
 wiederhole 4 mal
     zeig "stmt1"
     weiter
     zeig "stmt2"
 ende
+
 wiederhole solange 1
 ende
+
 wiederhole solange 2
     zeig "stmt1"
     zeig "stmt2"
 ende
+
 wiederhole solange 3
     zeig "stmt1"
     abbrechen
     zeig "stmt2"
 ende
+
 wiederhole solange 4
     zeig "stmt1"
     weiter
     zeig "stmt2"
 ende
+
 wiederhole immer
 ende
+
 wiederhole immer
     zeig "stmt1"
     zeig "stmt2"
 ende
+
 wiederhole immer
     zeig "stmt1"
     abbrechen
     zeig "stmt2"
 ende
+
 wiederhole immer
     zeig "stmt1"
     weiter
     zeig "stmt2"
 ende
+
 wiederhole 5 mal
     wenn 1 dann
         zeig "stmt1"
@@ -239,6 +254,7 @@ wiederhole 5 mal
         zeig "stmt2"
     ende
 ende
+
 wiederhole 6 mal
     wenn 1 dann
         zeig "stmt1"
@@ -250,6 +266,7 @@ wiederhole 6 mal
         zeig "stmt4"
     ende
 ende
+
 wiederhole 7 mal
     wenn 1 dann
         zeig "stmt1"
@@ -261,6 +278,7 @@ wiederhole 7 mal
         zeig "stmt4"
     ende
 ende
+
 wiederhole 8 mal
     wiederhole 9 mal
         zeig "stmt1"
@@ -268,6 +286,7 @@ wiederhole 8 mal
         zeig "stmt2" 
     ende
 ende
+
 wiederhole 9 mal
     wiederhole 10 mal
         wenn 1 dann
