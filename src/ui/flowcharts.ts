@@ -18,7 +18,6 @@ graph TD
 let idCounter = 0;
 let declStack: string[] = []; // all node names
 let connStack: string[] = []; // all node connections
-let lateConnStack: string[] = []; // late connections, not used right now
 
 // style mapping
 const styleMap: Record<string, Array<string>> = {
@@ -88,6 +87,14 @@ function declare(content: string, info = Type.Regular, lb = "[", rb = "]", cls?:
 
 function connect(seq: string) {
     connStack.push(seq);
+}
+
+function connectDirect(nodeA: ChartNode, nodeB: ChartNode, arrow: string = "~~~", label?: string): void {
+    if (label) {
+        connect(`${nodeA.id} ${arrow}|${label}| ${nodeB.id}`);
+    } else {
+        connect(`${nodeA.id} ${arrow} ${nodeB.id}`);
+    }
 }
 
 function connectForward(port: Port, nodeB: ChartNode): Port {
@@ -185,8 +192,7 @@ function makeFlowchart(program: Program) {
     const styleStr = generateStyleStr();
     const fullStr = 
         declStack.join("\n") + "\n" + 
-        connStack.join("\n") + "\n" + 
-        lateConnStack.join("\n") + "\n" + 
+        connStack.join("\n") + "\n" +  
         styleStr;
     // reset
     declStack = [];
@@ -299,6 +305,7 @@ function chartFunction(func: FunctionDefinition, classname?: string): void {
     const connections = startEnds(startNode);
     const looseEnds = chartSequence(func.body, connections);
     const endNode = declTerm("ENDE");
+    connectDirect(startNode, endNode);
     tieNodeToEnds(looseEnds, endNode);
 
     connect("end\n");
@@ -314,6 +321,7 @@ function chartMethod(func: FunctionDefinition, classname?: string): void {
     const connections = startEnds(startNode);
     const looseEnds = chartSequence(func.body, connections);
     const endNode = declTerm("ENDE");
+    connectDirect(startNode, endNode);
     tieNodeToEnds(looseEnds, endNode);
 
     connect("end\n");
@@ -329,20 +337,22 @@ function chartExtMethod(meth: ExtMethodDefinition): void {
     const connections = startEnds(startNode);
     const looseEnds = chartSequence(meth.body, connections);
     const endNode = declTerm("ENDE");
+    connectDirect(startNode, endNode);
     tieNodeToEnds(looseEnds, endNode);
 
     connect("end\n");
 }
 
 function chartClass(cls: ClassDefinition): void {
-    const id = nextId();
-    connect("subgraph " + id + ' ["`' + cls.ident + '`"]')
+    // for now, lets just dump the methods into the diagram
+    //const id = nextId();
+    //connect("subgraph " + id + ' ["`' + cls.ident + '`"]')
 
     for (const meth of cls.methods) {
         chartMethod(meth, cls.ident);
     }
 
-    connect("end\n");
+    //connect("end\n");
 }
 
 function chartSequence(body: AnyStmt[], ends: LooseEnds): LooseEnds {

@@ -85,7 +85,7 @@ Methode zeileAufräumen() für Roboter
 ende
 
 Funktion turmAbräumen(Objekt r)
-    # Funktionsdeinition
+    # Funktionsdefinition
     wiederhole solange r.siehtZiegel()
         r.zeileAufräumen()
         r.linksDrehen()
@@ -275,4 +275,66 @@ wiederhole 9 mal
         ende
     ende
 ende
+`, false)
+
+storeRawCode("Debug: Strukturen",
+`wenn a dann
+    wenn b dann
+        wenn c dann
+            "hallo"
+        ende
+    ende
+ende
+
+wenn a dann
+    hallo
+sonst wenn b dann
+    tschüss
+sonst wenn c dann
+    ciao
+ende
+
+wiederhole immer
+    wiederhole solange nicht k1.siehtWand()
+        wiederhole solange k1.siehtZiegel()
+            k1.aufheben()
+        ende
+        k1.schritt()
+    ende
+    k1.linksDrehen()
+    k1.linksDrehen()
+    wiederhole solange nicht k1.siehtWand()
+        wiederhole solange k1.siehtZiegel()
+            k1.aufheben()
+        ende
+        k1.schritt()
+    ende
+    k1.rechtsDrehen()
+    wenn k1.siehtWand() dann
+        abbrechen
+    ende
+    wiederhole solange k1.siehtZiegel()
+        k1.aufheben()
+    ende
+    k1.schritt()
+    k1.rechtsDrehen()
+ende
+
+Methode schrittZurück() für Roboter
+    linksDrehen()
+    linksDrehen()
+    schritt()
+    rechtsDrehen()
+    rechtsDrehen()
+ende
+
+Methode probieren() für Roboter
+    wenn nicht siehtWand() dann
+        hinlegen()
+        schritt()
+        probieren()
+    ende
+ende
+
+k1.probieren()
 `, false)
