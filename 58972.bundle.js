@@ -1,0 +1,1 @@
+(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[58972],{58972:(e,o,n)=>{e=n.nmd(e),ace.require(["ace/snippets/odin"],(function(o){e&&(e.exports=o)}))}}]);

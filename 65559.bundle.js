@@ -1,0 +1,1 @@
+(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[65559],{65559:(e,o,r)=>{e=r.nmd(e),ace.require(["ace/snippets/vbscript"],(function(o){e&&(e.exports=o)}))}}]);

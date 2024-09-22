@@ -1,0 +1,1 @@
+(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[76254],{76254:(e,o,p)=>{e=p.nmd(e),ace.require(["ace/snippets/pig"],(function(o){e&&(e.exports=o)}))}}]);
