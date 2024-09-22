@@ -1,1 +1,0 @@
-(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[67015],{67015:(e,o,p)=>{e=p.nmd(e),ace.require(["ace/snippets/mips"],(function(o){e&&(e.exports=o)}))}}]);

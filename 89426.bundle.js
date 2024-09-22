@@ -1,1 +1,0 @@
-(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[89426],{89426:(e,o,r)=>{e=r.nmd(e),ace.require(["ace/snippets/gcode"],(function(o){e&&(e.exports=o)}))}}]);

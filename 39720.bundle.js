@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[39720],{39720:(e,r,c)=>{c.d(r,{createArchitectureServices:()=>t.S});var t=c(49936);c(19369)}}]);

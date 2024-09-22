@@ -1,1 +1,0 @@
-(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[18410],{18410:(e,o,a)=>{e=a.nmd(e),ace.require(["ace/snippets/golang"],(function(o){e&&(e.exports=o)}))}}]);

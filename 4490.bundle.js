@@ -1,1 +1,0 @@
-(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[4490],{4490:(e,o,a)=>{e=a.nmd(e),ace.require(["ace/snippets/mediawiki"],(function(o){e&&(e.exports=o)}))}}]);
