@@ -1,0 +1,85 @@
+.cluster > rect {
+    fill: whitesmoke !important;
+    stroke: rgb(168, 167, 167) !important;
+    rx: 10px !important;
+}
+
+.cluster .nodeLabel {
+    white-space: nowrap !important;
+}
+
+.edgeLabel p {
+    background-color: rgba(255, 255, 255, 0.8) !important;
+    border-radius: 5px !important;
+    padding: 2px !important;
+}
+
+.labelBkg {
+    background-color: transparent !important;
+}
+
+.edgePaths > path {
+    stroke-width: 2px !important;
+}
+
+.default > rect{
+    fill: whitesmoke !important;
+    stroke:rgb(168, 167, 167) !important;
+    stroke-width: 2px !important;
+}
+
+.flow-dec > polygon {
+    fill:#FADA5E !important;
+    stroke:#b19b42 !important;
+    stroke-width:2px !important;
+}
+
+.flow-term > rect {
+    fill:lightgreen !important;
+    stroke:rgb(103, 172, 103) !important;
+    stroke-width:2px !important;
+}
+
+.flow-io > polygon {
+    fill:#CF9FFF !important;
+    stroke:#8768a7 !important;
+    stroke-width:2px !important;
+}
+
+.flow-call > polygon {
+    fill:lightblue !important;
+    stroke:rgb(117, 146, 155) !important;
+    stroke-width:2px !important;
+}
+
+.flow-con > circle {
+    fill:black !important;
+    stroke: black;
+    stroke-width:2px !important;
+}
+
+.flow-proc > rect {
+    fill:whitesmoke !important;
+    stroke:rgb(168, 167, 167) !important;
+    stroke-width:2px !important;
+}
+
+.flow-ctrl > rect {
+    fill:lightcoral !important;
+    stroke: rgb(167, 89, 89) !important;
+    stroke-width:2px !important;
+}
+
+.flow-meth > rect {
+    fill:#DAF9DA !important;
+    stroke:lightgreen !important;
+    stroke-width:2px !important;
+    rx:5px;
+}
+
+.flow-func > rect {
+    fill:#d7ebf2 !important;
+    stroke:lightblue !important;
+    stroke-width:2px !important;
+    rx:10px;
+}
