@@ -1,5 +1,5 @@
 import { RuntimeError } from "../../../errors";
-import { AbruptStmtKind, AlwaysBlock, ClassDefinition, DocComment, EmptyLine, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, StmtKind, AbruptEvalResult, VarDeclaration, WhileBlock, ContinueCommand, BreakCommand, SwitchBlock } from "../../frontend/ast";
+import { AbruptStmtKind, AlwaysBlock, ClassDefinition, DocComment, EmptyLine, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, StmtKind, AbruptEvalResult, VarDeclaration, WhileBlock, ContinueCommand, BreakCommand, SwitchBlock, FromToBlock } from "../../frontend/ast";
 import { ClassPrototype, Environment, VarHolder } from "../environment";
 import { SteppedEval, evaluate, evaluate_expr } from "../interpreter";
 import {
@@ -15,6 +15,7 @@ import {
     AbruptAlias,
     ValueAlias,
     NumberVal,
+    MK_NUMBER,
 } from "../values";
 import { eval_binary_expr, eval_numeric_binary_expr, eval_pure_binary_expr } from "./expressions";
 
@@ -338,6 +339,40 @@ export function* eval_for_block<A extends AbruptStmtKind>(
         const bodyValue = yield* eval_bare_statements(
             block.body,
             new Environment(env)
+        );
+        switch (bodyValue.type) {
+            case AbruptAlias.Return:
+                return bodyValue;
+            case AbruptAlias.Continue:
+                continue loop;
+            case AbruptAlias.Break:
+                lastEvaluated = MK_NULL();
+                break loop;
+            default:
+                lastEvaluated = bodyValue;
+        }
+    }
+    return lastEvaluated;
+}
+
+export function* eval_from_to_block<A extends AbruptStmtKind>(
+    block: FromToBlock<A>,
+    env: Environment
+): SteppedEval<RuntimeVal | AbruptEvalResult<A>> {
+    const startVal = yield* evaluate(block.start, env);
+    const endVal = yield* evaluate(block.end, env);
+    if (startVal.type != ValueAlias.Number || endVal.type != ValueAlias.Number)
+        throw new RuntimeError("Start- und Endwetz müssen Zahlen sein!", block.lineIndex);
+    if (startVal.value > endVal.value) throw new RuntimeError("Startwert muss kleiner oder gleich dem Endwert sein.", block.lineIndex);
+
+
+    let lastEvaluated: RuntimeVal = MK_NULL();
+    loop: for (let i = startVal.value; i <= endVal.value; i++) {
+        const loopEnv = new Environment(env);
+        loopEnv.declareVar(block.iterIdent, MK_NUMBER(i), true); // declare iter const
+        const bodyValue = yield* eval_bare_statements(
+            block.body,
+            loopEnv,
         );
         switch (bodyValue.type) {
             case AbruptAlias.Return:

@@ -12,6 +12,7 @@ export const enum StmtKind {
     ForBlock = "MalBlock",
     WhileBlock = "SolangeBlock",
     AlwaysBlock = "ImmerBlock",
+    FromToBlock = "VonBisBlock",
     ShowCommand = "ZeigAnweisung",
     BreakCommand = "AbbrechenAnweisung",
     ContinueCommand = "WeiterAnweisung",
@@ -47,6 +48,7 @@ export type Stmt<Ctrl> =
     | ForBlock<Ctrl>
     | WhileBlock<Ctrl>
     | AlwaysBlock<Ctrl>
+    | FromToBlock<Ctrl>
     | AbruptStmt<Ctrl>
     | ShowCommand
     | ClassDefinition
@@ -148,6 +150,16 @@ export interface AlwaysBlock<Ctrl> {
     body: Stmt<StmtKind.BreakCommand | StmtKind.ContinueCommand | Ctrl>[];
 }
 export type AnyAlwaysBlock = AlwaysBlock<AbruptStmtKind>;
+
+export interface FromToBlock<Ctrl> {
+    kind: StmtKind.FromToBlock;
+    lineIndex: number;
+    iterIdent: string;
+    start: Expr;
+    end: Expr;
+    body: Stmt<StmtKind.BreakCommand | StmtKind.ContinueCommand | Ctrl>[];
+}
+export type AnyFromToBlock = FromToBlock<AbruptStmtKind>;
 
 export interface ShowCommand {
     kind: StmtKind.ShowCommand;

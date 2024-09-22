@@ -15,7 +15,7 @@ export enum TokenType {
     DeclObject, Self, DotOp,
     If, Then, IfElse, Else,
     Return,
-    Repeat, RepTimes, RepWhile, RepAlways, Break, Continue,
+    Repeat, RepTimes, RepWhile, RepAlways, Break, Continue, From, To,
     Switch, Case,
 
     // Operations
@@ -40,7 +40,7 @@ export enum TokenType {
     // Declarations
     ClassDef,
     FunctionDef,
-    MethodDef, MethodFor,
+    MethodDef, For,
 
     EndBlock,
     EndLine,
@@ -77,7 +77,9 @@ export const KEYWORDS: Record<string, TokenType> = {
     Funktion: TokenType.FunctionDef,
     Klasse: TokenType.ClassDef,
     Methode: TokenType.MethodDef,
-    für: TokenType.MethodFor,
+    für: TokenType.For,
+    von: TokenType.From,
+    bis: TokenType.To,
 
     unterscheide: TokenType.Switch,
     falls: TokenType.Case,
