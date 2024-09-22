@@ -8,8 +8,8 @@
     "start": "webpack serve --open",
     "build": "webpack --mode=production",
     "deploy": "gh-pages -d dist",
-    "cleanup": "(del-cli dist/node_modules*.js) && (del-cli dist/vendors-node_modules*.js) && (del-cli dist/*.bundle.js) && (del-cli dist/*.LICENSE.txt)",
-    "del-bundle": "(del-cli dist/bundle.js)",
+    "cleanup": "(del-cli dist/node_modules*.js) && (del-cli dist/vendors-node_modules*.js)",
+    "del-bundle": "(del-cli dist/bundle.js) && (del-cli dist/*.bundle.js) && (del-cli dist/*.LICENSE.txt)",
     "upload": "npm run build && npm run cleanup && npm run deploy  && npm run del-bundle"
   },
   "author": "",
