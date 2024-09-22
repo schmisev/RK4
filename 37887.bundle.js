@@ -1,1 +1,0 @@
-(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[37887],{37887:(e,a,o)=>{e=o.nmd(e),ace.require(["ace/snippets/luapage"],(function(a){e&&(e.exports=a)}))}}]);

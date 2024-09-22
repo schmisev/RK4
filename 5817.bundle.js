@@ -1,1 +1,0 @@
-(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[5817],{5817:(e,o,r)=>{e=r.nmd(e),ace.require(["ace/snippets/sparql"],(function(o){e&&(e.exports=o)}))}}]);

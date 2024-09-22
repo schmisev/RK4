@@ -1,1 +1,0 @@
-(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[29954],{29954:(e,a,o)=>{e=o.nmd(e),ace.require(["ace/snippets/haskell_cabal"],(function(a){e&&(e.exports=a)}))}}]);

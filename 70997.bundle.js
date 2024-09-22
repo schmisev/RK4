@@ -1,1 +1,0 @@
-(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[70997],{70997:(e,o,r)=>{e=r.nmd(e),ace.require(["ace/snippets/forth"],(function(o){e&&(e.exports=o)}))}}]);
