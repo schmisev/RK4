@@ -1,0 +1,1 @@
+(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[64309],{64309:(e,o,r)=>{e=r.nmd(e),ace.require(["ace/snippets/red"],(function(o){e&&(e.exports=o)}))}}]);

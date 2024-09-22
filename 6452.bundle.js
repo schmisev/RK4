@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[6452],{6452:(e,r,a)=>{a.d(r,{createPacketServices:()=>k.$});var k=a(71609);a(19369)}}]);

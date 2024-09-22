@@ -1,0 +1,1 @@
+(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[42482],{42482:(e,o,a)=>{e=a.nmd(e),ace.require(["ace/snippets/logtalk"],(function(o){e&&(e.exports=o)}))}}]);

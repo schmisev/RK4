@@ -1,0 +1,1 @@
+(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[36763],{36763:(e,o,r)=>{e=r.nmd(e),ace.require(["ace/snippets/prql"],(function(o){e&&(e.exports=o)}))}}]);
