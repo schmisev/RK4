@@ -1,0 +1,1 @@
+(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[44788],{44788:(e,o,r)=>{e=r.nmd(e),ace.require(["ace/snippets/qml"],(function(o){e&&(e.exports=o)}))}}]);
