@@ -358,7 +358,7 @@ function chartFunction(func: FunctionDefinition, classname?: string): void {
 
     chartSubgraph(
         id,
-        (classname ? classname + "." : "") + func.name + "(" + func.params.map((p) => p.ident).join(", ") + ')',
+        (classname ? classname + "." : "") + "__" + func.name + "__" + "(" + func.params.map((p) => p.ident).join(", ") + ')',
         func.body
     )
     styleMap["flow-func"].push(id);
@@ -369,7 +369,7 @@ function chartMethod(func: FunctionDefinition, classname?: string): void {
 
     chartSubgraph(
         id,
-        (classname ? classname + "." : "") + func.name + "(" + func.params.map((p) => p.ident).join(", ") + ')',
+        (classname ? classname + "." : "") + "__" + func.name + "__" + "(" + func.params.map((p) => p.ident).join(", ") + ')',
         func.body
     )
     styleMap["flow-meth"].push(id);
@@ -380,7 +380,7 @@ function chartExtMethod(meth: ExtMethodDefinition): void {
 
     chartSubgraph(
         id,
-        meth.classname + "." + meth.name + "(" + meth.params.map((p) => p.ident).join(", ") + ')',
+        meth.classname + "." + "__" + meth.name + "__" + "(" + meth.params.map((p) => p.ident).join(", ") + ')',
         meth.body
     )
     styleMap["flow-meth"].push(id);
@@ -422,17 +422,17 @@ function chartSequence(body: AnyStmt[], ends: LooseEnds): LooseEnds {
 
 function chartForLoop(loop: AnyForBlock, ends: LooseEnds): LooseEnds {
     const loopControl = declDec(chartExpr(loop.counter).str + " mal?");
-    const endsCtrl = tieNodeToEnds(ends, loopControl, "⏭️");
+    const endsCtrl = tieNodeToEnds(ends, loopControl, "⏭️ nochmal");
     const seq = chartSequence(loop.body, endsCtrl);
-    seq.break = [...(seq.break || []), { id: loopControl.id, outLabel: "⏹️" }];
+    seq.break = [...(seq.break || []), { id: loopControl.id, outLabel: "⏹️ beendet" }];
     return tieUpLoop(seq, loopControl);
 }
 
 function chartWhileLoop(loop: AnyWhileBlock, ends: LooseEnds): LooseEnds {
     const loopControl = declDec(chartExpr(loop.condition).str + "?");
-    const endsCtrl = tieNodeToEnds(ends, loopControl, "✔️");
+    const endsCtrl = tieNodeToEnds(ends, loopControl, "✔️ wahr");
     const seq = chartSequence(loop.body, endsCtrl);
-    seq.break = [...(seq.break || []), { id: loopControl.id, outLabel: "❌" }];
+    seq.break = [...(seq.break || []), { id: loopControl.id, outLabel: "❌ falsch" }];
     return tieUpLoop(seq, loopControl);
 }
 
@@ -445,9 +445,9 @@ function chartAlwaysLoop(loop: AnyAlwaysBlock, ends: LooseEnds): LooseEnds {
 
 function chartIfElse(block: AnyIfElseBlock, ends: LooseEnds): LooseEnds {
     const choice = declDec(chartExpr(block.condition).str + "?");
-    const endsCtrl = tieNodeToEnds(ends, choice, "✔️");
+    const endsCtrl = tieNodeToEnds(ends, choice, "✔️ wahr");
     const trueEnds = chartSequence(block.ifTrue, endsCtrl);
-    endsCtrl.runover[0].outLabel = "❌";
+    endsCtrl.runover[0].outLabel = "❌ falsch";
     const falseEnds = chartSequence(block.ifFalse, endsCtrl);
     return tieEndsParallel(trueEnds, falseEnds);
 }
