@@ -23,8 +23,8 @@
         <div id="left-panel">
             <div id="grid-container-left">
                 <div class="lc30 wsr text" id="title-bar">
-                    🤖 Robot Karol 4&nbsp;&nbsp;<div id="version-label" class="struct-doc-comment">BETA</div>&nbsp;&nbsp;| RKBasic, 3D, mehrere Roboter und Aufgaben
-                    <span class="roboto" style="float: right;">
+                    🤖 Robot Karol 4&nbsp;&nbsp;<div id="version-label" class="struct-doc-comment">BETA</div>&nbsp;&nbsp;| RKBasic, 3D, mehrere Roboter und Aufgaben | <button id="fold-debug" class="toggle-button" title="Zeig/verberge Debug-Bereich">🐞</button>
+                    <span class="roboto" style="float: right;"> 
                         Zieh mich! ▸</span>
                 </div>
                 <!-- Code editor UI -->
@@ -118,11 +118,11 @@
                         </div>
                     </span>
                 </span>
-                <button id="debug-show-defs" class="toggle-button">Def</button>
-                <button id="debug-show-labels" class="toggle-button">#</button>
-                <button id="debug-show-functions" class="toggle-button">Fkt</button>
-                <button id="debug-show-methods" class="toggle-button">Mth</button> |
-                <button id="debug-show-flowchart" class="toggle-button">Flussdiagramm</button>
+                <button id="debug-show-defs" class="toggle-button" title="Zeig/verberge Definitionen">&nbsp;:=&nbsp;</button>
+                <button id="debug-show-labels" class="toggle-button" title="Zeig/verberge Kommentare">&nbsp;#&nbsp;</button>
+                <button id="debug-show-functions" class="toggle-button" title="Zeig/verberge Funktionen">f()</button>
+                <button id="debug-show-methods" class="toggle-button" title="Zeig/verberge Methoden">o.m()</button> |
+                <button id="debug-show-flowchart" class="toggle-button" title="Schalte in den Flussdiagrammmodus um">▢ → ○</button>
             </div>
             <div id="grid-container-right">
                 <!-- Class view -->
@@ -136,7 +136,7 @@
                 <div id="flowchart-diagram-canvas">
                     <pre class="mermaid" id="code-flowchart">
                         flowchart TD
-                        A[Hello] --> B[Goodbye]
+                        A[Irgendwas] --> B[ist] --> C[schief] --> D[gelaufen...]
                     </pre>
                 </div>
             </div>
