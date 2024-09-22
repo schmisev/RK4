@@ -35,9 +35,8 @@
     "@octokit/rest": "^21.0.2",
     "@types/node": "^22.1.0",
     "ace-builds": "^1.35.4",
-    "del-cli": "^5.1.0",
     "fs": "^0.0.1-security",
-    "html2canvas": "^1.4.1",
+    "mermaid": "^11.2.0",
     "p5": "^1.10.0"
   }
 }

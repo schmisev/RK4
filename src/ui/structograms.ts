@@ -1,34 +1,8 @@
-import { updateIDE } from "..";
 import { AnyStmt, BinaryExpr, ClassDefinition, Expr, ExtMethodDefinition, AnyForBlock, FunctionDefinition, AnyIfElseBlock, Program, UnaryExpr, AnyWhileBlock, AnyAlwaysBlock, StmtKind, SwitchBlock, AnySwitchBlock, AnyCaseBlock } from "../language/frontend/ast";
 import { ValueAlias } from "../language/runtime/values";
 import { ENV } from "../spec";
-
-interface Toggle {
-    button: HTMLElement;
-    active: boolean;
-}
-
-function makeDebugToggle(id: string, init: boolean) {
-    const button = document.getElementById(id)!;
-    const toggle: Toggle = {
-        button: button,
-        active: init,
-    }
-
-    button.classList.toggle("active", init);
-    button.onclick = () => {
-        button.classList.toggle("active");
-        toggle.active = !toggle.active;
-        updateIDE();
-    }
-
-    return toggle;
-}
-
-let toggleDefs = makeDebugToggle("debug-show-defs", false);
-let toggleLabels = makeDebugToggle("debug-show-labels", true);
-let toggleFunctions = makeDebugToggle("debug-show-functions", true);
-let toggleMethods = makeDebugToggle("debug-show-methods", true);
+import { translateOperator } from "../utils";
+import { toggleDefs, toggleLabels, toggleMethods, toggleFunctions } from "./toggle-buttons";
 
 // Robot class
 const ROBOT_PSEUDO_CLASS = 
@@ -75,30 +49,6 @@ const WORLD_PSEUDO_CLASS =
     </div>
 </div>`
 
-const translateOperator = (op: string) => {
-    switch (op) {
-        case "*":
-            return "⋅";
-        case ":":
-        case "/":
-            return "∶";
-        case "+":
-            return "＋";
-        case "-":
-            return "－";
-        case "und":
-            return "∧";
-        case "oder":
-            return "∨";
-        case "nicht":
-            return "¬";
-        case "%":
-            return "mod";
-        default:
-            return op;
-    }
-}
-
 let sections: string[] = [];
 let classes: Record<string, HTMLElement> = {};
 
@@ -124,12 +74,19 @@ export function showStructogram(program: Program) {
     structogramView.innerHTML = sections.join("<br>") + "<br>";
 
     // classView.innerHTML = WORLD_PSEUDO_CLASS + "<br>" + ROBOT_PSEUDO_CLASS + "<br>"; // reset view
-    //classView.innerHTML += Object.values(classes).map((e)).join("<br>") + "<br>";
+    // classView.innerHTML += Object.values(classes).map((e)).join("<br>") + "<br>";
     classView.innerHTML = "";
     for (const el of Object.values(classes)) {
         classView.append(el);
         classView.innerHTML += "<br>";
     }
+}
+
+export function setStructogramVisibility(visible: boolean) {
+    document.getElementById("class-diagram-canvas")!.style.visibility = visible ? "visible" : "hidden";
+    document.getElementById("class-diagram-title")!.style.visibility = visible ? "visible" : "hidden";
+    document.getElementById("structogram-diagram-canvas")!.style.visibility = visible ? "visible" : "hidden";
+    document.getElementById("structogram-diagram-title")!.style.visibility = visible ? "visible" : "hidden";
 }
 
 function structure(astNode: Program | AnyStmt): string {
