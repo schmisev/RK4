@@ -1,3 +1,13 @@
+.cluster > rect {
+    fill: whitesmoke !important;
+    stroke: rgb(168, 167, 167) !important;
+    rx: 10px !important;
+}
+
+.cluster .nodeLabel {
+    white-space: nowrap !important;
+}
+
 .edgeLabel p {
     background-color: rgba(255, 255, 255, 0.5) !important;
     border-radius: 5px !important;

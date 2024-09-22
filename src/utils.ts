@@ -39,3 +39,26 @@ export function createOption(key: string, innerHTML: string, disabled = false, s
     newOption.selected = selected;
     return newOption;
 }
+export const translateOperator = (op: string) => {
+    switch (op) {
+        case "*":
+            return "⋅";
+        case ":":
+        case "/":
+            return "∶";
+        case "+":
+            return "+";
+        case "-":
+            return "-";
+        case "und":
+            return "∧";
+        case "oder":
+            return "∨";
+        case "nicht":
+            return "¬";
+        case "%":
+            return "mod";
+        default:
+            return op;
+    }
+};

@@ -2,6 +2,7 @@ import mermaid from "mermaid"
 import { AnyAlwaysBlock, AnyForBlock, AnyIfElseBlock, AnyStmt, AnySwitchBlock, AnyWhileBlock, ClassDefinition, Expr, ExtMethodDefinition, FunctionDefinition, Program, StmtKind } from "../language/frontend/ast";
 import { RuntimeError } from "../errors";
 import { toggleFunctions, toggleMethods } from "./toggle-buttons";
+import { translateOperator } from "../utils";
 mermaid.initialize({ startOnLoad: true });
 
 // diagram formatting
@@ -16,8 +17,32 @@ graph TD
 
 // state
 let idCounter = 0;
-let declStack: string[] = []; // all node names
-let connStack: string[] = []; // all node connections
+
+interface ChartBlock {
+    title: string;
+    declStack: string[];
+    connStack: string[];
+}
+
+const defaultBlockKey = "m";
+const defaultBlockTitle = "Hauptprogramm"
+let blockKey = defaultBlockKey;
+let blockMap: Record<string, ChartBlock> = {
+    [defaultBlockKey]: {title: defaultBlockTitle, declStack: [], connStack: []},
+}
+
+function resetBlockKey() {
+    blockKey = defaultBlockKey;
+}
+
+function flushBlockMap() {
+    blockMap = {[defaultBlockKey]: {title: defaultBlockTitle, declStack: [], connStack: []}};
+}
+
+function openNewBlock(key: string, title: string) {
+    blockKey = key;
+    blockMap[key] = {title, declStack: [], connStack: []};
+}
 
 // style mapping
 const styleMap: Record<string, Array<string>> = {
@@ -80,13 +105,15 @@ function nextId() {
 
 function declare(content: string, info = Type.Regular, lb = "[", rb = "]", cls?: string): ChartNode {
     const id = nextId();
-    declStack.push(id + lb + '"`' + content + '`"' + rb);
+    const name = id + lb + '"`' + content + '`"' + rb;
+    blockMap[blockKey].declStack.push(name);
+
     if (cls) styleMap[cls].push(id);
     return {str: content, id, type: info};
 }
 
 function connect(seq: string) {
-    connStack.push(seq);
+    blockMap[blockKey].connStack.push(seq);
 }
 
 function connectDirect(nodeA: ChartNode, nodeB: ChartNode, arrow: string = "~~~", label?: string): void {
@@ -184,19 +211,38 @@ export function setFlowchartVisibility(visible: boolean) {
 
 function makeFlowchart(program: Program) {
     // reset
-    declStack = [];
-    connStack = [];
+    flushBlockMap();
     flushStyleMap();
     // make new flowchart
     chartProgram(program);
     const styleStr = generateStyleStr();
+    /*
     const fullStr = 
         declStack.join("\n") + "\n" + 
         connStack.join("\n") + "\n" +  
         styleStr;
+    */
+    let fullStr = "";
+    // fullStr += "%%main decl%%\n" + blockMap[defaultBlockKey].declStack.join("\n") + "\n"
+    // fullStr += "%%main conn%%\n" + blockMap[defaultBlockKey].connStack.join("\n") + "\n"
+
+    for (const [id, block] of Object.entries(blockMap)) {
+        fullStr += `%%block: ${id}%%\n`;
+        fullStr += "subgraph " + id + ' ["`' + block.title + '`"]\n';
+        fullStr += `%%decl%%\n`;
+        fullStr += block.declStack.join("\n") + "\n";
+        fullStr += `%%conn%%\n`;
+        fullStr += block.connStack.join("\n") + "\n";
+        fullStr += "end\n";
+    }
+    // connect all blocks for vertical layout
+    fullStr += "%%connect blocks%%\n" + Object.keys(blockMap).join("~~~") + "\n";
+
+    fullStr += styleStr;
+
+    console.log(fullStr);
     // reset
-    declStack = [];
-    connStack = [];
+    flushBlockMap();
     flushStyleMap();
     
     return fullStr;
@@ -262,9 +308,9 @@ function chartExpr(expr: Expr): { str: string, type: Type } {
             const val = chartExpr(expr.value);
             return {str: chartExpr(expr.assigne).str + " := " + val.str, type: val.type};
         case StmtKind.BinaryExpr:
-            return {str: chartExpr(expr.left).str + " " + expr.operator + " " + chartExpr(expr.right).str, type: Type.Unwrapped};
+            return {str: "(" + chartExpr(expr.left).str + " " + translateOperator(expr.operator) + " " + chartExpr(expr.right).str + ")", type: Type.Unwrapped};
         case StmtKind.UnaryExpr:
-            return {str: expr.operator + " " + chartExpr(expr.right).str, type: Type.Unwrapped};
+            return {str: translateOperator(expr.operator) + " " + chartExpr(expr.right).str, type: Type.Unwrapped};
         case StmtKind.Identifier:
             return {str: expr.symbol, type: Type.Unwrapped};
         case StmtKind.NumericLiteral:
@@ -295,64 +341,58 @@ function chartProgram(program: Program): void {
     tieNodeToEnds(looseEnds, endNode);
 }
 
-function chartFunction(func: FunctionDefinition, classname?: string): void {
-    const id = nextId();
-
-    connect("subgraph " + id + ' ["`' + (classname ? classname + "." : "") + func.name + "(" + func.params.map((p) => p.ident).join(", ") + ')`"]');
-    styleMap["flow-func"].push(id);
+function chartSubgraph(id: string, subgraphName: string, body: AnyStmt[]) {
+    openNewBlock(id, subgraphName);
 
     const startNode = declTerm("START");
     const connections = startEnds(startNode);
-    const looseEnds = chartSequence(func.body, connections);
+    const looseEnds = chartSequence(body, connections);
     const endNode = declTerm("ENDE");
-    connectDirect(startNode, endNode);
+    // connectDirect(startNode, endNode);
     tieNodeToEnds(looseEnds, endNode);
 
-    connect("end\n");
+    // connect("end\n");
+    resetBlockKey();
+}
+
+function chartFunction(func: FunctionDefinition, classname?: string): void {
+    const id = nextId();
+
+    chartSubgraph(
+        id,
+        (classname ? classname + "." : "") + func.name + "(" + func.params.map((p) => p.ident).join(", ") + ')',
+        func.body
+    )
+    styleMap["flow-func"].push(id);
 }
 
 function chartMethod(func: FunctionDefinition, classname?: string): void {
     const id = nextId();
 
-    connect("subgraph " + id + ' ["`' + (classname ? classname + "." : "") + func.name + "(" + func.params.map((p) => p.ident).join(", ") + ')`"]');
+    chartSubgraph(
+        id,
+        (classname ? classname + "." : "") + func.name + "(" + func.params.map((p) => p.ident).join(", ") + ')',
+        func.body
+    )
     styleMap["flow-meth"].push(id);
-
-    const startNode = declTerm("START");
-    const connections = startEnds(startNode);
-    const looseEnds = chartSequence(func.body, connections);
-    const endNode = declTerm("ENDE");
-    connectDirect(startNode, endNode);
-    tieNodeToEnds(looseEnds, endNode);
-
-    connect("end\n");
 }
 
 function chartExtMethod(meth: ExtMethodDefinition): void {
     const id = nextId();
 
-    connect("subgraph " + id + ' ["`' + meth.classname + "." + meth.name + "(" + meth.params.map((p) => p.ident).join(", ") + ')`"]')
+    chartSubgraph(
+        id,
+        meth.classname + "." + meth.name + "(" + meth.params.map((p) => p.ident).join(", ") + ')',
+        meth.body
+    )
     styleMap["flow-meth"].push(id);
-
-    const startNode = declTerm("START");
-    const connections = startEnds(startNode);
-    const looseEnds = chartSequence(meth.body, connections);
-    const endNode = declTerm("ENDE");
-    connectDirect(startNode, endNode);
-    tieNodeToEnds(looseEnds, endNode);
-
-    connect("end\n");
 }
 
 function chartClass(cls: ClassDefinition): void {
-    // for now, lets just dump the methods into the diagram
-    //const id = nextId();
-    //connect("subgraph " + id + ' ["`' + cls.ident + '`"]')
-
+    // we are just dumping the methods into seperate blocks
     for (const meth of cls.methods) {
         chartMethod(meth, cls.ident);
     }
-
-    //connect("end\n");
 }
 
 function chartSequence(body: AnyStmt[], ends: LooseEnds): LooseEnds {

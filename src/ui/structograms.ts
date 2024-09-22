@@ -1,6 +1,7 @@
 import { AnyStmt, BinaryExpr, ClassDefinition, Expr, ExtMethodDefinition, AnyForBlock, FunctionDefinition, AnyIfElseBlock, Program, UnaryExpr, AnyWhileBlock, AnyAlwaysBlock, StmtKind, SwitchBlock, AnySwitchBlock, AnyCaseBlock } from "../language/frontend/ast";
 import { ValueAlias } from "../language/runtime/values";
 import { ENV } from "../spec";
+import { translateOperator } from "../utils";
 import { toggleDefs, toggleLabels, toggleMethods, toggleFunctions } from "./toggle-buttons";
 
 // Robot class
@@ -47,30 +48,6 @@ const WORLD_PSEUDO_CLASS =
         ${makeTooltip(ENV.world.mth.GET_STAGE_INDEX, `Gibt die aktuelle Teilaufgabe als Zahl aus, also <span class="struct-literal">1</span>, <span class="struct-literal">2</span>, <span class="struct-literal">3</span>, usw.`) + "()<br>"}
     </div>
 </div>`
-
-const translateOperator = (op: string) => {
-    switch (op) {
-        case "*":
-            return "⋅";
-        case ":":
-        case "/":
-            return "∶";
-        case "+":
-            return "＋";
-        case "-":
-            return "－";
-        case "und":
-            return "∧";
-        case "oder":
-            return "∨";
-        case "nicht":
-            return "¬";
-        case "%":
-            return "mod";
-        default:
-            return op;
-    }
-}
 
 let sections: string[] = [];
 let classes: Record<string, HTMLElement> = {};
