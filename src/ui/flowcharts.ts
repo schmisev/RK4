@@ -422,9 +422,9 @@ function chartSequence(body: AnyStmt[], ends: LooseEnds): LooseEnds {
 
 function chartForLoop(loop: AnyForBlock, ends: LooseEnds): LooseEnds {
     const loopControl = declDec(chartExpr(loop.counter).str + " mal?");
-    const endsCtrl = tieNodeToEnds(ends, loopControl, "❌");
+    const endsCtrl = tieNodeToEnds(ends, loopControl, "⏭️");
     const seq = chartSequence(loop.body, endsCtrl);
-    seq.break = [...(seq.break || []), { id: loopControl.id, outLabel: "✔️" }];
+    seq.break = [...(seq.break || []), { id: loopControl.id, outLabel: "⏹️" }];
     return tieUpLoop(seq, loopControl);
 }
 
