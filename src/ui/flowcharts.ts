@@ -239,8 +239,6 @@ function makeFlowchart(program: Program) {
     fullStr += "%%connect blocks%%\n" + Object.keys(blockMap).join("~~~") + "\n";
 
     fullStr += styleStr;
-
-    console.log(fullStr);
     // reset
     flushBlockMap();
     flushStyleMap();
