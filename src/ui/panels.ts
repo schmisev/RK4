@@ -6,6 +6,7 @@
 const handler = document.getElementById("panel-handler")!;
 const wrapper = document.getElementById("panel-row")!;
 const panel = document.getElementById("left-panel")!;
+const debugPanel = document.getElementById("right-panel")!;
 let isHandlerDragging = false;
 
 function disableSelect(event: Event) {
@@ -54,3 +55,13 @@ function stopDrag() {
 }
 document.addEventListener('mouseup', stopDrag);
 document.addEventListener('touchend', stopDrag);
+
+const foldDebugPanel = document.getElementById("fold-debug")!;
+foldDebugPanel.onclick = () => {
+  if (debugPanel.getBoundingClientRect().width <= 5) {
+    panel.style.width = 'calc(50%)';
+  } else {
+    panel.style.width = 'calc(100%)';
+  }
+  panel.style.flexGrow = "0";
+}

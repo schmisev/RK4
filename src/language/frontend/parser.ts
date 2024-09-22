@@ -1,4 +1,4 @@
-import { Stmt, Program, Expr, VarDeclaration, ObjDeclaration, FunctionDefinition, ShowCommand, BreakCommand, ContinueCommand, ClassDefinition, ParamDeclaration, ReturnCommand, ExtMethodDefinition, StmtKind, IfElseBlock, ForBlock, WhileBlock, AlwaysBlock, AbruptStmtKind, DocComment, CaseBlock, SwitchBlock } from "./ast";
+import { Stmt, Program, Expr, VarDeclaration, ObjDeclaration, FunctionDefinition, ShowCommand, BreakCommand, ContinueCommand, ClassDefinition, ParamDeclaration, ReturnCommand, ExtMethodDefinition, StmtKind, IfElseBlock, ForBlock, WhileBlock, AlwaysBlock, AbruptStmtKind, DocComment, CaseBlock, SwitchBlock, FromToBlock } from "./ast";
 import { tokenize, Token, TokenType, KEYWORDS } from "./lexer";
 import { ParserError } from "../../errors";
 import { ValueAlias } from "../runtime/values";
@@ -311,8 +311,11 @@ export default class Parser {
             this.eat(); // eat 'solange'
             return this.parse_while_loop(allowedControl);
         } else if (this.at().type == TokenType.RepAlways) {
-            this.eat(); // eat immer'
+            this.eat(); // eat 'immer'
             return this.parse_always_loop(allowedControl);
+        } else if (this.at().type == TokenType.For) {
+            this.eat(); // eat 'für'
+            return this.parse_from_to_loop(allowedControl);
         } else {
             return this.parse_for_loop(allowedControl);
         }
@@ -354,6 +357,26 @@ export default class Parser {
         return {
             kind: StmtKind.AlwaysBlock,
             lineIndex,
+            body: this.parse_bare_loop(allowedControl),
+        };
+    }
+
+    parse_from_to_loop<A extends AbruptStmtKind>(allowedControl: Set<A>): FromToBlock<A> {
+        const lineIndex = this.at().lineIndex;
+
+        const iterIdent = this.expect(TokenType.Identifier, "Nach für muss ein noch undefinierter (!) Variablenname folgen!").value;
+        this.expect(TokenType.From, "Erwarte 'von' nach Iterationsvariable.");
+        const start = this.parse_expr();
+        this.expect(TokenType.To, "Erwarte 'bis' nach Startwert.");
+        const end = this.parse_expr();
+        this.expect(TokenType.EndLine, "Erwarte neue Zeile nach Endwert!");
+
+        return {
+            kind: StmtKind.FromToBlock,
+            lineIndex,
+            iterIdent,
+            start,
+            end,
             body: this.parse_bare_loop(allowedControl),
         };
     }
@@ -454,7 +477,7 @@ export default class Parser {
         }
         this.eat();
 
-        this.expect(TokenType.MethodFor, "Erwarte 'für' bei Definition einer ext. Methode!");
+        this.expect(TokenType.For, "Erwarte 'für' bei Definition einer ext. Methode!");
         const classname = this.expect(TokenType.Identifier, "Erwarte Klassenname nach 'für'!").value;
         this.expect(TokenType.EndLine, "Erwarte neue Zeile vor Funktionskörper!");
 

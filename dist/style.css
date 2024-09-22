@@ -61,14 +61,17 @@ button:active {
 }
 
 .toggle-button {
+    font-family: 'Cascadia Code', 'Consolas' !important;
+    font-weight: bold;
     background-color: white;
     border-radius: 5px;
     outline: 1px rgba(0, 0, 0, 0.2) solid;
     outline-offset: -1px;
-    font-size: medium;
+    font-size: 14px;
     overflow: hidden;
     white-space: nowrap;
-    font-family: "Roboto";
+    height: 22px;
+    line-height: 14px;
 
     transition: background-color 0.2s, outline-color 0.2s;
 }
@@ -83,18 +86,21 @@ button:active {
 #debug-show-functions.active {
     background-color: lightblue;
     outline-color: #3ca2c3;
+    outline-offset: -1px;
     color: black;
 }
 
 #debug-show-methods.active {
     background-color: lightgreen;
     outline-color: #73BE73;
+    outline-offset: -1px;
     color: black;
 }
 
 #debug-show-labels.active {
     background-color: #FADA5E;
     outline-color: #b19b42;
+    outline-offset: -1px;
     color: black;
 }
 
@@ -771,7 +777,7 @@ input[type="checkbox"] {
 .code-error {
     grid-column: 1 / 8;
     grid-row: 22;
-    font-family: 'Cascadia Code';
+    font-family: 'Cascadia Code', 'Consolas';
     font-size: 15px;
     white-space: nowrap;
     overflow-x: scroll;

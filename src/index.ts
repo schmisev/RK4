@@ -439,7 +439,6 @@ export function resetLagSum() {
     frameLagSum = 0;
 }
 
-
 // Start app
 loadExtTasks().catch(e => console.error(e)).then(updateTaskSelector); // get std tasks
 loadTask(DEFAULT_TASK);

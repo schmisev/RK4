@@ -1,4 +1,4 @@
-import { AnyStmt, BinaryExpr, ClassDefinition, Expr, ExtMethodDefinition, AnyForBlock, FunctionDefinition, AnyIfElseBlock, Program, UnaryExpr, AnyWhileBlock, AnyAlwaysBlock, StmtKind, SwitchBlock, AnySwitchBlock, AnyCaseBlock } from "../language/frontend/ast";
+import { AnyStmt, BinaryExpr, ClassDefinition, Expr, ExtMethodDefinition, AnyForBlock, FunctionDefinition, AnyIfElseBlock, Program, UnaryExpr, AnyWhileBlock, AnyAlwaysBlock, StmtKind, SwitchBlock, AnySwitchBlock, AnyCaseBlock, AnyFromToBlock } from "../language/frontend/ast";
 import { ValueAlias } from "../language/runtime/values";
 import { ENV } from "../spec";
 import { translateOperator } from "../utils";
@@ -104,6 +104,8 @@ function structure(astNode: Program | AnyStmt): string {
             return structureAlways(astNode);
         case StmtKind.ForBlock:
             return structureFor(astNode);
+        case StmtKind.FromToBlock:
+            return structureFromTo(astNode);
         case StmtKind.NumericLiteral:
             return makeSpan(astNode.value.toString(), "struct-literal");
         case StmtKind.StringLiteral:
@@ -204,10 +206,20 @@ function structureSequence(body: AnyStmt[]): string {
             continue;
         }
         if (!toggleLabels.active && node.kind == StmtKind.DocComment) continue;
-        if (node.kind == StmtKind.WhileBlock || node.kind == StmtKind.ForBlock || node.kind == StmtKind.AlwaysBlock || node.kind == StmtKind.IfElseBlock || node.kind == StmtKind.SwitchBlock)
-            result += `<div class="struct-box">${structure(node)}</div>`;
-        else 
-            result += `<div class="struct-box lpad rpad">${structure(node)}</div>`;
+        
+        switch (node.kind) {
+            case StmtKind.WhileBlock:
+            case StmtKind.ForBlock:
+            case StmtKind.FromToBlock:
+            case StmtKind.AlwaysBlock:
+            case StmtKind.IfElseBlock:
+            case StmtKind.SwitchBlock:
+                result += `<div class="struct-box">${structure(node)}</div>`
+                break;
+            default:
+                result += `<div class="struct-box lpad rpad">${structure(node)}</div>`;
+                break;
+        }
     }
     return result;
 }
@@ -240,6 +252,19 @@ function structureFor(node: AnyForBlock): string {
     `<div class="struct-label">
     wiederhole 
     <span class="line">${count} ${makeTooltip("mal", "Die folgenden Anweisungen werden sooft ausgeführt, wie es die Anzahl <u>" + count + "</u> vorgibt!")}
+    </span>
+    </div>
+        <div class="struct-while">${structureSequence(node.body)}</div>`
+    return result;
+}
+
+function structureFromTo(node: AnyFromToBlock): string {
+    const start = structure(node.start);
+    const end = structure(node.end);
+    const result = 
+    `<div class="struct-label">
+    wiederhole 
+    <span class="line">für ${makeSpan(node.iterIdent, "struct-ident")} von ${start} bis ${end} 
     </span>
     </div>
         <div class="struct-while">${structureSequence(node.body)}</div>`
