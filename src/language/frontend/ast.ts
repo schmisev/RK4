@@ -25,6 +25,7 @@ export const enum StmtKind {
     NullLiteral = "NixLiteral",
     BooleanLiteral = "WahrheitswertLiteral",
     StringLiteral = "TextLiteral",
+    ListLiteral = "ListenLiteral",
     MemberExpr = "MitgliedsAudruck",
     CallExpr = "AufrufsAusdruck",
     ClassDefinition = "KlassenDefinition",
@@ -84,7 +85,7 @@ export interface VarDeclaration {
     kind: StmtKind.VarDeclaration;
     lineIndex: number;
     ident: string;
-    type: ValueAlias.Null | ValueAlias.Boolean | ValueAlias.Number | ValueAlias.String;
+    type: ValueAlias.Null | ValueAlias.Boolean | ValueAlias.Number | ValueAlias.String | ValueAlias.List;
     value: Expr;
 }
 
@@ -184,7 +185,7 @@ export interface ReturnCommand {
     value: Expr;
 }
 
-export type Expr = AssignmentExpr | BinaryExpr | UnaryExpr | Identifier | NumericLiteral | NullLiteral | BooleanLiteral | StringLiteral | MemberExpr | CallExpr;
+export type Expr = AssignmentExpr | BinaryExpr | UnaryExpr | Identifier | NumericLiteral | NullLiteral | BooleanLiteral | StringLiteral  | ListLiteral | MemberExpr | CallExpr;
 
 export interface AssignmentExpr {
     kind: StmtKind.AssignmentExpr;
@@ -236,6 +237,12 @@ export interface StringLiteral {
     kind: StmtKind.StringLiteral;
     lineIndex: number;
     value: string;
+}
+
+export interface ListLiteral {
+    kind: StmtKind.ListLiteral;
+    lineIndex: number;
+    elements: Expr[];
 }
 
 export interface MemberExpr {

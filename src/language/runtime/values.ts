@@ -6,6 +6,7 @@ export const enum ValueAlias {
     Number = "Zahl",
     Boolean = "Wahrheitswert",
     String = "Text",
+    List = "Liste",
     NativeFunction = "NativeFunktion",
     NativeMethod = "NativeMethode",
     Function = "Funktion",
@@ -20,7 +21,7 @@ export const enum AbruptAlias {
     Return = "return",
 }
 
-export type RuntimeVal = NullVal | NumberVal | BooleanVal | StringVal | NativeFunctionVal | FunctionVal | ClassVal | ObjectVal;
+export type RuntimeVal = NullVal | NumberVal | BooleanVal | StringVal | ListVal | NativeFunctionVal | FunctionVal | ClassVal | ObjectVal;
 export type ValueType = RuntimeVal["type"];
 
 export interface NullVal {
@@ -41,6 +42,11 @@ export interface BooleanVal {
 export interface StringVal {
     type: ValueAlias.String;
     value: string;
+}
+
+export interface ListVal {
+    type: ValueAlias.List;
+    elements: RuntimeVal[];
 }
 
 export type FunctionCall = (args: RuntimeVal[]) => RuntimeVal;

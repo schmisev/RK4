@@ -1,5 +1,5 @@
 import { RuntimeError } from "../../../errors";
-import { Identifier, BinaryExpr, UnaryExpr, AssignmentExpr, CallExpr, MemberExpr, StmtKind } from "../../frontend/ast";
+import { Identifier, BinaryExpr, UnaryExpr, AssignmentExpr, CallExpr, MemberExpr, StmtKind, ListLiteral } from "../../frontend/ast";
 import { Environment } from "../environment";
 import { SteppedEval, evaluate_expr } from "../interpreter";
 import {
@@ -22,6 +22,20 @@ export function eval_identifier(
 ): RuntimeVal {
     const val = env.lookupVar(ident.symbol);
     return val;
+}
+
+export function* eval_list_literal(
+    expr: ListLiteral,
+    env: Environment
+): SteppedEval<RuntimeVal> {
+    const elements: RuntimeVal[] = [];
+    for (const el of expr.elements) {
+        elements.push(yield* evaluate_expr(el, env));
+    }
+    return {
+        type: ValueAlias.List,
+        elements,
+    }
 }
 
 function expectObject(val: RuntimeVal, reason: string, lineIndex: number): asserts val is ObjectVal {
@@ -274,3 +288,4 @@ export function* eval_member_expr(
     expectObject(obj, "nur Objekte haben Attribute und Methoden!", expr.lineIndex);
     return obj.cls.prototype.lookupVar(obj, expr.member.symbol);
 }
+

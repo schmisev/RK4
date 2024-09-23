@@ -190,6 +190,8 @@ function formatValue(value: RuntimeVal): string {
         return "nix";
     } else if (value.type == ValueAlias.String) {
         return value.value;
+    } else if (value.type == ValueAlias.List) {
+        return `[${value.elements.map(formatValue).join(", ")}]`;
     } else if (value.type == ValueAlias.Object) {
         return `[Objekt der Klasse ${value.cls.name}]`;
     } else if (value.type == ValueAlias.Class) {
