@@ -1,5 +1,5 @@
 import { RuntimeError } from "../../../errors";
-import { Identifier, BinaryExpr, UnaryExpr, AssignmentExpr, CallExpr, MemberExpr, StmtKind, ListLiteral } from "../../frontend/ast";
+import { Identifier, BinaryExpr, UnaryExpr, AssignmentExpr, CallExpr, MemberExpr, StmtKind, ListLiteral, ComputedMemberExpr } from "../../frontend/ast";
 import { Environment } from "../environment";
 import { SteppedEval, evaluate_expr } from "../interpreter";
 import {
@@ -13,6 +13,8 @@ import {
     MK_STRING,
     AbruptAlias,
     ValueAlias,
+    ListVal,
+    MK_LIST,
 } from "../values";
 import { eval_bare_statements } from "./statements";
 
@@ -46,6 +48,13 @@ function expectObject(val: RuntimeVal, reason: string, lineIndex: number): asser
     }
 }
 
+function boundsCheckList(container: ListVal, index: RuntimeVal, lineIndex: number): asserts index is NumberVal {
+    if (index.type !== ValueAlias.Number)
+        throw new RuntimeError(`Zugriffswert für eine Liste muss eine Zahl sein!`, lineIndex);
+    if (index.value < -container.elements.length || index.value >= container.elements.length)
+        throw new RuntimeError(`${index.value} liegt ausserhalb des Indexbereichs der Liste!`, lineIndex);
+}
+
 export function* eval_assignment_expr(
     node: AssignmentExpr,
     env: Environment
@@ -58,6 +67,28 @@ export function* eval_assignment_expr(
         const value = yield* evaluate_expr(node.value, env);
         obj.cls.prototype.assignVar(obj, symbol, value);
         return value;
+    } else if (node.assigne.kind == StmtKind.ComputedMemberExpr) {
+        const assigne = node.assigne;
+        const container = yield* evaluate_expr(assigne.container, env);
+
+        if (container.type == ValueAlias.Object) {
+            const member = yield* evaluate_expr(assigne.accessor, env);
+            if (member.type !== ValueAlias.String)
+                throw new RuntimeError(`Zugriffswert für ein Objekt muss ein Text sein!`);
+            const obj = yield* evaluate_expr(assigne.container, env);
+            expectObject(obj, "nur Objekten können Eigenschaften zugewiesen werden", node.lineIndex);
+            const value = yield* evaluate_expr(node.value, env);
+            obj.cls.prototype.assignVar(obj, member.value, value);
+            return value;
+
+        } else if (container.type == ValueAlias.List) {
+            const index = yield* evaluate_expr(assigne.accessor, env);
+            boundsCheckList(container, index, assigne.lineIndex);
+            const value = yield* evaluate_expr(node.value, env);
+            let i = index.value >= 0 ? index.value : container.elements.length + index.value;
+            container.elements[i] = value;
+            return value;
+        }
     }
 
     // regular assigments
@@ -105,6 +136,13 @@ export function eval_pure_binary_expr(
             );
         } else if (lhs.type == ValueAlias.String && rhs.type == ValueAlias.String) {
             return eval_string_binary_expr(
+                lhs,
+                rhs,
+                operator,
+                lineIndex
+            );
+        } else if (lhs.type == ValueAlias.List && rhs.type == ValueAlias.List) {
+            return eval_list_binary_expr(
                 lhs,
                 rhs,
                 operator,
@@ -178,6 +216,18 @@ export function eval_string_binary_expr(
         return MK_STRING(lhs.value + rhs.value);
     } else if (operator == "=") {
         return MK_BOOL(lhs.value === rhs.value);
+    }
+    throw new RuntimeError(`Operator '${operator}' kann so nicht verwendet werden.`, lineIndex);
+}
+
+export function eval_list_binary_expr(
+    lhs: ListVal,
+    rhs: ListVal,
+    operator: string,
+    lineIndex: number
+): RuntimeVal {
+    if (operator == "+") {
+        return MK_LIST(lhs.elements.concat(rhs.elements));
     }
     throw new RuntimeError(`Operator '${operator}' kann so nicht verwendet werden.`, lineIndex);
 }
@@ -289,3 +339,21 @@ export function* eval_member_expr(
     return obj.cls.prototype.lookupVar(obj, expr.member.symbol);
 }
 
+export function* eval_computed_member_expr(
+    expr: ComputedMemberExpr,
+    env: Environment
+): SteppedEval<RuntimeVal> {
+    const container = yield* evaluate_expr(expr.container, env);
+    if (container.type == ValueAlias.Object) {
+        const member = yield* evaluate_expr(expr.accessor, env);
+        if (member.type !== ValueAlias.String)
+            throw new RuntimeError(`Zugriffswert für ein Objekt muss ein Text sein!`);
+        return container.cls.prototype.lookupVar(container, member.value);
+    } else if (container.type == ValueAlias.List) {
+        const index = yield* evaluate_expr(expr.accessor, env);
+        boundsCheckList(container, index, expr.lineIndex);
+        let i = index.value >= 0 ? index.value : container.elements.length + index.value;
+        return container.elements[i];
+    }
+    throw new RuntimeError(`Zugriff mit [...] ist bei Datentyp '${container.type}' nicht erlaubt!`, expr.lineIndex);
+}

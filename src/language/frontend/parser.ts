@@ -1,4 +1,4 @@
-import { Stmt, Program, Expr, VarDeclaration, ObjDeclaration, FunctionDefinition, ShowCommand, BreakCommand, ContinueCommand, ClassDefinition, ParamDeclaration, ReturnCommand, ExtMethodDefinition, StmtKind, IfElseBlock, ForBlock, WhileBlock, AlwaysBlock, AbruptStmtKind, DocComment, CaseBlock, SwitchBlock, FromToBlock, ListLiteral } from "./ast";
+import { Stmt, Program, Expr, VarDeclaration, ObjDeclaration, FunctionDefinition, ShowCommand, BreakCommand, ContinueCommand, ClassDefinition, ParamDeclaration, ReturnCommand, ExtMethodDefinition, StmtKind, IfElseBlock, ForBlock, WhileBlock, AlwaysBlock, AbruptStmtKind, DocComment, CaseBlock, SwitchBlock, FromToBlock, ListLiteral, MemberExpr } from "./ast";
 import { tokenize, Token, TokenType, KEYWORDS } from "./lexer";
 import { ParserError } from "../../errors";
 import { ValueAlias } from "../runtime/values";
@@ -680,18 +680,32 @@ export default class Parser {
         const lineIndex = this.at().lineIndex;
         
         let container = this.parse_primary_expr();
-        while (this.at().type == TokenType.Period) {
-            this.eat();
-            const member = this.parse_primary_expr(); // has to be identifier
-            if (member.kind != StmtKind.Identifier)
-                throw new ParserError(`Kann Punktoperator nicht nutzen, wenn rechts kein Name steht!`, this.at().lineIndex);
 
-            container = {
-                kind: StmtKind.MemberExpr,
-                container,
-                member,
-                lineIndex
-            };
+        while (this.at().type == TokenType.Period || this.at().type == TokenType.OpenBracket) {
+            const operator = this.eat(); // eat either '.' or '['
+
+            if (operator.type == TokenType.Period) {
+                const member = this.parse_primary_expr(); // has to be identifier
+                if (member.kind != StmtKind.Identifier)
+                    throw new ParserError(`Kann Punktoperator nicht nutzen, wenn rechts kein Name steht!`, this.at().lineIndex);
+
+                container = {
+                    kind: StmtKind.MemberExpr,
+                    container,
+                    member,
+                    lineIndex
+                };
+            } else if (operator.type == TokenType.OpenBracket) {
+                const member = this.parse_expr(); // can be anything
+                this.expect(TokenType.CloseBracket, "Erwarte ']' nach Zugriffswert!");
+
+                container = {
+                    kind: StmtKind.ComputedMemberExpr,
+                    container,
+                    accessor: member,
+                    lineIndex,
+                };
+            }
         }
 
         return container;

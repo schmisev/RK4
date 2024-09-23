@@ -136,6 +136,10 @@ export function MK_NUMBER(n = 0) {
     return { type: ValueAlias.Number, value: n } satisfies NumberVal;
 }
 
+export function MK_LIST(elements: RuntimeVal[]) {
+    return { type: ValueAlias.List, elements } satisfies ListVal;
+}
+
 const NULL_VAL: NullVal = { type: ValueAlias.Null, value: null };
 export function MK_NULL() {
     return NULL_VAL;

@@ -27,6 +27,7 @@ export const enum StmtKind {
     StringLiteral = "TextLiteral",
     ListLiteral = "ListenLiteral",
     MemberExpr = "MitgliedsAudruck",
+    ComputedMemberExpr = "BerechneterMitgliedsAusdruck",
     CallExpr = "AufrufsAusdruck",
     ClassDefinition = "KlassenDefinition",
     FunctionDefinition = "FunktionsDefinition",
@@ -185,7 +186,7 @@ export interface ReturnCommand {
     value: Expr;
 }
 
-export type Expr = AssignmentExpr | BinaryExpr | UnaryExpr | Identifier | NumericLiteral | NullLiteral | BooleanLiteral | StringLiteral  | ListLiteral | MemberExpr | CallExpr;
+export type Expr = AssignmentExpr | BinaryExpr | UnaryExpr | Identifier | NumericLiteral | NullLiteral | BooleanLiteral | StringLiteral  | ListLiteral | MemberExpr | ComputedMemberExpr | CallExpr;
 
 export interface AssignmentExpr {
     kind: StmtKind.AssignmentExpr;
@@ -243,6 +244,13 @@ export interface ListLiteral {
     kind: StmtKind.ListLiteral;
     lineIndex: number;
     elements: Expr[];
+}
+
+export interface ComputedMemberExpr {
+    kind: StmtKind.ComputedMemberExpr;
+    lineIndex: number;
+    container: Expr;
+    accessor: Expr;
 }
 
 export interface MemberExpr {
