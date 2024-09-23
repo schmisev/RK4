@@ -369,7 +369,8 @@ export function* eval_from_to_block<A extends AbruptStmtKind>(
     let lastEvaluated: RuntimeVal = MK_NULL();
     loop: for (let i = startVal.value; i <= endVal.value; i++) {
         const loopEnv = new Environment(env);
-        loopEnv.declareVar(block.iterIdent, MK_NUMBER(i), true); // declare iter const
+        if (block.iterIdent)
+            loopEnv.declareVar(block.iterIdent, MK_NUMBER(i), true); // declare iter const
         const bodyValue = yield* eval_bare_statements(
             block.body,
             loopEnv,

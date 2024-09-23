@@ -154,7 +154,7 @@ export type AnyAlwaysBlock = AlwaysBlock<AbruptStmtKind>;
 export interface FromToBlock<Ctrl> {
     kind: StmtKind.FromToBlock;
     lineIndex: number;
-    iterIdent: string;
+    iterIdent: string | undefined;
     start: Expr;
     end: Expr;
     body: Stmt<StmtKind.BreakCommand | StmtKind.ContinueCommand | Ctrl>[];

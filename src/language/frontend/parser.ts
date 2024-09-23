@@ -313,8 +313,7 @@ export default class Parser {
         } else if (this.at().type == TokenType.RepAlways) {
             this.eat(); // eat 'immer'
             return this.parse_always_loop(allowedControl);
-        } else if (this.at().type == TokenType.For) {
-            this.eat(); // eat 'für'
+        } else if (this.at().type == TokenType.For || this.at().type == TokenType.From) {
             return this.parse_from_to_loop(allowedControl);
         } else {
             return this.parse_for_loop(allowedControl);
@@ -364,7 +363,11 @@ export default class Parser {
     parse_from_to_loop<A extends AbruptStmtKind>(allowedControl: Set<A>): FromToBlock<A> {
         const lineIndex = this.at().lineIndex;
 
-        const iterIdent = this.expect(TokenType.Identifier, "Nach für muss ein noch undefinierter (!) Variablenname folgen!").value;
+        let iterIdent: string | undefined = undefined;
+        if (this.at().type == TokenType.For) {
+            this.eat(); // get rid of "für"
+            iterIdent = this.expect(TokenType.Identifier, "Nach für muss ein noch undefinierter (!) Variablenname folgen!").value;
+        }
         this.expect(TokenType.From, "Erwarte 'von' nach Iterationsvariable.");
         const start = this.parse_expr();
         this.expect(TokenType.To, "Erwarte 'bis' nach Startwert.");

@@ -264,7 +264,7 @@ function structureFromTo(node: AnyFromToBlock): string {
     const result = 
     `<div class="struct-label">
     wiederhole 
-    <span class="line">für ${makeSpan(node.iterIdent, "struct-ident")} von ${start} bis ${end} 
+    <span class="line">${node.iterIdent ? "für " + makeSpan(node.iterIdent, "struct-ident") : ""} von ${start} bis ${end} 
     </span>
     </div>
         <div class="struct-while">${structureSequence(node.body)}</div>`

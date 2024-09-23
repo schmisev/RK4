@@ -435,7 +435,9 @@ function chartForLoop(loop: AnyForBlock, ends: LooseEnds): LooseEnds {
 }
 
 function chartFromToLoop(loop: AnyFromToBlock, ends: LooseEnds): LooseEnds {
-    const loopControl = declDec(loop.iterIdent + " := " + chartExpr(loop.start).str + "..." + chartExpr(loop.end).str)
+    const loopControl = declDec(
+        (loop.iterIdent ? loop.iterIdent + " := " : "") + chartExpr(loop.start).str + "..." + chartExpr(loop.end).str
+    )
     const endsCtrl = tieNodeToEnds(ends, loopControl, "⏭️ nächster Wert");
     const seq = chartSequence(loop.body, endsCtrl);
     seq.break = [...(seq.break || []), { id: loopControl.id, outLabel: "⏹️ beendet" }];
