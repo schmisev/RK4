@@ -128,6 +128,8 @@ function structure(astNode: Program | AnyStmt): string {
             return `${structure(astNode.ident)}(${astNode.args.map(structure).join(", ")})`
         case StmtKind.MemberExpr:
             return `${makeSpan(structure(astNode.container), "struct-object")}<b>.</b>${structure(astNode.member)}`
+        case StmtKind.ComputedMemberExpr:
+            return `${structure(astNode.container)}&lsqb;${structure(astNode.accessor)}&rsqb;`
         case StmtKind.VarDeclaration:
             return `${makeSpan(astNode.type, "struct-type")}</span> <span class="struct-ident">${astNode.ident}</span> ist ${structure(astNode.value)}`
         case StmtKind.ObjDeclaration:

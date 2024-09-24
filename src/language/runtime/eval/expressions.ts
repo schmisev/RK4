@@ -71,6 +71,7 @@ export function* eval_assignment_expr(
         const assigne = node.assigne;
         const container = yield* evaluate_expr(assigne.container, env);
 
+        /*
         if (container.type == ValueAlias.Object) {
             const member = yield* evaluate_expr(assigne.accessor, env);
             if (member.type !== ValueAlias.String)
@@ -81,7 +82,10 @@ export function* eval_assignment_expr(
             obj.cls.prototype.assignVar(obj, member.value, value);
             return value;
 
-        } else if (container.type == ValueAlias.List) {
+        }
+        */
+        
+        if (container.type == ValueAlias.List) {
             const index = yield* evaluate_expr(assigne.accessor, env);
             boundsCheckList(container, index, assigne.lineIndex);
             const value = yield* evaluate_expr(node.value, env);
@@ -89,6 +93,8 @@ export function* eval_assignment_expr(
             container.elements[i] = value;
             return value;
         }
+
+        throw new RuntimeError(`Zugriff mit [...] ist bei Datentyp '${container.type}' nicht erlaubt!`, node.lineIndex);
     }
 
     // regular assigments
@@ -99,7 +105,7 @@ export function* eval_assignment_expr(
     }
 
     throw new RuntimeError(
-        `Kann den Wert von '${node.assigne.kind}' nicht ändern - weil das Quatsch wäre!`, node.lineIndex
+        `Kann den Wert von '${node.assigne.kind}' nicht ändern!`, node.lineIndex
     );
 }
 
@@ -344,12 +350,16 @@ export function* eval_computed_member_expr(
     env: Environment
 ): SteppedEval<RuntimeVal> {
     const container = yield* evaluate_expr(expr.container, env);
+    /*
     if (container.type == ValueAlias.Object) {
         const member = yield* evaluate_expr(expr.accessor, env);
         if (member.type !== ValueAlias.String)
             throw new RuntimeError(`Zugriffswert für ein Objekt muss ein Text sein!`);
         return container.cls.prototype.lookupVar(container, member.value);
-    } else if (container.type == ValueAlias.List) {
+    }
+    */
+    
+    if (container.type == ValueAlias.List) {
         const index = yield* evaluate_expr(expr.accessor, env);
         boundsCheckList(container, index, expr.lineIndex);
         let i = index.value >= 0 ? index.value : container.elements.length + index.value;
