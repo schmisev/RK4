@@ -43,6 +43,16 @@ export function declareGlobalEnv(): GlobalEnvironment {
             return MK_NUMBER(n);
         }
     ), true);
+
+    env.declareVar(ENV.global.fn.LENGTH, MK_NATIVE_FN(
+        ENV.global.fn.LENGTH,
+        (args) => {
+            if (args.length != 1) throw new RuntimeError(`Erwarte genau eine Liste als Eingabe!`);
+            if (args[0].type != ValueAlias.List) throw new RuntimeError(`Erwarte eine Liste als Eingabe!`);
+            return MK_NUMBER(args[0].elements.length);
+        }
+    ), true);
+
     env.declareVar(ENV.robot.cls, env.robotClass, true);
     env.declareVar(ENV.world.cls, env.worldClass, true);
     return env;
