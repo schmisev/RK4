@@ -11,7 +11,7 @@ export enum TokenType {
     // Keywords
     Show,
     Assign, Instance,
-    DeclNumber, DeclBoolean, DeclString,
+    DeclNumber, DeclBoolean, DeclString, DeclList,
     DeclObject, Self, DotOp,
     If, Then, IfElse, Else,
     Return,
@@ -21,6 +21,7 @@ export enum TokenType {
     // Operations
     OpenParen, CloseParen,
     OpenBrace, CloseBrace,
+    OpenBracket, CloseBracket,
     Comma, Period,
     Plus,
     Minus,
@@ -51,6 +52,7 @@ export const KEYWORDS: Record<string, TokenType> = {
     Zahl: TokenType.DeclNumber,
     Wahrheitswert: TokenType.DeclBoolean,
     Text: TokenType.DeclString,
+    Liste: TokenType.DeclList,
     Objekt: TokenType.DeclObject,
     selbst: TokenType.Self,
 
@@ -152,7 +154,11 @@ export function tokenize(sourceCode: string): Token[] {
         } else if (src[0] == '{'){
             tokens.push(token(src.shift(), TokenType.OpenBrace, lineCount));
         } else if (src[0] == '}'){
-            tokens.push(token(src.shift(), TokenType.OpenBrace, lineCount));
+            tokens.push(token(src.shift(), TokenType.CloseBrace, lineCount));
+        } else if (src[0] == '['){
+            tokens.push(token(src.shift(), TokenType.OpenBracket, lineCount));
+        } else if (src[0] == ']'){
+            tokens.push(token(src.shift(), TokenType.CloseBracket, lineCount));
         } else {
             // Handle multicharacter tokens
             if (src[0] == "/"){

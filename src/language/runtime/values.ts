@@ -6,6 +6,7 @@ export const enum ValueAlias {
     Number = "Zahl",
     Boolean = "Wahrheitswert",
     String = "Text",
+    List = "Liste",
     NativeFunction = "NativeFunktion",
     NativeMethod = "NativeMethode",
     Function = "Funktion",
@@ -20,7 +21,7 @@ export const enum AbruptAlias {
     Return = "return",
 }
 
-export type RuntimeVal = NullVal | NumberVal | BooleanVal | StringVal | NativeFunctionVal | FunctionVal | ClassVal | ObjectVal;
+export type RuntimeVal = NullVal | NumberVal | BooleanVal | StringVal | ListVal | NativeFunctionVal | FunctionVal | ClassVal | ObjectVal;
 export type ValueType = RuntimeVal["type"];
 
 export interface NullVal {
@@ -41,6 +42,11 @@ export interface BooleanVal {
 export interface StringVal {
     type: ValueAlias.String;
     value: string;
+}
+
+export interface ListVal {
+    type: ValueAlias.List;
+    elements: RuntimeVal[];
 }
 
 export type FunctionCall = (args: RuntimeVal[]) => RuntimeVal;
@@ -128,6 +134,10 @@ export function MK_NATIVE_METHOD(name: string, call: MethodCall) {
 
 export function MK_NUMBER(n = 0) {
     return { type: ValueAlias.Number, value: n } satisfies NumberVal;
+}
+
+export function MK_LIST(elements: RuntimeVal[]) {
+    return { type: ValueAlias.List, elements } satisfies ListVal;
 }
 
 const NULL_VAL: NullVal = { type: ValueAlias.Null, value: null };

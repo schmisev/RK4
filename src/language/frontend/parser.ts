@@ -1,4 +1,4 @@
-import { Stmt, Program, Expr, VarDeclaration, ObjDeclaration, FunctionDefinition, ShowCommand, BreakCommand, ContinueCommand, ClassDefinition, ParamDeclaration, ReturnCommand, ExtMethodDefinition, StmtKind, IfElseBlock, ForBlock, WhileBlock, AlwaysBlock, AbruptStmtKind, DocComment, CaseBlock, SwitchBlock, FromToBlock } from "./ast";
+import { Stmt, Program, Expr, VarDeclaration, ObjDeclaration, FunctionDefinition, ShowCommand, BreakCommand, ContinueCommand, ClassDefinition, ParamDeclaration, ReturnCommand, ExtMethodDefinition, StmtKind, IfElseBlock, ForBlock, WhileBlock, AlwaysBlock, AbruptStmtKind, DocComment, CaseBlock, SwitchBlock, FromToBlock, ListLiteral, MemberExpr } from "./ast";
 import { tokenize, Token, TokenType, KEYWORDS } from "./lexer";
 import { ParserError } from "../../errors";
 import { ValueAlias } from "../runtime/values";
@@ -65,12 +65,12 @@ export default class Parser {
                 break;
             case TokenType.Break:
                 if (!checkControl.has(StmtKind.BreakCommand))
-                    throw new ParserError(`PARSER: "${("abbrechen" satisfies keyof typeof KEYWORDS)}" is nur in Schleifen erlaubt.`, this.at().lineIndex);
+                    throw new ParserError(`PARSER: "${("abbrechen" satisfies keyof typeof KEYWORDS)}" is nur in Schleifen und Unterschiedungen erlaubt.`, this.at().lineIndex);
                 statement = this.parse_break() as any;
                 break;
             case TokenType.Continue:
                 if (!checkControl.has(StmtKind.ContinueCommand))
-                    throw new ParserError(`PARSER: "${("weiter" satisfies keyof typeof KEYWORDS)}" is nur in Schleifen erlaubt.`, this.at().lineIndex);
+                    throw new ParserError(`PARSER: "${("weiter" satisfies keyof typeof KEYWORDS)}" is nur in Schleifen und Unterschiedungen erlaubt.`, this.at().lineIndex);
                 statement = this.parse_continue() as any;
                 break;
             case TokenType.Return:
@@ -84,6 +84,7 @@ export default class Parser {
             case TokenType.DeclBoolean:
             case TokenType.DeclNumber:
             case TokenType.DeclString:
+            case TokenType.DeclList:
                 statement = this.parse_var_declaration();
                 break;
             case TokenType.DeclObject:
@@ -192,7 +193,7 @@ export default class Parser {
         const attributes: (VarDeclaration | ObjDeclaration)[] = []; 
         const methods: FunctionDefinition[] = []; 
         while (this.at().type != TokenType.EndBlock && this.at().type != TokenType.MethodDef) {
-            const declaration = this.parse_var_declaration();
+            const declaration = this.parse_any_declaration();
             this.expect(TokenType.EndLine, "Erwarte eine neue Zeile nach jedem Attribut!");
             attributes.push(declaration);
         }
@@ -396,7 +397,22 @@ export default class Parser {
         return body;
     }
 
-    parse_var_declaration(): VarDeclaration | ObjDeclaration {
+    parse_any_declaration(): VarDeclaration | ObjDeclaration {
+        const lineIndex = this.at().lineIndex;
+
+        switch (this.at().type) {
+            case TokenType.DeclNumber:
+            case TokenType.DeclString:
+            case TokenType.DeclBoolean:
+            case TokenType.DeclList:
+                return this.parse_var_declaration();
+            case TokenType.DeclObject:
+                return this.parse_obj_declaration();
+        }
+        throw new ParserError(`Erwartete Deklaration, erhielt aber '${this.at().value}...'`, lineIndex);
+    }
+
+    parse_var_declaration(): VarDeclaration {
         const lineIndex = this.at().lineIndex;
 
         let type: VarDeclaration["type"] = ValueAlias.Null;
@@ -406,11 +422,12 @@ export default class Parser {
             type = ValueAlias.Number;
         } else if (this.at().type == TokenType.DeclString) {
             type = ValueAlias.String;
-        } else if (this.at().type == TokenType.DeclObject) {
-            return this.parse_obj_declaration();
+        } else if (this.at().type == TokenType.DeclList) {
+            type = ValueAlias.List;
         }
+
         this.eat();
-        const ident = this.expect(TokenType.Identifier, "Erwarte Variablennamen nach 'Zahl', 'Wahrheitswert' oder 'Objekt'!").value;
+        const ident = this.expect(TokenType.Identifier, "Erwarte Variablennamen nach 'Zahl', 'Text', 'Wahrheitswert', 'Liste' oder 'Objekt'!").value;
         this.expect(TokenType.Assign, "Erwarte 'ist' nach Variablennamen!");
         const value = this.parse_expr();
 
@@ -663,18 +680,32 @@ export default class Parser {
         const lineIndex = this.at().lineIndex;
         
         let container = this.parse_primary_expr();
-        while (this.at().type == TokenType.Period) {
-            this.eat();
-            const member = this.parse_primary_expr(); // has to be identifier
-            if (member.kind != StmtKind.Identifier)
-                throw new ParserError(`Kann Punktoperator nicht nutzen, wenn rechts kein Name steht!`, this.at().lineIndex);
 
-            container = {
-                kind: StmtKind.MemberExpr,
-                container,
-                member,
-                lineIndex
-            };
+        while (this.at().type == TokenType.Period || this.at().type == TokenType.OpenBracket) {
+            const operator = this.eat(); // eat either '.' or '['
+
+            if (operator.type == TokenType.Period) {
+                const member = this.parse_primary_expr(); // has to be identifier
+                if (member.kind != StmtKind.Identifier)
+                    throw new ParserError(`Kann Punktoperator nicht nutzen, wenn rechts kein Name steht!`, this.at().lineIndex);
+
+                container = {
+                    kind: StmtKind.MemberExpr,
+                    container,
+                    member,
+                    lineIndex
+                };
+            } else if (operator.type == TokenType.OpenBracket) {
+                const member = this.parse_expr(); // can be anything
+                this.expect(TokenType.CloseBracket, "Erwarte ']' nach Zugriffswert!");
+
+                container = {
+                    kind: StmtKind.ComputedMemberExpr,
+                    container,
+                    accessor: member,
+                    lineIndex,
+                };
+            }
         }
 
         return container;
@@ -691,6 +722,8 @@ export default class Parser {
                 return { kind: StmtKind.NumericLiteral, value: parseInt(this.eat().value), lineIndex};
             case TokenType.String:
                 return { kind: StmtKind.StringLiteral, value: this.eat().value, lineIndex };
+            case TokenType.OpenBracket:
+                return this.parse_list_expr();
             case TokenType.OpenParen: {
                 this.eat(); // eat opening paren
                 const value = this.parse_expr();
@@ -699,6 +732,24 @@ export default class Parser {
             }
             default:
                 throw new ParserError(`PARSER: Unerwarteter Token gefunden: '${JSON.stringify(this.at().value)}'`, lineIndex);
+        }
+    }
+
+    parse_list_expr(): ListLiteral {
+        const lineIndex = this.at().lineIndex;
+
+        this.eat(); // eat [
+        const elements: Expr[] = []
+        while (this.at().type !== TokenType.CloseBracket) {
+            elements.push(this.parse_expr());
+            if (this.at().type == TokenType.CloseBracket) break;
+            this.expect(TokenType.Comma, `Erwarte Kommas zwischen Listenelementen!`);
+        }
+        this.eat();
+        return {
+            kind: StmtKind.ListLiteral,
+            elements,
+            lineIndex
         }
     }
 }

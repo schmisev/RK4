@@ -291,7 +291,9 @@ function chartSimpleStmt(stmt: AnyStmt): ChartNode | undefined {
         case StmtKind.NullLiteral:
         case StmtKind.BooleanLiteral:
         case StmtKind.StringLiteral:
+        case StmtKind.ListLiteral:
         case StmtKind.MemberExpr:
+        case StmtKind.ComputedMemberExpr:
             const val = chartExpr(stmt);
             return declare(val.str, val.type);
         case StmtKind.CallExpr:
@@ -320,9 +322,14 @@ function chartExpr(expr: Expr): { str: string, type: Type } {
             return {str: `${expr.value ? "wahr" : "falsch"}`, type: Type.Unwrapped};
         case StmtKind.StringLiteral:
             return {str: `#quot;${expr.value}#quot;`, type: Type.Unwrapped};
+        case StmtKind.ListLiteral:
+            return {str: `#lsqb;${expr.elements.map(chartExpr).map((a) => a.str).join(", ")}#rsqb;`, type: Type.Unwrapped}
         case StmtKind.MemberExpr:
             const member = chartExpr(expr.member);
             return {str: chartExpr(expr.container).str + "." + member.str, type: member.type};
+        case StmtKind.ComputedMemberExpr:
+            const accessor = chartExpr(expr.accessor);
+            return {str: chartExpr(expr.container).str + "[" + accessor.str + "]", type: accessor.type};
         case StmtKind.CallExpr:
             return {str: chartExpr(expr.ident).str + "(" + expr.args.map(chartExpr).map((a) => a.str).join(", ") + ")", type: Type.Call};
     }

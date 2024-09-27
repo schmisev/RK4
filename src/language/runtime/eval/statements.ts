@@ -190,6 +190,8 @@ function formatValue(value: RuntimeVal): string {
         return "nix";
     } else if (value.type == ValueAlias.String) {
         return value.value;
+    } else if (value.type == ValueAlias.List) {
+        return `[${value.elements.map(formatValue).join(", ")}]`;
     } else if (value.type == ValueAlias.Object) {
         return `[Objekt der Klasse ${value.cls.name}]`;
     } else if (value.type == ValueAlias.Class) {
@@ -367,7 +369,7 @@ export function* eval_from_to_block<A extends AbruptStmtKind>(
 
 
     let lastEvaluated: RuntimeVal = MK_NULL();
-    loop: for (let i = startVal.value; i <= endVal.value; i++) {
+    loop: for (let i = startVal.value; i < endVal.value; i++) {
         const loopEnv = new Environment(env);
         if (block.iterIdent)
             loopEnv.declareVar(block.iterIdent, MK_NUMBER(i), true); // declare iter const
