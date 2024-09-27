@@ -369,7 +369,7 @@ export function* eval_from_to_block<A extends AbruptStmtKind>(
 
 
     let lastEvaluated: RuntimeVal = MK_NULL();
-    loop: for (let i = startVal.value; i <= endVal.value; i++) {
+    loop: for (let i = startVal.value; i < endVal.value; i++) {
         const loopEnv = new Environment(env);
         if (block.iterIdent)
             loopEnv.declareVar(block.iterIdent, MK_NUMBER(i), true); // declare iter const
