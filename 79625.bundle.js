@@ -1,1 +1,0 @@
-(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[79625],{79625:(e,a,o)=>{e=o.nmd(e),ace.require(["ace/snippets/nasal"],(function(a){e&&(e.exports=a)}))}}]);

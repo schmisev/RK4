@@ -1,1 +1,0 @@
-(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[10910],{10910:(e,o,n)=>{e=n.nmd(e),ace.require(["ace/snippets/coldfusion"],(function(o){e&&(e.exports=o)}))}}]);

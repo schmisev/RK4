@@ -1,1 +1,0 @@
-(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[42206],{42206:(e,o,r)=>{e=r.nmd(e),ace.require(["ace/snippets/rust"],(function(o){e&&(e.exports=o)}))}}]);

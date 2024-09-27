@@ -1,1 +1,0 @@
-(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[69884],{69884:(e,s,o)=>{e=o.nmd(e),ace.require(["ace/snippets/scss"],(function(s){e&&(e.exports=s)}))}}]);

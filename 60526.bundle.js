@@ -1,1 +1,0 @@
-(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[60526],{60526:(e,n,o)=>{e=o.nmd(e),ace.require(["ace/snippets/nginx"],(function(n){e&&(e.exports=n)}))}}]);
