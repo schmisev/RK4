@@ -175,7 +175,7 @@ export function eval_class_definition(
     return env.declareVar(def.ident, cl);
 }
 
-function formatValue(value: RuntimeVal): string {
+export function formatValue(value: RuntimeVal): string {
     // side effect
     if (value.type == ValueAlias.Number) {
         return value.value.toString();

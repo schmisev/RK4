@@ -112,6 +112,8 @@ function structure(astNode: Program | AnyStmt): string {
             return makeSpan('"' + astNode.value + '"', "struct-string");
         case StmtKind.BooleanLiteral:
             return makeSpan(astNode.value ? "wahr" : "falsch", "struct-literal");
+        case StmtKind.ListLiteral:
+            return `&lsqb;${astNode.elements.map(structure).join(", ")}&rsqb;`;
         case StmtKind.NullLiteral:
             return makeSpan("nix", "struct-literal");
         case StmtKind.Identifier:

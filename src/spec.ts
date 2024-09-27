@@ -12,6 +12,7 @@ export const ENV = {
         "fn": {
             RANDOM_NUMBER: "zufallszahl",
             LENGTH: "länge",
+            TOTEXT: "zuText",
         }
     },
     "robot": {

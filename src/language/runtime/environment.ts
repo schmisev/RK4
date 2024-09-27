@@ -2,6 +2,7 @@ import { RuntimeError } from "../../errors";
 import { declareRobotClass } from "../../robot/robot";
 import { declareWorldClass } from "../../robot/world";
 import { ENV } from "../../spec";
+import { formatValue } from "./eval/statements";
 import { Trampoline, jump, jumpAround, jumpBind, land } from "./trampoline";
 import { BuiltinClassVal, ClassVal, MK_STRING, MethodVal, NativeMethodVal, ObjectVal, ValueAlias } from "./values";
 import { MK_BOOL, MK_NATIVE_FN, MK_NULL, MK_NUMBER, RuntimeVal } from "./values";
@@ -50,6 +51,14 @@ export function declareGlobalEnv(): GlobalEnvironment {
             if (args.length != 1) throw new RuntimeError(`Erwarte genau eine Liste als Eingabe!`);
             if (args[0].type != ValueAlias.List) throw new RuntimeError(`Erwarte eine Liste als Eingabe!`);
             return MK_NUMBER(args[0].elements.length);
+        }
+    ), true);
+
+    env.declareVar(ENV.global.fn.TOTEXT, MK_NATIVE_FN(
+        ENV.global.fn.TOTEXT,
+        (args) => {
+            if (args.length != 1) throw new RuntimeError(`Erwarte genau einen Eingabewert!`);
+            return MK_STRING(formatValue(args[0]));
         }
     ), true);
 

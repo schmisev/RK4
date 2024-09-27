@@ -58,8 +58,7 @@ function loadFromStore() {
 
 // insert some Demo Code
 storeRawCode("Demo: Alles mögliche",
-`// Großer Testcode
-Zahl zeilenZähler ist 0
+`Zahl zeilenZähler ist 0
 
 # Wiederholungen
 wiederhole 4 mal
@@ -102,258 +101,26 @@ wenn welt.fertig() dann
 ende
 `, false);
 
-storeRawCode("Demo: Datentypen",
-`Zahl a ist 5
-Zahl b ist -7
+storeRawCode("Demo: Hallo Welt!",
+`# Gibt "Karol sagt: 'Hallo, Welt!'" zurück.
+Text name ist "Karol"
+zeig name, "sagt: 'Hallo Welt!'"
+`, false);
 
-zeig a + b
-zeig a * b
-zeig b : a
-
-Text t1 ist "Hallo"
-Text t2 ist "Welt"
-
-zeig t1 + ", " + t2
-
-Wahrheitswert w1 ist wahr
-Wahrheitswert w2 ist falsch
-
-zeig w1 und w2
-zeig w1 oder w2
-zeig nicht w1
-zeig a > b
-zeig nicht (a < b)
-zeig nicht w1 und (a * b > a)`, false)
-
-storeRawCode("Demo: Klassen und Methoden",
-`Klasse Fibonacciator(Zahl _a, Zahl _b)
-    Zahl a ist _a
-    Zahl b ist _b
-    
-    Methode nächsteZahl()
-        Zahl tmp ist b
-        b ist a + b
-        a ist tmp
-        zurück a
-    ende
-    
-    Methode letzteZahl()
-        Zahl tmp ist a
-        a ist b - a
-        b ist tmp
-        zurück b
-    ende
+storeRawCode("Demo: Viele Hallos",
+`# Viele Grüße!
+Zahl n ist 0
+wiederhole solange n < 10
+    zeig n, "Mal gegrüßt..."
+    n ist n+1
 ende
 
-Methode zurücksetzen(Zahl _a, Zahl _b) für Fibonacciator
-    a ist _a
-    b ist _b
+wiederhole n mal
+    zeig "Hallo, User " + zuText(zufallszahl()) + "."
 ende
 
-Objekt fib als Fibonacciator(3, 6)
-
-wiederhole 10 mal
-    zeig fib.nächsteZahl()
+Liste namen ist ["Anna", "Benno", "Carl", "Dora", "Emil", "Frieda"]
+wiederhole für i von 0 bis länge(namen)
+    zeig "Hallo, " + namen[i] + "!"
 ende
-
-fib.zurücksetzen(0, 1)
-
-wiederhole 10 mal
-    zeig fib.nächsteZahl()
-ende
-wiederhole 20 mal
-    zeig fib.letzteZahl()
-ende`, false)
-
-storeRawCode("Demo: Unterscheide",
-`Zahl x ist 1
-unterscheide x + 1
-    falls 1
-        zeig "0"
-        weiter
-    falls 2
-        zeig "1"
-        weiter
-    falls 3
-        zeig "2"
-    falls 4
-        zeig "3"
-    falls 5
-        abbrechen
-        zeig "4"
-    sonst
-        zeig "?"
-ende
-`, false)
-
-storeRawCode("Debug: Wiederhole",
-`wiederhole 1 mal
-ende
-
-wiederhole 2 mal
-    zeig "stmt1"
-    zeig "stmt2"
-ende
-
-wiederhole 3 mal
-    zeig "stmt1"
-    abbrechen
-    zeig "stmt2"
-ende
-
-wiederhole 4 mal
-    zeig "stmt1"
-    weiter
-    zeig "stmt2"
-ende
-
-wiederhole solange 1
-ende
-
-wiederhole solange 2
-    zeig "stmt1"
-    zeig "stmt2"
-ende
-
-wiederhole solange 3
-    zeig "stmt1"
-    abbrechen
-    zeig "stmt2"
-ende
-
-wiederhole solange 4
-    zeig "stmt1"
-    weiter
-    zeig "stmt2"
-ende
-
-wiederhole immer
-ende
-
-wiederhole immer
-    zeig "stmt1"
-    zeig "stmt2"
-ende
-
-wiederhole immer
-    zeig "stmt1"
-    abbrechen
-    zeig "stmt2"
-ende
-
-wiederhole immer
-    zeig "stmt1"
-    weiter
-    zeig "stmt2"
-ende
-
-wiederhole 5 mal
-    wenn 1 dann
-        zeig "stmt1"
-        abbrechen
-        zeig "stmt2"
-    ende
-ende
-
-wiederhole 6 mal
-    wenn 1 dann
-        zeig "stmt1"
-        abbrechen
-        zeig "stmt2"
-    sonst
-        zeig "stmt3"
-        weiter
-        zeig "stmt4"
-    ende
-ende
-
-wiederhole 7 mal
-    wenn 1 dann
-        zeig "stmt1"
-        abbrechen
-        zeig "stmt2"
-    sonst
-        zeig "stmt3"
-        abbrechen
-        zeig "stmt4"
-    ende
-ende
-
-wiederhole 8 mal
-    wiederhole 9 mal
-        zeig "stmt1"
-        abbrechen
-        zeig "stmt2" 
-    ende
-ende
-
-wiederhole 9 mal
-    wiederhole 10 mal
-        wenn 1 dann
-            abbrechen
-        ende
-    ende
-ende
-`, false)
-
-storeRawCode("Debug: Strukturen",
-`wenn a dann
-    wenn b dann
-        wenn c dann
-            "hallo"
-        ende
-    ende
-ende
-
-wenn a dann
-    hallo
-sonst wenn b dann
-    tschüss
-sonst wenn c dann
-    ciao
-ende
-
-wiederhole immer
-    wiederhole solange nicht k1.siehtWand()
-        wiederhole solange k1.siehtZiegel()
-            k1.aufheben()
-        ende
-        k1.schritt()
-    ende
-    k1.linksDrehen()
-    k1.linksDrehen()
-    wiederhole solange nicht k1.siehtWand()
-        wiederhole solange k1.siehtZiegel()
-            k1.aufheben()
-        ende
-        k1.schritt()
-    ende
-    k1.rechtsDrehen()
-    wenn k1.siehtWand() dann
-        abbrechen
-    ende
-    wiederhole solange k1.siehtZiegel()
-        k1.aufheben()
-    ende
-    k1.schritt()
-    k1.rechtsDrehen()
-ende
-
-Methode schrittZurück() für Roboter
-    linksDrehen()
-    linksDrehen()
-    schritt()
-    rechtsDrehen()
-    rechtsDrehen()
-ende
-
-Methode probieren() für Roboter
-    wenn nicht siehtWand() dann
-        hinlegen()
-        schritt()
-        probieren()
-    ende
-ende
-
-k1.probieren()
-`, false)
+`, false);
