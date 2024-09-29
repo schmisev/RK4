@@ -54,11 +54,21 @@ export function declareGlobalEnv(): GlobalEnvironment {
         }
     ), true);
 
-    env.declareVar(ENV.global.fn.TOTEXT, MK_NATIVE_FN(
-        ENV.global.fn.TOTEXT,
+    env.declareVar(ENV.global.fn.TO_TEXT, MK_NATIVE_FN(
+        ENV.global.fn.TO_TEXT,
         (args) => {
             if (args.length != 1) throw new RuntimeError(`Erwarte genau einen Eingabewert!`);
             return MK_STRING(formatValue(args[0]));
+        }
+    ), true);
+
+    env.declareVar(ENV.global.fn.JOIN, MK_NATIVE_FN(
+        ENV.global.fn.JOIN,
+        (args) => {
+            if (args.length == 0) return MK_STRING("")
+            if (args[0].type != ValueAlias.String) throw new RuntimeError("Erwarte einen Text als erste Eingabe!")
+            const [sep, ...rest] = args
+            return MK_STRING(rest.map((v) => formatValue(v)).join(sep.value))
         }
     ), true);
 

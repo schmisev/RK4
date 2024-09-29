@@ -188,7 +188,7 @@ function structureProgram(astNode: Program) {
 }
 
 function structureBinaryExpr(astNode: BinaryExpr) {
-    const rightSide = encapsulateExpr(astNode.right, true);
+    const rightSide = encapsulateExpr(astNode.right);
     const leftSide = encapsulateExpr(astNode.left);
     
     return `${makeSpan(leftSide, "line")} ${translateOperator(astNode.operator)} ${makeSpan(rightSide, "line")}`
