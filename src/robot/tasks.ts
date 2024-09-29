@@ -1,3 +1,8 @@
+import { random } from "mermaid/dist/utils";
+import { World, Field, BlockType, MarkerType } from "./world";
+
+export type WorldGen = ((w: World, idx: number) => void)
+export type WorldSource = string | WorldGen
 
 function generateHomogeneousWorld(l: number, w: number, h: number, fieldCode = "_") {
     let result = `x;${l};${w};${h};\n`;
@@ -17,7 +22,7 @@ function generateHomogeneousWorld(l: number, w: number, h: number, fieldCode = "
 export interface Task {
     title: string,
     description: string,
-    world: string,
+    world: string | ((w: World, idx: number) => void),
     preload: string,
 }
 
@@ -75,6 +80,41 @@ export const STD_TASKS: Record<string, Task> = {
         preload: "Methode gehen(Zahl n) für Roboter\n    wiederhole n mal\n        schritt()\n    ende\nende",
         world: "x;5;1;5;\nE;_:_.;_:_.;_:_.;_:_.",
     },
+    "Generiert_Test": {
+        title: "Block auf Marke!",
+        description: "Lege einen Block an die Stelle, wo die Marke liegt!",
+        preload: "Methode gehen(Zahl n) für Roboter\n    wiederhole n mal\n        schritt()\n    ende\nende",
+        world: (w: World, idx: number) => {
+            w.H = 10;
+            w.W = 5 + Math.floor(Math.random() * 10);
+            w.L = 5 + Math.floor(Math.random() * 10);
+
+            for (let y = 0; y < w.W; y++) {
+                w.fields.push( [] );
+                
+                for (let x = 0; x < w.L; x++) {
+                    const f = new Field(w, false, false, w.H);
+                    // add field to line
+                    f.lastGoalStatus = f.checkGoal();
+                    if (!f.lastGoalStatus) w.addGoal();
+                    w.fields[y].push(f)
+                }
+            }
+
+            const rX = Math.floor(Math.random() * w.L);
+            const rY = Math.floor(Math.random() * w.W);
+            w.createRobot(rX, rY, "S", "k1", 0)
+
+            const mX = Math.floor(Math.random() * w.L);
+            const mY = Math.floor(Math.random() * w.W);
+            const mF = w.fields[mY][mX];
+            mF.addBlock(BlockType.r, true);
+            mF.setMarker(MarkerType.Y, false);
+            mF.setMarker(MarkerType.None, true);
+            mF.lastGoalStatus = mF.checkGoal()
+            w.addGoal();
+        }
+    }
 };
 
 

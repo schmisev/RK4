@@ -4,6 +4,7 @@ import { BuiltinClassVal, MK_BOOL, MK_NATIVE_METHOD, MK_NUMBER, ObjectVal, Runti
 import { ENV } from "../spec";
 import { declareRobot, Robot } from "./robot";
 import { rndi } from "../utils";
+import { WorldGen, WorldSource } from "./tasks";
 
 export enum BlockType {
     r = "R", 
@@ -125,14 +126,17 @@ export class World {
     stageIdx: number = -1;
     goalsRemaining: number = 0;
 
-    constructor(src: string, stage: number) {
+    constructor(src: WorldSource, stage: number) {
         this.resetWorld();
         this.stages = [];
-        this.loadWorld(src, stage);
+        if (typeof src === "string")
+            this.loadWorldFromString(src, stage);
+        else
+            this.generateWorld(src, stage);
     }
 
     getStageCount() {
-        return this.stages.length;
+        return this.stages.length || 1;
     }
 
     resetWorld() {
@@ -143,12 +147,18 @@ export class World {
         this.H = 0;
     }
 
-    loadWorld(src: string, stage: number) {
+    generateWorld(gen: WorldGen, stage: number) {
+        this.resetWorld();
+        gen(this, stage); // generate specified stage with generator
+        this.stageIdx = stage;
+    }
+
+    loadWorldFromString(src: string, stage: number) {
         src = src.replaceAll("\r", ""); // clean up windows carriage returns
         this.stages = src.split("x;"); //
         if (this.stages[0] == "") this.stages.shift();
 
-        // load first stage
+        // load indicated stage
         this.stageIdx = stage;
         this.loadStage(stage);
     }
