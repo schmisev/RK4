@@ -2,7 +2,7 @@ import { RuntimeError } from "../../errors";
 import { declareRobotClass } from "../../robot/robot";
 import { declareWorldClass } from "../../robot/world";
 import { ENV } from "../../spec";
-import { formatValue } from "./eval/statements";
+import { formatValue } from "../../utils";
 import { Trampoline, jump, jumpAround, jumpBind, land } from "./trampoline";
 import { BuiltinClassVal, ClassVal, MK_STRING, MethodVal, NativeMethodVal, ObjectVal, ValueAlias } from "./values";
 import { MK_BOOL, MK_NATIVE_FN, MK_NULL, MK_NUMBER, RuntimeVal } from "./values";

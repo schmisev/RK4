@@ -1,3 +1,6 @@
+import { ParserError } from "./errors";
+import { Stmt, StmtKind } from "./language/frontend/ast";
+import { RuntimeVal, ValueAlias } from "./language/runtime/values";
 import { DEFAULT_TASK } from "./robot/tasks";
 
 export class Vec2 {
@@ -39,7 +42,8 @@ export function createOption(key: string, innerHTML: string, disabled = false, s
     newOption.selected = selected;
     return newOption;
 }
-export const translateOperator = (op: string) => {
+
+export function translateOperator(op: string) {
     switch (op) {
         case "*":
             return "⋅";
@@ -61,4 +65,31 @@ export const translateOperator = (op: string) => {
         default:
             return op;
     }
-};
+}
+
+export function formatValue(value: RuntimeVal): string {
+    // side effect
+    if (value.type == ValueAlias.Number) {
+        return value.value.toString();
+    } else if (value.type == ValueAlias.Boolean) {
+        const boolVal = value.value;
+        if (boolVal) {
+            return "wahr";
+        } else {
+            return "falsch";
+        }
+    } else if (value.type == ValueAlias.Null) {
+        return "nix";
+    } else if (value.type == ValueAlias.String) {
+        return value.value;
+    } else if (value.type == ValueAlias.List) {
+        return `[${value.elements.map(formatValue).join(", ")}]`;
+    } else if (value.type == ValueAlias.Object) {
+        return `[Objekt der Klasse ${value.cls.name}]`;
+    } else if (value.type == ValueAlias.Class) {
+        return `<Klasse ${value.name}>`;
+    } else if (value.type == ValueAlias.Function || value.type == ValueAlias.NativeFunction) {
+        return `(Funktion ${value.name})`;
+    }
+    return value satisfies never;
+}

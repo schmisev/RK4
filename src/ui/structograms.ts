@@ -113,7 +113,7 @@ function structure(astNode: Program | AnyStmt): string {
         case StmtKind.BooleanLiteral:
             return makeSpan(astNode.value ? "wahr" : "falsch", "struct-literal");
         case StmtKind.ListLiteral:
-            return `&lsqb;${astNode.elements.map(structure).join(", ")}&rsqb;`;
+            return `&lsqb;${astNode.elements.slice(0, 2).map(structure).join(", ") + (astNode.elements.length > 2 ? ", ..." : "")}&rsqb;`;
         case StmtKind.NullLiteral:
             return makeSpan("nix", "struct-literal");
         case StmtKind.Identifier:
@@ -129,7 +129,7 @@ function structure(astNode: Program | AnyStmt): string {
         case StmtKind.CallExpr:
             return `${structure(astNode.ident)}(${astNode.args.map(structure).join(", ")})`
         case StmtKind.MemberExpr:
-            return `${makeSpan(structure(astNode.container), "struct-object")}<b>.</b>${structure(astNode.member)}`
+            return `${structure(astNode.container)}<b>.</b>${structure(astNode.member)}`
         case StmtKind.ComputedMemberExpr:
             return `${structure(astNode.container)}&lsqb;${structure(astNode.accessor)}&rsqb;`
         case StmtKind.VarDeclaration:
@@ -158,7 +158,7 @@ function structure(astNode: Program | AnyStmt): string {
     }
 }
 
-function encapsulateExpr(astNode: Expr, right = false) {
+function encapsulateExpr(astNode: Expr) {
     const expr = structure(astNode)
 
     if (astNode.kind == StmtKind.BinaryExpr || astNode.kind == StmtKind.UnaryExpr)

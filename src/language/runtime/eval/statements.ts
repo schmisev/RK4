@@ -1,4 +1,5 @@
 import { RuntimeError } from "../../../errors";
+import { formatValue } from "../../../utils";
 import { AbruptStmtKind, AlwaysBlock, ClassDefinition, DocComment, EmptyLine, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, StmtKind, AbruptEvalResult, VarDeclaration, WhileBlock, ContinueCommand, BreakCommand, SwitchBlock, FromToBlock } from "../../frontend/ast";
 import { ClassPrototype, Environment, VarHolder } from "../environment";
 import { SteppedEval, evaluate, evaluate_expr } from "../interpreter";
@@ -173,33 +174,6 @@ export function eval_class_definition(
     };
 
     return env.declareVar(def.ident, cl);
-}
-
-export function formatValue(value: RuntimeVal): string {
-    // side effect
-    if (value.type == ValueAlias.Number) {
-        return value.value.toString();
-    } else if (value.type == ValueAlias.Boolean) {
-        const boolVal = value.value;
-        if (boolVal) {
-            return "wahr";
-        } else {
-            return "falsch";
-        }
-    } else if (value.type == ValueAlias.Null) {
-        return "nix";
-    } else if (value.type == ValueAlias.String) {
-        return value.value;
-    } else if (value.type == ValueAlias.List) {
-        return `[${value.elements.map(formatValue).join(", ")}]`;
-    } else if (value.type == ValueAlias.Object) {
-        return `[Objekt der Klasse ${value.cls.name}]`;
-    } else if (value.type == ValueAlias.Class) {
-        return `<Klasse ${value.name}>`;
-    } else if (value.type == ValueAlias.Function || value.type == ValueAlias.NativeFunction) {
-        return `(Funktion ${value.name})`;
-    }
-    return value satisfies never;
 }
 
 export function* eval_show_command(
