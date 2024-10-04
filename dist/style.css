@@ -95,11 +95,11 @@ button:active {
     white-space: nowrap;
     height: 22px;
     line-height: 14px;
-    padding: 2px;
+    padding-left: 2px;
+    padding-right: 2px;
     text-align: center;
 
     transition: background-color 0.2s, outline-color 0.2s;
-    transition: opacity 0.1s;
 }
 
 #debug-show-functions.active {
