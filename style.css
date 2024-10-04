@@ -83,6 +83,25 @@ button:active {
     outline-offset: -1px;
 }
 
+.emoji-button {
+    font-family: 'Cascadia Code', 'Consolas' !important;
+    font-weight: bold;
+    background-color: white;
+    border-radius: 5px;
+    outline: 1px rgba(0, 0, 0, 0.2) solid;
+    outline-offset: -1px;
+    font-size: 14px;
+    overflow: hidden;
+    white-space: nowrap;
+    height: 22px;
+    line-height: 14px;
+    padding-left: 2px;
+    padding-right: 2px;
+    text-align: center;
+
+    transition: background-color 0.2s, outline-color 0.2s;
+}
+
 #debug-show-functions.active {
     background-color: lightblue;
     outline-color: #3ca2c3;
@@ -316,7 +335,7 @@ input[type="checkbox"] {
     grid-row: 3;
     z-index: 100;
     text-align: right;
-    padding-right: 20px;
+    padding-right: 5px;
     pointer-events: none;
 }
 
@@ -331,7 +350,7 @@ input[type="checkbox"] {
     grid-row: 3;
     z-index: 100;
     text-align: left;
-    padding-left: 0;
+    padding: 0;
     pointer-events: none;
 }
 
@@ -411,7 +430,7 @@ input[type="checkbox"] {
 #code-editor {
     grid-column: 1 / 8;
     grid-row: 3 / 22;
-    font-size: small;
+    font-size: 14px;
 }
 
 #preload-title {
@@ -558,9 +577,29 @@ input[type="checkbox"] {
     -o-user-select: none;
 }
 
+.diagram-title {
+    transition: width 0.2s;
+    overflow: hidden;
+    text-overflow: clip;
+}
+
 #structogram-diagram-title {
     grid-column: 2;
     grid-row: 1;
+    width: 133px;
+}
+
+#structogram-diagram-title:hover {
+    width: 162px;
+}
+
+#structogram-screenshot {
+    display: none;
+    margin-left: 5px;
+}
+
+#structogram-diagram-title:hover #structogram-screenshot {
+    display: inline-block;
 }
 
 #structogram-diagram-canvas {
@@ -575,6 +614,20 @@ input[type="checkbox"] {
 #class-diagram-title {
     grid-column: 3;
     grid-row: 1;
+    width: 84px;
+}
+
+#class-diagram-title:hover {
+    width: 116px;
+}
+
+#class-diagram-title:hover #classes-screenshot {
+    display: inline-block;
+}
+
+#classes-screenshot {
+    display: none;
+    margin-left: 5px;
 }
 
 #class-diagram-canvas {
@@ -589,6 +642,21 @@ input[type="checkbox"] {
 #flowchart-diagram-title {
     grid-column: 1/5;
     grid-row: 1;
+    width: 140px;
+}
+
+#flowchart-diagram-title:hover {
+    width: 171px;
+}
+
+#flowchart-diagram-title:hover #flowchart-screenshot {
+    display: inline-block;
+    width: max-content;
+}
+
+#flowchart-screenshot {
+    display: none;
+    margin-left: 5px;
 }
 
 #flowchart-diagram-canvas {
