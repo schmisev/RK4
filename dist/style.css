@@ -411,7 +411,7 @@ input[type="checkbox"] {
 #code-editor {
     grid-column: 1 / 8;
     grid-row: 3 / 22;
-    font-size: small;
+    font-size: 14px;
 }
 
 #preload-title {
