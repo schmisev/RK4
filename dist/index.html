@@ -11,10 +11,10 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
+    <link crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+    <link crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
 
-    <link href="https://fonts.cdnfonts.com/css/cascadia-code" rel="stylesheet">
+    <link crossorigin="anonymous" href="https://fonts.cdnfonts.com/css/cascadia-code" rel="stylesheet">
     
     <title>RK4 (beta)</title>
 </head>
@@ -25,7 +25,9 @@
                 <div class="lc30 wsr text" id="title-bar">
                     🤖 RK4&nbsp;&nbsp;<div id="version-label" class="struct-doc-comment">BETA</div>&nbsp;&nbsp;| RKBasic, 3D, mehrere Roboter und Aufgaben |
                     <button id="fold-debug" class="toggle-button" title="Zeig/verberge Debug-Bereich">🐞</button>
-                    <button id="zoom-editor" class="toggle-button" title="Verändere Schriftgröße im Editor">🔍</button>
+                    <button id="zoom-editor" class="toggle-button" title="Verändere Schriftgröße im Editor">🔍</button> |
+                    <button id="robot-screenshot" class="toggle-button" title="Screenshot der Roboteransicht">🖼️</button>
+                    
                     <span class="roboto" style="float: right;"> 
                         Zieh mich! ▸</span>
                 </div>
@@ -128,13 +130,22 @@
             </div>
             <div id="grid-container-right">
                 <!-- Class view -->
-                <div class="shadow dgr lc30 text" id="class-diagram-title">🗃️ Klassen</div>
+                <div class="shadow dgr lc30 text" id="class-diagram-title">
+                    🗃️ Klassen
+                    <button id="classes-screenshot" class="toggle-button" title="Screenshot der Klassenkarten">🖼️</button>
+                </div>
                 <div id="class-diagram-canvas"></div>
                 <!-- Structogram view -->
-                <div class="shadow dgr lc30 text" id="structogram-diagram-title">🌳 Struktogramm</div>
+                <div class="shadow dgr lc30 text" id="structogram-diagram-title">
+                    🌳 Struktogramm
+                    <button id="structogram-screenshot" class="toggle-button" title="Screenshot der Struktogramme">🖼️</button>
+                </div>
                 <div id="structogram-diagram-canvas"></div>
                 <!-- Flowchart view -->
-                <div class="shadow dgr lc30 text" id="flowchart-diagram-title">🧜‍♀️ Flussdiagramm</div>
+                <div class="shadow dgr lc30 text" id="flowchart-diagram-title">
+                    🧜‍♀️ Flussdiagramm
+                    <button id="flowchart-screenshot" class="toggle-button" title="Screenshot der Struktogramme">🖼️</button>
+                </div>
                 <div id="flowchart-diagram-canvas">
                     <pre class="mermaid" id="code-flowchart">
                         flowchart TD

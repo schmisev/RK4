@@ -37,7 +37,9 @@
     "@octokit/rest": "^21.0.2",
     "@types/node": "^22.1.0",
     "ace-builds": "^1.35.4",
+    "downloadjs": "^1.4.7",
     "fs": "^0.0.1-security",
+    "html-to-image": "^1.11.11",
     "mermaid": "^11.2.0",
     "p5": "^1.10.0"
   }

@@ -1,7 +1,8 @@
+import { toBlob } from "html-to-image";
 import { AnyStmt, BinaryExpr, ClassDefinition, Expr, ExtMethodDefinition, AnyForBlock, FunctionDefinition, AnyIfElseBlock, Program, UnaryExpr, AnyWhileBlock, AnyAlwaysBlock, StmtKind, SwitchBlock, AnySwitchBlock, AnyCaseBlock, AnyFromToBlock } from "../language/frontend/ast";
 import { ValueAlias } from "../language/runtime/values";
 import { ENV } from "../spec";
-import { translateOperator } from "../utils";
+import { screenshotDiv, translateOperator } from "../utils";
 import { toggleDefs, toggleLabels, toggleMethods, toggleFunctions } from "./toggle-buttons";
 
 // Robot class
@@ -416,3 +417,14 @@ function structureFunction(astNode: FunctionDefinition) {
     return makeSpan(`▷  ${funcHandle}`, "struct-deemph");
 }
 
+const screenshotStructogram = document.getElementById("structogram-screenshot")!;
+screenshotStructogram.onclick = () => {
+    const structogramView = document.getElementById("structogram-diagram-canvas")!;
+    screenshotDiv(structogramView, "Struktogramm.png");
+}
+
+const screenshotClasses = document.getElementById("classes-screenshot")!;
+screenshotClasses.onclick = () => {
+    const classeView = document.getElementById("class-diagram-canvas")!;
+    screenshotDiv(classeView, "Klassenkarten.png");
+}

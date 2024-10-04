@@ -563,6 +563,16 @@ input[type="checkbox"] {
     grid-row: 1;
 }
 
+#structogram-diagram-title:hover #structogram-screenshot {
+    display: inline-block;
+    width: max-content;
+}
+
+#structogram-screenshot {
+    display: none;
+    margin-left: 5px;
+}
+
 #structogram-diagram-canvas {
     grid-column: 2;
     grid-row: 2 / 23;
@@ -575,6 +585,17 @@ input[type="checkbox"] {
 #class-diagram-title {
     grid-column: 3;
     grid-row: 1;
+    transition: width 0.5s ease-in-out;
+}
+
+#class-diagram-title:hover #classes-screenshot {
+    display: inline-block;
+    width: max-content;
+}
+
+#classes-screenshot {
+    display: none;
+    margin-left: 5px;
 }
 
 #class-diagram-canvas {
@@ -589,6 +610,16 @@ input[type="checkbox"] {
 #flowchart-diagram-title {
     grid-column: 1/5;
     grid-row: 1;
+}
+
+#flowchart-diagram-title:hover #flowchart-screenshot {
+    display: inline-block;
+    width: max-content;
+}
+
+#flowchart-screenshot {
+    display: none;
+    margin-left: 5px;
 }
 
 #flowchart-diagram-canvas {

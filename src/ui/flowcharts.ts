@@ -2,7 +2,7 @@ import mermaid from "mermaid"
 import { AnyAlwaysBlock, AnyForBlock, AnyFromToBlock, AnyIfElseBlock, AnyStmt, AnySwitchBlock, AnyWhileBlock, ClassDefinition, Expr, ExtMethodDefinition, FunctionDefinition, Program, StmtKind } from "../language/frontend/ast";
 import { RuntimeError } from "../errors";
 import { toggleFunctions, toggleMethods } from "./toggle-buttons";
-import { translateOperator } from "../utils";
+import { screenshotDiv, translateOperator } from "../utils";
 mermaid.initialize({ startOnLoad: true });
 
 // diagram formatting
@@ -491,4 +491,10 @@ function chartSwitch(block: AnySwitchBlock, ends: LooseEnds): LooseEnds {
     }
     const returns = overallRets.length > 0 ? overallRets : undefined;
     return { runover: switchRunover, return: returns };
+}
+
+const screenshotFlowchart = document.getElementById("flowchart-screenshot")!;
+screenshotFlowchart.onclick = () => {
+    const classeView = document.getElementById("flowchart-diagram-canvas")!;
+    screenshotDiv(classeView, "Flussdiagramm.png");
 }

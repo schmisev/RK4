@@ -1,3 +1,4 @@
+import { toPng } from "html-to-image";
 import { ParserError } from "./errors";
 import { Stmt, StmtKind } from "./language/frontend/ast";
 import { RuntimeVal, ValueAlias } from "./language/runtime/values";
@@ -92,4 +93,14 @@ export function formatValue(value: RuntimeVal): string {
         return `(Funktion ${value.name})`;
     }
     return value satisfies never;
+}
+export function screenshotDiv(elem: HTMLElement, filename: string) {
+    toPng(elem, {})
+        .then(function (dataUrl) {
+            var link = document.createElement('a');
+            link.download = filename;
+            link.href = dataUrl;
+            link.click();
+            link.remove();
+        });
 }

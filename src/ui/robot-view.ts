@@ -1,6 +1,6 @@
 import * as p5 from 'p5';
 
-import { isRunning, queueInterrupt, world, objOverlay, taskCheck, updateLagSum, resetLagSum } from '..';
+import { isRunning, queueInterrupt, world, objOverlay, taskCheck, updateLagSum, resetLagSum, taskName } from '..';
 import { Robot } from '../robot/robot';
 import { CR, CY, CG, CB, BlockType, MarkerType, World, CBOT, CBOT2, Field } from '../robot/world';
 import { robotDiagramIndex, showRobotDiagram, hideRobotDiagram, updateRobotDiagram } from './objectigrams';
@@ -511,3 +511,8 @@ export function robotSketch(p5: p5) {
 }
 
 const robotView = new p5(robotSketch, document.body);
+
+const screenshotRobot = document.getElementById("robot-screenshot")!;
+screenshotRobot.onclick = () => {
+    robotView.saveCanvas(taskName + "_" + (new Date()).toLocaleString() + ".png");
+}
