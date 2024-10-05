@@ -270,7 +270,7 @@ function chartSimpleStmt(stmt: AnyStmt): ChartNode | undefined {
         case StmtKind.ContinueCommand:
             return declCtrl("weiter", Type.Continue);
         case StmtKind.ReturnCommand:
-            return declCtrl("zurück", Type.Break);
+            return declCtrl("zurück " + chartExpr(stmt.value).str, Type.Break);
         case StmtKind.FunctionDefinition:
             if (toggleFunctions.active)    
                 chartFunction(stmt);
