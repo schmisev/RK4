@@ -15,7 +15,7 @@ export enum TokenType {
     DeclObject, Self, DotOp,
     If, Then, IfElse, Else,
     Return,
-    Repeat, RepTimes, RepWhile, RepAlways, Break, Continue, From, To,
+    Repeat, RepTimes, RepWhile, RepAlways, Break, Continue, From, To, In,
     Switch, Case,
 
     // Operations
@@ -82,6 +82,7 @@ export const KEYWORDS: Record<string, TokenType> = {
     für: TokenType.For,
     von: TokenType.From,
     bis: TokenType.To,
+    in: TokenType.In,
 
     unterscheide: TokenType.Switch,
     falls: TokenType.Case,

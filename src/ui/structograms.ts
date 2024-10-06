@@ -1,5 +1,5 @@
 import { toBlob } from "html-to-image";
-import { AnyStmt, BinaryExpr, ClassDefinition, Expr, ExtMethodDefinition, AnyForBlock, FunctionDefinition, AnyIfElseBlock, Program, UnaryExpr, AnyWhileBlock, AnyAlwaysBlock, StmtKind, SwitchBlock, AnySwitchBlock, AnyCaseBlock, AnyFromToBlock } from "../language/frontend/ast";
+import { AnyStmt, BinaryExpr, ClassDefinition, Expr, ExtMethodDefinition, AnyForBlock, FunctionDefinition, AnyIfElseBlock, Program, UnaryExpr, AnyWhileBlock, AnyAlwaysBlock, StmtKind, SwitchBlock, AnySwitchBlock, AnyCaseBlock, AnyFromToBlock, AnyForInBlock } from "../language/frontend/ast";
 import { ValueAlias } from "../language/runtime/values";
 import { ENV } from "../spec";
 import { screenshotDiv, translateOperator } from "../utils";
@@ -107,6 +107,8 @@ function structure(astNode: Program | AnyStmt): string {
             return structureFor(astNode);
         case StmtKind.FromToBlock:
             return structureFromTo(astNode);
+        case StmtKind.ForInBlock:
+            return structureForIn(astNode);
         case StmtKind.NumericLiteral:
             return makeSpan(astNode.value.toString(), "struct-literal");
         case StmtKind.StringLiteral:
@@ -206,7 +208,8 @@ function structureUnaryExpr(astNode: UnaryExpr) {
 function structureSequence(body: AnyStmt[]): string {
     let result = "";
     for (const node of body) {
-        if (!toggleDefs.active && (node.kind == StmtKind.ClassDefinition || node.kind == StmtKind.FunctionDefinition || node.kind == StmtKind.ExtMethodDefinition)) {
+        if (!toggleDefs.active && 
+            (node.kind == StmtKind.ClassDefinition || node.kind == StmtKind.FunctionDefinition || node.kind == StmtKind.ExtMethodDefinition)) {
             structure(node);
             continue;
         }
@@ -216,6 +219,7 @@ function structureSequence(body: AnyStmt[]): string {
             case StmtKind.WhileBlock:
             case StmtKind.ForBlock:
             case StmtKind.FromToBlock:
+            case StmtKind.ForInBlock:
             case StmtKind.AlwaysBlock:
             case StmtKind.IfElseBlock:
             case StmtKind.SwitchBlock:
@@ -270,6 +274,18 @@ function structureFromTo(node: AnyFromToBlock): string {
     `<div class="struct-label">
     wiederhole 
     <span class="line">${node.iterIdent ? "für " + makeSpan(node.iterIdent, "struct-ident") : ""} von ${start} bis ${end} 
+    </span>
+    </div>
+        <div class="struct-while">${structureSequence(node.body)}</div>`
+    return result;
+}
+
+function structureForIn(node: AnyForInBlock): string {
+    const list = structure(node.list);
+    const result = 
+    `<div class="struct-label">
+    wiederhole 
+    <span class="line">für ${makeSpan(node.iterIdent)} in ${list} 
     </span>
     </div>
         <div class="struct-while">${structureSequence(node.body)}</div>`

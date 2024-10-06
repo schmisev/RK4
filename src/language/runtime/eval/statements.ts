@@ -1,6 +1,6 @@
 import { RuntimeError } from "../../../errors";
 import { formatValue } from "../../../utils";
-import { AbruptStmtKind, AlwaysBlock, ClassDefinition, DocComment, EmptyLine, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, StmtKind, AbruptEvalResult, VarDeclaration, WhileBlock, ContinueCommand, BreakCommand, SwitchBlock, FromToBlock } from "../../frontend/ast";
+import { AbruptStmtKind, AlwaysBlock, ClassDefinition, DocComment, EmptyLine, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, StmtKind, AbruptEvalResult, VarDeclaration, WhileBlock, ContinueCommand, BreakCommand, SwitchBlock, FromToBlock, ForInBlock } from "../../frontend/ast";
 import { ClassPrototype, Environment, VarHolder } from "../environment";
 import { SteppedEval, evaluate, evaluate_expr } from "../interpreter";
 import {
@@ -338,7 +338,7 @@ export function* eval_from_to_block<A extends AbruptStmtKind>(
     const startVal = yield* evaluate(block.start, env);
     const endVal = yield* evaluate(block.end, env);
     if (startVal.type != ValueAlias.Number || endVal.type != ValueAlias.Number)
-        throw new RuntimeError("Start- und Endwetz müssen Zahlen sein!", block.lineIndex);
+        throw new RuntimeError("Start- und Endwert müssen Zahlen sein!", block.lineIndex);
     if (startVal.value > endVal.value) throw new RuntimeError("Startwert muss kleiner oder gleich dem Endwert sein.", block.lineIndex);
 
 
@@ -347,6 +347,38 @@ export function* eval_from_to_block<A extends AbruptStmtKind>(
         const loopEnv = new Environment(env);
         if (block.iterIdent)
             loopEnv.declareVar(block.iterIdent, MK_NUMBER(i), true); // declare iter const
+        const bodyValue = yield* eval_bare_statements(
+            block.body,
+            loopEnv,
+        );
+        switch (bodyValue.type) {
+            case AbruptAlias.Return:
+                return bodyValue;
+            case AbruptAlias.Continue:
+                continue loop;
+            case AbruptAlias.Break:
+                lastEvaluated = MK_NULL();
+                break loop;
+            default:
+                lastEvaluated = bodyValue;
+        }
+    }
+    return lastEvaluated;
+}
+
+export function* eval_for_in_block<A extends AbruptStmtKind>(
+    block: ForInBlock<A>,
+    env: Environment
+): SteppedEval<RuntimeVal | AbruptEvalResult<A>> {
+    const listVal = yield* evaluate(block.list, env);
+    if (listVal.type != ValueAlias.List)
+        throw new RuntimeError("Kann nur über 'Liste' iterieren!", block.lineIndex);
+
+    let lastEvaluated: RuntimeVal = MK_NULL();
+    loop: for (const el of listVal.elements) {
+        const loopEnv = new Environment(env);
+        if (block.iterIdent)
+            loopEnv.declareVar(block.iterIdent, el, true); // declare iter from list element
         const bodyValue = yield* eval_bare_statements(
             block.body,
             loopEnv,

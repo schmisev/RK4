@@ -1,5 +1,5 @@
 import mermaid from "mermaid"
-import { AnyAlwaysBlock, AnyForBlock, AnyFromToBlock, AnyIfElseBlock, AnyStmt, AnySwitchBlock, AnyWhileBlock, ClassDefinition, Expr, ExtMethodDefinition, FunctionDefinition, Program, StmtKind } from "../language/frontend/ast";
+import { AnyAlwaysBlock, AnyForBlock, AnyForInBlock, AnyFromToBlock, AnyIfElseBlock, AnyStmt, AnySwitchBlock, AnyWhileBlock, ClassDefinition, Expr, ExtMethodDefinition, FunctionDefinition, Program, StmtKind } from "../language/frontend/ast";
 import { RuntimeError } from "../errors";
 import { toggleFunctions, toggleMethods } from "./toggle-buttons";
 import { screenshotDiv, translateOperator } from "../utils";
@@ -262,6 +262,7 @@ function chartSimpleStmt(stmt: AnyStmt): ChartNode | undefined {
         case StmtKind.WhileBlock:
         case StmtKind.AlwaysBlock:
         case StmtKind.FromToBlock:
+        case StmtKind.ForInBlock:
             throw new RuntimeError("a control flow block is not a simple statement!");
         case StmtKind.ShowCommand:
             return declIO(stmt.values.map(chartExpr).map((a) => a.str).join("\n"));
@@ -409,6 +410,10 @@ function chartSequence(body: AnyStmt[], ends: LooseEnds): LooseEnds {
                 innerEnds = chartFromToLoop(stmt, ends);
                 ends = tieEndsSequentially(ends, innerEnds);
                 break;
+            case StmtKind.ForInBlock:
+                innerEnds = chartForInLoop(stmt, ends);
+                ends = tieEndsSequentially(ends, innerEnds);
+                break;
             case StmtKind.ForBlock:
                 innerEnds = chartForLoop(stmt, ends);
                 ends = tieEndsSequentially(ends, innerEnds);
@@ -443,7 +448,17 @@ function chartForLoop(loop: AnyForBlock, ends: LooseEnds): LooseEnds {
 
 function chartFromToLoop(loop: AnyFromToBlock, ends: LooseEnds): LooseEnds {
     const loopControl = declDec(
-        (loop.iterIdent ? loop.iterIdent + " := " : "") + chartExpr(loop.start).str + "..." + chartExpr(loop.end).str
+        (loop.iterIdent ? loop.iterIdent + " ∈ " : "") + chartExpr(loop.start).str + "..." + chartExpr(loop.end).str
+    )
+    const endsCtrl = tieNodeToEnds(ends, loopControl, "⏭️ nächster Wert");
+    const seq = chartSequence(loop.body, endsCtrl);
+    seq.break = [...(seq.break || []), { id: loopControl.id, outLabel: "⏹️ beendet" }];
+    return tieUpLoop(seq, loopControl);
+}
+
+function chartForInLoop(loop: AnyForInBlock, ends: LooseEnds): LooseEnds {
+    const loopControl = declDec(
+        loop.iterIdent + " ∈ " + chartExpr(loop.list).str
     )
     const endsCtrl = tieNodeToEnds(ends, loopControl, "⏭️ nächster Wert");
     const seq = chartSequence(loop.body, endsCtrl);

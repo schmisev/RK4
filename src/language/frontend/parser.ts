@@ -1,4 +1,4 @@
-import { Stmt, Program, Expr, VarDeclaration, ObjDeclaration, FunctionDefinition, ShowCommand, BreakCommand, ContinueCommand, ClassDefinition, ParamDeclaration, ReturnCommand, ExtMethodDefinition, StmtKind, IfElseBlock, ForBlock, WhileBlock, AlwaysBlock, AbruptStmtKind, DocComment, CaseBlock, SwitchBlock, FromToBlock, ListLiteral, MemberExpr } from "./ast";
+import { Stmt, Program, Expr, VarDeclaration, ObjDeclaration, FunctionDefinition, ShowCommand, BreakCommand, ContinueCommand, ClassDefinition, ParamDeclaration, ReturnCommand, ExtMethodDefinition, StmtKind, IfElseBlock, ForBlock, WhileBlock, AlwaysBlock, AbruptStmtKind, DocComment, CaseBlock, SwitchBlock, FromToBlock, ListLiteral, MemberExpr, ForInBlock } from "./ast";
 import { tokenize, Token, TokenType, KEYWORDS } from "./lexer";
 import { ParserError } from "../../errors";
 import { ValueAlias } from "../runtime/values";
@@ -314,8 +314,11 @@ export default class Parser {
         } else if (this.at().type == TokenType.RepAlways) {
             this.eat(); // eat 'immer'
             return this.parse_always_loop(allowedControl);
-        } else if (this.at().type == TokenType.For || this.at().type == TokenType.From) {
-            return this.parse_from_to_loop(allowedControl);
+        } else if (this.at().type == TokenType.For) {
+            return this.parse_iter_loop(allowedControl);
+            // return this.parse_from_to_loop(allowedControl);
+        } else if (this.at().type == TokenType.From) {
+            return this.parse_from_to_loop(allowedControl, undefined);
         } else {
             return this.parse_for_loop(allowedControl);
         }
@@ -361,15 +364,10 @@ export default class Parser {
         };
     }
 
-    parse_from_to_loop<A extends AbruptStmtKind>(allowedControl: Set<A>): FromToBlock<A> {
+    parse_from_to_loop<A extends AbruptStmtKind>(allowedControl: Set<A>, iterIdent: string | undefined): FromToBlock<A> {
         const lineIndex = this.at().lineIndex;
 
-        let iterIdent: string | undefined = undefined;
-        if (this.at().type == TokenType.For) {
-            this.eat(); // get rid of "für"
-            iterIdent = this.expect(TokenType.Identifier, "Nach für muss ein noch undefinierter (!) Variablenname folgen!").value;
-        }
-        this.expect(TokenType.From, "Erwarte 'von' nach Iterationsvariable.");
+        this.eat(); // eat 'von'
         const start = this.parse_expr();
         this.expect(TokenType.To, "Erwarte 'bis' nach Startwert.");
         const end = this.parse_expr();
@@ -383,6 +381,37 @@ export default class Parser {
             end,
             body: this.parse_bare_loop(allowedControl),
         };
+    }
+
+    parse_for_in_loop<A extends AbruptStmtKind>(allowedControl: Set<A>, iterIdent: string): ForInBlock<A> {
+        const lineIndex = this.at().lineIndex;
+
+        this.eat(); // eat 'in'
+        const list = this.parse_expr();
+        this.expect(TokenType.EndLine, "Erwarte neue Zeile nach Liste!");
+
+        return {
+            kind: StmtKind.ForInBlock,
+            lineIndex,
+            iterIdent,
+            list,
+            body: this.parse_bare_loop(allowedControl),
+        };
+    }
+
+    parse_iter_loop<A extends AbruptStmtKind>(allowedControl: Set<A>): Stmt<A> {
+        const lineIndex = this.at().lineIndex;
+
+        let iterIdent: string | undefined = undefined;
+        this.eat(); // eat 'für'
+        iterIdent = this.expect(TokenType.Identifier, "Nach 'für' muss ein noch undefinierter (!) Variablenname folgen!").value;
+        
+        if (this.at().type == TokenType.From) {
+            return this.parse_from_to_loop(allowedControl, iterIdent);
+        } else if (this.at().type == TokenType.In) {
+            return this.parse_for_in_loop(allowedControl, iterIdent);
+        }
+        throw new ParserError("Erwarte 'von' oder 'in' nach Iterationsvariable!", lineIndex);
     }
 
     // helper function
