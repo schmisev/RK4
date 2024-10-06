@@ -142,6 +142,7 @@ export function robotSketch(p5: p5) {
         const width = canvasDiv.offsetWidth;
         const height = canvasDiv.offsetHeight;
         const cvs = p5.createCanvas(width, height, p5.WEBGL);
+        cvs.style('border-radius:5px;')
         let canvasW = 0, canvasH = 0;
         const observer = new ResizeObserver((entries) => {
             const {width, height} = entries[0].contentRect;

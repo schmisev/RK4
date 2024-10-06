@@ -78,7 +78,7 @@ export function showStructogram(program: Program) {
     // classView.innerHTML += Object.values(classes).map((e)).join("<br>") + "<br>";
     classView.innerHTML = "";
     for (const el of Object.values(classes)) {
-        classView.append(el);
+        classView.innerHTML += el.outerHTML;
         classView.innerHTML += "<br>";
     }
 }
