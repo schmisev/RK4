@@ -54,12 +54,19 @@ export function robotSketch(p5: p5) {
         return ct;
     };
 
-    const createTextTexture = (str: string) => {
+    const createTextTexture = (str: string, color: string = "#FFF", border = false) => {
         const ct = p5.createGraphics(TSZ, TSZ);
-        ct.fill(255);
+        ct.fill(color);
         ct.textAlign(p5.CENTER);
-        ct.textSize(TSZ);
-        ct.text(str, 0.5 * TSZ, 1 * TSZ);
+        ct.textSize(TSZ * 0.7);
+        ct.text(str, 0.5 * TSZ, 0.75 * TSZ);
+        if (border) {
+            ct.noFill();
+            ct.strokeWeight(3);
+            ct.stroke(color);
+            ct.strokeJoin(p5.ROUND);
+            ct.rect(0.15 * TSZ, 0.15 * TSZ, TSZ * 0.70, TSZ * 0.70);
+        }
         return ct;
     };
 
@@ -75,6 +82,19 @@ export function robotSketch(p5: p5) {
     const WT = createTextTexture("W");
     const ET = createTextTexture("O");
     const ST = createTextTexture("S");
+
+    const RGIDX = [
+        createTextTexture("1", "#CCC", true),
+        createTextTexture("2", "#CCC", true),
+        createTextTexture("3", "#CCC", true),
+        createTextTexture("4", "#CCC", true),
+        createTextTexture("5", "#CCC", true),
+        createTextTexture("6", "#CCC", true),
+        createTextTexture("7", "#CCC", true),
+        createTextTexture("8", "#CCC", true),
+        createTextTexture("9", "#CCC", true),
+        createTextTexture("10", "#CCC", true),
+    ]
 
     const BLOCK2COLOR: Record<BlockType, string> = {
         [BlockType.r]: CR,
@@ -471,6 +491,18 @@ export function robotSketch(p5: p5) {
                 p5.fill(MARKER2COLOR[f.goalMarker]);
                 p5.stroke(0);
                 p5.box(MSZ, MSZ, MRH);
+                p5.pop();
+            }
+        }
+
+        // goal robots
+        if (f.goalRobotIdx != null) {
+            if (f.goalRobotIdx >= 0 && f.goalRobotIdx < 10) {
+                p5.push();
+                p5.translate(0, 0, - BLH / 2 + 1);
+                p5.noStroke();
+                p5.texture(RGIDX[f.goalRobotIdx]);
+                p5.plane();
                 p5.pop();
             }
         }

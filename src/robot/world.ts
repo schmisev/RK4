@@ -202,10 +202,23 @@ export class World {
                     
                 
                 // create new field
-                const f = new Field(this, expr == "", expr == "#", this.H);
+                const f = new Field(this, expr == "", expr == "#", this.H, x, y);
                 let robotCreated = false;
                 for (const c of expr) {
                     switch (c) {
+                        case "0":
+                        case "1":
+                        case "2":
+                        case "3":
+                        case "4":
+                        case "5":
+                        case "6":
+                        case "7":
+                        case "9":
+                            if (goalMode) {
+
+                            }
+                            break; // ignore if not goal mode
                         case ".":
                             f.addMultipleBlocks(rndi(0, 2), BlockType.r, goalMode);
                             break;
@@ -335,25 +348,31 @@ export class Field {
     isWall: boolean;
     isEditable: boolean;
     H: number;
+    x: number;
+    y: number;
     world: World;
     blocks: BlockType[];
     goalBlocks: BlockType[] | null;
     marker: MarkerType;
     goalMarker: MarkerType | null;
+    goalRobotIdx: number | null;
 
     lastGoalStatus: boolean;
     wasChanged: boolean;
 
-    constructor(world: World, isEmpty: boolean, isWall: boolean, H: number) {
+    constructor(world: World, isEmpty: boolean, isWall: boolean, H: number, x: number, y: number) {
         this.world = world;
         this.isEmpty = isEmpty;
         this.isWall = isWall;
         this.isEditable = !(isWall || isEmpty);
         this.H = H;
+        this.x = x;
+        this.y = y;
         this.blocks = Array<BlockType>();
         this.goalBlocks = null;
         this.marker = MarkerType.None;
         this.goalMarker = null;
+        this.goalRobotIdx = null;
 
         this.lastGoalStatus = false;
         this.wasChanged = true;
@@ -414,6 +433,16 @@ export class Field {
         return oldMarker;
     }
 
+    setGoalRobotIndex(robotIdx: number) {
+        if (!this.isEditable)
+            throw new RuntimeError(`Kann hier kein Roboterziel setzen!`);
+        if (robotIdx >= 0 && robotIdx < 10)
+            this.goalRobotIdx = robotIdx;
+        else
+            throw new RuntimeError(`Als Roboterziel sind nur Zahlen zwischen 0 und einschließlich 9 zulässig.`)
+        this.wasChanged = true
+    }
+
     isGoalReached() {
         // if nothing changed, the goal status can't have changed
         if (!this.wasChanged) return this.lastGoalStatus;
@@ -434,12 +463,22 @@ export class Field {
         if (this.goalMarker != null && this.goalMarker != this.marker) {
             return false;
         }
+
+        // this is inexpensive
+        if (this.goalRobotIdx != null && this.goalRobotIdx < this.world.robots.length) {
+            const r = this.world.robots[this.goalRobotIdx]
+            if (r.pos.x != this.x || r.pos.y != this.y)
+                return false;
+        }
+
         // this is super cheap
         if (this.goalBlocks == null) return true;
+
         // this is cheap
         if (this.goalBlocks.length != this.blocks.length) {
             return false;
         }
+
         // this is expensive
         for (let i = 0; i < this.blocks.length; i++) {
             if (this.blocks[i] != this.goalBlocks[i]) {

@@ -93,7 +93,7 @@ export const STD_TASKS: Record<string, Task> = {
                 w.fields.push( [] );
                 
                 for (let x = 0; x < w.L; x++) {
-                    const f = new Field(w, false, false, w.H);
+                    const f = new Field(w, false, false, w.H, x, y);
                     // add field to line
                     f.lastGoalStatus = f.checkGoal();
                     if (!f.lastGoalStatus) w.addGoal();
@@ -128,7 +128,7 @@ export const STD_TASKS: Record<string, Task> = {
                 w.fields.push( [] );
                 
                 for (let x = 0; x < w.L; x++) {
-                    const f = new Field(w, false, false, w.H);
+                    const f = new Field(w, false, false, w.H, x, y);
                     // add field to line
                     f.lastGoalStatus = f.checkGoal();
                     if (!f.lastGoalStatus) w.addGoal();
@@ -146,6 +146,8 @@ export const STD_TASKS: Record<string, Task> = {
             }
             mF.goalBlocks = Array<BlockType>();
             
+            w.fields[0][0].setGoalRobotIndex(0);
+            w.fields[0][1].setGoalRobotIndex(1);
         }
     }
 };

@@ -295,6 +295,14 @@ export class Robot {
     step() {
         const target = this.targetPos();
         if (this.canMoveTo(target)) {
+            // this is kinda hacky right now
+            const currentField = this.world.getField(this.pos.x, this.pos.y);
+            if (currentField)
+                currentField.wasChanged = true;
+            const targetField = this.world.getField(target.x, target.y);
+            if (targetField)
+                targetField.wasChanged = true;
+            // the actual movement
             this.pos = target;
         }
     }
@@ -402,6 +410,7 @@ export class Robot {
         const targetField = this.world.getField(target.x, target.y);
         if (!targetField) throw new RuntimeError(`${this.name}: Dieses Feld existiert nicht!`);
         if (currentField.getBlockHeight() < targetField.getBlockHeight() - 1) throw new RuntimeError(`${this.name}: Kann diese Höhe hicht überwinden!`);
+        if (currentField.getBlockHeight() > targetField.getBlockHeight() + 1) throw new RuntimeError(`${this.name}: Kann diese Höhe hicht überwinden!`);
         if (targetField.isEmpty) throw new RuntimeError(`${this.name}: Kann nicht ins Nichts laufen!`);
         if (targetField.isWall) throw new RuntimeError(`${this.name}: Kann nicht gegen die Wand laufen!`);
         // check if robot is in the way
