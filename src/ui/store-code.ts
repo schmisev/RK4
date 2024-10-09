@@ -1,9 +1,26 @@
+import { assert } from "console";
 import { editor, taskName } from "..";
 import { animalNames } from "../assets/misc/animal-names";
 import { createOption } from "../utils";
 
 let codeStore: Record<string, string> = {
 };
+
+function updateLocalBackup() {
+    localStorage.setItem("code-store", JSON.stringify(codeStore));
+}
+
+function retrieveLocalBackup() {
+    let value = localStorage.getItem("code-store");
+    if (value == null) {
+        updateLocalBackup();
+        return
+    }
+    let backupCodeStore = JSON.parse(value) as Record<string, string>;
+    for (const [k, v] of Object.entries(backupCodeStore)) {
+        storeRawCode(k, v, false);
+    }
+}
 
 // enable saving 
 document.getElementById("code-editor")!.onkeydown = (e) => {
@@ -46,6 +63,7 @@ function storeCode() {
         key = taskName + " | " + animalNames[Math.floor(Math.random()*animalNames.length)];
     }
     storeRawCode(key, editor.getValue(), true);
+    updateLocalBackup();
     console.log("📝💾 Code gespeichert: " + key);
 }
 
@@ -124,3 +142,5 @@ wiederhole für i von 0 bis länge(namen)
     zeig "Hallo, " + namen[i] + "!"
 ende
 `, false);
+
+retrieveLocalBackup();
