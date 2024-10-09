@@ -54,6 +54,7 @@ function deleteCode() {
         }
         storeSelector.value = "(neu)";
     }
+    updateLocalBackup();
     console.log("📝🗑️ Code gelöscht: " + key);
 }
 
