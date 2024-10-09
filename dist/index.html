@@ -23,9 +23,7 @@
             <div id="grid-container-left">
                 <div class="lc30 wsr text" id="title-bar">
                     🤖 RK4&nbsp;&nbsp;<div id="version-label" class="struct-doc-comment">BETA</div>&nbsp;&nbsp;| RKBasic, 3D, mehrere Roboter und Aufgaben |
-                    <button id="fold-debug" class="emoji-button" title="Zeig/verberge Debug-Bereich">🐞</button>
-                    <button id="zoom-editor" class="emoji-button" title="Verändere Schriftgröße im Editor">🔍</button> |
-                    <button id="robot-screenshot" class="emoji-button" title="Screenshot der Roboteransicht">🖼️</button>
+                    <button id="fold-debug" class="toggle-button" title="Zeig/verberge Debug-Bereich"><-></button>
                     
                     <span class="roboto" style="float: right;"> 
                         🫱▸</span>
@@ -58,13 +56,19 @@
                         </div>
                     </span>
                 </div>
-                <button title="Lade die Welt neu und starte die Ausführung!" class="code-start" id="code-start">▷</button>
-                <button title="Beende die Ausführung und lade die Welt neu!" class="code-stop" id="code-stop">▢ ↺</button>
+                <div id="run-container">
+                    <button title="Lade die Welt neu und starte die Ausführung!" class="code-start" id="code-start">▷</button>
+                    <button title="Beende die Ausführung und lade die Welt neu!" class="code-stop" id="code-stop">↺</button>
+                </div>
                 <div class="editor cascadia" id="code-editor">Code</div>
                 <div class="code-error lc30 wsr text" id="code-error">keine Fehler gefunden</div>
                 <select class="text" id="store-data" list="store-data">
                     <option>(neu)</option>
                 </select>
+                <div id="zoom-container">
+                    <button id="zoom-editor-decrease" title="Verkleinere die Schriftgröße im Editor">➖</button>
+                    <button id="zoom-editor" title="Vergrößere die Schriftgröße im Editor">➕</button>
+                </div>
                 <div id="store-container">
                     <button title="Lösche Code aus dem Speicher" id="delete-from-store">🗑️</button>
                     <button title="Lege Code in den Speicher oder überschreibe aktuellen Speicherstand." id="store-code">💾</button>
@@ -73,11 +77,14 @@
                 <button class="tab-button" id="preload-title">📖 Bibliothek</button>
                 <div class="editor cascadia" id="preload-editor" style="visibility: hidden;">Preload</div>
                 <!-- Save / load UI -->
-                <button title="Speicher aktuellen Code in einer .rk-Datei und lade sie herunter." id="save-code">⬇️</button>
-                <button title="Lade Code (.rk), Welt (.csv) oder Aufgabe (.json) vom PC." id="load-code">📂</button>
+                <div id="save-container">
+                    <button title="Speicher aktuellen Code in einer .rk-Datei und lade sie herunter." id="save-code">⬇️</button>
+                    <button title="Lade Code (.rk), Welt (.csv) oder Aufgabe (.json) vom PC." id="load-code">📂</button>
+                </div>
                 <select class="text" id="load-task">
                     <option selected disabled>Wähle eine Aufgabe</option>
                 </select>
+                <button id="robot-screenshot" title="Screenshot der Roboteransicht">🖼️</button>
                 <!-- 3D Robot view & associated UI -->
                 <div id="robot-canvas"></div>
                 <div id="object-bar"></div>

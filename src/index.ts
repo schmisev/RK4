@@ -94,17 +94,20 @@ export const editor = ace.edit("code-editor", {
 const zoomStages = [14, 20, 26, 32, 38]
 editor.setFontSize(zoomStages[0])
 const zoomEditor = document.getElementById("zoom-editor")!;
-zoomEditor.onclick = () => {
+const zoomEditorDecrease = document.getElementById("zoom-editor-decrease")!;
+function adjustFontSize(step: number) {
     let fontSize = parseInt(editor.getFontSize());
     let atIdx = zoomStages.indexOf(fontSize);
     if (atIdx == -1) {
         editor.setFontSize(zoomStages[0])
         return
     } else {
-        editor.setFontSize(zoomStages[(atIdx + 1) % zoomStages.length])
+        editor.setFontSize(zoomStages[clamp(atIdx + step, 0, zoomStages.length - 1)])
     }
     return
 }
+zoomEditor.onclick = () => adjustFontSize(1);
+zoomEditorDecrease.onclick = () => adjustFontSize(-1);
 
 // Fetch code error bar
 const codeError = document.getElementById("code-error")!;
