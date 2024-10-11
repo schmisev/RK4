@@ -144,4 +144,5 @@ wiederhole für i von 0 bis länge(namen)
 ende
 `, false);
 
+// retrieve backup, if there is one
 retrieveLocalBackup();

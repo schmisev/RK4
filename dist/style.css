@@ -236,7 +236,7 @@ input[type="checkbox"] {
     
     /* Allow box to grow and shrink, and ensure they are all equally sized */
     flex: 1 1 auto;
-    width: 35%;
+    width: 100%;
 }
 
 #right-panel {
