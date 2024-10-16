@@ -1,5 +1,5 @@
 import { Stmt, Program, Expr, VarDeclaration, ObjDeclaration, FunctionDefinition, ShowCommand, BreakCommand, ContinueCommand, ClassDefinition, ParamDeclaration, ReturnCommand, ExtMethodDefinition, StmtKind, IfElseBlock, ForBlock, WhileBlock, AlwaysBlock, AbruptStmtKind, DocComment, CaseBlock, SwitchBlock, FromToBlock, ListLiteral, MemberExpr, ForInBlock } from "./ast";
-import { tokenize, Token, TokenType, KEYWORDS } from "./lexer";
+import { tokenize, Token, TokenType, KEYWORDS, ILLEGAL_CODE_POS, START_CODE_POS } from "./lexer";
 import { ParserError } from "../../errors";
 import { ValueAlias } from "../runtime/values";
 
@@ -22,11 +22,11 @@ export default class Parser {
     private expect(type: TokenType, err: string) {
         const prev = this.tokens.shift();
         if (!prev) {
-            throw new ParserError("PARSER: " + err + " - nichts erhalten", -1);
+            throw new ParserError("PARSER: " + err + " - nichts erhalten", ILLEGAL_CODE_POS());
         }
         if (prev.type != type) {
-            const lineIndex = prev.lineIndex;
-            throw new ParserError("PARSER: " + err + " - erhalten: " + JSON.stringify(prev.value), lineIndex);
+            const codePos = prev.codePos;
+            throw new ParserError("PARSER: " + err + " - erhalten: " + JSON.stringify(prev.value), codePos);
         }
         return prev;
     }
@@ -36,7 +36,7 @@ export default class Parser {
         const program: Program = {
             kind: StmtKind.Program,
             body: [],
-            lineIndex: 0
+            codePos: START_CODE_POS(),
         };
 
         // Parse until EOF
@@ -65,17 +65,17 @@ export default class Parser {
                 break;
             case TokenType.Break:
                 if (!checkControl.has(StmtKind.BreakCommand))
-                    throw new ParserError(`PARSER: "${("abbrechen" satisfies keyof typeof KEYWORDS)}" is nur in Schleifen und Unterschiedungen erlaubt.`, this.at().lineIndex);
+                    throw new ParserError(`PARSER: "${("abbrechen" satisfies keyof typeof KEYWORDS)}" is nur in Schleifen und Unterschiedungen erlaubt.`, this.at().codePos);
                 statement = this.parse_break() as any;
                 break;
             case TokenType.Continue:
                 if (!checkControl.has(StmtKind.ContinueCommand))
-                    throw new ParserError(`PARSER: "${("weiter" satisfies keyof typeof KEYWORDS)}" is nur in Schleifen und Unterschiedungen erlaubt.`, this.at().lineIndex);
+                    throw new ParserError(`PARSER: "${("weiter" satisfies keyof typeof KEYWORDS)}" is nur in Schleifen und Unterschiedungen erlaubt.`, this.at().codePos);
                 statement = this.parse_continue() as any;
                 break;
             case TokenType.Return:
                 if (!checkControl.has(StmtKind.ReturnCommand))
-                    throw new ParserError(`PARSER: "${("zurück" satisfies keyof typeof KEYWORDS)}" is nur in Funktionen und Methoden erlaubt.`, this.at().lineIndex);
+                    throw new ParserError(`PARSER: "${("zurück" satisfies keyof typeof KEYWORDS)}" is nur in Funktionen und Methoden erlaubt.`, this.at().codePos);
                 statement = this.parse_return() as any;
                 break;
             case TokenType.Show:
@@ -98,7 +98,7 @@ export default class Parser {
                 break;
             case TokenType.EndLine:
                 this.eat();
-                return { kind: StmtKind.EmptyLine, lineIndex: this.at().lineIndex }
+                return { kind: StmtKind.EmptyLine, codePos: this.at().codePos }
             case TokenType.DocComment:
                 return this.parse_doc_comment();
             default:
@@ -113,7 +113,7 @@ export default class Parser {
         let result: DocComment = {
             kind: StmtKind.DocComment,
             content: "",
-            lineIndex: this.at().lineIndex,
+            codePos: this.at().codePos,
         };
 
         while (this.at().type == TokenType.DocComment) {
@@ -126,7 +126,7 @@ export default class Parser {
     }
 
     parse_show(): ShowCommand {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
 
         this.eat();
         const values: Expr[] = [];
@@ -136,45 +136,45 @@ export default class Parser {
         }
         return {
             kind: StmtKind.ShowCommand,
-            lineIndex,
+            codePos,
             values,
         };
     }
 
     parse_break(): BreakCommand {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
 
         this.eat();
         return {
             kind: StmtKind.BreakCommand,
-            lineIndex,
+            codePos,
         };
     }
 
     parse_continue(): ContinueCommand {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
 
         this.eat();
         return {
             kind: StmtKind.ContinueCommand,
-            lineIndex,
+            codePos,
         };
     }
 
     parse_return(): ReturnCommand {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
 
         this.eat();
         const result = this.parse_expr();
         return {
             kind: StmtKind.ReturnCommand,
-            lineIndex,
+            codePos,
             value: result,
         }
     }
 
     parse_class_definition(): ClassDefinition {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
         this.eat();
         const ident = this.expect(TokenType.Identifier, "Erwarte einen Klassennamen nach 'Klasse'!").value;
         const params: ParamDeclaration[] = [] // constructor parameters
@@ -203,11 +203,11 @@ export default class Parser {
             methods.push(definition);
         }
         this.eat(); // eat 'ende'
-        return { kind: StmtKind.ClassDefinition, ident, attributes, methods, lineIndex, params }
+        return { kind: StmtKind.ClassDefinition, ident, attributes, methods, codePos, params }
     }
 
     parse_if_else_block<A extends AbruptStmtKind>(allowedControl: Set<A>): IfElseBlock<A> {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
         
         const ifTrue: Stmt<A>[] = [];
         const ifFalse: Stmt<A>[] = [];
@@ -221,7 +221,7 @@ export default class Parser {
             ifTrue.push(statement);
         }
         if (this.eat().type == TokenType.EndBlock) {
-            return { kind: StmtKind.IfElseBlock, condition, ifTrue, ifFalse, lineIndex };
+            return { kind: StmtKind.IfElseBlock, condition, ifTrue, ifFalse, codePos };
         }
         if (this.at().type == TokenType.If) {
             // if-else chaining
@@ -231,7 +231,7 @@ export default class Parser {
                 condition, 
                 ifTrue, 
                 ifFalse,
-                lineIndex
+                codePos
             };
         }
         this.expect(TokenType.EndLine, "Nach 'sonst' sollte eine neue Zeile beginnen!");
@@ -243,11 +243,11 @@ export default class Parser {
         }
         this.eat(); // eat 'ende'
 
-        return { kind: StmtKind.IfElseBlock, condition, ifTrue, ifFalse, lineIndex };
+        return { kind: StmtKind.IfElseBlock, condition, ifTrue, ifFalse, codePos };
     }
 
     parse_switch_block<A extends AbruptStmtKind>(allowedControl: Set<A>): SwitchBlock<A> {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
         const allowedInSwitch = new Set([StmtKind.BreakCommand, ...allowedControl] as const);
         
         const cases: CaseBlock<A>[] = [];
@@ -275,12 +275,12 @@ export default class Parser {
             selection,
             cases,
             fallback,
-            lineIndex,
+            codePos,
         };
     }
 
     parse_case_block<A extends AbruptStmtKind>(allowedControl: Set<A>): CaseBlock<A> {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
         
         const allowedInCase = new Set([StmtKind.ContinueCommand, StmtKind.BreakCommand, ...allowedControl] as const);
 
@@ -302,7 +302,7 @@ export default class Parser {
             kind: StmtKind.CaseBlock,
             comp,
             body,
-            lineIndex,
+            codePos,
         }
     }
 
@@ -325,47 +325,47 @@ export default class Parser {
     }
 
     parse_for_loop<A extends AbruptStmtKind>(allowedControl: Set<A>): ForBlock<A> {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
         
         const counter = this.parse_expr();
         this.expect(TokenType.RepTimes, "Auf den Zähler sollte 'mal' folgen!");
         this.expect(TokenType.EndLine, "Nach 'mal' sollte eine neue Zeile folgen!");
         return {
             kind: StmtKind.ForBlock,
-            lineIndex,
+            codePos,
             counter,
             body: this.parse_bare_loop(allowedControl)
         };
     }
 
     parse_while_loop<A extends AbruptStmtKind>(allowedControl: Set<A>): WhileBlock<A> {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
 
         const condition = this.parse_expr();
         this.expect(TokenType.EndLine, "Nach der Bedingung sollte eine neue Zeile folgen!");
         
         return {
             kind: StmtKind.WhileBlock,
-            lineIndex,
+            codePos,
             condition,
             body: this.parse_bare_loop(allowedControl),
         };
     }
 
     parse_always_loop<A extends AbruptStmtKind>(allowedControl: Set<A>): AlwaysBlock<A> {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
         
         this.expect(TokenType.EndLine, "Nach 'immer' sollte eine neue Zeile folgen!");
         
         return {
             kind: StmtKind.AlwaysBlock,
-            lineIndex,
+            codePos,
             body: this.parse_bare_loop(allowedControl),
         };
     }
 
     parse_from_to_loop<A extends AbruptStmtKind>(allowedControl: Set<A>, iterIdent: string | undefined): FromToBlock<A> {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
 
         this.eat(); // eat 'von'
         const start = this.parse_expr();
@@ -375,7 +375,7 @@ export default class Parser {
 
         return {
             kind: StmtKind.FromToBlock,
-            lineIndex,
+            codePos,
             iterIdent,
             start,
             end,
@@ -384,7 +384,7 @@ export default class Parser {
     }
 
     parse_for_in_loop<A extends AbruptStmtKind>(allowedControl: Set<A>, iterIdent: string): ForInBlock<A> {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
 
         this.eat(); // eat 'in'
         const list = this.parse_expr();
@@ -392,7 +392,7 @@ export default class Parser {
 
         return {
             kind: StmtKind.ForInBlock,
-            lineIndex,
+            codePos,
             iterIdent,
             list,
             body: this.parse_bare_loop(allowedControl),
@@ -400,7 +400,7 @@ export default class Parser {
     }
 
     parse_iter_loop<A extends AbruptStmtKind>(allowedControl: Set<A>): Stmt<A> {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
 
         let iterIdent: string | undefined = undefined;
         this.eat(); // eat 'für'
@@ -411,7 +411,7 @@ export default class Parser {
         } else if (this.at().type == TokenType.In) {
             return this.parse_for_in_loop(allowedControl, iterIdent);
         }
-        throw new ParserError("Erwarte 'von' oder 'in' nach Iterationsvariable!", lineIndex);
+        throw new ParserError("Erwarte 'von' oder 'in' nach Iterationsvariable!", codePos);
     }
 
     // helper function
@@ -427,7 +427,7 @@ export default class Parser {
     }
 
     parse_any_declaration(): VarDeclaration | ObjDeclaration {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
 
         switch (this.at().type) {
             case TokenType.DeclNumber:
@@ -438,11 +438,11 @@ export default class Parser {
             case TokenType.DeclObject:
                 return this.parse_obj_declaration();
         }
-        throw new ParserError(`Erwartete Deklaration, erhielt aber '${this.at().value}...'`, lineIndex);
+        throw new ParserError(`Erwartete Deklaration, erhielt aber '${this.at().value}...'`, codePos);
     }
 
     parse_var_declaration(): VarDeclaration {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
 
         let type: VarDeclaration["type"] = ValueAlias.Null;
         if (this.at().type == TokenType.DeclBoolean) {
@@ -465,12 +465,12 @@ export default class Parser {
             ident,
             type,
             value,
-            lineIndex
+            codePos
         };
     }
 
     parse_param_declaration(): ParamDeclaration {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
         
         let type = ValueAlias.Null;
         if (this.at().type == TokenType.DeclBoolean) {
@@ -484,11 +484,11 @@ export default class Parser {
         }
         this.eat();
         const ident = this.expect(TokenType.Identifier, "Erwarte Variablennamen nach 'Zahl', 'Wahrheitswert', 'Text' oder 'Objekt'!").value;
-        return { type, ident, lineIndex };
+        return { type, ident, codePos };
     }
 
     parse_fn_definition(): FunctionDefinition {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
         
         this.eat();
         const name = this.expect(TokenType.Identifier, "Erwarte einen Funktionsnamen nach 'Funktion'").value;
@@ -508,11 +508,11 @@ export default class Parser {
         }
         this.eat();
 
-        return { kind: StmtKind.FunctionDefinition, name, params, body, lineIndex };
+        return { kind: StmtKind.FunctionDefinition, name, params, body, codePos };
     }
 
     parse_ext_method_definition(): ExtMethodDefinition {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
         
         this.eat();
         const name = this.expect(TokenType.Identifier, "Erwarte einen Funktionsnamen nach 'Funktion'").value;
@@ -536,11 +536,11 @@ export default class Parser {
         }
         this.eat();
 
-        return { kind: StmtKind.ExtMethodDefinition, name, params, body, classname, lineIndex };
+        return { kind: StmtKind.ExtMethodDefinition, name, params, body, classname, codePos };
     }
 
     parse_obj_declaration(): ObjDeclaration {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
         
         this.eat();
         const ident = this.expect(TokenType.Identifier, "Erwarte Objektname nach 'Objekt'").value;
@@ -565,7 +565,7 @@ export default class Parser {
             type: ValueAlias.Object,
             classname,
             args,
-            lineIndex,
+            codePos,
         };
     }
 
@@ -585,20 +585,20 @@ export default class Parser {
     // PrimaryExpr
 
     private parse_assignment_expr(): Expr {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
 
         const left = this.parse_logical_expr();
         if (this.at().type == TokenType.Assign) {
             this.eat();
             const value = this.parse_assignment_expr();
-            return { kind: StmtKind.AssignmentExpr, value, assigne: left, lineIndex };
+            return { kind: StmtKind.AssignmentExpr, value, assigne: left, codePos };
         }
 
         return left;
     }
 
     private parse_logical_expr(): Expr {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
         
         let left = this.parse_comparison_expr();
         while (this.at().type == TokenType.And || this.at().type == TokenType.Or) {
@@ -609,7 +609,7 @@ export default class Parser {
                 left,
                 right,
                 operator,
-                lineIndex
+                codePos
             };
         }
 
@@ -617,7 +617,7 @@ export default class Parser {
     }
 
     private parse_comparison_expr(): Expr {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
         
         let left = this.parse_additive_expr();
         while (this.at().type == TokenType.Equal || this.at().type == TokenType.Greater || this.at().type == TokenType.Lesser) {
@@ -628,7 +628,7 @@ export default class Parser {
                 left,
                 right,
                 operator,
-                lineIndex
+                codePos
             };
         }
 
@@ -636,7 +636,7 @@ export default class Parser {
     }
 
     private parse_additive_expr(): Expr {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
 
         let left = this.parse_multiplicative_expr();
         while (this.at().type == TokenType.Plus || this.at().type == TokenType.Minus) {
@@ -647,7 +647,7 @@ export default class Parser {
                 left,
                 right,
                 operator,
-                lineIndex
+                codePos
             };
         }
 
@@ -655,7 +655,7 @@ export default class Parser {
     }
 
     private parse_multiplicative_expr(): Expr {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
         
         let left = this.parse_unary_expr();
         while (this.at().type == TokenType.Multiply || this.at().type == TokenType.Divide || this.at().type == TokenType.Mod) {
@@ -666,7 +666,7 @@ export default class Parser {
                 left,
                 right,
                 operator,
-                lineIndex
+                codePos
             };
         }
 
@@ -674,19 +674,19 @@ export default class Parser {
     }
 
     private parse_unary_expr(): Expr {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
 
         if (this.at().type == TokenType.Not || this.at().type == TokenType.Minus || this.at().type == TokenType.Plus) {
             const operator = this.eat().value;
             const right = this.parse_call_expr();
-            return { kind: StmtKind.UnaryExpr, right, operator, lineIndex };
+            return { kind: StmtKind.UnaryExpr, right, operator, codePos };
         } else {
             return this.parse_call_expr();
         }
     }
 
     private parse_call_expr(): Expr {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
 
         const ident = this.parse_member_expr();
         if(this.at().type == TokenType.OpenParen) {
@@ -699,14 +699,14 @@ export default class Parser {
                 this.expect(TokenType.Comma, "Erwarte Kommas zwischen Parametern!");
             }
             this.expect(TokenType.CloseParen, "Erwarte schließende Klammer nach Parametern!"); // eat close paren
-            return { kind: StmtKind.CallExpr, ident, args, lineIndex };
+            return { kind: StmtKind.CallExpr, ident, args, codePos };
         } else {
             return ident;
         }
     }
 
     private parse_member_expr(): Expr {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
         
         let container = this.parse_primary_expr();
 
@@ -716,13 +716,13 @@ export default class Parser {
             if (operator.type == TokenType.Period) {
                 const member = this.parse_primary_expr(); // has to be identifier
                 if (member.kind != StmtKind.Identifier)
-                    throw new ParserError(`Kann Punktoperator nicht nutzen, wenn rechts kein Name steht!`, this.at().lineIndex);
+                    throw new ParserError(`Kann Punktoperator nicht nutzen, wenn rechts kein Name steht!`, this.at().codePos);
 
                 container = {
                     kind: StmtKind.MemberExpr,
                     container,
                     member,
-                    lineIndex
+                    codePos
                 };
             } else if (operator.type == TokenType.OpenBracket) {
                 const member = this.parse_expr(); // can be anything
@@ -732,7 +732,7 @@ export default class Parser {
                     kind: StmtKind.ComputedMemberExpr,
                     container,
                     accessor: member,
-                    lineIndex,
+                    codePos,
                 };
             }
         }
@@ -741,16 +741,16 @@ export default class Parser {
     }
 
     private parse_primary_expr(): Expr {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
 
         const tk = this.at().type;
         switch (tk) {
             case TokenType.Identifier:
-                return { kind: StmtKind.Identifier, symbol: this.eat().value, lineIndex };
+                return { kind: StmtKind.Identifier, symbol: this.eat().value, codePos };
             case TokenType.Number:
-                return { kind: StmtKind.NumericLiteral, value: parseInt(this.eat().value), lineIndex};
+                return { kind: StmtKind.NumericLiteral, value: parseInt(this.eat().value), codePos};
             case TokenType.String:
-                return { kind: StmtKind.StringLiteral, value: this.eat().value, lineIndex };
+                return { kind: StmtKind.StringLiteral, value: this.eat().value, codePos };
             case TokenType.OpenBracket:
                 return this.parse_list_expr();
             case TokenType.OpenParen: {
@@ -760,12 +760,12 @@ export default class Parser {
                 return value;
             }
             default:
-                throw new ParserError(`PARSER: Unerwarteter Token gefunden: '${JSON.stringify(this.at().value)}'`, lineIndex);
+                throw new ParserError(`PARSER: Unerwarteter Token gefunden: '${JSON.stringify(this.at().value)}'`, codePos);
         }
     }
 
     parse_list_expr(): ListLiteral {
-        const lineIndex = this.at().lineIndex;
+        const codePos = this.at().codePos;
 
         this.eat(); // eat [
         const elements: Expr[] = []
@@ -778,7 +778,7 @@ export default class Parser {
         return {
             kind: StmtKind.ListLiteral,
             elements,
-            lineIndex
+            codePos
         }
     }
 }

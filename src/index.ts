@@ -36,6 +36,7 @@ import { DebugError, LexerError, ParserError, RuntimeError } from './errors';
 import { Session } from "inspector";
 import { setFlowchartVisibility, showFlowchart } from "./ui/flowcharts";
 import { toggleFlowchart } from "./ui/toggle-buttons";
+import { CodePosition, ILLEGAL_CODE_POS } from "./language/frontend/lexer";
 
 // Global variables
 let dt = 50; // ms to sleep between function calls
@@ -190,9 +191,14 @@ function resetErrorMarkers() {
     }
 }
 
-function setErrorMarker(msg: string, lineIndex: number, errorTypeCss: string) {
+function setErrorMarker(msg: string, codePos: CodePosition, errorTypeCss: string) {
     setErrorBar(msg, errorTypeCss);
-    const markerId = editor.session.addMarker(new ace.Range(lineIndex, 0, lineIndex, 10), "error-marker " + errorTypeCss, 'fullLine');
+    const markerId = editor.session.addMarker(new ace.Range(
+        codePos.lineIndex, 
+        codePos.startPos, 
+        codePos.lineIndex, 
+        codePos.endPos
+    ), "error-marker " + errorTypeCss, "text");
     errorMarkers.push(markerId);
 }
 
@@ -221,23 +227,23 @@ export async function updateIDE() {
         setDebugTimer(false);
     } catch (e) {
         let errorCssClass = "none";
-        let lineIndex = 0;
+        let codePos: CodePosition = {lineIndex: -1, startPos: -1, endPos: -1};
         let message = "";
         
         if (e instanceof LexerError) {
             errorCssClass = "lexer";
-            lineIndex = e.lineIndex;
+            codePos = e.lineIndex;
             message = e.message;
         } else if (e instanceof ParserError) {
             errorCssClass = "parser";
-            lineIndex = e.lineIndex;
+            codePos = e.lineIndex;
             message = e.message;
         }
 
         // not runtime errors should appear
 
         if (errorCssClass !== "none") {
-            setErrorMarker(`❌ ${message} (Zeile ${lineIndex+1})`, lineIndex, errorCssClass);
+            setErrorMarker(`❌ ${message} (Zeile ${codePos.lineIndex + 1})`, codePos, errorCssClass);
         }
 
         //throw e; // temporary
@@ -393,7 +399,7 @@ async function interrupt() {
 // Run ANY code
 async function runCode(code: string, stepped: boolean, showHighlighting: boolean): Promise<boolean> {
     let skippedSleep = 0;
-    let lastLineIndex = -1;
+    let lastLineIndex: CodePosition = ILLEGAL_CODE_POS();
     let markerIds: number[] = [];
 
     const cleanupMarkers = () => {
@@ -424,7 +430,12 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
                 if (showHighlighting) {
                     markerIds.push(
                         editor.session.addMarker(
-                            new ace.Range(lastLineIndex, 0, lastLineIndex, 10), 'exec-marker', 'fullLine'
+                            new ace.Range(
+                                lastLineIndex.lineIndex,
+                                lastLineIndex.startPos,
+                                lastLineIndex.lineIndex,
+                                lastLineIndex.endPos
+                            ), 'exec-marker', 'text'
                         )
                     )
                 }
@@ -450,17 +461,17 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
         cleanupMarkers();
 
         if (e instanceof DebugError) {
-            const errorLineIndex = e.lineIndex >= 0 ? e.lineIndex : lastLineIndex
+            const errorLineIndex = e.lineIndex.lineIndex >= 0 ? e.lineIndex : lastLineIndex
             console.log("⚠️ " + e.message);
             console.error(e.stack);
             if (showHighlighting)
-                setErrorMarker(`⚠️ ${e.message} (Zeile: ${errorLineIndex + 1})`, errorLineIndex, "runtime");
+                setErrorMarker(`⚠️ ${e.message} (Zeile: ${errorLineIndex.lineIndex + 1})`, errorLineIndex, "runtime");
         } else if (e instanceof Error) {
             // throw e;
             console.log("⚠️ " + e.message);
             console.error(e.stack);
             if (showHighlighting)
-                setErrorMarker(`⚠️ ${e.message} (Zeile: ${lastLineIndex + 1})`, lastLineIndex, "runtime");
+                setErrorMarker(`⚠️ ${e.message} (Zeile: ${lastLineIndex.lineIndex + 1})`, lastLineIndex, "runtime");
         } else {
             // do nothing?
         }

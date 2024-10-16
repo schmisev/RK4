@@ -1,8 +1,10 @@
+import { CodePosition } from "./language/frontend/lexer";
+
 export class DebugError extends Error {
-    lineIndex: number
-    constructor(msg: string, lineIndex: number) {
+    lineIndex: CodePosition
+    constructor(msg: string, lineIndex: CodePosition) {
         super(msg);
-        this.lineIndex = lineIndex;
+        this.lineIndex = Object.assign({}, lineIndex);
     }
 }
 
@@ -11,8 +13,8 @@ export class ParserError extends DebugError {}
 export class LexerError extends DebugError {}
 
 export class RuntimeError extends DebugError {
-    constructor(msg: string, lineIndex?: number) {
-        super(msg, lineIndex != undefined ? lineIndex : -1);
+    constructor(msg: string, lineIndex?: CodePosition) {
+        super(msg, lineIndex != undefined ? Object.assign({}, lineIndex) : {lineIndex: -1, startPos: -1, endPos: -1});
     }
 }
 

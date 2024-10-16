@@ -91,11 +91,25 @@ export const KEYWORDS: Record<string, TokenType> = {
 export interface Token {
     value: string;
     type: TokenType;
-    lineIndex: number;
+    codePos: CodePosition;
 }
 
-function token(value = "", type: TokenType, lineIndex: number): Token {
-    return { value, type, lineIndex };
+export interface CodePosition {
+    lineIndex: number;
+    startPos: number;
+    endPos: number;
+}
+
+export function ILLEGAL_CODE_POS(): CodePosition {
+    return {lineIndex: -1, startPos: -1, endPos: -1};
+}
+
+export function START_CODE_POS(): CodePosition {
+    return {lineIndex: 0, startPos: 0, endPos: 1};
+}
+
+function token(value = "", type: TokenType, lineIndex: CodePosition): Token {
+    return { value, type, codePos: lineIndex };
 }
 
 function isalpha(src: string) {
@@ -115,57 +129,97 @@ function isskippable(src: string) {
 export function tokenize(sourceCode: string): Token[] {
     const tokens = new Array<Token>();
     const src = sourceCode.split("");
-    let lineCount = 0;
+    let lineIndex = 0;
+    let startPos = 0;
+    let endPos = 1;
+
+    // helper functions
+    const getPos = () => {
+        return {lineIndex, startPos, endPos};
+    }
+
+    const widenPos = () => {
+        endPos ++;
+    }
+
+    const nextPos = () => {
+        startPos = endPos;
+        endPos = startPos + 1;
+    }
+
+    const newLine = () => {
+        lineIndex ++;
+        startPos = 0;
+        endPos = 1;
+    }
 
     while (src.length > 0) {
         if (src[0] == "(") {
-            tokens.push(token(src.shift(), TokenType.OpenParen, lineCount));
+            tokens.push(token(src.shift(), TokenType.OpenParen, getPos()));
+            nextPos();
         } else if (src[0] == ")"){
-            tokens.push(token(src.shift(), TokenType.CloseParen, lineCount));
+            tokens.push(token(src.shift(), TokenType.CloseParen, getPos()));
+            nextPos();
         } else if (src[0] == '+'){
-            tokens.push(token(src.shift(), TokenType.Plus, lineCount));
+            tokens.push(token(src.shift(), TokenType.Plus, getPos()));
+            nextPos();
         } else if (src[0] == '-'){
-            tokens.push(token(src.shift(), TokenType.Minus, lineCount));
+            tokens.push(token(src.shift(), TokenType.Minus, getPos()));
+            nextPos();
         } else if (src[0] == '*'){
-            tokens.push(token(src.shift(), TokenType.Multiply, lineCount));
+            tokens.push(token(src.shift(), TokenType.Multiply, getPos()));
+            nextPos();
         } else if (src[0] == ':'){
-            tokens.push(token(src.shift(), TokenType.Divide, lineCount));
+            tokens.push(token(src.shift(), TokenType.Divide, getPos()));
+            nextPos();
         } else if (src[0] == '%'){
-            tokens.push(token(src.shift(), TokenType.Mod, lineCount));
+            tokens.push(token(src.shift(), TokenType.Mod, getPos()));
+            nextPos();
         } else if (src[0] == '='){
-            tokens.push(token(src.shift(), TokenType.Equal, lineCount));
+            tokens.push(token(src.shift(), TokenType.Equal, getPos()));
+            nextPos();
         } else if (src[0] == '>'){
-            tokens.push(token(src.shift(), TokenType.Greater, lineCount));
+            tokens.push(token(src.shift(), TokenType.Greater, getPos()));
+            nextPos();
         } else if (src[0] == '<'){
-            tokens.push(token(src.shift(), TokenType.Lesser, lineCount));
+            tokens.push(token(src.shift(), TokenType.Lesser, getPos()));
+            nextPos();
         } else if (src[0] == '-'){
-            tokens.push(token(src.shift(), TokenType.Minus, lineCount));
+            tokens.push(token(src.shift(), TokenType.Minus, getPos()));
+            nextPos();
         } else if (src[0] == '\n'){
             if (tokens.length > 0 && tokens[tokens.length - 1].type == TokenType.EndLine) {
                 src.shift();
             } else {
-                tokens.push(token(src.shift(), TokenType.EndLine, lineCount));
+                tokens.push(token(src.shift(), TokenType.EndLine, getPos()));
             }
             // increase line count for debug
-            lineCount += 1;
+            newLine(); // lineCount += 1;
         } else if (src[0] == '.'){
-            tokens.push(token(src.shift(), TokenType.Period, lineCount));
+            tokens.push(token(src.shift(), TokenType.Period, getPos()));
+            nextPos();
         } else if (src[0] == ','){
-            tokens.push(token(src.shift(), TokenType.Comma, lineCount));
+            tokens.push(token(src.shift(), TokenType.Comma, getPos()));
+            nextPos();
         } else if (src[0] == '{'){
-            tokens.push(token(src.shift(), TokenType.OpenBrace, lineCount));
+            tokens.push(token(src.shift(), TokenType.OpenBrace, getPos()));
+            nextPos();
         } else if (src[0] == '}'){
-            tokens.push(token(src.shift(), TokenType.CloseBrace, lineCount));
+            tokens.push(token(src.shift(), TokenType.CloseBrace, getPos()));
+            nextPos();
         } else if (src[0] == '['){
-            tokens.push(token(src.shift(), TokenType.OpenBracket, lineCount));
+            tokens.push(token(src.shift(), TokenType.OpenBracket, getPos()));
+            nextPos();
         } else if (src[0] == ']'){
-            tokens.push(token(src.shift(), TokenType.CloseBracket, lineCount));
+            tokens.push(token(src.shift(), TokenType.CloseBracket, getPos()));
+            nextPos();
         } else {
             // Handle multicharacter tokens
             if (src[0] == "/"){
                 if (src.length <= 1) {
                     // tailing divide???
-                    tokens.push(token(src.shift(), TokenType.Divide, lineCount));
+                    tokens.push(token(src.shift(), TokenType.Divide, getPos()));
+                    nextPos();
                 }
                 // c-style comments
                 else {
@@ -188,7 +242,7 @@ export function tokenize(sourceCode: string): Token[] {
                         let chr0 = src[0];
                         let chr1 = src[1];
                         while (src.length > 1 && chr0 != "*" && chr1 != "/") {
-                            if (chr0 == "\n") lineCount ++;
+                            if (chr0 == "\n") newLine(); // lineCount ++;
                             src.shift();
                             chr0 = src[0];
                             chr1 = src[1];
@@ -197,24 +251,33 @@ export function tokenize(sourceCode: string): Token[] {
                         src.shift(); // get rid of */
                     } else {
                         // nope, its just a divide
-                        tokens.push(token(src.shift(), TokenType.Divide, lineCount));
+                        tokens.push(token(src.shift(), TokenType.Divide, getPos()));
+                        nextPos();
                     }
                 }
             } else if (src[0] == '"') {
                 // strings
                 src.shift();
+                widenPos();
+                
                 let str = "";
                 while(src.length > 0) {
                     if (src[0] == '"') break;
-                    if (src[0] == "\n") lineCount ++;
+                    if (src[0] == "\n") newLine(); // lineCount ++;
                     str += src.shift();
+                    nextPos();
                 }
                 src.shift();
-                tokens.push(token(str, TokenType.String, lineCount));
+                widenPos();
+
+                tokens.push(token(str, TokenType.String, getPos()));
+                nextPos();
             }
             else if (src[0] == "#") {
                 // Doc comments
                 src.shift();
+                widenPos();
+
                 let chr;
                 let str = "";
                 while(src.length > 0) {
@@ -224,8 +287,10 @@ export function tokenize(sourceCode: string): Token[] {
                     }
                     str += chr; // add to doc comment
                     src.shift(); // NOTICE: we are not shifting newline
+                    widenPos();
                 }
-                tokens.push(token(str, TokenType.DocComment, lineCount));
+                tokens.push(token(str, TokenType.DocComment, getPos()));
+                nextPos();
             }
             /*
             else if (src[0] == "[") {
@@ -242,37 +307,44 @@ export function tokenize(sourceCode: string): Token[] {
                 let num = "";
                 while(src.length > 0 && isint(src[0])) {
                     num += src.shift();
+                    widenPos();
                 }
 
-                tokens.push(token(num, TokenType.Number, lineCount));
+                tokens.push(token(num, TokenType.Number, getPos()));
+                nextPos();
             }
             else if (isalpha(src[0]) || src[0] == "_") {
                 let ident = "";
                 ident += src.shift();
                 while(src && src.length > 0 && (isalpha(src[0]) || isint(src[0]) || src[0] == "_")) {
                     ident += src.shift();
+                    widenPos();
                 }
 
                 // check for reserved keywords
                 const reserved = KEYWORDS[ident];
                 if (typeof reserved != "number") {
-                    tokens.push(token(ident, TokenType.Identifier, lineCount));
+                    tokens.push(token(ident, TokenType.Identifier, getPos()));
                 } else {
-                    tokens.push(token(ident, reserved, lineCount));
+                    tokens.push(token(ident, reserved, getPos()));
                 }
+                nextPos();
             }
             else if (isskippable(src[0])) {
                 src.shift();
+                nextPos();
             }
             else {
-                throw new LexerError("LEXER: Unbekanntes Zeichen: " + src[0], lineCount);
+                throw new LexerError("LEXER: Unbekanntes Zeichen: " + src[0], getPos());
             }
         }
     }
 
-    if (tokens.length > 0 && tokens[tokens.length - 1].type != TokenType.EndLine)
-        tokens.push(token("forced newline", TokenType.EndLine, ++ lineCount));
-    tokens.push(token("eof", TokenType.EOF, lineCount));
+    if (tokens.length > 0 && tokens[tokens.length - 1].type != TokenType.EndLine) {
+        newLine();
+        tokens.push(token("forced newline", TokenType.EndLine, getPos() /*++ lineCount*/));
+    }
+    tokens.push(token("eof", TokenType.EOF, getPos()));
 
     while (tokens[0].type == TokenType.EndLine) {
         tokens.shift();
