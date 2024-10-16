@@ -285,7 +285,7 @@ async function resetEnv(stage = 0) {
     world.declareAllRobots(env);
     addRobotButtons(objBar, objOverlay, world);
     // run preload so it works in the cmd
-    await runCode(preloadCode, false);
+    await runCode(preloadCode, false, false);
 };
 
 // Run cmds
@@ -302,7 +302,7 @@ async function runCmd() {
     cmdLineStackPointer = cmdLineStack.length;
 
     console.log(">>", cmdCode);
-    await runCode(cmdCode, true);
+    await runCode(cmdCode, true, false);
 };
 
 // Get past commands via keyboard
@@ -340,7 +340,7 @@ async function startCode() {
         }
         console.log("\n▷ Code wird ausgeführt!");
         
-        if (await runCode(code, true)) {
+        if (await runCode(code, true, true)) {
             editor.setReadOnly(false);
             return; // return immediatly if codeRun was interrupted
         }
@@ -391,9 +391,17 @@ async function interrupt() {
 }
 
 // Run ANY code
-async function runCode(code: string, stepped: boolean): Promise<boolean> {
+async function runCode(code: string, stepped: boolean, showHighlighting: boolean): Promise<boolean> {
     let skippedSleep = 0;
     let lastLineIndex = -1;
+    let markerIds: number[] = [];
+
+    const cleanupMarkers = () => {
+        for (const id of markerIds) {
+            editor.session.removeMarker(id);
+        }
+    }
+
     try {
         program = parser.produceAST(code);
         let stepper = evaluate(program, env);
@@ -412,33 +420,47 @@ async function runCode(code: string, stepped: boolean): Promise<boolean> {
             }
 
             if (stepped) {
+                // always push marker!
+                if (showHighlighting) {
+                    markerIds.push(
+                        editor.session.addMarker(
+                            new ace.Range(lastLineIndex, 0, lastLineIndex, 10), 'exec-marker', 'fullLine'
+                        )
+                    )
+                }
+
                 lastLineIndex = next.value;
-                let markerId = editor.session.addMarker(new ace.Range(lastLineIndex, 0, lastLineIndex, 10), 'exec-marker', 'fullLine');
                 
-                if (skippedSleep > frameLagSum) {
-                    // we overshot the framelag, so the apparent lag is smaller
-                    const lastFrameLag = frameLagSum;
-                    skippedSleep = skippedSleep - frameLagSum;
-                    frameLagSum = - skippedSleep;
-                    
-                    await sleep(dt);
-                } else {
-                    skippedSleep += dt;
-                }   
-                editor.session.removeMarker(markerId);
+                skippedSleep += dt; // assume sleep is skipped
+                if (skippedSleep > frameLagSum) {                    
+                    const dtRest = skippedSleep - frameLagSum;
+                    // do the reset first, so the lagsum can accumulate during the sleep
+                    skippedSleep = 0;
+                    frameLagSum = 0;
+                    await sleep(dtRest);
+                }
+
+                
             }
+            // clean old markers
+            cleanupMarkers();
         }
     } catch (e) {
+        // clean runtime markers
+        cleanupMarkers();
+
         if (e instanceof DebugError) {
             const errorLineIndex = e.lineIndex >= 0 ? e.lineIndex : lastLineIndex
             console.log("⚠️ " + e.message);
             console.error(e.stack);
-            setErrorMarker(`⚠️ ${e.message} (Zeile: ${errorLineIndex + 1})`, errorLineIndex, "runtime");
+            if (showHighlighting)
+                setErrorMarker(`⚠️ ${e.message} (Zeile: ${errorLineIndex + 1})`, errorLineIndex, "runtime");
         } else if (e instanceof Error) {
             // throw e;
             console.log("⚠️ " + e.message);
             console.error(e.stack);
-            setErrorMarker(`⚠️ ${e.message} (Zeile: ${lastLineIndex + 1})`, lastLineIndex, "runtime");
+            if (showHighlighting)
+                setErrorMarker(`⚠️ ${e.message} (Zeile: ${lastLineIndex + 1})`, lastLineIndex, "runtime");
         } else {
             // do nothing?
         }
