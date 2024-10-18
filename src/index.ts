@@ -196,7 +196,7 @@ function setErrorMarker(msg: string, codePos: CodePosition, errorTypeCss: string
     const markerId = editor.session.addMarker(new ace.Range(
         codePos.lineIndex, 
         codePos.startPos, 
-        codePos.lineIndex, 
+        codePos.lineIndexEnd, 
         codePos.endPos
     ), "error-marker " + errorTypeCss, "text");
     errorMarkers.push(markerId);
@@ -227,7 +227,7 @@ export async function updateIDE() {
         setDebugTimer(false);
     } catch (e) {
         let errorCssClass = "none";
-        let codePos: CodePosition = {lineIndex: -1, startPos: -1, endPos: -1};
+        let codePos: CodePosition = ILLEGAL_CODE_POS();
         let message = "";
         
         if (e instanceof LexerError) {
@@ -243,7 +243,7 @@ export async function updateIDE() {
         // not runtime errors should appear
 
         if (errorCssClass !== "none") {
-            setErrorMarker(`❌ ${message} (Zeile ${codePos.lineIndex + 1})`, codePos, errorCssClass);
+            setErrorMarker(`❌ ${message} (Zeile: ${codePos.lineIndex + 1} : ${codePos.startPos})`, codePos, errorCssClass);
         }
 
         //throw e; // temporary
@@ -399,7 +399,7 @@ async function interrupt() {
 // Run ANY code
 async function runCode(code: string, stepped: boolean, showHighlighting: boolean): Promise<boolean> {
     let skippedSleep = 0;
-    let lastLineIndex: CodePosition = ILLEGAL_CODE_POS();
+    let lastCodePos: CodePosition = ILLEGAL_CODE_POS();
     let markerIds: number[] = [];
 
     const cleanupMarkers = () => {
@@ -431,16 +431,16 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
                     markerIds.push(
                         editor.session.addMarker(
                             new ace.Range(
-                                lastLineIndex.lineIndex,
-                                lastLineIndex.startPos,
-                                lastLineIndex.lineIndex,
-                                lastLineIndex.endPos
+                                lastCodePos.lineIndex,
+                                lastCodePos.startPos,
+                                lastCodePos.lineIndex,
+                                lastCodePos.endPos
                             ), 'exec-marker', 'text'
                         )
                     )
                 }
 
-                lastLineIndex = next.value;
+                lastCodePos = next.value;
                 
                 skippedSleep += dt; // assume sleep is skipped
                 if (skippedSleep > frameLagSum) {                    
@@ -461,17 +461,17 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
         cleanupMarkers();
 
         if (e instanceof DebugError) {
-            const errorLineIndex = e.lineIndex.lineIndex >= 0 ? e.lineIndex : lastLineIndex
+            const errorCodePos = e.lineIndex.lineIndex >= 0 ? e.lineIndex : lastCodePos
             console.log("⚠️ " + e.message);
             console.error(e.stack);
             if (showHighlighting)
-                setErrorMarker(`⚠️ ${e.message} (Zeile: ${errorLineIndex.lineIndex + 1})`, errorLineIndex, "runtime");
+                setErrorMarker(`⚠️ ${e.message} (Zeile: ${errorCodePos.lineIndex + 1} : ${errorCodePos.startPos})`, errorCodePos, "runtime");
         } else if (e instanceof Error) {
             // throw e;
             console.log("⚠️ " + e.message);
             console.error(e.stack);
             if (showHighlighting)
-                setErrorMarker(`⚠️ ${e.message} (Zeile: ${lastLineIndex.lineIndex + 1})`, lastLineIndex, "runtime");
+                setErrorMarker(`⚠️ ${e.message} (Zeile: ${lastCodePos.lineIndex + 1} : ${lastCodePos.startPos})`, lastCodePos, "runtime");
         } else {
             // do nothing?
         }

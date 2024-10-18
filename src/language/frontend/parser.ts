@@ -1,5 +1,5 @@
 import { Stmt, Program, Expr, VarDeclaration, ObjDeclaration, FunctionDefinition, ShowCommand, BreakCommand, ContinueCommand, ClassDefinition, ParamDeclaration, ReturnCommand, ExtMethodDefinition, StmtKind, IfElseBlock, ForBlock, WhileBlock, AlwaysBlock, AbruptStmtKind, DocComment, CaseBlock, SwitchBlock, FromToBlock, ListLiteral, MemberExpr, ForInBlock } from "./ast";
-import { tokenize, Token, TokenType, KEYWORDS, ILLEGAL_CODE_POS, START_CODE_POS } from "./lexer";
+import { tokenize, Token, TokenType, KEYWORDS, ILLEGAL_CODE_POS, START_CODE_POS, mergeCodePos } from "./lexer";
 import { ParserError } from "../../errors";
 import { ValueAlias } from "../runtime/values";
 
@@ -585,12 +585,13 @@ export default class Parser {
     // PrimaryExpr
 
     private parse_assignment_expr(): Expr {
-        const codePos = this.at().codePos;
+        let codePos = this.at().codePos;
 
         const left = this.parse_logical_expr();
         if (this.at().type == TokenType.Assign) {
             this.eat();
             const value = this.parse_assignment_expr();
+            codePos = mergeCodePos(value.codePos, codePos);
             return { kind: StmtKind.AssignmentExpr, value, assigne: left, codePos };
         }
 
@@ -760,12 +761,12 @@ export default class Parser {
                 return value;
             }
             default:
-                throw new ParserError(`PARSER: Unerwarteter Token gefunden: '${JSON.stringify(this.at().value)}'`, codePos);
+                throw new ParserError(`PARSER: Unerwarteter Token gefunden: ${JSON.stringify(this.at().value)}`, codePos);
         }
     }
 
     parse_list_expr(): ListLiteral {
-        const codePos = this.at().codePos;
+        let codePos = this.at().codePos;
 
         this.eat(); // eat [
         const elements: Expr[] = []
@@ -774,7 +775,9 @@ export default class Parser {
             if (this.at().type == TokenType.CloseBracket) break;
             this.expect(TokenType.Comma, `Erwarte Kommas zwischen Listenelementen!`);
         }
-        this.eat();
+
+        codePos = mergeCodePos(codePos, this.eat().codePos);
+
         return {
             kind: StmtKind.ListLiteral,
             elements,

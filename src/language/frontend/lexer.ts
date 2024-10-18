@@ -96,16 +96,42 @@ export interface Token {
 
 export interface CodePosition {
     lineIndex: number;
+    lineIndexEnd: number;
     startPos: number;
     endPos: number;
 }
 
+export function mergeCodePos(a: CodePosition, b: CodePosition): CodePosition {
+    let lineIndex = -1;
+    let lineIndexEnd = -1;
+    let startPos = -1;
+    let endPos = -1;
+    
+    if (a.lineIndex <= b.lineIndex) {
+        lineIndex = a.lineIndex;
+        startPos = a.startPos;
+    } else {
+        lineIndex = b.lineIndex;
+        startPos = b.startPos;
+    }
+
+    if (a.lineIndexEnd <= b.lineIndexEnd) {
+        lineIndexEnd = a.lineIndexEnd;
+        endPos = a.endPos;
+    } else {
+        lineIndexEnd = b.lineIndexEnd;
+        endPos = b.endPos;
+    }
+
+    return {lineIndex, lineIndexEnd, startPos, endPos};
+}
+
 export function ILLEGAL_CODE_POS(): CodePosition {
-    return {lineIndex: -1, startPos: -1, endPos: -1};
+    return {lineIndex: -1, lineIndexEnd: -1, startPos: -1, endPos: -1};
 }
 
 export function START_CODE_POS(): CodePosition {
-    return {lineIndex: 0, startPos: 0, endPos: 1};
+    return {lineIndex: 0, lineIndexEnd: 0, startPos: 0, endPos: 1};
 }
 
 function token(value = "", type: TokenType, lineIndex: CodePosition): Token {
@@ -130,26 +156,38 @@ export function tokenize(sourceCode: string): Token[] {
     const tokens = new Array<Token>();
     const src = sourceCode.split("");
     let lineIndex = 0;
+    let lineIndexEnd = 0;
     let startPos = 0;
     let endPos = 1;
 
     // helper functions
     const getPos = () => {
-        return {lineIndex, startPos, endPos};
+        return {lineIndex, lineIndexEnd, startPos, endPos};
     }
 
     const widenPos = () => {
         endPos ++;
     }
 
+    const narrowPos = () => {
+        endPos --;
+    }
+
     const nextPos = () => {
+        lineIndex = lineIndexEnd;
         startPos = endPos;
         endPos = startPos + 1;
     }
 
     const newLine = () => {
-        lineIndex ++;
+        lineIndex = lineIndexEnd + 1;
+        lineIndexEnd ++;
         startPos = 0;
+        endPos = 1;
+    }
+
+    const addLine = () => {
+        lineIndexEnd ++;
         endPos = 1;
     }
 
@@ -263,12 +301,16 @@ export function tokenize(sourceCode: string): Token[] {
                 let str = "";
                 while(src.length > 0) {
                     if (src[0] == '"') break;
-                    if (src[0] == "\n") newLine(); // lineCount ++;
+                    if (src[0] == "\n") {
+                        addLine(); // lineCount ++;
+                        str += src.shift();
+                        continue;
+                    }
                     str += src.shift();
-                    nextPos();
+                    widenPos();
                 }
                 src.shift();
-                widenPos();
+                //widenPos();
 
                 tokens.push(token(str, TokenType.String, getPos()));
                 nextPos();
@@ -289,6 +331,7 @@ export function tokenize(sourceCode: string): Token[] {
                     src.shift(); // NOTICE: we are not shifting newline
                     widenPos();
                 }
+                narrowPos();
                 tokens.push(token(str, TokenType.DocComment, getPos()));
                 nextPos();
             }
@@ -309,18 +352,17 @@ export function tokenize(sourceCode: string): Token[] {
                     num += src.shift();
                     widenPos();
                 }
-
+                narrowPos();
                 tokens.push(token(num, TokenType.Number, getPos()));
                 nextPos();
             }
             else if (isalpha(src[0]) || src[0] == "_") {
                 let ident = "";
-                ident += src.shift();
                 while(src && src.length > 0 && (isalpha(src[0]) || isint(src[0]) || src[0] == "_")) {
                     ident += src.shift();
                     widenPos();
                 }
-
+                narrowPos()
                 // check for reserved keywords
                 const reserved = KEYWORDS[ident];
                 if (typeof reserved != "number") {

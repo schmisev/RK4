@@ -1,4 +1,4 @@
-import { CodePosition } from "./language/frontend/lexer";
+import { CodePosition, ILLEGAL_CODE_POS } from "./language/frontend/lexer";
 
 export class DebugError extends Error {
     lineIndex: CodePosition
@@ -14,7 +14,7 @@ export class LexerError extends DebugError {}
 
 export class RuntimeError extends DebugError {
     constructor(msg: string, lineIndex?: CodePosition) {
-        super(msg, lineIndex != undefined ? Object.assign({}, lineIndex) : {lineIndex: -1, startPos: -1, endPos: -1});
+        super(msg, lineIndex != undefined ? Object.assign({}, lineIndex) : ILLEGAL_CODE_POS());
     }
 }
 
