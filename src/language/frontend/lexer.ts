@@ -107,7 +107,11 @@ export function mergeCodePos(a: CodePosition, b: CodePosition): CodePosition {
     let startPos = -1;
     let endPos = -1;
     
-    if (a.lineIndex <= b.lineIndex) {
+    if (a.lineIndex == b.lineIndex) {
+        lineIndex = a.lineIndex;
+        startPos = Math.min(a.startPos, b.startPos);
+    }
+    else if (a.lineIndex < b.lineIndex) {
         lineIndex = a.lineIndex;
         startPos = a.startPos;
     } else {
@@ -115,7 +119,11 @@ export function mergeCodePos(a: CodePosition, b: CodePosition): CodePosition {
         startPos = b.startPos;
     }
 
-    if (a.lineIndexEnd <= b.lineIndexEnd) {
+    if (a.lineIndexEnd == b.lineIndexEnd) {
+        lineIndexEnd = a.lineIndexEnd;
+        endPos = Math.max(a.endPos, b.endPos);
+    }
+    else if (a.lineIndexEnd < b.lineIndexEnd) {
         lineIndexEnd = a.lineIndexEnd;
         endPos = a.endPos;
     } else {

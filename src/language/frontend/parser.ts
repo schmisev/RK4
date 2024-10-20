@@ -117,6 +117,7 @@ export default class Parser {
         };
 
         while (this.at().type == TokenType.DocComment) {
+            result.codePos = mergeCodePos(result.codePos, this.at().codePos);
             result.content += `${this.at().value}\n`;
             this.eat();
             this.expect(TokenType.EndLine, "Erwarte neue Zeile nach #-Dokumentation!");
@@ -126,14 +127,20 @@ export default class Parser {
     }
 
     parse_show(): ShowCommand {
-        const codePos = this.at().codePos;
+        let codePos = this.at().codePos;
+        let lastValue: Expr;
 
         this.eat();
         const values: Expr[] = [];
         while (this.at().type != TokenType.EndLine) {
-            values.push(this.parse_expr());
-            if (this.at().type != TokenType.EndLine) this.expect(TokenType.Comma, "Erwarte Kommas zwischen zu zeigenden Ausdrücken!");
+            lastValue = this.parse_expr();
+            codePos = mergeCodePos(codePos, lastValue.codePos);
+            values.push(lastValue);
+
+            if (this.at().type != TokenType.EndLine)
+                this.expect(TokenType.Comma, "Erwarte Kommas zwischen zu zeigenden Ausdrücken!");
         }
+
         return {
             kind: StmtKind.ShowCommand,
             codePos,
@@ -168,13 +175,13 @@ export default class Parser {
         const result = this.parse_expr();
         return {
             kind: StmtKind.ReturnCommand,
-            codePos,
+            codePos: mergeCodePos(codePos, result.codePos),
             value: result,
         }
     }
 
     parse_class_definition(): ClassDefinition {
-        const codePos = this.at().codePos;
+        let codePos = this.at().codePos;
         this.eat();
         const ident = this.expect(TokenType.Identifier, "Erwarte einen Klassennamen nach 'Klasse'!").value;
         const params: ParamDeclaration[] = [] // constructor parameters
@@ -202,12 +209,12 @@ export default class Parser {
             this.expect(TokenType.EndLine, "Erwarte eine neue Zeile nach jeder Methode!");
             methods.push(definition);
         }
-        this.eat(); // eat 'ende'
+        codePos = mergeCodePos(codePos, this.eat().codePos); // eat 'ende'
         return { kind: StmtKind.ClassDefinition, ident, attributes, methods, codePos, params }
     }
 
     parse_if_else_block<A extends AbruptStmtKind>(allowedControl: Set<A>): IfElseBlock<A> {
-        const codePos = this.at().codePos;
+        let codePos = this.at().codePos;
         
         const ifTrue: Stmt<A>[] = [];
         const ifFalse: Stmt<A>[] = [];
@@ -241,13 +248,13 @@ export default class Parser {
             //console.log(statement);
             ifFalse.push(statement);
         }
-        this.eat(); // eat 'ende'
-
+        
+        codePos = mergeCodePos(codePos, this.eat().codePos); // eat 'ende'
         return { kind: StmtKind.IfElseBlock, condition, ifTrue, ifFalse, codePos };
     }
 
     parse_switch_block<A extends AbruptStmtKind>(allowedControl: Set<A>): SwitchBlock<A> {
-        const codePos = this.at().codePos;
+        let codePos = this.at().codePos;
         const allowedInSwitch = new Set([StmtKind.BreakCommand, ...allowedControl] as const);
         
         const cases: CaseBlock<A>[] = [];
@@ -268,7 +275,11 @@ export default class Parser {
                 fallback.push(statement);
             }
         }
-        this.expect(TokenType.EndBlock, "Erwarte 'ende' nach Unterscheidung!"); // eat 'ende'
+        
+        codePos = mergeCodePos(
+            codePos,
+            this.expect(TokenType.EndBlock, "Erwarte 'ende' nach Unterscheidung!").codePos
+        ) // eat 'ende'
 
         return {
             kind: StmtKind.SwitchBlock,
@@ -280,7 +291,7 @@ export default class Parser {
     }
 
     parse_case_block<A extends AbruptStmtKind>(allowedControl: Set<A>): CaseBlock<A> {
-        const codePos = this.at().codePos;
+        let codePos = this.at().codePos;
         
         const allowedInCase = new Set([StmtKind.ContinueCommand, StmtKind.BreakCommand, ...allowedControl] as const);
 
@@ -298,6 +309,7 @@ export default class Parser {
             body.push(statement);
         }
 
+        codePos = mergeCodePos(codePos, this.at().codePos);
         return {
             kind: StmtKind.CaseBlock,
             comp,
@@ -325,42 +337,49 @@ export default class Parser {
     }
 
     parse_for_loop<A extends AbruptStmtKind>(allowedControl: Set<A>): ForBlock<A> {
-        const codePos = this.at().codePos;
+        let codePos = this.at().codePos;
         
         const counter = this.parse_expr();
         this.expect(TokenType.RepTimes, "Auf den Zähler sollte 'mal' folgen!");
         this.expect(TokenType.EndLine, "Nach 'mal' sollte eine neue Zeile folgen!");
+        const body = this.parse_bare_loop(allowedControl);
+        
+        codePos = mergeCodePos(codePos, body[body.length - 1].codePos);
         return {
             kind: StmtKind.ForBlock,
             codePos,
             counter,
-            body: this.parse_bare_loop(allowedControl)
+            body,
         };
     }
 
     parse_while_loop<A extends AbruptStmtKind>(allowedControl: Set<A>): WhileBlock<A> {
-        const codePos = this.at().codePos;
+        let codePos = this.at().codePos;
 
         const condition = this.parse_expr();
         this.expect(TokenType.EndLine, "Nach der Bedingung sollte eine neue Zeile folgen!");
-        
+        const body = this.parse_bare_loop(allowedControl);
+
+        codePos = mergeCodePos(codePos, body[body.length - 1].codePos);
         return {
             kind: StmtKind.WhileBlock,
             codePos,
             condition,
-            body: this.parse_bare_loop(allowedControl),
+            body,
         };
     }
 
     parse_always_loop<A extends AbruptStmtKind>(allowedControl: Set<A>): AlwaysBlock<A> {
-        const codePos = this.at().codePos;
+        let codePos = this.at().codePos;
         
         this.expect(TokenType.EndLine, "Nach 'immer' sollte eine neue Zeile folgen!");
+        const body = this.parse_bare_loop(allowedControl)
         
+        codePos = mergeCodePos(codePos, body[body.length - 1].codePos);
         return {
             kind: StmtKind.AlwaysBlock,
             codePos,
-            body: this.parse_bare_loop(allowedControl),
+            body,
         };
     }
 
@@ -442,7 +461,7 @@ export default class Parser {
     }
 
     parse_var_declaration(): VarDeclaration {
-        const codePos = this.at().codePos;
+        let codePos = this.at().codePos;
 
         let type: VarDeclaration["type"] = ValueAlias.Null;
         if (this.at().type == TokenType.DeclBoolean) {
@@ -465,7 +484,7 @@ export default class Parser {
             ident,
             type,
             value,
-            codePos
+            codePos: mergeCodePos(codePos, value.codePos)
         };
     }
 
