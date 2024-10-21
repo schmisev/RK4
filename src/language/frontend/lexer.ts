@@ -2,6 +2,9 @@ import { LexerError } from "../../errors";
 
 
 export enum TokenType {
+    // Empty
+    Empty,
+
     // Literals
     Number,
     Identifier,

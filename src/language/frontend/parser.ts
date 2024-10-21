@@ -5,6 +5,7 @@ import { ValueAlias } from "../runtime/values";
 
 export default class Parser {
     private tokens: Token[] = [];
+    private prev: Token = {type: TokenType.Empty, value: "", codePos: ILLEGAL_CODE_POS()};
 
     private not_eof(): boolean {
         return this.tokens[0].type != TokenType.EOF;
@@ -16,6 +17,7 @@ export default class Parser {
 
     private eat(): Token {
         const prev = this.tokens.shift()!;
+        this.prev = prev; // store previous token
         return prev;
     }
 
@@ -28,6 +30,7 @@ export default class Parser {
             const codePos = prev.codePos;
             throw new ParserError("PARSER: " + err + " - erhalten: " + JSON.stringify(prev.value), codePos);
         }
+        this.prev = prev; // store previous token
         return prev;
     }
 
@@ -110,40 +113,36 @@ export default class Parser {
     }
 
     parse_doc_comment(): DocComment {
-        let result: DocComment = {
-            kind: StmtKind.DocComment,
-            content: "",
-            codePos: this.at().codePos,
-        };
-
+        const codePos = this.at().codePos;
+        let content = "";
+        
         while (this.at().type == TokenType.DocComment) {
-            result.codePos = mergeCodePos(result.codePos, this.at().codePos);
-            result.content += `${this.at().value}\n`;
+            content += `${this.at().value}\n`;
             this.eat();
             this.expect(TokenType.EndLine, "Erwarte neue Zeile nach #-Dokumentation!");
         }
 
-        return result;
+        return {
+            kind: StmtKind.DocComment,
+            content,
+            codePos: mergeCodePos(codePos, this.prev.codePos),
+        };
     }
 
     parse_show(): ShowCommand {
         let codePos = this.at().codePos;
-        let lastValue: Expr;
 
         this.eat();
         const values: Expr[] = [];
         while (this.at().type != TokenType.EndLine) {
-            lastValue = this.parse_expr();
-            codePos = mergeCodePos(codePos, lastValue.codePos);
-            values.push(lastValue);
-
+            values.push(this.parse_expr());
             if (this.at().type != TokenType.EndLine)
                 this.expect(TokenType.Comma, "Erwarte Kommas zwischen zu zeigenden Ausdrücken!");
         }
 
         return {
             kind: StmtKind.ShowCommand,
-            codePos,
+            codePos: mergeCodePos(codePos, this.prev.codePos),
             values,
         };
     }
@@ -182,6 +181,7 @@ export default class Parser {
 
     parse_class_definition(): ClassDefinition {
         let codePos = this.at().codePos;
+
         this.eat();
         const ident = this.expect(TokenType.Identifier, "Erwarte einen Klassennamen nach 'Klasse'!").value;
         const params: ParamDeclaration[] = [] // constructor parameters
@@ -209,7 +209,9 @@ export default class Parser {
             this.expect(TokenType.EndLine, "Erwarte eine neue Zeile nach jeder Methode!");
             methods.push(definition);
         }
-        codePos = mergeCodePos(codePos, this.eat().codePos); // eat 'ende'
+
+        this.eat(); // eat 'ende'
+        codePos = mergeCodePos(codePos, this.prev.codePos);
         return { kind: StmtKind.ClassDefinition, ident, attributes, methods, codePos, params }
     }
 
@@ -248,8 +250,10 @@ export default class Parser {
             //console.log(statement);
             ifFalse.push(statement);
         }
+
+        this.eat(); // eat 'ende'
         
-        codePos = mergeCodePos(codePos, this.eat().codePos); // eat 'ende'
+        codePos = mergeCodePos(codePos, this.prev.codePos); 
         return { kind: StmtKind.IfElseBlock, condition, ifTrue, ifFalse, codePos };
     }
 
@@ -276,11 +280,8 @@ export default class Parser {
             }
         }
         
-        codePos = mergeCodePos(
-            codePos,
-            this.expect(TokenType.EndBlock, "Erwarte 'ende' nach Unterscheidung!").codePos
-        ) // eat 'ende'
-
+        this.expect(TokenType.EndBlock, "Erwarte 'ende' nach Unterscheidung!");
+        codePos = mergeCodePos(codePos, this.prev.codePos);
         return {
             kind: StmtKind.SwitchBlock,
             selection,
@@ -309,7 +310,7 @@ export default class Parser {
             body.push(statement);
         }
 
-        codePos = mergeCodePos(codePos, this.at().codePos);
+        codePos = mergeCodePos(codePos, this.prev.codePos);
         return {
             kind: StmtKind.CaseBlock,
             comp,
@@ -344,7 +345,7 @@ export default class Parser {
         this.expect(TokenType.EndLine, "Nach 'mal' sollte eine neue Zeile folgen!");
         const body = this.parse_bare_loop(allowedControl);
         
-        codePos = mergeCodePos(codePos, body[body.length - 1].codePos);
+        codePos = mergeCodePos(codePos, this.prev.codePos);
         return {
             kind: StmtKind.ForBlock,
             codePos,
@@ -360,7 +361,7 @@ export default class Parser {
         this.expect(TokenType.EndLine, "Nach der Bedingung sollte eine neue Zeile folgen!");
         const body = this.parse_bare_loop(allowedControl);
 
-        codePos = mergeCodePos(codePos, body[body.length - 1].codePos);
+        codePos = mergeCodePos(codePos, this.prev.codePos);
         return {
             kind: StmtKind.WhileBlock,
             codePos,
@@ -375,7 +376,7 @@ export default class Parser {
         this.expect(TokenType.EndLine, "Nach 'immer' sollte eine neue Zeile folgen!");
         const body = this.parse_bare_loop(allowedControl)
         
-        codePos = mergeCodePos(codePos, body[body.length - 1].codePos);
+        codePos = mergeCodePos(codePos, this.prev.codePos);
         return {
             kind: StmtKind.AlwaysBlock,
             codePos,
@@ -384,7 +385,7 @@ export default class Parser {
     }
 
     parse_from_to_loop<A extends AbruptStmtKind>(allowedControl: Set<A>, iterIdent: string | undefined): FromToBlock<A> {
-        const codePos = this.at().codePos;
+        let codePos = this.at().codePos;
 
         this.eat(); // eat 'von'
         const start = this.parse_expr();
@@ -392,35 +393,39 @@ export default class Parser {
         const end = this.parse_expr();
         this.expect(TokenType.EndLine, "Erwarte neue Zeile nach Endwert!");
 
+        const body = this.parse_bare_loop(allowedControl);
+
+        codePos = mergeCodePos(codePos, this.prev.codePos);
         return {
             kind: StmtKind.FromToBlock,
             codePos,
             iterIdent,
             start,
             end,
-            body: this.parse_bare_loop(allowedControl),
+            body,
         };
     }
 
     parse_for_in_loop<A extends AbruptStmtKind>(allowedControl: Set<A>, iterIdent: string): ForInBlock<A> {
-        const codePos = this.at().codePos;
+        let codePos = this.at().codePos;
 
         this.eat(); // eat 'in'
         const list = this.parse_expr();
         this.expect(TokenType.EndLine, "Erwarte neue Zeile nach Liste!");
 
+        const body = this.parse_bare_loop(allowedControl);
+
+        codePos = mergeCodePos(codePos, this.prev.codePos);
         return {
             kind: StmtKind.ForInBlock,
             codePos,
             iterIdent,
             list,
-            body: this.parse_bare_loop(allowedControl),
+            body,
         };
     }
 
     parse_iter_loop<A extends AbruptStmtKind>(allowedControl: Set<A>): Stmt<A> {
-        const codePos = this.at().codePos;
-
         let iterIdent: string | undefined = undefined;
         this.eat(); // eat 'für'
         iterIdent = this.expect(TokenType.Identifier, "Nach 'für' muss ein noch undefinierter (!) Variablenname folgen!").value;
@@ -430,7 +435,7 @@ export default class Parser {
         } else if (this.at().type == TokenType.In) {
             return this.parse_for_in_loop(allowedControl, iterIdent);
         }
-        throw new ParserError("Erwarte 'von' oder 'in' nach Iterationsvariable!", codePos);
+        throw new ParserError("Erwarte 'von' oder 'in' nach Iterationsvariable!", this.at().codePos);
     }
 
     // helper function
@@ -446,8 +451,6 @@ export default class Parser {
     }
 
     parse_any_declaration(): VarDeclaration | ObjDeclaration {
-        const codePos = this.at().codePos;
-
         switch (this.at().type) {
             case TokenType.DeclNumber:
             case TokenType.DeclString:
@@ -457,7 +460,7 @@ export default class Parser {
             case TokenType.DeclObject:
                 return this.parse_obj_declaration();
         }
-        throw new ParserError(`Erwartete Deklaration, erhielt aber '${this.at().value}...'`, codePos);
+        throw new ParserError(`Erwartete Deklaration, erhielt aber '${this.at().value}...'`, this.at().codePos);
     }
 
     parse_var_declaration(): VarDeclaration {
@@ -484,12 +487,12 @@ export default class Parser {
             ident,
             type,
             value,
-            codePos: mergeCodePos(codePos, value.codePos)
+            codePos: mergeCodePos(codePos, this.prev.codePos)
         };
     }
 
     parse_param_declaration(): ParamDeclaration {
-        const codePos = this.at().codePos;
+        let codePos = this.at().codePos;
         
         let type = ValueAlias.Null;
         if (this.at().type == TokenType.DeclBoolean) {
@@ -503,11 +506,13 @@ export default class Parser {
         }
         this.eat();
         const ident = this.expect(TokenType.Identifier, "Erwarte Variablennamen nach 'Zahl', 'Wahrheitswert', 'Text' oder 'Objekt'!").value;
+        
+        codePos = mergeCodePos(codePos, this.prev.codePos)
         return { type, ident, codePos };
     }
 
     parse_fn_definition(): FunctionDefinition {
-        const codePos = this.at().codePos;
+        let codePos = this.at().codePos;
         
         this.eat();
         const name = this.expect(TokenType.Identifier, "Erwarte einen Funktionsnamen nach 'Funktion'").value;
@@ -527,11 +532,12 @@ export default class Parser {
         }
         this.eat();
 
+        codePos = mergeCodePos(codePos, this.prev.codePos);
         return { kind: StmtKind.FunctionDefinition, name, params, body, codePos };
     }
 
     parse_ext_method_definition(): ExtMethodDefinition {
-        const codePos = this.at().codePos;
+        let codePos = this.at().codePos;
         
         this.eat();
         const name = this.expect(TokenType.Identifier, "Erwarte einen Funktionsnamen nach 'Funktion'").value;
@@ -555,11 +561,12 @@ export default class Parser {
         }
         this.eat();
 
+        codePos = mergeCodePos(codePos, this.prev.codePos);
         return { kind: StmtKind.ExtMethodDefinition, name, params, body, classname, codePos };
     }
 
     parse_obj_declaration(): ObjDeclaration {
-        const codePos = this.at().codePos;
+        let codePos = this.at().codePos;
         
         this.eat();
         const ident = this.expect(TokenType.Identifier, "Erwarte Objektname nach 'Objekt'").value;
@@ -578,6 +585,7 @@ export default class Parser {
             this.expect(TokenType.CloseParen, "Erwarte schließende Klammer nach Parametern!"); // eat close paren
         }
 
+        codePos = mergeCodePos(codePos, this.prev.codePos);
         return {
             kind: StmtKind.ObjDeclaration,
             ident,
@@ -610,7 +618,8 @@ export default class Parser {
         if (this.at().type == TokenType.Assign) {
             this.eat();
             const value = this.parse_assignment_expr();
-            codePos = mergeCodePos(value.codePos, codePos);
+
+            codePos = mergeCodePos(this.prev.codePos, codePos);
             return { kind: StmtKind.AssignmentExpr, value, assigne: left, codePos };
         }
 
@@ -618,87 +627,73 @@ export default class Parser {
     }
 
     private parse_logical_expr(): Expr {
-        const codePos = this.at().codePos;
+        let codePos = this.at().codePos;
         
         let left = this.parse_comparison_expr();
         while (this.at().type == TokenType.And || this.at().type == TokenType.Or) {
             const operator = this.eat().value;
             const right = this.parse_comparison_expr();
-            left = {
-                kind: StmtKind.BinaryExpr,
-                left,
-                right,
-                operator,
-                codePos
-            };
+
+            codePos = mergeCodePos(codePos, this.prev.codePos);
+            left = { kind: StmtKind.BinaryExpr, left, right, operator, codePos };
         }
 
         return left;
     }
 
     private parse_comparison_expr(): Expr {
-        const codePos = this.at().codePos;
+        let codePos = this.at().codePos;
         
         let left = this.parse_additive_expr();
         while (this.at().type == TokenType.Equal || this.at().type == TokenType.Greater || this.at().type == TokenType.Lesser) {
             const operator = this.eat().value;
             const right = this.parse_additive_expr();
-            left = {
-                kind: StmtKind.BinaryExpr,
-                left,
-                right,
-                operator,
-                codePos
-            };
+
+            codePos = mergeCodePos(codePos, this.prev.codePos);
+            left = { kind: StmtKind.BinaryExpr, left, right, operator, codePos };
         }
 
         return left;
     }
 
     private parse_additive_expr(): Expr {
-        const codePos = this.at().codePos;
+        let codePos = this.at().codePos;
 
         let left = this.parse_multiplicative_expr();
         while (this.at().type == TokenType.Plus || this.at().type == TokenType.Minus) {
             const operator = this.eat().value;
             const right = this.parse_multiplicative_expr();
-            left = {
-                kind: StmtKind.BinaryExpr,
-                left,
-                right,
-                operator,
-                codePos
-            };
+
+            codePos = mergeCodePos(codePos, this.prev.codePos);
+            left = { kind: StmtKind.BinaryExpr, left, right, operator, codePos };
         }
 
         return left;
     }
 
     private parse_multiplicative_expr(): Expr {
-        const codePos = this.at().codePos;
+        let codePos = this.at().codePos;
         
         let left = this.parse_unary_expr();
         while (this.at().type == TokenType.Multiply || this.at().type == TokenType.Divide || this.at().type == TokenType.Mod) {
             const operator = this.eat().value;
             const right = this.parse_unary_expr();
-            left = {
-                kind: StmtKind.BinaryExpr,
-                left,
-                right,
-                operator,
-                codePos
-            };
+
+            codePos = mergeCodePos(codePos, this.prev.codePos);
+            left = { kind: StmtKind.BinaryExpr, left, right, operator, codePos };
         }
 
         return left;
     }
 
     private parse_unary_expr(): Expr {
-        const codePos = this.at().codePos;
+        let codePos = this.at().codePos;
 
         if (this.at().type == TokenType.Not || this.at().type == TokenType.Minus || this.at().type == TokenType.Plus) {
             const operator = this.eat().value;
             const right = this.parse_call_expr();
+
+            codePos = mergeCodePos(codePos, this.prev.codePos);
             return { kind: StmtKind.UnaryExpr, right, operator, codePos };
         } else {
             return this.parse_call_expr();
@@ -706,7 +701,7 @@ export default class Parser {
     }
 
     private parse_call_expr(): Expr {
-        const codePos = this.at().codePos;
+        let codePos = this.at().codePos;
 
         const ident = this.parse_member_expr();
         if(this.at().type == TokenType.OpenParen) {
@@ -719,6 +714,8 @@ export default class Parser {
                 this.expect(TokenType.Comma, "Erwarte Kommas zwischen Parametern!");
             }
             this.expect(TokenType.CloseParen, "Erwarte schließende Klammer nach Parametern!"); // eat close paren
+            
+            codePos = mergeCodePos(codePos, this.prev.codePos);
             return { kind: StmtKind.CallExpr, ident, args, codePos };
         } else {
             return ident;
@@ -726,7 +723,7 @@ export default class Parser {
     }
 
     private parse_member_expr(): Expr {
-        const codePos = this.at().codePos;
+        let codePos = this.at().codePos;
         
         let container = this.parse_primary_expr();
 
@@ -738,22 +735,14 @@ export default class Parser {
                 if (member.kind != StmtKind.Identifier)
                     throw new ParserError(`Kann Punktoperator nicht nutzen, wenn rechts kein Name steht!`, this.at().codePos);
 
-                container = {
-                    kind: StmtKind.MemberExpr,
-                    container,
-                    member,
-                    codePos
-                };
+                codePos = mergeCodePos(codePos, this.prev.codePos);
+                container = { kind: StmtKind.MemberExpr, container, member, codePos };
             } else if (operator.type == TokenType.OpenBracket) {
                 const member = this.parse_expr(); // can be anything
                 this.expect(TokenType.CloseBracket, "Erwarte ']' nach Zugriffswert!");
 
-                container = {
-                    kind: StmtKind.ComputedMemberExpr,
-                    container,
-                    accessor: member,
-                    codePos,
-                };
+                codePos = mergeCodePos(codePos, this.prev.codePos);
+                container = { kind: StmtKind.ComputedMemberExpr, container, accessor: member, codePos };
             }
         }
 
@@ -795,8 +784,9 @@ export default class Parser {
             this.expect(TokenType.Comma, `Erwarte Kommas zwischen Listenelementen!`);
         }
 
-        codePos = mergeCodePos(codePos, this.eat().codePos);
+        this.eat(); // eat ]
 
+        codePos = mergeCodePos(codePos, this.prev.codePos);
         return {
             kind: StmtKind.ListLiteral,
             elements,
