@@ -313,6 +313,7 @@ export function* eval_for_block<A extends AbruptStmtKind>(
 
     let lastEvaluated: RuntimeVal = MK_NULL();
     loop: for (let i = 0; i < max; i++) {
+        yield block.codePos;
         const bodyValue = yield* eval_bare_statements(
             block.body,
             new Environment(env)
@@ -345,6 +346,7 @@ export function* eval_from_to_block<A extends AbruptStmtKind>(
 
     let lastEvaluated: RuntimeVal = MK_NULL();
     loop: for (let i = startVal.value; i < endVal.value; i++) {
+        yield block.codePos;
         const loopEnv = new Environment(env);
         if (block.iterIdent)
             loopEnv.declareVar(block.iterIdent, MK_NUMBER(i), true); // declare iter const
@@ -377,6 +379,7 @@ export function* eval_for_in_block<A extends AbruptStmtKind>(
 
     let lastEvaluated: RuntimeVal = MK_NULL();
     loop: for (const el of listVal.elements) {
+        yield block.codePos;
         const loopEnv = new Environment(env);
         if (block.iterIdent)
             loopEnv.declareVar(block.iterIdent, el, true); // declare iter from list element

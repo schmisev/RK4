@@ -422,6 +422,7 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
             if (queueInterrupt) {
                 console.log("▽ Ausführung wird abgebrochen!");
                 isRunning = false;
+                cleanupMarkers();
                 return true; // returns true if interrupted
             }
 
@@ -433,7 +434,7 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
                             new ace.Range(
                                 lastCodePos.lineIndex,
                                 lastCodePos.startPos,
-                                lastCodePos.lineIndex,
+                                lastCodePos.lineIndexEnd,
                                 lastCodePos.endPos
                             ), 'exec-marker', 'text'
                         )
@@ -445,10 +446,9 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
                 skippedSleep += dt; // assume sleep is skipped
                 if (skippedSleep > frameLagSum) {                    
                     const dtRest = skippedSleep - frameLagSum;
-                    // do the reset first, so the lagsum can accumulate during the sleep
-                    skippedSleep = 0;
-                    frameLagSum = 0;
                     await sleep(dtRest);
+                    skippedSleep = 0;
+                    resetLagSum();
                 }
 
                 

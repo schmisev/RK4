@@ -126,7 +126,7 @@ export function mergeCodePos(a: CodePosition, b: CodePosition): CodePosition {
         lineIndexEnd = a.lineIndexEnd;
         endPos = Math.max(a.endPos, b.endPos);
     }
-    else if (a.lineIndexEnd < b.lineIndexEnd) {
+    else if (a.lineIndexEnd > b.lineIndexEnd) {
         lineIndexEnd = a.lineIndexEnd;
         endPos = a.endPos;
     } else {

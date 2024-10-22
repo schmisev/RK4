@@ -5,7 +5,7 @@ import { ValueAlias } from "../runtime/values";
 
 export default class Parser {
     private tokens: Token[] = [];
-    private prev: Token = {type: TokenType.Empty, value: "", codePos: ILLEGAL_CODE_POS()};
+    private lastEaten: Token = {type: TokenType.Empty, value: "", codePos: ILLEGAL_CODE_POS()};
 
     private not_eof(): boolean {
         return this.tokens[0].type != TokenType.EOF;
@@ -17,7 +17,7 @@ export default class Parser {
 
     private eat(): Token {
         const prev = this.tokens.shift()!;
-        this.prev = prev; // store previous token
+        this.lastEaten = prev; // store previous token
         return prev;
     }
 
@@ -30,7 +30,7 @@ export default class Parser {
             const codePos = prev.codePos;
             throw new ParserError("PARSER: " + err + " - erhalten: " + JSON.stringify(prev.value), codePos);
         }
-        this.prev = prev; // store previous token
+        this.lastEaten = prev; // store previous token
         return prev;
     }
 
@@ -46,6 +46,12 @@ export default class Parser {
         while (this.not_eof()) {
             program.body.push(this.parse_stmt(new Set<never>()));
         }
+
+        /*
+        for (const node of program.body) {
+            console.log(node.kind, JSON.stringify(node.codePos));
+        }
+        */
 
         return program;
     }
@@ -125,7 +131,7 @@ export default class Parser {
         return {
             kind: StmtKind.DocComment,
             content,
-            codePos: mergeCodePos(codePos, this.prev.codePos),
+            codePos: mergeCodePos(codePos, this.lastEaten.codePos),
         };
     }
 
@@ -142,7 +148,7 @@ export default class Parser {
 
         return {
             kind: StmtKind.ShowCommand,
-            codePos: mergeCodePos(codePos, this.prev.codePos),
+            codePos: mergeCodePos(codePos, this.lastEaten.codePos),
             values,
         };
     }
@@ -209,9 +215,9 @@ export default class Parser {
             this.expect(TokenType.EndLine, "Erwarte eine neue Zeile nach jeder Methode!");
             methods.push(definition);
         }
-
         this.eat(); // eat 'ende'
-        codePos = mergeCodePos(codePos, this.prev.codePos);
+
+        codePos = mergeCodePos(codePos, this.lastEaten.codePos);
         return { kind: StmtKind.ClassDefinition, ident, attributes, methods, codePos, params }
     }
 
@@ -253,7 +259,7 @@ export default class Parser {
 
         this.eat(); // eat 'ende'
         
-        codePos = mergeCodePos(codePos, this.prev.codePos); 
+        codePos = mergeCodePos(codePos, this.lastEaten.codePos); 
         return { kind: StmtKind.IfElseBlock, condition, ifTrue, ifFalse, codePos };
     }
 
@@ -281,7 +287,7 @@ export default class Parser {
         }
         
         this.expect(TokenType.EndBlock, "Erwarte 'ende' nach Unterscheidung!");
-        codePos = mergeCodePos(codePos, this.prev.codePos);
+        codePos = mergeCodePos(codePos, this.lastEaten.codePos);
         return {
             kind: StmtKind.SwitchBlock,
             selection,
@@ -310,7 +316,7 @@ export default class Parser {
             body.push(statement);
         }
 
-        codePos = mergeCodePos(codePos, this.prev.codePos);
+        codePos = mergeCodePos(codePos, this.lastEaten.codePos);
         return {
             kind: StmtKind.CaseBlock,
             comp,
@@ -345,7 +351,7 @@ export default class Parser {
         this.expect(TokenType.EndLine, "Nach 'mal' sollte eine neue Zeile folgen!");
         const body = this.parse_bare_loop(allowedControl);
         
-        codePos = mergeCodePos(codePos, this.prev.codePos);
+        codePos = mergeCodePos(codePos, this.lastEaten.codePos);
         return {
             kind: StmtKind.ForBlock,
             codePos,
@@ -355,13 +361,13 @@ export default class Parser {
     }
 
     parse_while_loop<A extends AbruptStmtKind>(allowedControl: Set<A>): WhileBlock<A> {
-        let codePos = this.at().codePos;
+        let codePos = this.lastEaten.codePos;
 
         const condition = this.parse_expr();
         this.expect(TokenType.EndLine, "Nach der Bedingung sollte eine neue Zeile folgen!");
         const body = this.parse_bare_loop(allowedControl);
 
-        codePos = mergeCodePos(codePos, this.prev.codePos);
+        codePos = mergeCodePos(codePos, this.lastEaten.codePos);
         return {
             kind: StmtKind.WhileBlock,
             codePos,
@@ -371,12 +377,12 @@ export default class Parser {
     }
 
     parse_always_loop<A extends AbruptStmtKind>(allowedControl: Set<A>): AlwaysBlock<A> {
-        let codePos = this.at().codePos;
+        let codePos = this.lastEaten.codePos;
         
         this.expect(TokenType.EndLine, "Nach 'immer' sollte eine neue Zeile folgen!");
         const body = this.parse_bare_loop(allowedControl)
         
-        codePos = mergeCodePos(codePos, this.prev.codePos);
+        codePos = mergeCodePos(codePos, this.lastEaten.codePos);
         return {
             kind: StmtKind.AlwaysBlock,
             codePos,
@@ -385,7 +391,7 @@ export default class Parser {
     }
 
     parse_from_to_loop<A extends AbruptStmtKind>(allowedControl: Set<A>, iterIdent: string | undefined): FromToBlock<A> {
-        let codePos = this.at().codePos;
+        let codePos = this.lastEaten.codePos;
 
         this.eat(); // eat 'von'
         const start = this.parse_expr();
@@ -395,7 +401,7 @@ export default class Parser {
 
         const body = this.parse_bare_loop(allowedControl);
 
-        codePos = mergeCodePos(codePos, this.prev.codePos);
+        codePos = mergeCodePos(codePos, this.lastEaten.codePos);
         return {
             kind: StmtKind.FromToBlock,
             codePos,
@@ -407,7 +413,7 @@ export default class Parser {
     }
 
     parse_for_in_loop<A extends AbruptStmtKind>(allowedControl: Set<A>, iterIdent: string): ForInBlock<A> {
-        let codePos = this.at().codePos;
+        let codePos = this.lastEaten.codePos;
 
         this.eat(); // eat 'in'
         const list = this.parse_expr();
@@ -415,7 +421,7 @@ export default class Parser {
 
         const body = this.parse_bare_loop(allowedControl);
 
-        codePos = mergeCodePos(codePos, this.prev.codePos);
+        codePos = mergeCodePos(codePos, this.lastEaten.codePos);
         return {
             kind: StmtKind.ForInBlock,
             codePos,
@@ -446,7 +452,7 @@ export default class Parser {
             const statement = this.parse_stmt(allowedInLoop);
             body.push(statement);
         }
-        this.eat();
+        this.eat(); // eat 'ende'
         return body;
     }
 
@@ -487,7 +493,7 @@ export default class Parser {
             ident,
             type,
             value,
-            codePos: mergeCodePos(codePos, this.prev.codePos)
+            codePos: mergeCodePos(codePos, this.lastEaten.codePos)
         };
     }
 
@@ -507,7 +513,7 @@ export default class Parser {
         this.eat();
         const ident = this.expect(TokenType.Identifier, "Erwarte Variablennamen nach 'Zahl', 'Wahrheitswert', 'Text' oder 'Objekt'!").value;
         
-        codePos = mergeCodePos(codePos, this.prev.codePos)
+        codePos = mergeCodePos(codePos, this.lastEaten.codePos)
         return { type, ident, codePos };
     }
 
@@ -532,7 +538,7 @@ export default class Parser {
         }
         this.eat();
 
-        codePos = mergeCodePos(codePos, this.prev.codePos);
+        codePos = mergeCodePos(codePos, this.lastEaten.codePos);
         return { kind: StmtKind.FunctionDefinition, name, params, body, codePos };
     }
 
@@ -561,7 +567,7 @@ export default class Parser {
         }
         this.eat();
 
-        codePos = mergeCodePos(codePos, this.prev.codePos);
+        codePos = mergeCodePos(codePos, this.lastEaten.codePos);
         return { kind: StmtKind.ExtMethodDefinition, name, params, body, classname, codePos };
     }
 
@@ -585,7 +591,7 @@ export default class Parser {
             this.expect(TokenType.CloseParen, "Erwarte schließende Klammer nach Parametern!"); // eat close paren
         }
 
-        codePos = mergeCodePos(codePos, this.prev.codePos);
+        codePos = mergeCodePos(codePos, this.lastEaten.codePos);
         return {
             kind: StmtKind.ObjDeclaration,
             ident,
@@ -619,7 +625,7 @@ export default class Parser {
             this.eat();
             const value = this.parse_assignment_expr();
 
-            codePos = mergeCodePos(this.prev.codePos, codePos);
+            codePos = mergeCodePos(this.lastEaten.codePos, codePos);
             return { kind: StmtKind.AssignmentExpr, value, assigne: left, codePos };
         }
 
@@ -634,7 +640,7 @@ export default class Parser {
             const operator = this.eat().value;
             const right = this.parse_comparison_expr();
 
-            codePos = mergeCodePos(codePos, this.prev.codePos);
+            codePos = mergeCodePos(codePos, this.lastEaten.codePos);
             left = { kind: StmtKind.BinaryExpr, left, right, operator, codePos };
         }
 
@@ -649,7 +655,7 @@ export default class Parser {
             const operator = this.eat().value;
             const right = this.parse_additive_expr();
 
-            codePos = mergeCodePos(codePos, this.prev.codePos);
+            codePos = mergeCodePos(codePos, this.lastEaten.codePos);
             left = { kind: StmtKind.BinaryExpr, left, right, operator, codePos };
         }
 
@@ -664,7 +670,7 @@ export default class Parser {
             const operator = this.eat().value;
             const right = this.parse_multiplicative_expr();
 
-            codePos = mergeCodePos(codePos, this.prev.codePos);
+            codePos = mergeCodePos(codePos, this.lastEaten.codePos);
             left = { kind: StmtKind.BinaryExpr, left, right, operator, codePos };
         }
 
@@ -679,7 +685,7 @@ export default class Parser {
             const operator = this.eat().value;
             const right = this.parse_unary_expr();
 
-            codePos = mergeCodePos(codePos, this.prev.codePos);
+            codePos = mergeCodePos(codePos, this.lastEaten.codePos);
             left = { kind: StmtKind.BinaryExpr, left, right, operator, codePos };
         }
 
@@ -693,7 +699,7 @@ export default class Parser {
             const operator = this.eat().value;
             const right = this.parse_call_expr();
 
-            codePos = mergeCodePos(codePos, this.prev.codePos);
+            codePos = mergeCodePos(codePos, this.lastEaten.codePos);
             return { kind: StmtKind.UnaryExpr, right, operator, codePos };
         } else {
             return this.parse_call_expr();
@@ -715,7 +721,7 @@ export default class Parser {
             }
             this.expect(TokenType.CloseParen, "Erwarte schließende Klammer nach Parametern!"); // eat close paren
             
-            codePos = mergeCodePos(codePos, this.prev.codePos);
+            codePos = mergeCodePos(codePos, this.lastEaten.codePos);
             return { kind: StmtKind.CallExpr, ident, args, codePos };
         } else {
             return ident;
@@ -735,13 +741,13 @@ export default class Parser {
                 if (member.kind != StmtKind.Identifier)
                     throw new ParserError(`Kann Punktoperator nicht nutzen, wenn rechts kein Name steht!`, this.at().codePos);
 
-                codePos = mergeCodePos(codePos, this.prev.codePos);
+                codePos = mergeCodePos(codePos, this.lastEaten.codePos);
                 container = { kind: StmtKind.MemberExpr, container, member, codePos };
             } else if (operator.type == TokenType.OpenBracket) {
                 const member = this.parse_expr(); // can be anything
                 this.expect(TokenType.CloseBracket, "Erwarte ']' nach Zugriffswert!");
 
-                codePos = mergeCodePos(codePos, this.prev.codePos);
+                codePos = mergeCodePos(codePos, this.lastEaten.codePos);
                 container = { kind: StmtKind.ComputedMemberExpr, container, accessor: member, codePos };
             }
         }
@@ -786,7 +792,7 @@ export default class Parser {
 
         this.eat(); // eat ]
 
-        codePos = mergeCodePos(codePos, this.prev.codePos);
+        codePos = mergeCodePos(codePos, this.lastEaten.codePos);
         return {
             kind: StmtKind.ListLiteral,
             elements,
