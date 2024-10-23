@@ -23,7 +23,7 @@
             <div id="grid-container-left">
                 <div class="lc30 wsr text" id="title-bar">
                     🤖 RK4&nbsp;&nbsp;<div id="version-label" class="struct-doc-comment">BETA</div>&nbsp;&nbsp;| RKBasic, 3D, mehrere Roboter und Aufgaben |
-                    <button id="fold-debug" class="toggle-button" title="Zeig/verberge Debug-Bereich"><-></button>
+                    <button id="fold-debug" class="toggle-button" title="Zeig/verberge Debug-Bereich">&lt;-&gt;</button>
                     
                     <span class="roboto" style="float: right;"> 
                         Zieh mich! ▸</span>
@@ -95,7 +95,7 @@
                 <!-- Step time UI -->
                 <div class="wait-title wsr lc30">⌛ <span class="wait-time" id="wait-time">50 ms</span></div>
                 <div class="wait-slider-container wsr lc30">
-                    <input type="range" min="1" max="250" value="50" step="1" class="wait-slider slider" id="wait-slider">
+                    <input type="range" min="1" max="2500" value="500" step="1" class="wait-slider slider" id="wait-slider">
                 </div>
                 <!-- Command line UI -->
                 <input class="cmd-line cascadia" id="cmd-line" autocomplete="off">
@@ -134,7 +134,7 @@
                 <button id="debug-show-labels" class="toggle-button" title="Zeig/verberge Kommentare">#</button>
                 <button id="debug-show-functions" class="toggle-button" title="Zeig/verberge Funktionen">f()</button>
                 <button id="debug-show-methods" class="toggle-button" title="Zeig/verberge Methoden">o.m()</button> |
-                <button id="debug-show-flowchart" class="toggle-button" title="Schalte in den Flussdiagrammmodus um">◯-->◯</button>
+                <button id="debug-show-flowchart" class="toggle-button" title="Schalte in den Flussdiagrammmodus um">◯--&gt;◯</button>
             </div>
             <div id="grid-container-right">
                 <!-- Class view -->
@@ -157,7 +157,7 @@
                 <div id="flowchart-diagram-canvas" style="visibility: hidden;">
                     <pre class="mermaid" id="code-flowchart">
                         flowchart TD
-                        A[Irgendwas] --> B[ist] --> C[schief] --> D[gelaufen...]
+                        A[Irgendwas] --&gt; B[ist] --&gt; C[schief] --&gt; D[gelaufen...]
                     </pre>
                 </div>
             </div>
