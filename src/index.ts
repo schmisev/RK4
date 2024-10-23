@@ -39,7 +39,7 @@ import { toggleFlowchart } from "./ui/toggle-buttons";
 import { CodePosition, ILLEGAL_CODE_POS } from "./language/frontend/lexer";
 
 // Global variables
-let dt = 50; // ms to sleep between function calls
+export let dt = 50; // ms to sleep between function calls
 let dtIDE = 250; // ms to wait for IDE update
 let frameLagSum = 0; // running sum of frame lag
 export let isRunning = false;

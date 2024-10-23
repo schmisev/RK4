@@ -2,7 +2,7 @@ import { RuntimeError } from "../errors";
 import { ClassPrototype, GlobalEnvironment, VarHolder } from "../language/runtime/environment";
 import { MK_BOOL, MK_STRING, MK_NUMBER, RuntimeVal, BuiltinClassVal, ObjectVal, MK_NATIVE_METHOD, ValueAlias } from "../language/runtime/values";
 import { ENV } from "../spec";
-import { Vec2 } from "../utils";
+import { clamp, lerp, toZero, Vec2 } from "../utils";
 import { BlockType, CHAR2BLOCK, CHAR2MARKER, Field, MarkerType, World } from "./world";
 
 export const DIR2GER: Record<string, string> = {
@@ -228,6 +228,7 @@ export class Robot {
 
     constructor(x: number, y: number, dir: string, name = "Karol", index: number, w: World) {
         this.pos = new Vec2(x, y);
+        this.lastPos = new Vec2(x, y);
         this.moveH = 0.0;
         if (!["N", "E", "S", "W"].includes(dir))
             throw new RuntimeError(`${name}: '${dir}' ist keine valide Richtung!`);
@@ -293,6 +294,9 @@ export class Robot {
     }
 
     step() {
+        // animation
+        this.triggerHopAnim();
+        // logic
         const target = this.targetPos();
         if (this.canMoveTo(target)) {
             // this is kinda hacky right now
@@ -355,6 +359,9 @@ export class Robot {
     }
 
     seesBlock(b: BlockType | null = null) {
+        // animation trigger
+        this.triggerWatchAnim();
+        // logic
         const target = this.targetPos();
         try {
             const field = this.world.getField(target.x, target.y)!;
@@ -370,11 +377,17 @@ export class Robot {
     }
 
     seesWall() {
+        // animation trigger
+        this.triggerWatchAnim();
+        // logic
         const target = this.targetPos();
         return this.isWall(target);
     }
 
     seesVoid() {
+        // animation trigger
+        this.triggerWatchAnim();
+        // logic
         const target = this.targetPos();
         return this.isEmpty(target);
     }
@@ -451,6 +464,44 @@ export class Robot {
         if (targetField.isEmpty) throw new RuntimeError(`${this.name}: Kann Marker nicht im Nichts entfernen!`);
         if (targetField.isWall) throw new RuntimeError(`${this.name}: Kann Marker nicht von Wände entfernen!`);
         return true;
+    }
+
+    /** animation */
+    lastPos: Vec2;
+    currentHeight: number = 0.0;
+    lastHeight: number = 100.0;
+
+    progWatch: number = 0.0;
+    progHop: number = 0.0;
+
+    rndRotation: number = 0.0;
+
+    animate(deltaProg: number): void {
+        // update progress variables
+        this.progWatch = toZero(this.progWatch, deltaProg);
+        this.progHop = toZero(this.progHop, deltaProg);
+
+        // update position
+        if (this.progHop <= 0) {
+            this.lastPos.x = this.pos.x;
+            this.lastPos.y = this.pos.y;
+        }
+
+        // update height
+        if (this.lastHeight > this.currentHeight)
+            this.lastHeight = lerp(this.lastHeight, this.currentHeight, 0.1)
+        else
+            this.lastHeight = lerp(this.lastHeight, this.currentHeight, 0.9)
+    }
+
+    triggerWatchAnim() {
+        this.progWatch = 1.0;
+    }
+
+    triggerHopAnim() {
+        this.progHop = 1.0;
+        const rnd = 0.5 + Math.random() * 0.5;
+        this.rndRotation = this.rndRotation > 0 ? -rnd : rnd; // ???
     }
 }
 

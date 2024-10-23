@@ -1,9 +1,10 @@
 import * as p5 from 'p5';
 
-import { isRunning, queueInterrupt, world, objOverlay, taskCheck, updateLagSum, resetLagSum, taskName } from '..';
+import { isRunning, queueInterrupt, world, objOverlay, taskCheck, updateLagSum, resetLagSum, taskName, dt } from '..';
 import { Robot } from '../robot/robot';
 import { CR, CY, CG, CB, BlockType, MarkerType, World, CBOT, CBOT2, Field } from '../robot/world';
 import { robotDiagramIndex, showRobotDiagram, hideRobotDiagram, updateRobotDiagram } from './objectigrams';
+import { easeBump, easeInQuad, easeJump, lerp } from '../utils';
 
 
 // Setup robot sketch
@@ -275,12 +276,17 @@ export function robotSketch(p5: p5) {
         for (const [i, r] of w.robots.entries()) {
             // do the drawing
             p5.push();
-            p5.translate(0, 0, 5 * p5.abs(p5.sin(i + p5.frameCount * 0.1)));
+            /* p5.translate(0, 0, 5 * p5.abs(p5.sin(i + p5.frameCount * 0.1))); */ // Animation will now be stored in robot
             const f = w.getField(r.pos.x, r.pos.y)!;
+            
+            /** This is kinda hacky, because it mixes robot & animation state */
+            const fieldHeight = (f.blocks.length);
+            r.currentHeight = fieldHeight;
+
             p5.translate(
-                r.pos.x * TSZ,
-                r.pos.y * TSZ,
-                (f.blocks.length - 0.5) * BLH
+                lerp(r.lastPos.x, r.pos.x, 1 - r.progHop) * TSZ,
+                lerp(r.lastPos.y, r.pos.y, 1 - r.progHop) * TSZ,
+                ( r.lastHeight - 0.5 ) * BLH
             );
             p5.rotateZ(2 * p5.PI * r.dir2Angle() / 360);
 
@@ -292,6 +298,15 @@ export function robotSketch(p5: p5) {
     };
 
     const drawSingleRobot = (r: Robot) => {
+        // update animation
+        r.animate(p5.deltaTime / dt);
+
+        // drawing
+        // hop
+        p5.translate(0, 0, 10 * easeJump(1 - r.progHop));
+        // p5.rotateZ(p5.PI * r.rndRotation * 0.05)
+
+        // body
         p5.push();
         p5.translate(0, 0, RBH * 0.5);
         p5.fill(CBOT);
@@ -336,8 +351,8 @@ export function robotSketch(p5: p5) {
 
         p5.push();
         p5.noStroke();
-        p5.fill(0);
-        p5.translate(0, RBW * 0.42, 0);
+        p5.fill(255 * r.progWatch, 50 * r.progWatch, 50 * r.progWatch); // animate eye color
+        p5.translate(0, RBW * (0.42 + easeBump(1 - r.progWatch) * 0.05), 0); // eye "popping"
         p5.sphere(RBW * 0.3);
         p5.pop();
 
