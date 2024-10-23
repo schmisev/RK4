@@ -127,8 +127,8 @@ const taskDescription = document.getElementById("task-description") as HTMLEleme
 const waitSlider = document.getElementById("wait-slider") as HTMLInputElement;
 waitSlider.oninput = () => {
     const value = parseInt(waitSlider.value);
-    dt = value;
-    document.getElementById("wait-time")!.innerHTML = value.toString() + " ms";
+    dt = value / 10;
+    document.getElementById("wait-time")!.innerHTML = (value / 10).toString() + " ms";
 }
 
 // automatic parse timeout to avoid lagging the editor
@@ -444,14 +444,16 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
                 lastCodePos = next.value;
                 
                 skippedSleep += dt; // assume sleep is skipped
-                if (skippedSleep > frameLagSum) {                    
+                if (skippedSleep > frameLagSum) {
+                    // console.timeEnd()
+                    // console.time()
+                    // console.log(skippedSleep, frameLagSum);
+                    
                     const dtRest = skippedSleep - frameLagSum;
-                    await sleep(dtRest);
                     skippedSleep = 0;
-                    resetLagSum();
+                    frameLagSum = -dtRest;
+                    await sleep(dtRest);
                 }
-
-                
             }
             // clean old markers
             cleanupMarkers();
