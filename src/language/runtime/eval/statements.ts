@@ -1,6 +1,7 @@
 import { RuntimeError } from "../../../errors";
 import { formatValue } from "../../../utils";
 import { AbruptStmtKind, AlwaysBlock, ClassDefinition, DocComment, EmptyLine, ExtMethodDefinition, ForBlock, FunctionDefinition, IfElseBlock, ObjDeclaration, Program, ReturnCommand, ShowCommand, Stmt, StmtKind, AbruptEvalResult, VarDeclaration, WhileBlock, ContinueCommand, BreakCommand, SwitchBlock, FromToBlock, ForInBlock } from "../../frontend/ast";
+import { CodePosition } from "../../frontend/lexer";
 import { ClassPrototype, Environment, VarHolder } from "../environment";
 import { SteppedEval, evaluate, evaluate_expr } from "../interpreter";
 import {
@@ -35,12 +36,12 @@ export function* eval_var_declaration(
     declEnv: Environment | VarHolder = evalEnv,
 ): SteppedEval<RuntimeVal> {
     if (!decl.value) {
-        throw new RuntimeError(`Kein Wert gegeben: ${JSON.stringify(decl)}`, decl.lineIndex);
+        throw new RuntimeError(`Kein Wert gegeben: ${JSON.stringify(decl)}`, decl.codePos);
     }
     const value = yield* evaluate(decl.value, evalEnv);
     if (value.type != decl.type) {
         throw new RuntimeError(
-            `Datentypen '${value.type}' und '${decl.type}' passen nicht zusammen!`, decl.lineIndex
+            `Datentypen '${value.type}' und '${decl.type}' passen nicht zusammen!`, decl.codePos
         );
     }
     declEnv.declareVar(decl.ident, value);
@@ -54,9 +55,9 @@ export function* eval_obj_declaration(
 ): SteppedEval<RuntimeVal> {
     const cl = evalEnv.lookupVar(decl.classname);
     if (cl.type != ValueAlias.Class)
-        throw new RuntimeError(`'${decl.classname}' ist kein Klassenname!`, decl.lineIndex);
+        throw new RuntimeError(`'${decl.classname}' ist kein Klassenname!`, decl.codePos);
     if (cl.internal)
-        throw new RuntimeError(`Kann kein neues Objekt der Klasse '${decl.classname}' erzeugen.`, decl.lineIndex);
+        throw new RuntimeError(`Kann kein neues Objekt der Klasse '${decl.classname}' erzeugen.`, decl.codePos);
 
     const obj: ObjectVal = {
         type: ValueAlias.Object,
@@ -76,7 +77,7 @@ export function* eval_obj_declaration(
     // create variables
     if (args.length != cl.params.length)
         throw new RuntimeError(
-            `Erwarte ${cl.params.length} Parameter, habe aber ${args.length} erhalten!`, decl.lineIndex
+            `Erwarte ${cl.params.length} Parameter, habe aber ${args.length} erhalten!`, decl.codePos
         );
     for (let i = 0; i < cl.params.length; i++) {
         const param = cl.params[i];
@@ -85,7 +86,7 @@ export function* eval_obj_declaration(
 
         if (param.type != arg.type)
             throw new RuntimeError(
-                `'${varname}' sollte '${param.type}' sein, ist aber '${arg.type}'`, decl.lineIndex
+                `'${varname}' sollte '${param.type}' sein, ist aber '${arg.type}'`, decl.codePos
             );
         constructorEnv.declareVar(varname, args[i]);
     }
@@ -140,7 +141,7 @@ export function eval_ext_method_definition(
     const cls = env.lookupVar(def.classname);
     if (cls.type != ValueAlias.Class)
         throw new RuntimeError(
-            `Erweiterungsmethoden können nur für Klassen definiert werden, nicht für '${cls.type}'!`, def.lineIndex
+            `Erweiterungsmethoden können nur für Klassen definiert werden, nicht für '${cls.type}'!`, def.codePos
         );
     cls.prototype.declareMethod(def.name, {
         type: ValueAlias.Method,
@@ -158,7 +159,7 @@ export function eval_class_definition(
 ): RuntimeVal {
     if (!env.isGlobal())
         throw new RuntimeError(
-            `Du kannst Klassen wie '${def.ident}' nur global definieren!`, def.lineIndex
+            `Du kannst Klassen wie '${def.ident}' nur global definieren!`, def.codePos
         );
     const prototype = new ClassPrototype();
     for (const m of def.methods) {
@@ -223,14 +224,14 @@ export function* eval_continue_command(
 
 function evaluate_condition_value(
     condition: RuntimeVal,
-    lineIndex: number
+    codePos: CodePosition
 ): boolean {
     if (condition.type == ValueAlias.Boolean) {
         return condition.value;
     }
     if (condition.type == ValueAlias.Number) return condition.value != 0;
     throw new RuntimeError(
-        "Die Bedingung muss eine Zahl oder ein Wahrheitswert sein!", lineIndex
+        "Die Bedingung muss eine Zahl oder ein Wahrheitswert sein!", codePos
     );
 
 }
@@ -240,7 +241,7 @@ export function* eval_if_else_block<A extends AbruptStmtKind>(
     env: Environment
 ): SteppedEval<RuntimeVal | AbruptEvalResult<A>> {
     const condition = yield* evaluate_expr(block.condition, env);
-    if (evaluate_condition_value(condition, block.lineIndex)) {
+    if (evaluate_condition_value(condition, block.codePos)) {
         return yield* eval_bare_statements(block.ifTrue, new Environment(env));
     } else {
         return yield* eval_bare_statements(block.ifFalse, new Environment(env));
@@ -257,9 +258,9 @@ export function* eval_switch_block<A extends AbruptStmtKind>(
 
     loop: for (const caseBlock of block.cases) {
         const compVal = yield* evaluate_expr(caseBlock.comp, env);
-        const cond = eval_pure_binary_expr(selectedVal, compVal, "=", block.lineIndex);
+        const cond = eval_pure_binary_expr(selectedVal, compVal, "=", block.codePos);
         if (cond.type != ValueAlias.Boolean)
-            throw new RuntimeError(`Vergleich in Fallunterscheidung fehlgeschlagen.`, block.lineIndex);
+            throw new RuntimeError(`Vergleich in Fallunterscheidung fehlgeschlagen.`, block.codePos);
         
         if (cond.value) lastCond = cond.value;
         if (!lastCond) continue; // skip block if not equal
@@ -306,12 +307,13 @@ export function* eval_for_block<A extends AbruptStmtKind>(
 ): SteppedEval<RuntimeVal | AbruptEvalResult<A>> {
     const counter = yield* evaluate(block.counter, env);
     if (counter.type != ValueAlias.Number)
-        throw new RuntimeError("Zähler muss eine Zahl sein!", block.lineIndex);
+        throw new RuntimeError("Zähler muss eine Zahl sein!", block.codePos);
     let max = counter.value;
-    if (max < 0) throw new RuntimeError("Zähler muss größer oder gleich 0 sein!", block.lineIndex);
+    if (max < 0) throw new RuntimeError("Zähler muss größer oder gleich 0 sein!", block.codePos);
 
     let lastEvaluated: RuntimeVal = MK_NULL();
     loop: for (let i = 0; i < max; i++) {
+        yield block.codePos;
         const bodyValue = yield* eval_bare_statements(
             block.body,
             new Environment(env)
@@ -338,12 +340,13 @@ export function* eval_from_to_block<A extends AbruptStmtKind>(
     const startVal = yield* evaluate(block.start, env);
     const endVal = yield* evaluate(block.end, env);
     if (startVal.type != ValueAlias.Number || endVal.type != ValueAlias.Number)
-        throw new RuntimeError("Start- und Endwert müssen Zahlen sein!", block.lineIndex);
-    if (startVal.value > endVal.value) throw new RuntimeError("Startwert muss kleiner oder gleich dem Endwert sein.", block.lineIndex);
+        throw new RuntimeError("Start- und Endwert müssen Zahlen sein!", block.codePos);
+    if (startVal.value > endVal.value) throw new RuntimeError("Startwert muss kleiner oder gleich dem Endwert sein.", block.codePos);
 
 
     let lastEvaluated: RuntimeVal = MK_NULL();
     loop: for (let i = startVal.value; i < endVal.value; i++) {
+        yield block.codePos;
         const loopEnv = new Environment(env);
         if (block.iterIdent)
             loopEnv.declareVar(block.iterIdent, MK_NUMBER(i), true); // declare iter const
@@ -372,10 +375,11 @@ export function* eval_for_in_block<A extends AbruptStmtKind>(
 ): SteppedEval<RuntimeVal | AbruptEvalResult<A>> {
     const listVal = yield* evaluate(block.list, env);
     if (listVal.type != ValueAlias.List)
-        throw new RuntimeError("Kann nur über 'Liste' iterieren!", block.lineIndex);
+        throw new RuntimeError("Kann nur über 'Liste' iterieren!", block.codePos);
 
     let lastEvaluated: RuntimeVal = MK_NULL();
     loop: for (const el of listVal.elements) {
+        yield block.codePos;
         const loopEnv = new Environment(env);
         if (block.iterIdent)
             loopEnv.declareVar(block.iterIdent, el, true); // declare iter from list element
@@ -404,10 +408,10 @@ export function* eval_while_block<A extends AbruptStmtKind>(
 ): SteppedEval<RuntimeVal | AbruptEvalResult<A>> {
     let lastEvaluated: RuntimeVal = MK_NULL();
     loop: while (true) {
-        yield block.lineIndex;
+        yield block.codePos;
         // yield here to prevent infinite loops from being unable to be stopped
         const condition = yield* evaluate_expr(block.condition, env);
-        if (!evaluate_condition_value(condition, block.lineIndex))
+        if (!evaluate_condition_value(condition, block.codePos))
             break loop;
         const bodyValue = yield* eval_bare_statements(
             block.body,
@@ -434,7 +438,7 @@ export function* eval_always_block<A extends AbruptStmtKind>(
 ): SteppedEval<RuntimeVal | AbruptEvalResult<A>> {
     let lastEvaluated: RuntimeVal = MK_NULL();
     loop: while (true) {
-        yield block.lineIndex;
+        yield block.codePos;
         const bodyValue = yield* eval_bare_statements(
             block.body,
             new Environment(env)

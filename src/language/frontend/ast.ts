@@ -1,4 +1,5 @@
 import type { AbruptBreak, AbruptContinue, AbruptReturn, ValueAlias } from "../runtime/values";
+import { CodePosition } from "./lexer";
 
 export const enum StmtKind {
     Program = "Programm",
@@ -74,19 +75,19 @@ export type AbruptEvalResult<Ctrl> = Ctrl extends AbruptStmtKind ? AbruptToRetur
 
 export interface Program {
     kind: StmtKind.Program;
-    lineIndex: number;
+    codePos: CodePosition;
     body: BareStmt[];
 }
 
 export interface DocComment {
     kind: StmtKind.DocComment;
-    lineIndex: number;
+    codePos: CodePosition;
     content: string;
 }
 
 export interface VarDeclaration {
     kind: StmtKind.VarDeclaration;
-    lineIndex: number;
+    codePos: CodePosition;
     ident: string;
     type: ValueAlias.Null | ValueAlias.Boolean | ValueAlias.Number | ValueAlias.String | ValueAlias.List;
     value: Expr;
@@ -94,7 +95,7 @@ export interface VarDeclaration {
 
 export interface ObjDeclaration {
     kind: StmtKind.ObjDeclaration;
-    lineIndex: number;
+    codePos: CodePosition;
     ident: string;
     type: ValueAlias.Object;
     classname: string;
@@ -102,13 +103,13 @@ export interface ObjDeclaration {
 }
 
 export interface EmptyLine {
-    lineIndex: number;
+    codePos: CodePosition;
     kind: StmtKind.EmptyLine;
 }
 
 export interface IfElseBlock<Ctrl> {
     kind: StmtKind.IfElseBlock;
-    lineIndex: number;
+    codePos: CodePosition;
     condition: Expr;
     ifTrue: Stmt<Ctrl>[];
     ifFalse: Stmt<Ctrl>[];
@@ -117,7 +118,7 @@ export type AnyIfElseBlock = IfElseBlock<AbruptStmtKind>;
 
 export interface SwitchBlock<Ctrl> {
     kind: StmtKind.SwitchBlock;
-    lineIndex: number;
+    codePos: CodePosition;
     selection: Expr;
     cases: CaseBlock<Ctrl>[];
     fallback: Stmt<StmtKind.BreakCommand | StmtKind.ContinueCommand | Ctrl>[];
@@ -126,7 +127,7 @@ export type AnySwitchBlock = SwitchBlock<AbruptStmtKind>;
 
 export interface CaseBlock<Ctrl> {
     kind: StmtKind.CaseBlock;
-    lineIndex: number;
+    codePos: CodePosition;
     comp: Expr;
     body: Stmt<StmtKind.BreakCommand | StmtKind.ContinueCommand | Ctrl>[];
 }
@@ -134,7 +135,7 @@ export type AnyCaseBlock = CaseBlock<AbruptStmtKind>;
 
 export interface ForBlock<Ctrl> {
     kind: StmtKind.ForBlock;
-    lineIndex: number;
+    codePos: CodePosition;
     counter: Expr;
     body: Stmt<StmtKind.BreakCommand | StmtKind.ContinueCommand | Ctrl>[];
 }
@@ -142,7 +143,7 @@ export type AnyForBlock = ForBlock<AbruptStmtKind>;
 
 export interface WhileBlock<Ctrl> {
     kind: StmtKind.WhileBlock;
-    lineIndex: number;
+    codePos: CodePosition;
     condition: Expr;
     body: Stmt<StmtKind.BreakCommand | StmtKind.ContinueCommand | Ctrl>[];
 }
@@ -150,14 +151,14 @@ export type AnyWhileBlock = WhileBlock<AbruptStmtKind>;
 
 export interface AlwaysBlock<Ctrl> {
     kind: StmtKind.AlwaysBlock;
-    lineIndex: number;
+    codePos: CodePosition;
     body: Stmt<StmtKind.BreakCommand | StmtKind.ContinueCommand | Ctrl>[];
 }
 export type AnyAlwaysBlock = AlwaysBlock<AbruptStmtKind>;
 
 export interface FromToBlock<Ctrl> {
     kind: StmtKind.FromToBlock;
-    lineIndex: number;
+    codePos: CodePosition;
     iterIdent: string | undefined;
     start: Expr;
     end: Expr;
@@ -167,7 +168,7 @@ export type AnyFromToBlock = FromToBlock<AbruptStmtKind>;
 
 export interface ForInBlock<Ctrl> {
     kind: StmtKind.ForInBlock;
-    lineIndex: number;
+    codePos: CodePosition;
     iterIdent: string;
     list: Expr;
     body: Stmt<StmtKind.BreakCommand | StmtKind.ContinueCommand | Ctrl>[];
@@ -176,23 +177,23 @@ export type AnyForInBlock = ForInBlock<AbruptStmtKind>;
 
 export interface ShowCommand {
     kind: StmtKind.ShowCommand;
-    lineIndex: number;
+    codePos: CodePosition;
     values: Expr[];
 }
 
 export interface BreakCommand {
     kind: StmtKind.BreakCommand;
-    lineIndex: number;
+    codePos: CodePosition;
 }
 
 export interface ContinueCommand {
     kind: StmtKind.ContinueCommand;
-    lineIndex: number;
+    codePos: CodePosition;
 }
 
 export interface ReturnCommand {
     kind: StmtKind.ReturnCommand;
-    lineIndex: number;
+    codePos: CodePosition;
     // Do NOT allow control flow expressions in computation for return. This is confusing!
     value: Expr;
 }
@@ -201,14 +202,14 @@ export type Expr = AssignmentExpr | BinaryExpr | UnaryExpr | Identifier | Numeri
 
 export interface AssignmentExpr {
     kind: StmtKind.AssignmentExpr;
-    lineIndex: number;
+    codePos: CodePosition;
     assigne: Expr;
     value: Expr;
 }
 
 export interface BinaryExpr {
     kind: StmtKind.BinaryExpr;
-    lineIndex: number;
+    codePos: CodePosition;
     left: Expr;
     right: Expr;
     operator: string;
@@ -216,71 +217,71 @@ export interface BinaryExpr {
 
 export interface UnaryExpr {
     kind: StmtKind.UnaryExpr;
-    lineIndex: number;
+    codePos: CodePosition;
     right: Expr;
     operator: string;
 }
 
 export interface Identifier {
     kind: StmtKind.Identifier;
-    lineIndex: number;
+    codePos: CodePosition;
     symbol: string;
 }
 
 export interface NumericLiteral {
     kind: StmtKind.NumericLiteral;
-    lineIndex: number;
+    codePos: CodePosition;
     value: number;
 }
 
 export interface NullLiteral {
     kind: StmtKind.NullLiteral;
-    lineIndex: number;
+    codePos: CodePosition;
     value: ValueAlias.Null;
 }
 
 export interface BooleanLiteral {
     kind: StmtKind.BooleanLiteral;
-    lineIndex: number;
+    codePos: CodePosition;
     value: boolean;
 }
 
 export interface StringLiteral {
     kind: StmtKind.StringLiteral;
-    lineIndex: number;
+    codePos: CodePosition;
     value: string;
 }
 
 export interface ListLiteral {
     kind: StmtKind.ListLiteral;
-    lineIndex: number;
+    codePos: CodePosition;
     elements: Expr[];
 }
 
 export interface ComputedMemberExpr {
     kind: StmtKind.ComputedMemberExpr;
-    lineIndex: number;
+    codePos: CodePosition;
     container: Expr;
     accessor: Expr;
 }
 
 export interface MemberExpr {
     kind: StmtKind.MemberExpr;
-    lineIndex: number;
+    codePos: CodePosition;
     container: Expr;
     member: Identifier;
 }
 
 export interface CallExpr {
     kind: StmtKind.CallExpr;
-    lineIndex: number;
+    codePos: CodePosition;
     ident: Expr;
     args: Expr[];
 }
 
 export interface ClassDefinition {
     kind: StmtKind.ClassDefinition;
-    lineIndex: number;
+    codePos: CodePosition;
     ident: string;
     params: ParamDeclaration[];
     attributes: (VarDeclaration | ObjDeclaration)[];
@@ -290,12 +291,12 @@ export interface ClassDefinition {
 export interface ParamDeclaration {
     ident: string;
     type: string;
-    lineIndex: number;
+    codePos: CodePosition;
 }
 
 export interface FunctionDefinition {
     kind: StmtKind.FunctionDefinition;
-    lineIndex: number;
+    codePos: CodePosition;
     params: ParamDeclaration[];
     name: string;
     body: Stmt<StmtKind.ReturnCommand>[];
@@ -303,7 +304,7 @@ export interface FunctionDefinition {
 
 export interface ExtMethodDefinition {
     kind: StmtKind.ExtMethodDefinition;
-    lineIndex: number;
+    codePos: CodePosition;
     params: ParamDeclaration[];
     name: string;
     classname: string;

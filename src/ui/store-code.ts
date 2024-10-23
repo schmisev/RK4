@@ -78,7 +78,6 @@ function loadFromStore() {
 // insert some Demo Code
 storeRawCode("Demo: Alles mögliche",
 `Zahl zeilenZähler ist 0
-
 # Wiederholungen
 wiederhole 4 mal
     Zahl n ist 0

@@ -36,6 +36,7 @@ import { DebugError, LexerError, ParserError, RuntimeError } from './errors';
 import { Session } from "inspector";
 import { setFlowchartVisibility, showFlowchart } from "./ui/flowcharts";
 import { toggleFlowchart } from "./ui/toggle-buttons";
+import { CodePosition, ILLEGAL_CODE_POS } from "./language/frontend/lexer";
 
 // Global variables
 let dt = 50; // ms to sleep between function calls
@@ -126,8 +127,8 @@ const taskDescription = document.getElementById("task-description") as HTMLEleme
 const waitSlider = document.getElementById("wait-slider") as HTMLInputElement;
 waitSlider.oninput = () => {
     const value = parseInt(waitSlider.value);
-    dt = value;
-    document.getElementById("wait-time")!.innerHTML = value.toString() + " ms";
+    dt = value / 10;
+    document.getElementById("wait-time")!.innerHTML = (value / 10).toString() + " ms";
 }
 
 // automatic parse timeout to avoid lagging the editor
@@ -190,9 +191,14 @@ function resetErrorMarkers() {
     }
 }
 
-function setErrorMarker(msg: string, lineIndex: number, errorTypeCss: string) {
+function setErrorMarker(msg: string, codePos: CodePosition, errorTypeCss: string) {
     setErrorBar(msg, errorTypeCss);
-    const markerId = editor.session.addMarker(new ace.Range(lineIndex, 0, lineIndex, 10), "error-marker " + errorTypeCss, 'fullLine');
+    const markerId = editor.session.addMarker(new ace.Range(
+        codePos.lineIndex, 
+        codePos.startPos, 
+        codePos.lineIndexEnd, 
+        codePos.endPos
+    ), "error-marker " + errorTypeCss, "text");
     errorMarkers.push(markerId);
 }
 
@@ -221,23 +227,23 @@ export async function updateIDE() {
         setDebugTimer(false);
     } catch (e) {
         let errorCssClass = "none";
-        let lineIndex = 0;
+        let codePos: CodePosition = ILLEGAL_CODE_POS();
         let message = "";
         
         if (e instanceof LexerError) {
             errorCssClass = "lexer";
-            lineIndex = e.lineIndex;
+            codePos = e.lineIndex;
             message = e.message;
         } else if (e instanceof ParserError) {
             errorCssClass = "parser";
-            lineIndex = e.lineIndex;
+            codePos = e.lineIndex;
             message = e.message;
         }
 
         // not runtime errors should appear
 
         if (errorCssClass !== "none") {
-            setErrorMarker(`❌ ${message} (Zeile ${lineIndex+1})`, lineIndex, errorCssClass);
+            setErrorMarker(`❌ ${message} (Zeile: ${codePos.lineIndex + 1} : ${codePos.startPos})`, codePos, errorCssClass);
         }
 
         //throw e; // temporary
@@ -285,7 +291,7 @@ async function resetEnv(stage = 0) {
     world.declareAllRobots(env);
     addRobotButtons(objBar, objOverlay, world);
     // run preload so it works in the cmd
-    await runCode(preloadCode, false);
+    await runCode(preloadCode, false, false);
 };
 
 // Run cmds
@@ -302,7 +308,7 @@ async function runCmd() {
     cmdLineStackPointer = cmdLineStack.length;
 
     console.log(">>", cmdCode);
-    await runCode(cmdCode, true);
+    await runCode(cmdCode, true, false);
 };
 
 // Get past commands via keyboard
@@ -340,7 +346,7 @@ async function startCode() {
         }
         console.log("\n▷ Code wird ausgeführt!");
         
-        if (await runCode(code, true)) {
+        if (await runCode(code, true, true)) {
             editor.setReadOnly(false);
             return; // return immediatly if codeRun was interrupted
         }
@@ -391,9 +397,17 @@ async function interrupt() {
 }
 
 // Run ANY code
-async function runCode(code: string, stepped: boolean): Promise<boolean> {
+async function runCode(code: string, stepped: boolean, showHighlighting: boolean): Promise<boolean> {
     let skippedSleep = 0;
-    let lastLineIndex = -1;
+    let lastCodePos: CodePosition = ILLEGAL_CODE_POS();
+    let markerIds: number[] = [];
+
+    const cleanupMarkers = () => {
+        for (const id of markerIds) {
+            editor.session.removeMarker(id);
+        }
+    }
+
     try {
         program = parser.produceAST(code);
         let stepper = evaluate(program, env);
@@ -408,37 +422,58 @@ async function runCode(code: string, stepped: boolean): Promise<boolean> {
             if (queueInterrupt) {
                 console.log("▽ Ausführung wird abgebrochen!");
                 isRunning = false;
+                cleanupMarkers();
                 return true; // returns true if interrupted
             }
 
             if (stepped) {
-                lastLineIndex = next.value;
-                let markerId = editor.session.addMarker(new ace.Range(lastLineIndex, 0, lastLineIndex, 10), 'exec-marker', 'fullLine');
+                // always push marker!
+                if (showHighlighting) {
+                    markerIds.push(
+                        editor.session.addMarker(
+                            new ace.Range(
+                                lastCodePos.lineIndex,
+                                lastCodePos.startPos,
+                                lastCodePos.lineIndexEnd,
+                                lastCodePos.endPos
+                            ), 'exec-marker', 'text'
+                        )
+                    )
+                }
+
+                lastCodePos = next.value;
                 
+                skippedSleep += dt; // assume sleep is skipped
                 if (skippedSleep > frameLagSum) {
-                    // we overshot the framelag, so the apparent lag is smaller
-                    const lastFrameLag = frameLagSum;
-                    skippedSleep = skippedSleep - frameLagSum;
-                    frameLagSum = - skippedSleep;
+                    // console.timeEnd()
+                    // console.time()
+                    // console.log(skippedSleep, frameLagSum);
                     
-                    await sleep(dt);
-                } else {
-                    skippedSleep += dt;
-                }   
-                editor.session.removeMarker(markerId);
+                    const dtRest = skippedSleep - frameLagSum;
+                    skippedSleep = 0;
+                    frameLagSum = -dtRest;
+                    await sleep(dtRest);
+                }
             }
+            // clean old markers
+            cleanupMarkers();
         }
     } catch (e) {
+        // clean runtime markers
+        cleanupMarkers();
+
         if (e instanceof DebugError) {
-            const errorLineIndex = e.lineIndex >= 0 ? e.lineIndex : lastLineIndex
+            const errorCodePos = e.lineIndex.lineIndex >= 0 ? e.lineIndex : lastCodePos
             console.log("⚠️ " + e.message);
             console.error(e.stack);
-            setErrorMarker(`⚠️ ${e.message} (Zeile: ${errorLineIndex + 1})`, errorLineIndex, "runtime");
+            if (showHighlighting)
+                setErrorMarker(`⚠️ ${e.message} (Zeile: ${errorCodePos.lineIndex + 1} : ${errorCodePos.startPos})`, errorCodePos, "runtime");
         } else if (e instanceof Error) {
             // throw e;
             console.log("⚠️ " + e.message);
             console.error(e.stack);
-            setErrorMarker(`⚠️ ${e.message} (Zeile: ${lastLineIndex + 1})`, lastLineIndex, "runtime");
+            if (showHighlighting)
+                setErrorMarker(`⚠️ ${e.message} (Zeile: ${lastCodePos.lineIndex + 1} : ${lastCodePos.startPos})`, lastCodePos, "runtime");
         } else {
             // do nothing?
         }
