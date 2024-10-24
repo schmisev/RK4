@@ -469,7 +469,7 @@ export class Robot {
     /** animation */
     lastPos: Vec2;
     currentHeight: number = 0.0;
-    lastHeight: number = 100.0;
+    lastHeight: number = 0.0;
 
     progWatch: number = 0.0;
     progHop: number = 0.0;
@@ -487,11 +487,7 @@ export class Robot {
             this.lastPos.y = this.pos.y;
         }
 
-        // update height
-        if (this.lastHeight > this.currentHeight)
-            this.lastHeight = lerp(this.lastHeight, this.currentHeight, 0.1)
-        else
-            this.lastHeight = lerp(this.lastHeight, this.currentHeight, 0.9)
+        this.lastHeight = this.currentHeight;
     }
 
     triggerWatchAnim() {
