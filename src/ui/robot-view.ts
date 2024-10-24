@@ -4,7 +4,7 @@ import { isRunning, queueInterrupt, world, objOverlay, taskCheck, updateLagSum, 
 import { Robot } from '../robot/robot';
 import { CR, CY, CG, CB, BlockType, MarkerType, World, CBOT, CBOT2, Field } from '../robot/world';
 import { robotDiagramIndex, showRobotDiagram, hideRobotDiagram, updateRobotDiagram } from './objectigrams';
-import { easeBump, easeInQuad, easeJump, lerp } from '../utils';
+import { easeBump, easeInOutBack, easeInOutQuad, easeInQuad, easeJump, easeOutElastic, easeOutQuad, lerp } from '../utils';
 
 
 // Setup robot sketch
@@ -276,19 +276,19 @@ export function robotSketch(p5: p5) {
         for (const [i, r] of w.robots.entries()) {
             // do the drawing
             p5.push();
-            /* p5.translate(0, 0, 5 * p5.abs(p5.sin(i + p5.frameCount * 0.1))); */ // Animation will now be stored in robot
+            p5.translate(0, 0, 0.1 * BLH * p5.abs(p5.sin(i + p5.frameCount * 0.1)));
             const f = w.getField(r.pos.x, r.pos.y)!;
-            
-            /** This is kinda hacky, because it mixes robot & animation state */
             const fieldHeight = (f.blocks.length);
-            r.currentHeight = fieldHeight;
 
+            const interpHop = easeInOutQuad(1 - r.progHop);
             p5.translate(
-                lerp(r.lastPos.x, r.pos.x, 1 - r.progHop) * TSZ,
-                lerp(r.lastPos.y, r.pos.y, 1 - r.progHop) * TSZ,
-                ( r.lastHeight - 0.5 ) * BLH
+                lerp(r.lastPos.x, r.pos.x, interpHop) * TSZ,
+                lerp(r.lastPos.y, r.pos.y, interpHop) * TSZ,
+                ( fieldHeight - 0.5 ) * BLH
             );
-            p5.rotateZ(2 * p5.PI * r.dir2Angle() / 360);
+
+            const interpRot = easeInOutQuad(1 - r.progRot);
+            p5.rotateZ(2 * p5.PI * lerp(r.lastRot + r.rndRot, r.currentRot + r.rndRot, interpRot) / 360);
 
             drawSingleRobot(r);
 
@@ -299,11 +299,12 @@ export function robotSketch(p5: p5) {
 
     const drawSingleRobot = (r: Robot) => {
         // update animation
-        r.animate(p5.deltaTime / dt);
+        r.animate(p5.deltaTime / dt, p5.deltaTime);
 
         // drawing
         // hop
-        p5.translate(0, 0, 10 * easeJump(1 - r.progHop));
+        p5.translate(0, 0, BLH * easeBump(1 - r.progHop));
+        p5.rotateX(p5.PI * 0.05 * easeBump(1 - r.progHop));
         // p5.rotateZ(p5.PI * r.rndRotation * 0.05)
 
         // body
@@ -347,16 +348,37 @@ export function robotSketch(p5: p5) {
         p5.fill(255);
         p5.translate(0, RBW * 0.3, 0);
         p5.sphere(RBW * 0.4);
+
+        // do blink
+        if (r.progBlink > 0) {
+            p5.fill(CBOT2);
+            p5.sphere(RBW * 0.43);
+        }
+
         p5.pop();
 
         p5.push();
         p5.noStroke();
-        p5.fill(255 * r.progWatch, 50 * r.progWatch, 50 * r.progWatch); // animate eye color
-        p5.translate(0, RBW * (0.42 + easeBump(1 - r.progWatch) * 0.05), 0); // eye "popping"
+        // animate eye color
+        const interp = easeOutQuad(1 - r.progWatch)
+        if (r.condWatch)
+            p5.fill(0, 255 * interp, 0); // blink green
+        else
+            p5.fill(255 * interp, 0, 0); // blink red
+
+        p5.translate(0, RBW * 0.42, 0);
         p5.sphere(RBW * 0.3);
+
         p5.pop();
 
         // arms
+        p5.push();
+        const interpHand = easeBump(1 - r.progHand);
+        if (r.handDir > 0) p5.translate(0, 0, lerp(0, r.handDir * BLH * 0.7, interpHand));
+        else p5.translate(0, 0, lerp(0, r.handDir * BLH * 0.5, interpHand));
+        
+        p5.translate(0, -lerp(0, - BLH * 0.1, interpHand), 0)
+
         p5.fill(CBOT2);
         p5.push();
         p5.noStroke();
@@ -368,6 +390,8 @@ export function robotSketch(p5: p5) {
         p5.noStroke();
         p5.translate(RBW * 0.4, RBW * 0.6, -RBW * 0.4);
         p5.sphere(RBW * 0.2);
+        p5.pop();
+
         p5.pop();
 
         // backplate

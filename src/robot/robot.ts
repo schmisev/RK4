@@ -228,7 +228,6 @@ export class Robot {
 
     constructor(x: number, y: number, dir: string, name = "Karol", index: number, w: World) {
         this.pos = new Vec2(x, y);
-        this.lastPos = new Vec2(x, y);
         this.moveH = 0.0;
         if (!["N", "E", "S", "W"].includes(dir))
             throw new RuntimeError(`${name}: '${dir}' ist keine valide Richtung!`);
@@ -236,6 +235,11 @@ export class Robot {
         this.name = name;
         this.index = index;
         this.world = w;
+
+        // animation state
+        this.lastPos = new Vec2(x, y);
+        this.currentRot = this.dir2Angle();
+        this.lastRot = this.dir2Angle();
     }
 
     dir2Vec(): Vec2 {
@@ -283,13 +287,33 @@ export class Robot {
                 this.dir = "N"
                 break;
         }
+        // animation
+        this.triggerRotAnim();
         return this.dir;
     }
 
     turnLeft() {
+        switch (this.dir) {
+            case "N":
+                this.dir = "W"
+                break;
+            case "E":
+                this.dir = "N"
+                break;
+            case "S":
+                this.dir = "E"
+                break;
+            case "W":
+                this.dir = "S"
+                break;
+        }
+        /*
         for(let i = 0; i < 3; i++) {
             this.turnRight()
         }
+        */
+        // animation
+        this.triggerRotAnim();
         return this.dir;
     }
 
@@ -317,12 +341,17 @@ export class Robot {
         if (this.canPlaceAt(field)) {
             field.addBlock(t);
         }
+        // animation
+        this.triggerHandAnim(-1);
     }
 
     pickUpBlock() {
         const target = this.targetPos();
         const field = this.world.getField(target.x, target.y);
         if (this.canPickUpFrom(field)) {
+            // animation
+            this.triggerHandAnim(1);
+            // ret
             return field.removeBlock();
         }
     }
@@ -359,37 +388,43 @@ export class Robot {
     }
 
     seesBlock(b: BlockType | null = null) {
-        // animation trigger
-        this.triggerWatchAnim();
         // logic
         const target = this.targetPos();
+        
+        let check = false;
         try {
             const field = this.world.getField(target.x, target.y)!;
             if (b == null) {
-                if (field.blocks.length >= 1) return true;
-                return false;
+                if (field.blocks.length >= 1) check = true;
+                else check = false;
             }
-            if (field.blocks[field.blocks.length - 1] == b) return true;
-            return false;
+            else if (field.blocks[field.blocks.length - 1] == b) check = true;
+            else check = false;
         } catch {
-            return false;
+            check = false;
         }
+
+        // animation trigger
+        this.triggerWatchAnim(check);
+        return check;
     }
 
     seesWall() {
-        // animation trigger
-        this.triggerWatchAnim();
         // logic
         const target = this.targetPos();
-        return this.isWall(target);
+        const check = this.isWall(target);
+        // animation trigger
+        this.triggerWatchAnim(check);
+        return check;
     }
 
     seesVoid() {
-        // animation trigger
-        this.triggerWatchAnim();
         // logic
         const target = this.targetPos();
-        return this.isEmpty(target);
+        const check = this.isEmpty(target);
+        // animation trigger
+        this.triggerWatchAnim(check);
+        return check;
     }
 
     // utils
@@ -468,36 +503,59 @@ export class Robot {
 
     /** animation */
     lastPos: Vec2;
-    currentHeight: number = 0.0;
-    lastHeight: number = 0.0;
+    currentRot: number;
+    lastRot: number;
 
+    condWatch: boolean = false;
     progWatch: number = 0.0;
     progHop: number = 0.0;
+    progRot: number = 0.0;
+    progHand: number = 0.0;
+    handDir: number = 1;
+    rndRot: number = 0.0;
+    progBlink: number = 0.0;
 
-    rndRotation: number = 0.0;
-
-    animate(deltaProg: number): void {
+    animate(deltaProg: number, delta: number): void {
         // update progress variables
         this.progWatch = toZero(this.progWatch, deltaProg);
         this.progHop = toZero(this.progHop, deltaProg);
+        this.progRot = toZero(this.progRot, deltaProg);
+        this.progHand = toZero(this.progHand, deltaProg);
+        this.progBlink = toZero(this.progBlink, 0.005 * delta);
 
-        // update position
-        if (this.progHop <= 0) {
-            this.lastPos.x = this.pos.x;
-            this.lastPos.y = this.pos.y;
+        if (this.progBlink == 0 && Math.random() < 0.001) {
+            this.progBlink = 1.0;
         }
-
-        this.lastHeight = this.currentHeight;
     }
 
-    triggerWatchAnim() {
+    triggerWatchAnim(condition: boolean) {
         this.progWatch = 1.0;
+        this.condWatch = condition;
     }
 
     triggerHopAnim() {
         this.progHop = 1.0;
-        const rnd = 0.5 + Math.random() * 0.5;
-        this.rndRotation = this.rndRotation > 0 ? -rnd : rnd; // ???
+        this.lastPos.x = this.pos.x;
+        this.lastPos.y = this.pos.y;
+        this.rndRot = 5 * (1 - 2 * Math.random()); // in degrees
+    }
+
+    triggerRotAnim() {
+        this.progRot = 1.0;
+        this.lastRot = this.currentRot;
+        this.currentRot = this.dir2Angle();
+
+        // making sure the rotation will alsways be < 360 degrees
+        const rotDiff = this.currentRot - this.lastRot;
+        if (Math.abs(rotDiff) > 180) {
+            if (rotDiff > 0) this.lastRot += 360;
+            else this.lastRot -= 360;
+        }
+    }
+
+    triggerHandAnim(dir: number) {
+        this.progHand = 1.0;
+        this.handDir = dir;
     }
 }
 
