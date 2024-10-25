@@ -237,9 +237,11 @@ export class Robot {
         this.world = w;
 
         // animation state
-        this.lastPos = new Vec2(x, y);
-        this.currentRot = this.dir2Angle();
-        this.lastRot = this.dir2Angle();
+        this.animLastPos = new Vec2(x, y);
+        this.animCurrRot = this.dir2Angle();
+        this.animLastRot = this.dir2Angle();
+        this.animLastHeight = 0;
+        this.animCurrHeight = 0;
     }
 
     dir2Vec(): Vec2 {
@@ -342,7 +344,7 @@ export class Robot {
             field.addBlock(t);
         }
         // animation
-        this.triggerHandAnim(-1);
+        this.triggerPlaceAnim(-1);
     }
 
     pickUpBlock() {
@@ -350,7 +352,7 @@ export class Robot {
         const field = this.world.getField(target.x, target.y);
         if (this.canPickUpFrom(field)) {
             // animation
-            this.triggerHandAnim(1);
+            this.triggerPlaceAnim(1);
             // ret
             return field.removeBlock();
         }
@@ -501,61 +503,73 @@ export class Robot {
         return true;
     }
 
-    /** animation */
-    lastPos: Vec2;
-    currentRot: number;
-    lastRot: number;
+    /* animation */
+    animLastPos: Vec2;
+    animCurrRot: number;
+    animLastRot: number;
+    animCurrHeight: number;
+    animLastHeight: number;
 
-    condWatch: boolean = false;
-    progWatch: number = 0.0;
-    progHop: number = 0.0;
-    progRot: number = 0.0;
-    progHand: number = 0.0;
-    handDir: number = 1;
-    rndRot: number = 0.0;
-    progBlink: number = 0.0;
+    animWatchCond: boolean = false;
+    animWatchProg: number = 0.0;
+    animHopProg: number = 0.0;
+    animFallProg: number = 0.0;
+    animRotProg: number = 0.0;
+    animPlaceProg: number = 0.0;
+    animPlaceDir: number = 1; // picking up (+1) or setting down (-1)
+    animRotRnd: number = 0.0;
+    animProgBlink: number = 0.0;
 
     animate(deltaProg: number, delta: number): void {
         // update progress variables
-        this.progWatch = toZero(this.progWatch, deltaProg);
-        this.progHop = toZero(this.progHop, deltaProg);
-        this.progRot = toZero(this.progRot, deltaProg);
-        this.progHand = toZero(this.progHand, deltaProg);
-        this.progBlink = toZero(this.progBlink, 0.005 * delta);
+        this.animWatchProg = toZero(this.animWatchProg, deltaProg);
+        this.animHopProg   = toZero(this.animHopProg, deltaProg);
+        this.animFallProg  = toZero(this.animFallProg, deltaProg);
+        this.animRotProg   = toZero(this.animRotProg, deltaProg);
+        this.animPlaceProg = toZero(this.animPlaceProg, deltaProg);
+        this.animProgBlink = toZero(this.animProgBlink, 0.005 * delta);
 
-        if (this.progBlink == 0 && Math.random() < 0.001) {
-            this.progBlink = 1.0;
+        // resets
+        if (this.animFallProg <= 0) this.animLastHeight = this.animCurrHeight;
+
+        // auto blink
+        if (this.animProgBlink == 0 && Math.random() < 0.001) {
+            this.animProgBlink = 1.0;
         }
     }
 
     triggerWatchAnim(condition: boolean) {
-        this.progWatch = 1.0;
-        this.condWatch = condition;
+        this.animWatchProg = 1.0;
+        this.animWatchCond = condition;
     }
 
     triggerHopAnim() {
-        this.progHop = 1.0;
-        this.lastPos.x = this.pos.x;
-        this.lastPos.y = this.pos.y;
-        this.rndRot = 5 * (1 - 2 * Math.random()); // in degrees
+        this.animHopProg = 1.0;
+        this.animLastPos.x = this.pos.x;
+        this.animLastPos.y = this.pos.y;
+        this.animRotRnd = 5 * (1 - 2 * Math.random()); // in degrees
     }
 
     triggerRotAnim() {
-        this.progRot = 1.0;
-        this.lastRot = this.currentRot;
-        this.currentRot = this.dir2Angle();
+        this.animRotProg = 1.0;
+        this.animLastRot = this.animCurrRot;
+        this.animCurrRot = this.dir2Angle();
 
         // making sure the rotation will alsways be < 360 degrees
-        const rotDiff = this.currentRot - this.lastRot;
+        const rotDiff = this.animCurrRot - this.animLastRot;
         if (Math.abs(rotDiff) > 180) {
-            if (rotDiff > 0) this.lastRot += 360;
-            else this.lastRot -= 360;
+            if (rotDiff > 0) this.animLastRot += 360;
+            else this.animLastRot -= 360;
         }
     }
 
-    triggerHandAnim(dir: number) {
-        this.progHand = 1.0;
-        this.handDir = dir;
+    triggerPlaceAnim(dir: number) {
+        this.animPlaceProg = 1.0;
+        this.animPlaceDir = dir;
+    }
+
+    triggerFallAnim() {
+        this.animFallProg = 1.0;
     }
 }
 

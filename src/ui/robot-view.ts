@@ -4,7 +4,7 @@ import { isRunning, queueInterrupt, world, objOverlay, taskCheck, updateLagSum, 
 import { Robot } from '../robot/robot';
 import { CR, CY, CG, CB, BlockType, MarkerType, World, CBOT, CBOT2, Field } from '../robot/world';
 import { robotDiagramIndex, showRobotDiagram, hideRobotDiagram, updateRobotDiagram } from './objectigrams';
-import { easeBump, easeInOutBack, easeInOutQuad, easeInQuad, easeJump, easeOutElastic, easeOutQuad, lerp } from '../utils';
+import { easeBump, easeInCubic, easeInOutBack, easeInOutQuad, easeInQuad, easeJump, easeOutCubic, easeOutElastic, easeOutQuad, lerp } from '../utils';
 
 
 // Setup robot sketch
@@ -279,16 +279,23 @@ export function robotSketch(p5: p5) {
             p5.translate(0, 0, 0.1 * BLH * p5.abs(p5.sin(i + p5.frameCount * 0.1)));
             const f = w.getField(r.pos.x, r.pos.y)!;
             const fieldHeight = (f.blocks.length);
+            
+            // mixing view and animation state --> not great
+            if (r.animCurrHeight != fieldHeight) {
+                r.animCurrHeight = fieldHeight;
+                if (r.animCurrHeight != r.animLastHeight) r.triggerFallAnim();
+            }
 
-            const interpHop = easeInOutQuad(1 - r.progHop);
+            const interpHop = easeInOutQuad(1 - r.animHopProg);
+            const interpFall = 1 - r.animFallProg;
             p5.translate(
-                lerp(r.lastPos.x, r.pos.x, interpHop) * TSZ,
-                lerp(r.lastPos.y, r.pos.y, interpHop) * TSZ,
-                ( fieldHeight - 0.5 ) * BLH
+                lerp(r.animLastPos.x, r.pos.x, interpHop) * TSZ,
+                lerp(r.animLastPos.y, r.pos.y, interpHop) * TSZ,
+                ( lerp(r.animLastHeight, r.animCurrHeight, interpFall) - 0.5 ) * BLH
             );
 
-            const interpRot = easeInOutQuad(1 - r.progRot);
-            p5.rotateZ(2 * p5.PI * lerp(r.lastRot + r.rndRot, r.currentRot + r.rndRot, interpRot) / 360);
+            const interpRot = easeInOutQuad(1 - r.animRotProg);
+            p5.rotateZ(2 * p5.PI * lerp(r.animLastRot + r.animRotRnd, r.animCurrRot + r.animRotRnd, interpRot) / 360);
 
             drawSingleRobot(r);
 
@@ -299,12 +306,15 @@ export function robotSketch(p5: p5) {
 
     const drawSingleRobot = (r: Robot) => {
         // update animation
+        const animStrength = easeInQuad(dt / 250);
         r.animate(p5.deltaTime / dt, p5.deltaTime);
 
         // drawing
         // hop
-        p5.translate(0, 0, BLH * easeBump(1 - r.progHop));
-        p5.rotateX(p5.PI * 0.05 * easeBump(1 - r.progHop));
+        p5.translate(0, 0, animStrength * BLH * easeBump(1 - r.animHopProg));
+        // rot
+        p5.rotateX(animStrength * p5.PI * 0.05 * easeBump(1 - r.animHopProg));
+        p5.rotateX(animStrength * r.animPlaceDir * p5.PI * 0.02 * easeBump(1 - r.animPlaceProg));
         // p5.rotateZ(p5.PI * r.rndRotation * 0.05)
 
         // body
@@ -350,7 +360,7 @@ export function robotSketch(p5: p5) {
         p5.sphere(RBW * 0.4);
 
         // do blink
-        if (r.progBlink > 0) {
+        if (r.animProgBlink > 0) {
             p5.fill(CBOT2);
             p5.sphere(RBW * 0.43);
         }
@@ -360,8 +370,8 @@ export function robotSketch(p5: p5) {
         p5.push();
         p5.noStroke();
         // animate eye color
-        const interp = easeOutQuad(1 - r.progWatch)
-        if (r.condWatch)
+        const interp = easeOutQuad(1 - r.animWatchProg)
+        if (r.animWatchCond)
             p5.fill(0, 255 * interp, 0); // blink green
         else
             p5.fill(255 * interp, 0, 0); // blink red
@@ -373,11 +383,12 @@ export function robotSketch(p5: p5) {
 
         // arms
         p5.push();
-        const interpHand = easeBump(1 - r.progHand);
-        if (r.handDir > 0) p5.translate(0, 0, lerp(0, r.handDir * BLH * 0.7, interpHand));
-        else p5.translate(0, 0, lerp(0, r.handDir * BLH * 0.5, interpHand));
         
-        p5.translate(0, -lerp(0, - BLH * 0.1, interpHand), 0)
+        const interpPlace = easeBump(1 - r.animPlaceProg);
+        if (r.animPlaceDir > 0) p5.translate(0, 0, animStrength * lerp(0, r.animPlaceDir * BLH * 0.7, interpPlace));
+        else p5.translate(0, 0, lerp(0, animStrength * r.animPlaceDir * BLH * 0.5, interpPlace));
+        
+        p5.translate(0, -lerp(0, - BLH * 0.1, interpPlace), 0)
 
         p5.fill(CBOT2);
         p5.push();

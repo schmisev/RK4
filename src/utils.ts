@@ -29,6 +29,8 @@ export const invlerp = (x: number, y: number, a: number) => clamp((a - x) / (y -
 export const range = (x1: number, y1: number, x2: number, y2: number, a: number) => lerp(x2, y2, invlerp(x1, y1, a));
 export const easeInQuad = (x: number) => x * x;
 export const easeOutQuad = (x: number) => 1 - x * x;
+export const easeInCubic = (x: number) => x * x * x;
+export const easeOutCubic = (x: number) => 1 - x * x * x;
 export const easeJump = (x: number) => 1 - (2*x - 1) * (2*x - 1)
 export const easeInOutQuad = (x: number) => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
 export const easeOutInQuad = (x: number) => 1.0 - easeInOutQuad(x);

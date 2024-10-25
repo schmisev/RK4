@@ -80,6 +80,12 @@ export const STD_TASKS: Record<string, Task> = {
         preload: "Methode gehen(Zahl n) für Roboter\n    wiederhole n mal\n        schritt()\n    ende\nende",
         world: "x;5;1;5;\nE;_:_.;_:_.;_:_.;_:_.",
     },
+    "Test_Fallen": {
+        title: "Fallen",
+        description: "Nichts zu sehen!",
+        preload: "",
+        world: "x;5;1;5;\nrrrrS;W;_;"
+    },
     "Generiert_1": {
         title: "Block auf Marke!",
         description: "Lege einen Block an die Stelle, wo die Marke liegt!",
