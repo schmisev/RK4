@@ -2,7 +2,7 @@ import { RuntimeError } from "../errors";
 import { ClassPrototype, GlobalEnvironment, VarHolder } from "../language/runtime/environment";
 import { MK_BOOL, MK_STRING, MK_NUMBER, RuntimeVal, BuiltinClassVal, ObjectVal, MK_NATIVE_METHOD, ValueAlias } from "../language/runtime/values";
 import { ENV } from "../spec";
-import { clamp, lerp, toZero, Vec2 } from "../utils";
+import { clamp, easeInQuad, easeOutCubic, easeOutQuad, lerp, toZero, Vec2 } from "../utils";
 import { BlockType, CHAR2BLOCK, CHAR2MARKER, Field, MarkerType, World } from "./world";
 
 export const DIR2GER: Record<string, string> = {
@@ -509,7 +509,7 @@ export class Robot {
     animLastRot: number;
     animCurrHeight: number;
     animLastHeight: number;
-
+    
     animWatchCond: boolean = false;
     animWatchProg: number = 0.0;
     animHopProg: number = 0.0;
@@ -521,6 +521,7 @@ export class Robot {
     animProgBlink: number = 0.0;
 
     animate(deltaProg: number, delta: number): void {
+        
         // update progress variables
         this.animWatchProg = toZero(this.animWatchProg, deltaProg);
         this.animHopProg   = toZero(this.animHopProg, deltaProg);
@@ -529,7 +530,7 @@ export class Robot {
         this.animPlaceProg = toZero(this.animPlaceProg, deltaProg);
         this.animProgBlink = toZero(this.animProgBlink, 0.005 * delta);
 
-        // resets
+        // fall logic
         if (this.animFallProg <= 0) this.animLastHeight = this.animCurrHeight;
 
         // auto blink

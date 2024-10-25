@@ -306,7 +306,7 @@ export function robotSketch(p5: p5) {
 
     const drawSingleRobot = (r: Robot) => {
         // update animation
-        const animStrength = easeInQuad(dt / 250);
+        const animStrength = easeInOutQuad(dt / 250);
         r.animate(p5.deltaTime / dt, p5.deltaTime);
 
         // drawing

@@ -1,5 +1,5 @@
 import { assert } from "console";
-import { editor, taskName } from "..";
+import { editor, stopCode, taskName } from "..";
 import { animalNames } from "../assets/misc/animal-names";
 import { createOption } from "../utils";
 
@@ -58,10 +58,26 @@ function deleteCode() {
     console.log("📝🗑️ Code gelöscht: " + key);
 }
 
+function isLegalKey(userKey: string | null) {
+    if (userKey == null) return false;
+    if (userKey.length == 0) return false;
+    for (const char of userKey) {
+        if (["\n", "\r", "\t"].includes(char)) return false;
+        if (char != " ") return true;
+    }
+    return false;
+}
+
 function storeCode() {
     let key = storeSelector.value
     if (key == "(neu)") {
-        key = taskName + " | " + animalNames[Math.floor(Math.random()*animalNames.length)];
+        const userKey = prompt("Gib einen Namen für dein Skript an!");
+        if (isLegalKey(userKey)) {
+            key = userKey!;
+        } else {
+            console.log(`📝🚧 Skriptname abgelehnt: '${userKey}'`);
+            key = taskName + " | " + animalNames[Math.floor(Math.random()*animalNames.length)];
+        }
     }
     storeRawCode(key, editor.getValue(), true);
     updateLocalBackup();
@@ -73,6 +89,7 @@ function loadFromStore() {
     if (key == "(neu)") return;
     editor.setValue(codeStore[key], 0);
     console.log("📝📂 Code geladen: " + key);
+    stopCode(); // stop execution
 }
 
 // insert some Demo Code

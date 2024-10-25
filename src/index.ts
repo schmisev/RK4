@@ -379,7 +379,7 @@ async function startCode() {
 };
 
 // Stop code via button
-async function stopCode() {
+export async function stopCode() {
     // if (!isRunning) return;
     resetErrorMarkers();
     await interrupt();
