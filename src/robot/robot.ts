@@ -509,7 +509,6 @@ export class Robot {
     animLastRot: number;
     animCurrHeight: number;
     animLastHeight: number;
-    
     animWatchCond: boolean = false;
     animWatchProg: number = 0.0;
     animHopProg: number = 0.0;
@@ -518,25 +517,30 @@ export class Robot {
     animPlaceProg: number = 0.0;
     animPlaceDir: number = 1; // picking up (+1) or setting down (-1)
     animRotRnd: number = 0.0;
-    animProgBlink: number = 0.0;
+    animBlinkProg: number = 0.0;
+
+    prepare(fieldHeight: number): void {
+        // update height
+        if (this.animCurrHeight != fieldHeight) {
+            this.animCurrHeight = fieldHeight;
+            if (this.animCurrHeight != this.animLastHeight) this.triggerFallAnim();
+        }
+        // trigger falls
+        if (this.animFallProg <= 0) this.animLastHeight = this.animCurrHeight;
+        // auto blink
+        if (this.animBlinkProg == 0 && Math.random() < 0.001) {
+            this.triggerBlinkAnim();
+        }
+    }
 
     animate(deltaProg: number, delta: number): void {
-        
         // update progress variables
         this.animWatchProg = toZero(this.animWatchProg, deltaProg);
         this.animHopProg   = toZero(this.animHopProg, deltaProg);
         this.animFallProg  = toZero(this.animFallProg, deltaProg);
         this.animRotProg   = toZero(this.animRotProg, deltaProg);
         this.animPlaceProg = toZero(this.animPlaceProg, deltaProg);
-        this.animProgBlink = toZero(this.animProgBlink, 0.005 * delta);
-
-        // fall logic
-        if (this.animFallProg <= 0) this.animLastHeight = this.animCurrHeight;
-
-        // auto blink
-        if (this.animProgBlink == 0 && Math.random() < 0.001) {
-            this.animProgBlink = 1.0;
-        }
+        this.animBlinkProg = toZero(this.animBlinkProg, 0.005 * delta);
     }
 
     triggerWatchAnim(condition: boolean) {
@@ -572,7 +576,8 @@ export class Robot {
     triggerFallAnim() {
         this.animFallProg = 1.0;
     }
-}
 
-// export const karol = new Robot(1, 1, "N", "Karol1", null);
-// export const karol2 = new Robot(1, 2, "S", "Karol2", null);
+    triggerBlinkAnim() {
+        this.animBlinkProg = 1.0;
+    }
+}

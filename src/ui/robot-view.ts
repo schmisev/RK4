@@ -274,17 +274,15 @@ export function robotSketch(p5: p5) {
         p5.push();
         p5.translate((1 - w.L) * 0.5 * TSZ, (1 - w.W) * 0.5 * TSZ, (1 - w.H) * 0.5 * BLH);
         for (const [i, r] of w.robots.entries()) {
-            // do the drawing
-            p5.push();
-            p5.translate(0, 0, 0.1 * BLH * p5.abs(p5.sin(i + p5.frameCount * 0.1)));
             const f = w.getField(r.pos.x, r.pos.y)!;
             const fieldHeight = (f.blocks.length);
             
-            // mixing view and animation state --> not great
-            if (r.animCurrHeight != fieldHeight) {
-                r.animCurrHeight = fieldHeight;
-                if (r.animCurrHeight != r.animLastHeight) r.triggerFallAnim();
-            }
+            r.prepare(fieldHeight); // this passes info to the robot object
+            r.animate(p5.deltaTime / dt, p5.deltaTime); // this does the timing calculation
+
+            // do the drawing
+            p5.push();
+            p5.translate(0, 0, 0.1 * BLH * p5.abs(p5.sin(i + p5.frameCount * 0.1)));
 
             const interpHop = easeInOutQuad(1 - r.animHopProg);
             const interpFall = 1 - r.animFallProg;
@@ -307,15 +305,14 @@ export function robotSketch(p5: p5) {
     const drawSingleRobot = (r: Robot) => {
         // update animation
         const animStrength = easeInOutQuad(dt / 250);
-        r.animate(p5.deltaTime / dt, p5.deltaTime);
 
-        // drawing
-        // hop
+        // drawing the robot!
+
+        // doing the little hop
         p5.translate(0, 0, animStrength * BLH * easeBump(1 - r.animHopProg));
-        // rot
+        // handling rotation
         p5.rotateX(animStrength * p5.PI * 0.05 * easeBump(1 - r.animHopProg));
         p5.rotateX(animStrength * r.animPlaceDir * p5.PI * 0.02 * easeBump(1 - r.animPlaceProg));
-        // p5.rotateZ(p5.PI * r.rndRotation * 0.05)
 
         // body
         p5.push();
@@ -360,7 +357,7 @@ export function robotSketch(p5: p5) {
         p5.sphere(RBW * 0.4);
 
         // do blink
-        if (r.animProgBlink > 0) {
+        if (r.animBlinkProg > 0) {
             p5.fill(CBOT2);
             p5.sphere(RBW * 0.43);
         }
