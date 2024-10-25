@@ -364,6 +364,8 @@ export class Robot {
         if (this.canMarkAt(field)) {
             field.setMarker(m);
         }
+        // animation
+        this.triggerMarkerAnim(true);
     }
 
     removeMarker() {
@@ -372,6 +374,8 @@ export class Robot {
         if (this.canUnmarkAt(field)) {
             return field.removeMarker();
         }
+        // animation
+        this.triggerMarkerAnim(false);
     }
 
     isOnMarker(m: MarkerType | null = null): boolean {
@@ -503,7 +507,16 @@ export class Robot {
         return true;
     }
 
-    /* animation */
+    /**
+     * Animation
+     * 
+     * anim_Prog (progress) variables are timers that count down from 1.0 to 0.0.
+     * During this time, the associated animation is active.
+     * 
+     * prepare() updates the robot state FROM an external source,
+     * in this case robot-view.ts
+     * animate() updates the timers
+     */
     animLastPos: Vec2;
     animCurrRot: number;
     animLastRot: number;
@@ -518,6 +531,8 @@ export class Robot {
     animPlaceDir: number = 1; // picking up (+1) or setting down (-1)
     animRotRnd: number = 0.0;
     animBlinkProg: number = 0.0;
+    animMarkerProg: number = 0.0;
+    animMarkerCond: boolean = false; // false is "remove"
 
     prepare(fieldHeight: number): void {
         // update height
@@ -536,10 +551,12 @@ export class Robot {
     animate(deltaProg: number, delta: number): void {
         // update progress variables
         this.animWatchProg = toZero(this.animWatchProg, deltaProg);
-        this.animHopProg   = toZero(this.animHopProg, deltaProg);
-        this.animFallProg  = toZero(this.animFallProg, deltaProg);
-        this.animRotProg   = toZero(this.animRotProg, deltaProg);
+        this.animHopProg = toZero(this.animHopProg, deltaProg);
+        this.animFallProg = toZero(this.animFallProg, deltaProg);
+        this.animRotProg = toZero(this.animRotProg, deltaProg);
         this.animPlaceProg = toZero(this.animPlaceProg, deltaProg);
+        this.animMarkerProg = toZero(this.animMarkerProg, deltaProg);
+        // real time
         this.animBlinkProg = toZero(this.animBlinkProg, 0.005 * delta);
     }
 
@@ -579,5 +596,10 @@ export class Robot {
 
     triggerBlinkAnim() {
         this.animBlinkProg = 1.0;
+    }
+
+    triggerMarkerAnim(condition: boolean) {
+        this.animMarkerProg = 1.0
+        this.animMarkerCond = condition;
     }
 }

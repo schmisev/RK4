@@ -281,37 +281,33 @@ export function robotSketch(p5: p5) {
             r.animate(p5.deltaTime / dt, p5.deltaTime); // this does the timing calculation
 
             // do the drawing
-            p5.push();
-            p5.translate(0, 0, 0.1 * BLH * p5.abs(p5.sin(i + p5.frameCount * 0.1)));
-
-            const interpHop = easeInOutQuad(1 - r.animHopProg);
-            const interpFall = 1 - r.animFallProg;
-            p5.translate(
-                lerp(r.animLastPos.x, r.pos.x, interpHop) * TSZ,
-                lerp(r.animLastPos.y, r.pos.y, interpHop) * TSZ,
-                ( lerp(r.animLastHeight, r.animCurrHeight, interpFall) - 0.5 ) * BLH
-            );
-
-            const interpRot = easeInOutQuad(1 - r.animRotProg);
-            p5.rotateZ(2 * p5.PI * lerp(r.animLastRot + r.animRotRnd, r.animCurrRot + r.animRotRnd, interpRot) / 360);
-
             drawSingleRobot(r);
-
-            p5.pop();
         }
         p5.pop();
     };
 
     const drawSingleRobot = (r: Robot) => {
+        p5.push();
+        
         // update animation
         const animStrength = easeInOutQuad(dt / 250);
-
+        const interpHop = easeInOutQuad(1 - r.animHopProg);
+        const interpFall = 1 - r.animFallProg;
+        const interpRot = easeInOutQuad(1 - r.animRotProg);
+        
         // drawing the robot!
-
+        p5.translate(0, 0, 0.1 * BLH * p5.abs(p5.sin(r.index + p5.frameCount * 0.1)));
+        p5.translate(
+            lerp(r.animLastPos.x, r.pos.x, interpHop) * TSZ,
+            lerp(r.animLastPos.y, r.pos.y, interpHop) * TSZ,
+            ( lerp(r.animLastHeight, r.animCurrHeight, interpFall) - 0.5 ) * BLH
+        );
+        // facing direction
+        p5.rotateZ(2 * p5.PI * lerp(r.animLastRot + r.animRotRnd, r.animCurrRot + r.animRotRnd, interpRot) / 360);
         // doing the little hop
         p5.translate(0, 0, animStrength * BLH * easeBump(1 - r.animHopProg));
-        // handling rotation
         p5.rotateX(animStrength * p5.PI * 0.05 * easeBump(1 - r.animHopProg));
+        // placing nod
         p5.rotateX(animStrength * r.animPlaceDir * p5.PI * 0.02 * easeBump(1 - r.animPlaceProg));
 
         // body
@@ -417,6 +413,7 @@ export function robotSketch(p5: p5) {
         // name
         p5.pop();
 
+        p5.pop();
     };
 
     const drawWorldOutline = (w: World) => {
