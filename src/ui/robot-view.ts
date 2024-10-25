@@ -13,8 +13,6 @@ export function robotSketch(p5: p5) {
     const canvasDiv = document.getElementById('robot-canvas')!;
     let canvasW = 0, canvasH = 0;
     let cam: p5.Camera;
-    let pan = 0.0;
-    let tilt = 0.0;
     let worldGoalReached = false;
 
     const CPS = 100; // Compass size
@@ -186,8 +184,6 @@ export function robotSketch(p5: p5) {
         p5.background(bg);
 
         p5.orbitControl();
-        pan = p5.atan2(cam.eyeZ - cam.centerZ, cam.eyeX - cam.centerX);
-        tilt = p5.atan2(cam.eyeY - cam.centerY, p5.dist(cam.centerX, cam.centerZ, cam.eyeX, cam.eyeZ));
 
         p5.push();
 
@@ -216,7 +212,24 @@ export function robotSketch(p5: p5) {
         drawHUD();
     };
 
+    const drawBillboard = (drawCall: () => void) => {
+        const pan = p5.atan2(cam.eyeZ - cam.centerZ, cam.eyeX - cam.centerX);
+        const tilt = p5.atan2(cam.eyeY - cam.centerY, p5.dist(cam.centerX, cam.centerZ, cam.eyeX, cam.eyeZ));
+        
+        p5.push();
+        p5.rotateZ(pan);
+        p5.rotateY(tilt);
+
+        // draw Billboard here
+        drawCall();
+
+        p5.pop();
+    };
+
     const drawHUD = () => {
+        const pan = p5.atan2(cam.eyeZ - cam.centerZ, cam.eyeX - cam.centerX);
+        const tilt = p5.atan2(cam.eyeY - cam.centerY, p5.dist(cam.centerX, cam.centerZ, cam.eyeX, cam.eyeZ));
+
         p5.push();
         p5.translate(cam.eyeX, cam.eyeY, cam.eyeZ);
         p5.rotateY(-pan);
@@ -412,6 +425,19 @@ export function robotSketch(p5: p5) {
 
         // name
         p5.pop();
+
+        p5.translate(0, 0, 1.5 * RBH);
+        
+        // status indicators
+        drawBillboard(() => {
+            p5.push();
+            p5.noStroke();
+            p5.fill(255);
+            p5.rotateY(p5.HALF_PI);
+            p5.plane(WLH);
+            p5.pop();
+        })
+
 
         p5.pop();
     };
