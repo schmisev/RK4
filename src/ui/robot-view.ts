@@ -4,7 +4,7 @@ import { isRunning, queueInterrupt, world, objOverlay, taskCheck, updateLagSum, 
 import { Robot } from '../robot/robot';
 import { CR, CY, CG, CB, BlockType, MarkerType, World, CBOT, CBOT2, Field } from '../robot/world';
 import { robotDiagramIndex, showRobotDiagram, hideRobotDiagram, updateRobotDiagram } from './objectigrams';
-import { easeBump, easeInCubic, easeInOutBack, easeInOutQuad, easeInQuad, easeJump, easeOutCubic, easeOutElastic, easeOutQuad, lerp } from '../utils';
+import { clamp, easeBump, easeInCubic, easeInOutBack, easeInOutQuad, easeInQuad, easeJump, easeOutCubic, easeOutElastic, easeOutQuad, lerp } from '../utils';
 
 
 // Setup robot sketch
@@ -81,6 +81,13 @@ export function robotSketch(p5: p5) {
     const WT = createTextTexture("W");
     const ET = createTextTexture("O");
     const ST = createTextTexture("S");
+
+    const TXYES = createTextTexture("✅");
+    const TXNO = createTextTexture("❌");
+    const TXWALL = createTextTexture("🚧");
+    const TXVOID = createTextTexture("🕳️");
+    const TXBLOCK = createTextTexture("🧱");
+    const TXEYE = createTextTexture("👁️");
 
     const RGIDX = [
         createTextTexture("1", "#CCC", true),
@@ -315,10 +322,12 @@ export function robotSketch(p5: p5) {
             lerp(r.animLastPos.y, r.pos.y, interpHop) * TSZ,
             ( lerp(r.animLastHeight, r.animCurrHeight, interpFall) - 0.5 ) * BLH
         );
+        p5.translate(0, 0, animStrength * BLH * easeBump(1 - r.animHopProg));
+
+        p5.push();
         // facing direction
         p5.rotateZ(2 * p5.PI * lerp(r.animLastRot + r.animRotRnd, r.animCurrRot + r.animRotRnd, interpRot) / 360);
         // doing the little hop
-        p5.translate(0, 0, animStrength * BLH * easeBump(1 - r.animHopProg));
         p5.rotateX(animStrength * p5.PI * 0.05 * easeBump(1 - r.animHopProg));
         // placing nod
         p5.rotateX(animStrength * r.animPlaceDir * p5.PI * 0.02 * easeBump(1 - r.animPlaceProg));
@@ -425,19 +434,52 @@ export function robotSketch(p5: p5) {
 
         // name
         p5.pop();
-
-        p5.translate(0, 0, 1.5 * RBH);
         
+        p5.pop(); // reverse rotations
+
         // status indicators
+        p5.translate(0, 0, 1.4 * RBH);
+        // reverse rotations
+        // p5.rotateZ(-2 * p5.PI * lerp(r.animLastRot + r.animRotRnd, r.animCurrRot + r.animRotRnd, interpRot) / 360);
+        // p5.rotateX(-animStrength * p5.PI * 0.05 * easeBump(1 - r.animHopProg));
+        // p5.rotateX(-animStrength * r.animPlaceDir * p5.PI * 0.02 * easeBump(1 - r.animPlaceProg));
+        
         drawBillboard(() => {
             p5.push();
             p5.noStroke();
             p5.fill(255);
             p5.rotateY(p5.HALF_PI);
-            p5.plane(WLH);
+            p5.rotateZ(-p5.HALF_PI);
+            
+            if (r.animThoughtType != "nothing") {
+                // main
+                switch (r.animThoughtType) {
+                    case "block":
+                        p5.texture(TXBLOCK);
+                        break;
+                    case 'wall':
+                        p5.texture(TXWALL);
+                        break;
+                    case 'void':
+                        p5.texture(TXVOID);
+                        break;
+                }
+                // popping
+                p5.translate(0, 0, animStrength * 0.7 * TSZ * easeBump(clamp((1 - r.animThoughtProg) * 2, 0, 1))
+                );
+                // main
+                // p5.translate(-TSZ * 0.3, 0, 0);
+                p5.plane(TSZ * 1);
+                // cond
+                // p5.translate(TSZ * 0.6, 0, 0);
+                p5.translate(0, 0, 0.2);
+                if (!r.animThoughtCond) {
+                    p5.texture(TXNO);
+                    p5.plane(TSZ * 1);
+                }
+            }
             p5.pop();
         })
-
 
         p5.pop();
     };

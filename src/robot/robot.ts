@@ -5,6 +5,8 @@ import { ENV } from "../spec";
 import { clamp, easeInQuad, easeOutCubic, easeOutQuad, lerp, toZero, Vec2 } from "../utils";
 import { BlockType, CHAR2BLOCK, CHAR2MARKER, Field, MarkerType, World } from "./world";
 
+type ThingSeen = "nothing" | "wall" | "block" | "void"
+
 export const DIR2GER: Record<string, string> = {
     "N": "Nord",
     "E": "Ost",
@@ -412,6 +414,7 @@ export class Robot {
 
         // animation trigger
         this.triggerWatchAnim(check);
+        this.triggerDisplayAnim(check, "block");
         return check;
     }
 
@@ -421,6 +424,7 @@ export class Robot {
         const check = this.isWall(target);
         // animation trigger
         this.triggerWatchAnim(check);
+        this.triggerDisplayAnim(check, "wall");
         return check;
     }
 
@@ -430,6 +434,7 @@ export class Robot {
         const check = this.isEmpty(target);
         // animation trigger
         this.triggerWatchAnim(check);
+        this.triggerDisplayAnim(check, "void");
         return check;
     }
 
@@ -522,6 +527,9 @@ export class Robot {
     animLastRot: number;
     animCurrHeight: number;
     animLastHeight: number;
+    animThoughtProg: number = 0.0;
+    animThoughtType: ThingSeen = "void";
+    animThoughtCond: boolean = true;
     animWatchCond: boolean = false;
     animWatchProg: number = 0.0;
     animHopProg: number = 0.0;
@@ -546,6 +554,8 @@ export class Robot {
         if (this.animBlinkProg == 0 && Math.random() < 0.001) {
             this.triggerBlinkAnim();
         }
+        // auto reset view
+        if (this.animThoughtProg <= 0) this.animThoughtType = "nothing";
     }
 
     animate(deltaProg: number, delta: number): void {
@@ -557,6 +567,7 @@ export class Robot {
         this.animPlaceProg = toZero(this.animPlaceProg, deltaProg);
         this.animMarkerProg = toZero(this.animMarkerProg, deltaProg);
         // real time
+        this.animThoughtProg = toZero(this.animThoughtProg, deltaProg * 0.5);
         this.animBlinkProg = toZero(this.animBlinkProg, 0.005 * delta);
     }
 
@@ -601,5 +612,11 @@ export class Robot {
     triggerMarkerAnim(condition: boolean) {
         this.animMarkerProg = 1.0
         this.animMarkerCond = condition;
+    }
+
+    triggerDisplayAnim(condition: boolean, type: ThingSeen) {
+        this.animThoughtProg = 1.0;
+        this.animThoughtCond = condition;
+        this.animThoughtType = type;
     }
 }
