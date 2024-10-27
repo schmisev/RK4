@@ -2,10 +2,10 @@ import { RuntimeError } from "../errors";
 import { ClassPrototype, GlobalEnvironment, VarHolder } from "../language/runtime/environment";
 import { MK_BOOL, MK_STRING, MK_NUMBER, RuntimeVal, BuiltinClassVal, ObjectVal, MK_NATIVE_METHOD, ValueAlias } from "../language/runtime/values";
 import { ENV } from "../spec";
-import { clamp, easeInQuad, easeOutCubic, easeOutQuad, lerp, toZero, Vec2 } from "../utils";
+import { toZero, Vec2 } from "../utils";
 import { BlockType, CHAR2BLOCK, CHAR2MARKER, Field, MarkerType, World } from "./world";
 
-type ThingSeen = "nothing" | "wall" | "block" | "void"
+type Thought = "nothing" | "wall" | "block" | "void"
 
 export const DIR2GER: Record<string, string> = {
     "N": "Nord",
@@ -414,7 +414,7 @@ export class Robot {
 
         // animation trigger
         this.triggerWatchAnim(check);
-        this.triggerDisplayAnim(check, "block");
+        this.triggerThoughtAnim(check, "block");
         return check;
     }
 
@@ -424,7 +424,7 @@ export class Robot {
         const check = this.isWall(target);
         // animation trigger
         this.triggerWatchAnim(check);
-        this.triggerDisplayAnim(check, "wall");
+        this.triggerThoughtAnim(check, "wall");
         return check;
     }
 
@@ -434,7 +434,7 @@ export class Robot {
         const check = this.isEmpty(target);
         // animation trigger
         this.triggerWatchAnim(check);
-        this.triggerDisplayAnim(check, "void");
+        this.triggerThoughtAnim(check, "void");
         return check;
     }
 
@@ -528,7 +528,7 @@ export class Robot {
     animCurrHeight: number;
     animLastHeight: number;
     animThoughtProg: number = 0.0;
-    animThoughtType: ThingSeen = "void";
+    animThoughtType: Thought = "void";
     animThoughtCond: boolean = true;
     animWatchCond: boolean = false;
     animWatchProg: number = 0.0;
@@ -614,7 +614,7 @@ export class Robot {
         this.animMarkerCond = condition;
     }
 
-    triggerDisplayAnim(condition: boolean, type: ThingSeen) {
+    triggerThoughtAnim(condition: boolean, type: Thought) {
         this.animThoughtProg = 1.0;
         this.animThoughtCond = condition;
         this.animThoughtType = type;

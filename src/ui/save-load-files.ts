@@ -1,4 +1,4 @@
-import { editor, taskName, loadRawTask } from "..";
+import { editor, taskName, loadRawTask, stopCode } from "..";
 import { taskSelector } from "./task-selector";
 import { Task } from "../robot/tasks";
 
@@ -31,6 +31,9 @@ fileInput.onchange = loadFile;
 
 // Uploading
 function loadFile(evt: Event) {
+    // stop code, just to be sure
+    stopCode();
+
     const target: HTMLInputElement = evt.target as HTMLInputElement;
     if (!target) return;
     const files = target.files;
