@@ -88,6 +88,18 @@ export function robotSketch(p5: p5) {
     const TXVOID = createTextTexture("🕳️");
     const TXBLOCK = createTextTexture("🧱");
     const TXEYE = createTextTexture("👁️");
+    const TXPLACE = createTextTexture("👇")
+    const TXPICK = createTextTexture("⛏️")
+    const TXMARK = createTextTexture("✏️")
+    const TXREMOVE = createTextTexture("🧽")
+    const TXYBLOCK = createTextTexture("🟨")
+    const TXRBLOCK = createTextTexture("🟥")
+    const TXGBLOCK = createTextTexture("🟩")
+    const TXBBLOCK = createTextTexture("🟦")
+    const TXYMARKER = createTextTexture("🟡")
+    const TXRMARKER = createTextTexture("🔴")
+    const TXGMARKER = createTextTexture("🟢")
+    const TXBMARKER = createTextTexture("🔵")
 
     const RGIDX = [
         createTextTexture("1", "#CCC", true),
@@ -292,7 +304,11 @@ export function robotSketch(p5: p5) {
 
     const drawRobots = (w: World) => {
         p5.push();
-        p5.translate((1 - w.L) * 0.5 * TSZ, (1 - w.W) * 0.5 * TSZ, (1 - w.H) * 0.5 * BLH);
+        p5.translate(
+            (1 - w.L) * 0.5 * TSZ, 
+            (1 - w.W) * 0.5 * TSZ, 
+            (1 - w.H) * 0.5 * BLH
+        );
         for (const [i, r] of w.robots.entries()) {
             const f = w.getField(r.pos.x, r.pos.y)!;
             const fieldHeight = (f.blocks.length);
@@ -307,7 +323,7 @@ export function robotSketch(p5: p5) {
     };
 
     const drawSingleRobot = (r: Robot) => {
-        p5.push();
+        p5.push(); // bot
         
         // update animation
         const animStrength = easeInOutQuad(dt / 250);
@@ -324,7 +340,7 @@ export function robotSketch(p5: p5) {
         );
         p5.translate(0, 0, animStrength * BLH * easeBump(1 - r.animHopProg));
 
-        p5.push();
+        p5.push(); // rotations
         // facing direction
         p5.rotateZ(2 * p5.PI * lerp(r.animLastRot + r.animRotRnd, r.animCurrRot + r.animRotRnd, interpRot) / 360);
         // doing the little hop
@@ -332,16 +348,13 @@ export function robotSketch(p5: p5) {
         // placing nod
         p5.rotateX(animStrength * r.animPlaceDir * p5.PI * 0.02 * easeBump(1 - r.animPlaceProg));
 
-        // body
-        p5.push();
+        
+        p5.push(); // body
         p5.translate(0, 0, RBH * 0.5);
         p5.fill(CBOT);
-
-        p5.push();
         p5.box(RBW, RBW, RBH);
-        p5.pop();
 
-        p5.push();
+        p5.push(); // numbers plates
         let numberPlate = numberPlates[r.index];
         if (!numberPlate) {
             numberPlate = p5.createGraphics(RBW, RBH);
@@ -363,12 +376,12 @@ export function robotSketch(p5: p5) {
         p5.rotateY(p5.PI);
         p5.plane(RBW, RBH);
 
-        p5.pop();
+        p5.pop(); // end number plates
 
         // eye
         p5.translate(0, 0, RBH * 0.1);
 
-        p5.push();
+        p5.push(); // eye
         p5.noStroke();
         p5.fill(255);
         p5.translate(0, RBW * 0.3, 0);
@@ -380,9 +393,9 @@ export function robotSketch(p5: p5) {
             p5.sphere(RBW * 0.43);
         }
 
-        p5.pop();
+        p5.pop(); // end eye
 
-        p5.push();
+        p5.push(); // pupil
         p5.noStroke();
         // animate eye color
         const interp = easeOutQuad(1 - r.animWatchProg)
@@ -394,10 +407,9 @@ export function robotSketch(p5: p5) {
         p5.translate(0, RBW * 0.42, 0);
         p5.sphere(RBW * 0.3);
 
-        p5.pop();
+        p5.pop(); // end pupil
 
-        // arms
-        p5.push();
+        p5.push(); // arms
         
         const interpPlace = easeBump(1 - r.animPlaceProg);
         if (r.animPlaceDir > 0) p5.translate(0, 0, animStrength * lerp(0, r.animPlaceDir * BLH * 0.7, interpPlace));
@@ -406,22 +418,21 @@ export function robotSketch(p5: p5) {
         p5.translate(0, -lerp(0, - BLH * 0.1, interpPlace), 0)
 
         p5.fill(CBOT2);
-        p5.push();
+        p5.push(); // left arm
         p5.noStroke();
         p5.translate(-RBW * 0.4, RBW * 0.6, -RBW * 0.4);
         p5.sphere(RBW * 0.2);
-        p5.pop();
+        p5.pop(); // end left arm
 
-        p5.push();
+        p5.push(); // right arm
         p5.noStroke();
         p5.translate(RBW * 0.4, RBW * 0.6, -RBW * 0.4);
         p5.sphere(RBW * 0.2);
-        p5.pop();
+        p5.pop(); // end right arm
 
-        p5.pop();
+        p5.pop(); // end arms
 
-        // backplate
-        p5.push();
+        p5.push(); // backplate
         p5.noStroke();
         p5.fill(0);
         p5.translate(0, -RBW * 0.5, 0);
@@ -430,19 +441,18 @@ export function robotSketch(p5: p5) {
         p5.box(RBW * 0.1, 1, RBW * 0.4);
         p5.translate(RBW * 0.4, 0, 0);
         p5.box(RBW * 0.1, 1, RBW * 0.4);
-        p5.pop();
+        p5.pop(); // end backplate
 
-        // name
-        p5.pop();
+        p5.pop(); // end body
         
-        p5.pop(); // reverse rotations
+        p5.pop(); // end rotations
 
         // status indicators
         p5.translate(0, 0, 1.4 * RBH);
         
         // draw "thought"
         drawBillboard(() => {
-            p5.push();
+            p5.push(); // thought
             p5.noStroke();
             p5.fill(255);
             p5.rotateY(p5.HALF_PI);
@@ -460,6 +470,45 @@ export function robotSketch(p5: p5) {
                     case 'void':
                         p5.texture(TXVOID);
                         break;
+                    case 'place':
+                        p5.texture(TXPLACE);
+                        break;
+                    case 'pickup':
+                        p5.texture(TXPICK);
+                        break;
+                    case 'red_block':
+                        p5.texture(TXRBLOCK);
+                        break;
+                    case 'green_block':
+                        p5.texture(TXGBLOCK);
+                        break;
+                    case 'blue_block':
+                        p5.texture(TXBBLOCK);
+                        break;
+                    case 'yellow_block':
+                        p5.texture(TXYBLOCK);
+                        break;
+                    case 'red_marker':
+                        p5.texture(TXRMARKER);
+                        break;
+                    case 'green_marker':
+                        p5.texture(TXGMARKER);
+                        break
+                    case 'blue_marker':
+                        p5.texture(TXBMARKER);
+                        break
+                    case 'yellow_marker':
+                        p5.texture(TXYMARKER);
+                        break
+                    case 'mark':
+                        p5.texture(TXMARK);
+                        break;
+                    case 'remove':
+                        p5.texture(TXREMOVE);
+                        break;
+                    default:
+                        p5.texture(TXEYE);
+                        break;
                 }
                 // popping
                 p5.scale(easeOutCubic(1 - r.animThoughtProg));
@@ -474,10 +523,10 @@ export function robotSketch(p5: p5) {
                     p5.plane(TSZ * 1);
                 }
             }
-            p5.pop();
+            p5.pop(); // end thought
         })
 
-        p5.pop();
+        p5.pop(); // end bot
     };
 
     const drawWorldOutline = (w: World) => {

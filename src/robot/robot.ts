@@ -5,7 +5,23 @@ import { ENV } from "../spec";
 import { toZero, Vec2 } from "../utils";
 import { BlockType, CHAR2BLOCK, CHAR2MARKER, Field, MarkerType, World } from "./world";
 
-type Thought = "nothing" | "wall" | "block" | "void"
+type Thought = 
+    "nothing" 
+    | "wall" 
+    | "block" 
+    | "void"
+    | "red_block"
+    | "green_block"
+    | "blue_block"
+    | "yellow_block"
+    | "red_marker"
+    | "green_marker"
+    | "blue_marker"
+    | "yellow_marker"
+    | "place"
+    | "pickup"
+    | "mark"
+    | "remove"
 
 export const DIR2GER: Record<string, string> = {
     "N": "Nord",
@@ -343,10 +359,11 @@ export class Robot {
         const target = this.targetPos();
         const field = this.world.getField(target.x, target.y);
         if (this.canPlaceAt(field)) {
+            // animation
+            this.triggerPlaceAnim(-1);
+            this.triggerThoughtAnim(true, "place");
             field.addBlock(t);
         }
-        // animation
-        this.triggerPlaceAnim(-1);
     }
 
     pickUpBlock() {
@@ -355,7 +372,7 @@ export class Robot {
         if (this.canPickUpFrom(field)) {
             // animation
             this.triggerPlaceAnim(1);
-            // ret
+            this.triggerThoughtAnim(true, "pickup");
             return field.removeBlock();
         }
     }
@@ -364,35 +381,61 @@ export class Robot {
         const target = this.pos;
         const field = this.world.getField(target.x, target.y);
         if (this.canMarkAt(field)) {
+            this.triggerMarkerAnim(false);
+            this.triggerThoughtAnim(true, "mark");
             field.setMarker(m);
         }
-        // animation
-        this.triggerMarkerAnim(true);
     }
 
     removeMarker() {
         const target = this.pos;
         const field = this.world.getField(target.x, target.y);
         if (this.canUnmarkAt(field)) {
+            // animation
+            this.triggerMarkerAnim(false);
+            this.triggerThoughtAnim(true, "remove");
             return field.removeMarker();
         }
-        // animation
-        this.triggerMarkerAnim(false);
     }
 
     isOnMarker(m: MarkerType | null = null): boolean {
+        // logic
         const target = this.pos;
+
+        let check = false;
         try {
             const field = this.world.getField(target.x, target.y)!;
             if (m == null) {
-                if (field.marker != MarkerType.None) return true
-                return false;
+                if (field.marker != MarkerType.None) check = true
+                else check = false;
             }
-            if (field.marker == m) return true;
-            return false
+            else if (field.marker == m) check = true;
+            else check = false
         } catch {
-            return false;
+            check = false;
         }
+        // animation
+        let thought: Thought;
+        if (!m) thought = "yellow_marker";
+        else {
+            switch (m) {
+                case MarkerType.R:
+                    thought = "red_marker";
+                    break;
+                case MarkerType.G:
+                    thought = "green_marker";
+                    break;
+                case MarkerType.B:
+                    thought = "blue_marker";
+                    break;
+                case MarkerType.Y:
+                    thought = "yellow_marker";
+                    break;
+            }
+        }
+        this.triggerThoughtAnim(check, thought);
+        // exit
+        return check;
     }
 
     seesBlock(b: BlockType | null = null) {
@@ -414,7 +457,26 @@ export class Robot {
 
         // animation trigger
         this.triggerWatchAnim(check);
-        this.triggerThoughtAnim(check, "block");
+        let thought: Thought;
+        if (!b) thought = "red_block";
+        else {
+            switch (b) {
+                case BlockType.r:
+                    thought = "red_block";
+                    break;
+                case BlockType.g:
+                    thought = "green_block";
+                    break;
+                case BlockType.b:
+                    thought = "blue_block";
+                    break;
+                case BlockType.y:
+                    thought = "yellow_block";
+                    break;
+            }
+        }
+        this.triggerThoughtAnim(check, thought);
+        // exit
         return check;
     }
 
