@@ -5,23 +5,24 @@ import { ENV } from "../spec";
 import { toZero, Vec2 } from "../utils";
 import { BlockType, CHAR2BLOCK, CHAR2MARKER, Field, MarkerType, World } from "./world";
 
-type Thought = 
-    "nothing" 
-    | "wall" 
-    | "block" 
-    | "void"
-    | "red_block"
-    | "green_block"
-    | "blue_block"
-    | "yellow_block"
-    | "red_marker"
-    | "green_marker"
-    | "blue_marker"
-    | "yellow_marker"
-    | "place"
-    | "pickup"
-    | "mark"
-    | "remove"
+export enum ThoughtType {
+    Nothing,
+    Wall,
+    Block,
+    Void,
+    RedBlock,
+    GreenBlock,
+    BlueBlock,
+    YellowBlock,
+    RedMarker,
+    GreenMarker,
+    BlueMarker,
+    YellowMarker,
+    Place,
+    Pickup,
+    Mark,
+    Remove,
+}
 
 export const DIR2GER: Record<string, string> = {
     "N": "Nord",
@@ -361,7 +362,7 @@ export class Robot {
         if (this.canPlaceAt(field)) {
             // animation
             this.triggerPlaceAnim(-1);
-            this.triggerThoughtAnim(true, "place");
+            this.triggerThoughtAnim(true, ThoughtType.Place);
             field.addBlock(t);
         }
     }
@@ -372,7 +373,7 @@ export class Robot {
         if (this.canPickUpFrom(field)) {
             // animation
             this.triggerPlaceAnim(1);
-            this.triggerThoughtAnim(true, "pickup");
+            this.triggerThoughtAnim(true, ThoughtType.Pickup);
             return field.removeBlock();
         }
     }
@@ -382,7 +383,7 @@ export class Robot {
         const field = this.world.getField(target.x, target.y);
         if (this.canMarkAt(field)) {
             this.triggerMarkerAnim(false);
-            this.triggerThoughtAnim(true, "mark");
+            this.triggerThoughtAnim(true, ThoughtType.Mark);
             field.setMarker(m);
         }
     }
@@ -393,7 +394,7 @@ export class Robot {
         if (this.canUnmarkAt(field)) {
             // animation
             this.triggerMarkerAnim(false);
-            this.triggerThoughtAnim(true, "remove");
+            this.triggerThoughtAnim(true, ThoughtType.Remove);
             return field.removeMarker();
         }
     }
@@ -415,21 +416,21 @@ export class Robot {
             check = false;
         }
         // animation
-        let thought: Thought;
-        if (!m) thought = "yellow_marker";
+        let thought: ThoughtType;
+        if (!m) thought = ThoughtType.YellowMarker;
         else {
             switch (m) {
                 case MarkerType.R:
-                    thought = "red_marker";
+                    thought = ThoughtType.RedMarker;
                     break;
                 case MarkerType.G:
-                    thought = "green_marker";
+                    thought = ThoughtType.GreenMarker;
                     break;
                 case MarkerType.B:
-                    thought = "blue_marker";
+                    thought = ThoughtType.BlueMarker;
                     break;
                 case MarkerType.Y:
-                    thought = "yellow_marker";
+                    thought = ThoughtType.YellowMarker;
                     break;
             }
         }
@@ -457,21 +458,21 @@ export class Robot {
 
         // animation trigger
         this.triggerWatchAnim(check);
-        let thought: Thought;
-        if (!b) thought = "red_block";
+        let thought: ThoughtType;
+        if (!b) thought = ThoughtType.RedBlock;
         else {
             switch (b) {
                 case BlockType.r:
-                    thought = "red_block";
+                    thought = ThoughtType.RedBlock;
                     break;
                 case BlockType.g:
-                    thought = "green_block";
+                    thought = ThoughtType.GreenBlock;
                     break;
                 case BlockType.b:
-                    thought = "blue_block";
+                    thought = ThoughtType.BlueBlock;
                     break;
                 case BlockType.y:
-                    thought = "yellow_block";
+                    thought = ThoughtType.YellowBlock;
                     break;
             }
         }
@@ -486,7 +487,7 @@ export class Robot {
         const check = this.isWall(target);
         // animation trigger
         this.triggerWatchAnim(check);
-        this.triggerThoughtAnim(check, "wall");
+        this.triggerThoughtAnim(check, ThoughtType.Wall);
         return check;
     }
 
@@ -496,7 +497,7 @@ export class Robot {
         const check = this.isEmpty(target);
         // animation trigger
         this.triggerWatchAnim(check);
-        this.triggerThoughtAnim(check, "void");
+        this.triggerThoughtAnim(check, ThoughtType.Void);
         return check;
     }
 
@@ -590,7 +591,7 @@ export class Robot {
     animCurrHeight: number;
     animLastHeight: number;
     animThoughtProg: number = 0.0;
-    animThoughtType: Thought = "void";
+    animThoughtType: ThoughtType = ThoughtType.Void;
     animThoughtCond: boolean = true;
     animWatchCond: boolean = false;
     animWatchProg: number = 0.0;
@@ -617,7 +618,7 @@ export class Robot {
             this.triggerBlinkAnim();
         }
         // auto reset view
-        if (this.animThoughtProg <= 0) this.animThoughtType = "nothing";
+        if (this.animThoughtProg <= 0) this.animThoughtType = ThoughtType.Nothing;
     }
 
     animate(deltaProg: number, delta: number): void {
@@ -676,7 +677,7 @@ export class Robot {
         this.animMarkerCond = condition;
     }
 
-    triggerThoughtAnim(condition: boolean, type: Thought) {
+    triggerThoughtAnim(condition: boolean, type: ThoughtType) {
         this.animThoughtProg = 1.0;
         this.animThoughtCond = condition;
         this.animThoughtType = type;

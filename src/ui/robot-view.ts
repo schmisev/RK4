@@ -1,7 +1,7 @@
 import * as p5 from 'p5';
 
-import { isRunning, queueInterrupt, world, objOverlay, taskCheck, updateLagSum, resetLagSum, taskName, dt } from '..';
-import { Robot } from '../robot/robot';
+import { isRunning, queueInterrupt, world, objOverlay, taskCheck, updateLagSum, resetLagSum, taskName, dt, maxDt } from '..';
+import { Robot, ThoughtType } from '../robot/robot';
 import { CR, CY, CG, CB, BlockType, MarkerType, World, CBOT, CBOT2, Field } from '../robot/world';
 import { robotDiagramIndex, showRobotDiagram, hideRobotDiagram, updateRobotDiagram } from './objectigrams';
 import { clamp, easeBump, easeInCubic, easeInOutBack, easeInOutQuad, easeInQuad, easeJump, easeOutCubic, easeOutElastic, easeOutQuad, lerp } from '../utils';
@@ -82,13 +82,13 @@ export function robotSketch(p5: p5) {
     const ET = createTextTexture("O");
     const ST = createTextTexture("S");
 
-    const TXYES = createTextTexture("✅");
+    const TXYES = createTextTexture("✔️");
     const TXNO = createTextTexture("❌");
     const TXWALL = createTextTexture("🚧");
     const TXVOID = createTextTexture("🕳️");
     const TXBLOCK = createTextTexture("🧱");
     const TXEYE = createTextTexture("👁️");
-    const TXPLACE = createTextTexture("👇")
+    const TXPLACE = createTextTexture("🧱")
     const TXPICK = createTextTexture("⛏️")
     const TXMARK = createTextTexture("✏️")
     const TXREMOVE = createTextTexture("🧽")
@@ -326,7 +326,7 @@ export function robotSketch(p5: p5) {
         p5.push(); // bot
         
         // update animation
-        const animStrength = easeInOutQuad(dt / 250);
+        const animStrength = easeInOutQuad(dt / maxDt);
         const interpHop = easeInOutQuad(1 - r.animHopProg);
         const interpFall = 1 - r.animFallProg;
         const interpRot = easeInOutQuad(1 - r.animRotProg);
@@ -458,52 +458,52 @@ export function robotSketch(p5: p5) {
             p5.rotateY(p5.HALF_PI);
             p5.rotateZ(-p5.HALF_PI);
             
-            if (r.animThoughtType != "nothing") {
+            if (r.animThoughtType != ThoughtType.Nothing) {
                 // main
                 switch (r.animThoughtType) {
-                    case "block":
+                    case ThoughtType.Block:
                         p5.texture(TXBLOCK);
                         break;
-                    case 'wall':
+                    case ThoughtType.Wall:
                         p5.texture(TXWALL);
                         break;
-                    case 'void':
+                    case ThoughtType.Void:
                         p5.texture(TXVOID);
                         break;
-                    case 'place':
+                    case ThoughtType.Place:
                         p5.texture(TXPLACE);
                         break;
-                    case 'pickup':
+                    case ThoughtType.Pickup:
                         p5.texture(TXPICK);
                         break;
-                    case 'red_block':
+                    case ThoughtType.RedBlock:
                         p5.texture(TXRBLOCK);
                         break;
-                    case 'green_block':
+                    case ThoughtType.GreenBlock:
                         p5.texture(TXGBLOCK);
                         break;
-                    case 'blue_block':
+                    case ThoughtType.BlueBlock:
                         p5.texture(TXBBLOCK);
                         break;
-                    case 'yellow_block':
+                    case ThoughtType.YellowBlock:
                         p5.texture(TXYBLOCK);
                         break;
-                    case 'red_marker':
+                    case ThoughtType.RedMarker:
                         p5.texture(TXRMARKER);
                         break;
-                    case 'green_marker':
+                    case ThoughtType.GreenMarker:
                         p5.texture(TXGMARKER);
                         break
-                    case 'blue_marker':
+                    case ThoughtType.BlueMarker:
                         p5.texture(TXBMARKER);
                         break
-                    case 'yellow_marker':
+                    case ThoughtType.YellowMarker:
                         p5.texture(TXYMARKER);
                         break
-                    case 'mark':
+                    case ThoughtType.Mark:
                         p5.texture(TXMARK);
                         break;
-                    case 'remove':
+                    case ThoughtType.Remove:
                         p5.texture(TXREMOVE);
                         break;
                     default:
