@@ -2,8 +2,27 @@ import { RuntimeError } from "../errors";
 import { ClassPrototype, GlobalEnvironment, VarHolder } from "../language/runtime/environment";
 import { MK_BOOL, MK_STRING, MK_NUMBER, RuntimeVal, BuiltinClassVal, ObjectVal, MK_NATIVE_METHOD, ValueAlias } from "../language/runtime/values";
 import { ENV } from "../spec";
-import { Vec2 } from "../utils";
+import { toZero, Vec2 } from "../utils";
 import { BlockType, CHAR2BLOCK, CHAR2MARKER, Field, MarkerType, World } from "./world";
+
+export enum ThoughtType {
+    Nothing,
+    Wall,
+    Block,
+    Void,
+    RedBlock,
+    GreenBlock,
+    BlueBlock,
+    YellowBlock,
+    RedMarker,
+    GreenMarker,
+    BlueMarker,
+    YellowMarker,
+    Place,
+    Pickup,
+    Mark,
+    Remove,
+}
 
 export const DIR2GER: Record<string, string> = {
     "N": "Nord",
@@ -235,6 +254,13 @@ export class Robot {
         this.name = name;
         this.index = index;
         this.world = w;
+
+        // animation state
+        this.animLastPos = new Vec2(x, y);
+        this.animCurrRot = this.dir2Angle();
+        this.animLastRot = this.dir2Angle();
+        this.animLastHeight = 0;
+        this.animCurrHeight = 0;
     }
 
     dir2Vec(): Vec2 {
@@ -282,17 +308,40 @@ export class Robot {
                 this.dir = "N"
                 break;
         }
+        // animation
+        this.triggerRotAnim();
         return this.dir;
     }
 
     turnLeft() {
+        switch (this.dir) {
+            case "N":
+                this.dir = "W"
+                break;
+            case "E":
+                this.dir = "N"
+                break;
+            case "S":
+                this.dir = "E"
+                break;
+            case "W":
+                this.dir = "S"
+                break;
+        }
+        /*
         for(let i = 0; i < 3; i++) {
             this.turnRight()
         }
+        */
+        // animation
+        this.triggerRotAnim();
         return this.dir;
     }
 
     step() {
+        // animation
+        this.triggerHopAnim();
+        // logic
         const target = this.targetPos();
         if (this.canMoveTo(target)) {
             // this is kinda hacky right now
@@ -311,6 +360,9 @@ export class Robot {
         const target = this.targetPos();
         const field = this.world.getField(target.x, target.y);
         if (this.canPlaceAt(field)) {
+            // animation
+            this.triggerPlaceAnim(-1);
+            this.triggerThoughtAnim(true, ThoughtType.Place);
             field.addBlock(t);
         }
     }
@@ -319,6 +371,9 @@ export class Robot {
         const target = this.targetPos();
         const field = this.world.getField(target.x, target.y);
         if (this.canPickUpFrom(field)) {
+            // animation
+            this.triggerPlaceAnim(1);
+            this.triggerThoughtAnim(true, ThoughtType.Pickup);
             return field.removeBlock();
         }
     }
@@ -327,6 +382,8 @@ export class Robot {
         const target = this.pos;
         const field = this.world.getField(target.x, target.y);
         if (this.canMarkAt(field)) {
+            this.triggerMarkerAnim(false);
+            this.triggerThoughtAnim(true, ThoughtType.Mark);
             field.setMarker(m);
         }
     }
@@ -335,48 +392,113 @@ export class Robot {
         const target = this.pos;
         const field = this.world.getField(target.x, target.y);
         if (this.canUnmarkAt(field)) {
+            // animation
+            this.triggerMarkerAnim(false);
+            this.triggerThoughtAnim(true, ThoughtType.Remove);
             return field.removeMarker();
         }
     }
 
     isOnMarker(m: MarkerType | null = null): boolean {
+        // logic
         const target = this.pos;
+
+        let check = false;
         try {
             const field = this.world.getField(target.x, target.y)!;
             if (m == null) {
-                if (field.marker != MarkerType.None) return true
-                return false;
+                if (field.marker != MarkerType.None) check = true
+                else check = false;
             }
-            if (field.marker == m) return true;
-            return false
+            else if (field.marker == m) check = true;
+            else check = false
         } catch {
-            return false;
+            check = false;
         }
+        // animation
+        let thought: ThoughtType;
+        if (!m) thought = ThoughtType.YellowMarker;
+        else {
+            switch (m) {
+                case MarkerType.R:
+                    thought = ThoughtType.RedMarker;
+                    break;
+                case MarkerType.G:
+                    thought = ThoughtType.GreenMarker;
+                    break;
+                case MarkerType.B:
+                    thought = ThoughtType.BlueMarker;
+                    break;
+                case MarkerType.Y:
+                    thought = ThoughtType.YellowMarker;
+                    break;
+            }
+        }
+        this.triggerThoughtAnim(check, thought);
+        // exit
+        return check;
     }
 
     seesBlock(b: BlockType | null = null) {
+        // logic
         const target = this.targetPos();
+        
+        let check = false;
         try {
             const field = this.world.getField(target.x, target.y)!;
             if (b == null) {
-                if (field.blocks.length >= 1) return true;
-                return false;
+                if (field.blocks.length >= 1) check = true;
+                else check = false;
             }
-            if (field.blocks[field.blocks.length - 1] == b) return true;
-            return false;
+            else if (field.blocks[field.blocks.length - 1] == b) check = true;
+            else check = false;
         } catch {
-            return false;
+            check = false;
         }
+
+        // animation trigger
+        this.triggerWatchAnim(check);
+        let thought: ThoughtType;
+        if (!b) thought = ThoughtType.RedBlock;
+        else {
+            switch (b) {
+                case BlockType.r:
+                    thought = ThoughtType.RedBlock;
+                    break;
+                case BlockType.g:
+                    thought = ThoughtType.GreenBlock;
+                    break;
+                case BlockType.b:
+                    thought = ThoughtType.BlueBlock;
+                    break;
+                case BlockType.y:
+                    thought = ThoughtType.YellowBlock;
+                    break;
+            }
+        }
+        this.triggerThoughtAnim(check, thought);
+        // exit
+        return check;
     }
 
     seesWall() {
+        // logic
         const target = this.targetPos();
-        return this.isWall(target);
+        const check = this.isWall(target);
+        // animation trigger
+        this.triggerWatchAnim(check);
+        this.triggerThoughtAnim(check, ThoughtType.Wall);
+        return check;
     }
 
     seesVoid() {
+        // logic
         const target = this.targetPos();
-        return this.isEmpty(target);
+        const check = this.isEmpty(target);
+        // animation trigger
+        this.triggerWatchAnim(check);
+        this.triggerThoughtAnim(check, ThoughtType.Void);
+        return check;
     }
 
     // utils
@@ -452,7 +574,112 @@ export class Robot {
         if (targetField.isWall) throw new RuntimeError(`${this.name}: Kann Marker nicht von Wände entfernen!`);
         return true;
     }
-}
 
-// export const karol = new Robot(1, 1, "N", "Karol1", null);
-// export const karol2 = new Robot(1, 2, "S", "Karol2", null);
+    /**
+     * Animation
+     * 
+     * anim_Prog (progress) variables are timers that count down from 1.0 to 0.0.
+     * During this time, the associated animation is active.
+     * 
+     * prepare() updates the robot state FROM an external source,
+     * in this case robot-view.ts
+     * animate() updates the timers
+     */
+    animLastPos: Vec2;
+    animCurrRot: number;
+    animLastRot: number;
+    animCurrHeight: number;
+    animLastHeight: number;
+    animThoughtProg: number = 0.0;
+    animThoughtType: ThoughtType = ThoughtType.Void;
+    animThoughtCond: boolean = true;
+    animWatchCond: boolean = false;
+    animWatchProg: number = 0.0;
+    animHopProg: number = 0.0;
+    animFallProg: number = 0.0;
+    animRotProg: number = 0.0;
+    animPlaceProg: number = 0.0;
+    animPlaceDir: number = 1; // picking up (+1) or setting down (-1)
+    animRotRnd: number = 0.0;
+    animBlinkProg: number = 0.0;
+    animMarkerProg: number = 0.0;
+    animMarkerCond: boolean = false; // false is "remove"
+
+    prepare(fieldHeight: number): void {
+        // update height
+        if (this.animCurrHeight != fieldHeight) {
+            this.animCurrHeight = fieldHeight;
+            if (this.animCurrHeight != this.animLastHeight) this.triggerFallAnim();
+        }
+        // trigger falls
+        if (this.animFallProg <= 0) this.animLastHeight = this.animCurrHeight;
+        // auto blink
+        if (this.animBlinkProg == 0 && Math.random() < 0.001) {
+            this.triggerBlinkAnim();
+        }
+        // auto reset view
+        if (this.animThoughtProg <= 0) this.animThoughtType = ThoughtType.Nothing;
+    }
+
+    animate(deltaProg: number, delta: number): void {
+        // update progress variables
+        this.animWatchProg = toZero(this.animWatchProg, deltaProg);
+        this.animHopProg = toZero(this.animHopProg, deltaProg);
+        this.animFallProg = toZero(this.animFallProg, deltaProg);
+        this.animRotProg = toZero(this.animRotProg, deltaProg);
+        this.animPlaceProg = toZero(this.animPlaceProg, deltaProg);
+        this.animMarkerProg = toZero(this.animMarkerProg, deltaProg);
+        // real time
+        this.animThoughtProg = toZero(this.animThoughtProg, deltaProg * 0.5);
+        this.animBlinkProg = toZero(this.animBlinkProg, 0.005 * delta);
+    }
+
+    triggerWatchAnim(condition: boolean) {
+        this.animWatchProg = 1.0;
+        this.animWatchCond = condition;
+    }
+
+    triggerHopAnim() {
+        this.animHopProg = 1.0;
+        this.animLastPos.x = this.pos.x;
+        this.animLastPos.y = this.pos.y;
+        this.animRotRnd = 5 * (1 - 2 * Math.random()); // in degrees
+    }
+
+    triggerRotAnim() {
+        this.animRotProg = 1.0;
+        this.animLastRot = this.animCurrRot;
+        this.animCurrRot = this.dir2Angle();
+
+        // making sure the rotation will alsways be < 360 degrees
+        const rotDiff = this.animCurrRot - this.animLastRot;
+        if (Math.abs(rotDiff) > 180) {
+            if (rotDiff > 0) this.animLastRot += 360;
+            else this.animLastRot -= 360;
+        }
+    }
+
+    triggerPlaceAnim(dir: number) {
+        this.animPlaceProg = 1.0;
+        this.animPlaceDir = dir;
+    }
+
+    triggerFallAnim() {
+        this.animFallProg = 1.0;
+    }
+
+    triggerBlinkAnim() {
+        this.animBlinkProg = 1.0;
+    }
+
+    triggerMarkerAnim(condition: boolean) {
+        this.animMarkerProg = 1.0
+        this.animMarkerCond = condition;
+    }
+
+    triggerThoughtAnim(condition: boolean, type: ThoughtType) {
+        this.animThoughtProg = 1.0;
+        this.animThoughtCond = condition;
+        this.animThoughtType = type;
+    }
+}

@@ -22,13 +22,37 @@ export class Vec2 {
   }
 }
 
-
 export const lerp = (x: number, y: number, a: number) => x * (1 - a) + y * a;
 export const clamp = (a: number, min = 0, max = 1) => Math.min(max, Math.max(min, a));
+export const toZero = (x: number, rate: number) => clamp(x - rate, 0, x);
 export const invlerp = (x: number, y: number, a: number) => clamp((a - x) / (y - x));
 export const range = (x1: number, y1: number, x2: number, y2: number, a: number) => lerp(x2, y2, invlerp(x1, y1, a));
-
+export const easeInQuad = (x: number) => x * x;
+export const easeOutQuad = (x: number) => 1 - x * x;
+export const easeInCubic = (x: number) => x * x * x;
+export const easeOutCubic = (x: number) => 1 - x * x * x;
+export const easeJump = (x: number) => 1 - (2*x - 1) * (2*x - 1)
+export const easeInOutQuad = (x: number) => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+export const easeOutInQuad = (x: number) => 1.0 - easeInOutQuad(x);
+export const easeBump = (x: number) => x < 0.5 ? easeInOutQuad(x * 2) : easeOutInQuad(x * 2 - 1);
 export const rndi = (min_incl: number, max_non_incl: number) => Math.floor(Math.random() * (max_non_incl - min_incl) + min_incl);
+export const easeOutElastic = (x: number) => {
+    const c4 = (2 * Math.PI) / 3;
+
+    return x === 0
+        ? 0
+        : x === 1
+        ? 1
+        : Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * c4) + 1;
+}
+export const easeInOutBack = (x: number) => {
+    const c1 = 1.70158;
+    const c2 = c1 * 1.525;
+
+    return x < 0.5
+        ? (Math.pow(2 * x, 2) * ((c2 + 1) * 2 * x - c2)) / 2
+        : (Math.pow(2 * x - 2, 2) * ((c2 + 1) * (x * 2 - 2) + c2) + 2) / 2;
+}
 
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));

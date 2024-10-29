@@ -1,9 +1,10 @@
 import * as p5 from 'p5';
 
-import { isRunning, queueInterrupt, world, objOverlay, taskCheck, updateLagSum, resetLagSum, taskName } from '..';
-import { Robot } from '../robot/robot';
+import { isRunning, queueInterrupt, world, objOverlay, taskCheck, updateLagSum, resetLagSum, taskName, dt, maxDt } from '..';
+import { Robot, ThoughtType } from '../robot/robot';
 import { CR, CY, CG, CB, BlockType, MarkerType, World, CBOT, CBOT2, Field } from '../robot/world';
 import { robotDiagramIndex, showRobotDiagram, hideRobotDiagram, updateRobotDiagram } from './objectigrams';
+import { clamp, easeBump, easeInCubic, easeInOutBack, easeInOutQuad, easeInQuad, easeJump, easeOutCubic, easeOutElastic, easeOutQuad, lerp } from '../utils';
 
 
 // Setup robot sketch
@@ -12,8 +13,6 @@ export function robotSketch(p5: p5) {
     const canvasDiv = document.getElementById('robot-canvas')!;
     let canvasW = 0, canvasH = 0;
     let cam: p5.Camera;
-    let pan = 0.0;
-    let tilt = 0.0;
     let worldGoalReached = false;
 
     const CPS = 100; // Compass size
@@ -82,6 +81,25 @@ export function robotSketch(p5: p5) {
     const WT = createTextTexture("W");
     const ET = createTextTexture("O");
     const ST = createTextTexture("S");
+
+    const TXYES = createTextTexture("✔️");
+    const TXNO = createTextTexture("❌");
+    const TXWALL = createTextTexture("🚧");
+    const TXVOID = createTextTexture("🕳️");
+    const TXBLOCK = createTextTexture("🧱");
+    const TXEYE = createTextTexture("👁️");
+    const TXPLACE = createTextTexture("🧱")
+    const TXPICK = createTextTexture("⛏️")
+    const TXMARK = createTextTexture("✏️")
+    const TXREMOVE = createTextTexture("🧽")
+    const TXYBLOCK = createTextTexture("🟨")
+    const TXRBLOCK = createTextTexture("🟥")
+    const TXGBLOCK = createTextTexture("🟩")
+    const TXBBLOCK = createTextTexture("🟦")
+    const TXYMARKER = createTextTexture("🟡")
+    const TXRMARKER = createTextTexture("🔴")
+    const TXGMARKER = createTextTexture("🟢")
+    const TXBMARKER = createTextTexture("🔵")
 
     const RGIDX = [
         createTextTexture("1", "#CCC", true),
@@ -185,8 +203,6 @@ export function robotSketch(p5: p5) {
         p5.background(bg);
 
         p5.orbitControl();
-        pan = p5.atan2(cam.eyeZ - cam.centerZ, cam.eyeX - cam.centerX);
-        tilt = p5.atan2(cam.eyeY - cam.centerY, p5.dist(cam.centerX, cam.centerZ, cam.eyeX, cam.eyeZ));
 
         p5.push();
 
@@ -215,7 +231,24 @@ export function robotSketch(p5: p5) {
         drawHUD();
     };
 
+    const drawBillboard = (drawCall: () => void) => {
+        const pan = p5.atan2(cam.eyeZ - cam.centerZ, cam.eyeX - cam.centerX);
+        const tilt = p5.atan2(cam.eyeY - cam.centerY, p5.dist(cam.centerX, cam.centerZ, cam.eyeX, cam.eyeZ));
+        
+        p5.push();
+        p5.rotateZ(pan);
+        p5.rotateY(tilt);
+
+        // draw Billboard here
+        drawCall();
+
+        p5.pop();
+    };
+
     const drawHUD = () => {
+        const pan = p5.atan2(cam.eyeZ - cam.centerZ, cam.eyeX - cam.centerX);
+        const tilt = p5.atan2(cam.eyeY - cam.centerY, p5.dist(cam.centerX, cam.centerZ, cam.eyeX, cam.eyeZ));
+
         p5.push();
         p5.translate(cam.eyeX, cam.eyeY, cam.eyeZ);
         p5.rotateY(-pan);
@@ -271,36 +304,57 @@ export function robotSketch(p5: p5) {
 
     const drawRobots = (w: World) => {
         p5.push();
-        p5.translate((1 - w.L) * 0.5 * TSZ, (1 - w.W) * 0.5 * TSZ, (1 - w.H) * 0.5 * BLH);
+        p5.translate(
+            (1 - w.L) * 0.5 * TSZ, 
+            (1 - w.W) * 0.5 * TSZ, 
+            (1 - w.H) * 0.5 * BLH
+        );
         for (const [i, r] of w.robots.entries()) {
-            // do the drawing
-            p5.push();
-            p5.translate(0, 0, 5 * p5.abs(p5.sin(i + p5.frameCount * 0.1)));
             const f = w.getField(r.pos.x, r.pos.y)!;
-            p5.translate(
-                r.pos.x * TSZ,
-                r.pos.y * TSZ,
-                (f.blocks.length - 0.5) * BLH
-            );
-            p5.rotateZ(2 * p5.PI * r.dir2Angle() / 360);
+            const fieldHeight = (f.blocks.length);
+            
+            r.prepare(fieldHeight); // this passes info to the robot object
+            r.animate(p5.deltaTime / dt, p5.deltaTime); // this does the timing calculation
 
+            // do the drawing
             drawSingleRobot(r);
-
-            p5.pop();
         }
         p5.pop();
     };
 
     const drawSingleRobot = (r: Robot) => {
-        p5.push();
+        p5.push(); // bot
+        
+        // update animation
+        const animStrength = easeInOutQuad(dt / maxDt);
+        const interpHop = easeInOutQuad(1 - r.animHopProg);
+        const interpFall = 1 - r.animFallProg;
+        const interpRot = easeInOutQuad(1 - r.animRotProg);
+        
+        // drawing the robot!
+        p5.translate(0, 0, 0.1 * BLH * p5.abs(p5.sin(r.index + p5.frameCount * 0.1)));
+        p5.translate(
+            lerp(r.animLastPos.x, r.pos.x, interpHop) * TSZ,
+            lerp(r.animLastPos.y, r.pos.y, interpHop) * TSZ,
+            ( lerp(r.animLastHeight, r.animCurrHeight, interpFall) - 0.5 ) * BLH
+        );
+        p5.translate(0, 0, animStrength * BLH * easeBump(1 - r.animHopProg));
+
+        p5.push(); // rotations
+        // facing direction
+        p5.rotateZ(2 * p5.PI * lerp(r.animLastRot + r.animRotRnd, r.animCurrRot + r.animRotRnd, interpRot) / 360);
+        // doing the little hop
+        p5.rotateX(animStrength * p5.PI * 0.05 * easeBump(1 - r.animHopProg));
+        // placing nod
+        p5.rotateX(animStrength * r.animPlaceDir * p5.PI * 0.02 * easeBump(1 - r.animPlaceProg));
+
+        
+        p5.push(); // body
         p5.translate(0, 0, RBH * 0.5);
         p5.fill(CBOT);
-
-        p5.push();
         p5.box(RBW, RBW, RBH);
-        p5.pop();
 
-        p5.push();
+        p5.push(); // numbers plates
         let numberPlate = numberPlates[r.index];
         if (!numberPlate) {
             numberPlate = p5.createGraphics(RBW, RBH);
@@ -322,41 +376,63 @@ export function robotSketch(p5: p5) {
         p5.rotateY(p5.PI);
         p5.plane(RBW, RBH);
 
-        p5.pop();
+        p5.pop(); // end number plates
 
         // eye
         p5.translate(0, 0, RBH * 0.1);
 
-        p5.push();
+        p5.push(); // eye
         p5.noStroke();
         p5.fill(255);
         p5.translate(0, RBW * 0.3, 0);
         p5.sphere(RBW * 0.4);
-        p5.pop();
 
-        p5.push();
+        // do blink
+        if (r.animBlinkProg > 0) {
+            p5.fill(CBOT2);
+            p5.sphere(RBW * 0.43);
+        }
+
+        p5.pop(); // end eye
+
+        p5.push(); // pupil
         p5.noStroke();
-        p5.fill(0);
+        // animate eye color
+        const interp = easeOutQuad(1 - r.animWatchProg)
+        if (r.animWatchCond)
+            p5.fill(0, 255 * interp, 0); // blink green
+        else
+            p5.fill(255 * interp, 0, 0); // blink red
+
         p5.translate(0, RBW * 0.42, 0);
         p5.sphere(RBW * 0.3);
-        p5.pop();
 
-        // arms
+        p5.pop(); // end pupil
+
+        p5.push(); // arms
+        
+        const interpPlace = easeBump(1 - r.animPlaceProg);
+        if (r.animPlaceDir > 0) p5.translate(0, 0, animStrength * lerp(0, r.animPlaceDir * BLH * 0.7, interpPlace));
+        else p5.translate(0, 0, lerp(0, animStrength * r.animPlaceDir * BLH * 0.5, interpPlace));
+        
+        p5.translate(0, -lerp(0, - BLH * 0.1, interpPlace), 0)
+
         p5.fill(CBOT2);
-        p5.push();
+        p5.push(); // left arm
         p5.noStroke();
         p5.translate(-RBW * 0.4, RBW * 0.6, -RBW * 0.4);
         p5.sphere(RBW * 0.2);
-        p5.pop();
+        p5.pop(); // end left arm
 
-        p5.push();
+        p5.push(); // right arm
         p5.noStroke();
         p5.translate(RBW * 0.4, RBW * 0.6, -RBW * 0.4);
         p5.sphere(RBW * 0.2);
-        p5.pop();
+        p5.pop(); // end right arm
 
-        // backplate
-        p5.push();
+        p5.pop(); // end arms
+
+        p5.push(); // backplate
         p5.noStroke();
         p5.fill(0);
         p5.translate(0, -RBW * 0.5, 0);
@@ -365,11 +441,92 @@ export function robotSketch(p5: p5) {
         p5.box(RBW * 0.1, 1, RBW * 0.4);
         p5.translate(RBW * 0.4, 0, 0);
         p5.box(RBW * 0.1, 1, RBW * 0.4);
-        p5.pop();
+        p5.pop(); // end backplate
 
-        // name
-        p5.pop();
+        p5.pop(); // end body
+        
+        p5.pop(); // end rotations
 
+        // status indicators
+        p5.translate(0, 0, 1.4 * RBH);
+        
+        // draw "thought"
+        drawBillboard(() => {
+            p5.push(); // thought
+            p5.noStroke();
+            p5.fill(255);
+            p5.rotateY(p5.HALF_PI);
+            p5.rotateZ(-p5.HALF_PI);
+            
+            if (r.animThoughtType != ThoughtType.Nothing) {
+                // main
+                switch (r.animThoughtType) {
+                    case ThoughtType.Block:
+                        p5.texture(TXBLOCK);
+                        break;
+                    case ThoughtType.Wall:
+                        p5.texture(TXWALL);
+                        break;
+                    case ThoughtType.Void:
+                        p5.texture(TXVOID);
+                        break;
+                    case ThoughtType.Place:
+                        p5.texture(TXPLACE);
+                        break;
+                    case ThoughtType.Pickup:
+                        p5.texture(TXPICK);
+                        break;
+                    case ThoughtType.RedBlock:
+                        p5.texture(TXRBLOCK);
+                        break;
+                    case ThoughtType.GreenBlock:
+                        p5.texture(TXGBLOCK);
+                        break;
+                    case ThoughtType.BlueBlock:
+                        p5.texture(TXBBLOCK);
+                        break;
+                    case ThoughtType.YellowBlock:
+                        p5.texture(TXYBLOCK);
+                        break;
+                    case ThoughtType.RedMarker:
+                        p5.texture(TXRMARKER);
+                        break;
+                    case ThoughtType.GreenMarker:
+                        p5.texture(TXGMARKER);
+                        break
+                    case ThoughtType.BlueMarker:
+                        p5.texture(TXBMARKER);
+                        break
+                    case ThoughtType.YellowMarker:
+                        p5.texture(TXYMARKER);
+                        break
+                    case ThoughtType.Mark:
+                        p5.texture(TXMARK);
+                        break;
+                    case ThoughtType.Remove:
+                        p5.texture(TXREMOVE);
+                        break;
+                    default:
+                        p5.texture(TXEYE);
+                        break;
+                }
+                // popping
+                p5.scale(easeOutCubic(1 - r.animThoughtProg));
+                p5.translate(0, 0, animStrength * 0.7 * TSZ * easeBump(clamp((1 - r.animThoughtProg) * 2, 0, 1))
+                );
+                // main
+                p5.plane(TSZ * 1);
+                // cond
+                p5.translate(0, 0, 0.2);
+                if (!r.animThoughtCond) {
+                    p5.texture(TXNO);
+                    p5.plane(TSZ * 1);
+                }
+            }
+            p5.pop(); // end thought
+        })
+
+        p5.pop(); // end bot
     };
 
     const drawWorldOutline = (w: World) => {

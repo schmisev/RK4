@@ -15,7 +15,7 @@ import Parser from "./language/frontend/parser";
 import { Program } from './language/frontend/ast';
 import { GlobalEnvironment, declareGlobalEnv } from "./language/runtime/environment";
 import { evaluate, SteppedEval } from "./language/runtime/interpreter";
-import { sleep } from "./utils";
+import { easeInCubic, easeInQuad, easeOutElastic, sleep } from "./utils";
 
 // Robot imports
 import { declareWorld, World } from "./robot/world";
@@ -39,7 +39,8 @@ import { toggleFlowchart } from "./ui/toggle-buttons";
 import { CodePosition, ILLEGAL_CODE_POS } from "./language/frontend/lexer";
 
 // Global variables
-let dt = 50; // ms to sleep between function calls
+export let maxDt = 500;
+export let dt = 50; // ms to sleep between function calls
 let dtIDE = 250; // ms to wait for IDE update
 let frameLagSum = 0; // running sum of frame lag
 export let isRunning = false;
@@ -125,11 +126,15 @@ const taskDescription = document.getElementById("task-description") as HTMLEleme
 
 // Setup slider
 const waitSlider = document.getElementById("wait-slider") as HTMLInputElement;
-waitSlider.oninput = () => {
+function updateSlider() {
     const value = parseInt(waitSlider.value);
-    dt = value / 10;
-    document.getElementById("wait-time")!.innerHTML = (value / 10).toString() + " ms";
+    dt = maxDt * easeInCubic((value / 10) / maxDt);
+    document.getElementById("wait-time")!.innerHTML = dt.toFixed(1) + " ms";
 }
+
+waitSlider.max = (maxDt * 10).toString();
+waitSlider.oninput = updateSlider
+updateSlider();
 
 // automatic parse timeout to avoid lagging the editor
 let autoUpdateIDE = setTimeout(updateIDE, dtIDE);
@@ -379,7 +384,7 @@ async function startCode() {
 };
 
 // Stop code via button
-async function stopCode() {
+export async function stopCode() {
     // if (!isRunning) return;
     resetErrorMarkers();
     await interrupt();
