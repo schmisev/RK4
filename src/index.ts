@@ -197,14 +197,35 @@ function resetErrorMarkers() {
 }
 
 function setErrorMarker(msg: string, codePos: CodePosition, errorTypeCss: string) {
-    setErrorBar(msg, errorTypeCss);
+    const lineCount = editor.session.getLength();
+    const lineLength = editor.session.getLine(codePos.lineIndex).length;
+
+    let lineIndex = codePos.lineIndex;
+    let lineIndexEnd = codePos.lineIndexEnd;
+    let startPos = codePos.startPos;
+    let type: "fullLine" | "text" = "text";
+
+    if (lineCount - 1 < codePos.lineIndex) {
+        // outside of line range
+        lineIndex = lineCount - 1;
+        lineIndexEnd = lineCount - 1;
+        startPos = 0;
+        type = "fullLine";
+    } else if (lineLength <= codePos.startPos) {
+        // beyond line length
+        startPos = 0;
+        type = "fullLine";
+    }
+    
     const markerId = editor.session.addMarker(new ace.Range(
-        codePos.lineIndex, 
-        codePos.startPos, 
-        codePos.lineIndexEnd, 
+        lineIndex, 
+        startPos, 
+        lineIndexEnd, 
         codePos.endPos
-    ), "error-marker " + errorTypeCss, "text");
+    ), "error-marker " + errorTypeCss, type);
     errorMarkers.push(markerId);
+
+    setErrorBar(msg, errorTypeCss);
 }
 
 // Updating IDE
@@ -248,7 +269,7 @@ export async function updateIDE() {
         // not runtime errors should appear
 
         if (errorCssClass !== "none") {
-            setErrorMarker(`❌ ${message} (Zeile: ${codePos.lineIndex + 1} : ${codePos.startPos})`, codePos, errorCssClass);
+            setErrorMarker(`❌ ${message} (Zeile: ${codePos.lineIndex + 1}, Zeichen: ${codePos.startPos}->${codePos.endPos})`, codePos, errorCssClass);
         }
 
         //throw e; // temporary
@@ -472,15 +493,15 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
             console.log("⚠️ " + e.message);
             console.error(e.stack);
             if (showHighlighting)
-                setErrorMarker(`⚠️ ${e.message} (Zeile: ${errorCodePos.lineIndex + 1} : ${errorCodePos.startPos})`, errorCodePos, "runtime");
+                setErrorMarker(`⚠️ ${e.message} (Zeile: ${errorCodePos.lineIndex + 1}, Zeichen: ${errorCodePos.startPos}->${errorCodePos.endPos})`, errorCodePos, "runtime");
         } else if (e instanceof Error) {
             // throw e;
             console.log("⚠️ " + e.message);
             console.error(e.stack);
             if (showHighlighting)
-                setErrorMarker(`⚠️ ${e.message} (Zeile: ${lastCodePos.lineIndex + 1} : ${lastCodePos.startPos})`, lastCodePos, "runtime");
+                setErrorMarker(`⚠️ ${e.message} (Zeile: ${lastCodePos.lineIndex + 1}, Zeichen: ${lastCodePos.startPos}->${lastCodePos.endPos})`, lastCodePos, "runtime");
         } else {
-            // do nothing?
+            // do nothing? IGNORE!
         }
     }
 
