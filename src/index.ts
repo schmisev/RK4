@@ -225,7 +225,7 @@ function setErrorMarker(msg: string, codePos: CodePosition, errorTypeCss: string
     ), "error-marker " + errorTypeCss, type);
     errorMarkers.push(markerId);
 
-    setErrorBar(msg, errorTypeCss);
+    setErrorBar(msg + ` (Zeile: ${codePos.lineIndex + 1}:${codePos.startPos} -> ${codePos.lineIndexEnd + 1}:${codePos.endPos})`, errorTypeCss);
 }
 
 // Updating IDE
@@ -269,7 +269,7 @@ export async function updateIDE() {
         // not runtime errors should appear
 
         if (errorCssClass !== "none") {
-            setErrorMarker(`❌ ${message} (Zeile: ${codePos.lineIndex + 1}, Zeichen: ${codePos.startPos}->${codePos.endPos})`, codePos, errorCssClass);
+            setErrorMarker(`❌ ${message}`, codePos, errorCssClass);
         }
 
         //throw e; // temporary
@@ -493,13 +493,13 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
             console.log("⚠️ " + e.message);
             console.error(e.stack);
             if (showHighlighting)
-                setErrorMarker(`⚠️ ${e.message} (Zeile: ${errorCodePos.lineIndex + 1}, Zeichen: ${errorCodePos.startPos}->${errorCodePos.endPos})`, errorCodePos, "runtime");
+                setErrorMarker(`⚠️ ${e.message}`, errorCodePos, "runtime");
         } else if (e instanceof Error) {
             // throw e;
             console.log("⚠️ " + e.message);
             console.error(e.stack);
             if (showHighlighting)
-                setErrorMarker(`⚠️ ${e.message} (Zeile: ${lastCodePos.lineIndex + 1}, Zeichen: ${lastCodePos.startPos}->${lastCodePos.endPos})`, lastCodePos, "runtime");
+                setErrorMarker(`⚠️ ${e.message}`, lastCodePos, "runtime");
         } else {
             // do nothing? IGNORE!
         }

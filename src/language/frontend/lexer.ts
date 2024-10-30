@@ -395,9 +395,9 @@ export function tokenize(sourceCode: string): Token[] {
 
     if (tokens.length > 0 && tokens[tokens.length - 1].type != TokenType.EndLine) {
         newLine();
-        tokens.push(token("forced newline", TokenType.EndLine, getPos() /*++ lineCount*/));
+        tokens.push(token("Erzwungene neue Zeile", TokenType.EndLine, getPos() /*++ lineCount*/));
     }
-    tokens.push(token("eof", TokenType.EOF, getPos()));
+    tokens.push(token("EOF", TokenType.EOF, getPos()));
 
     while (tokens[0].type == TokenType.EndLine) {
         tokens.shift();
