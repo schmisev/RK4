@@ -46,6 +46,8 @@ export default class Parser {
         codePos: ILLEGAL_CODE_POS(),
     };
 
+    collectedIdents: Set<string> = new Set();
+
     private not_eof(): boolean {
         return this.tokens[0].type != TokenType.EOF;
     }
@@ -56,6 +58,7 @@ export default class Parser {
 
     private eat(): Token {
         const prev = this.tokens.shift()!;
+        if (prev.type == TokenType.Identifier) this.collectedIdents.add(prev.value);
         this.lastEaten = prev; // store previous token
         return prev;
     }
@@ -75,11 +78,14 @@ export default class Parser {
                 codePos
             );
         }
+        if (prev.type == TokenType.Identifier) this.collectedIdents.add(prev.value);
         this.lastEaten = prev; // store previous token
         return prev;
     }
 
     public produceAST(sourceCode: string): Program {
+        this.collectedIdents.clear(); // remove old idents
+
         this.tokens = tokenize(sourceCode);
         const program: Program = {
             kind: StmtKind.Program,

@@ -8,8 +8,8 @@ var RKScriptHighlightRules = function () {
     var keywordMapper = this.createKeywordMapper({
         "support.function": Object.values(ENV.global.fn).join("|"),
         "support.class": ENV.robot.cls + "|" + ENV.world.cls,
-        "entity.name.function": Object.values(ENV.robot.mth).concat(Object.values(ENV.world.mth)).map((mth) => mth).join("|"),
-        "keyword": Object.keys(KEYWORDS).join("|") + "|welt",
+        "entity.name.function": "",
+        "keyword": Object.keys(KEYWORDS).join("|"),
         "constant.language": Object.values(ENV.global.const).join("|"),
     }, "text", true);
     this.$rules = {

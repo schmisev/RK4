@@ -37,11 +37,12 @@ import { Session } from "inspector";
 import { setFlowchartVisibility, showFlowchart } from "./ui/flowcharts";
 import { toggleFlowchart } from "./ui/toggle-buttons";
 import { CodePosition, ILLEGAL_CODE_POS } from "./language/frontend/lexer";
+import { ENV } from "./spec";
 
 // Global variables
 export let maxDt = 500;
 export let dt = 50; // ms to sleep between function calls
-let dtIDE = 250; // ms to wait for IDE update
+let dtIDE = 300; // ms to wait for IDE update
 let frameLagSum = 0; // running sum of frame lag
 export let isRunning = false;
 export let queueInterrupt = false;
@@ -80,7 +81,48 @@ const preloadEditor = ace.edit("preload-editor", {
 });
 
 // deactivate text completer
-aceLangTools.setCompleters([aceLangTools.snippetCompleter, aceLangTools.keyWordCompleter])
+let liveWordList: string[] = [];
+const liveCompleter = {
+    getCompletions: function (editor: any, session: any, pos: any, prefix: any, callback: any) {
+        callback(null, liveWordList.map(function(word) {
+            return {
+                caption: word,
+                value: word,
+                meta: "✏️ live"
+            };
+        }));
+    }
+}
+
+let robotWordList: string[] = Object.values(ENV.robot.mth);
+const robotCompleter = {
+    getCompletions: function (editor: any, session: any, pos: any, prefix: any, callback: any) {
+        callback(null, robotWordList.map(function(word) {
+            return {
+                caption: word,
+                value: word,
+                meta: "🤖 roboter"
+            };
+        }));
+    }
+}
+
+let worldWordList: string[] = Object.values(ENV.world.mth);
+const worldCompleter = {
+    getCompletions: function (editor: any, session: any, pos: any, prefix: any, callback: any) {
+        callback(null, worldWordList.map(function(word) {
+            return {
+                caption: word,
+                value: word,
+                meta: "🌍 welt"
+            };
+        }));
+    }
+}
+
+const allCompleters = [aceLangTools.snippetCompleter, aceLangTools.keyWordCompleter, liveCompleter, robotCompleter, worldCompleter];
+
+aceLangTools.setCompleters(allCompleters)
 export const editor = ace.edit("code-editor", {
     minLines: 30,
     mode: "ace/mode/RKScript",
@@ -91,6 +133,7 @@ export const editor = ace.edit("code-editor", {
     enableSnippets: true,
     enableLiveAutocompletion: true,
 });
+
 
 // Setup code zoom
 const zoomStages = [14, 20, 26, 32, 38]
@@ -239,6 +282,7 @@ export async function updateIDE() {
     //if (!code) return;
     try {
         program = parser.produceAST(code);
+        liveWordList = Array(...parser.collectedIdents);
 
         setFlowchartVisibility(toggleFlowchart.active);
         setStructogramVisibility(!toggleFlowchart.active);
