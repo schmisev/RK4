@@ -1,0 +1,1 @@
+(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[87842],{87842:(e,o,r)=>{e=r.nmd(e),ace.require(["ace/snippets/vue"],(function(o){e&&(e.exports=o)}))}}]);

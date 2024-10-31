@@ -1,0 +1,1 @@
+(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[1702],{1702:(e,o,r)=>{e=r.nmd(e),ace.require(["ace/snippets/dockerfile"],(function(o){e&&(e.exports=o)}))}}]);
