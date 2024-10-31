@@ -120,7 +120,7 @@ const worldCompleter = {
     }
 }
 
-const allCompleters = [aceLangTools.snippetCompleter, aceLangTools.keyWordCompleter, liveCompleter, robotCompleter, worldCompleter];
+const allCompleters = [aceLangTools.snippetCompleter, aceLangTools.keyWordCompleter, robotCompleter, worldCompleter, liveCompleter];
 
 aceLangTools.setCompleters(allCompleters)
 export const editor = ace.edit("code-editor", {
