@@ -1,1 +1,1 @@
-"use strict";(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[6452],{6452:(e,r,a)=>{a.d(r,{createPacketServices:()=>k.$});var k=a(71609);a(19369)}}]);
+"use strict";(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[6452],{6452:(e,k,c)=>{c.d(k,{createPacketServices:()=>r.$});var r=c(71609);c(19369)}}]);

@@ -1,1 +1,1 @@
-(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[90316],{90316:(e,o,r)=>{e=r.nmd(e),ace.require(["ace/snippets/rdoc"],(function(o){e&&(e.exports=o)}))}}]);
+(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[90316],{90316:(e,c,k)=>{e=k.nmd(e),ace.require(["ace/snippets/rdoc"],(function(c){e&&(e.exports=c)}))}}]);

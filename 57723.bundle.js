@@ -1,1 +1,1 @@
-"use strict";(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[57723],{57723:(e,r,a)=>{a.d(r,{createPieServices:()=>k.f});var k=a(88685);a(19369)}}]);
+"use strict";(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[57723],{57723:(e,k,r)=>{r.d(k,{createPieServices:()=>s.f});var s=r(88685);r(19369)}}]);

@@ -1,1 +1,1 @@
-(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[88408],{88408:(e,o,r)=>{e=r.nmd(e),ace.require(["ace/snippets/c9search"],(function(o){e&&(e.exports=o)}))}}]);
+(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[88408],{88408:(e,c,s)=>{e=s.nmd(e),ace.require(["ace/snippets/c9search"],(function(c){e&&(e.exports=c)}))}}]);

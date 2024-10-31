@@ -1,1 +1,1 @@
-(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[84556],{84556:(e,o,r)=>{e=r.nmd(e),ace.require(["ace/snippets/glsl"],(function(o){e&&(e.exports=o)}))}}]);
+(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[84556],{84556:(e,s,k)=>{e=k.nmd(e),ace.require(["ace/snippets/glsl"],(function(s){e&&(e.exports=s)}))}}]);

@@ -1,1 +1,1 @@
-(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[29954],{29954:(e,a,o)=>{e=o.nmd(e),ace.require(["ace/snippets/haskell_cabal"],(function(a){e&&(e.exports=a)}))}}]);
+(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[29954],{29954:(e,a,k)=>{e=k.nmd(e),ace.require(["ace/snippets/haskell_cabal"],(function(a){e&&(e.exports=a)}))}}]);

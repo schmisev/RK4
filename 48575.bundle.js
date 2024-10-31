@@ -1,1 +1,1 @@
-(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[48575],{48575:(e,o,r)=>{e=r.nmd(e),ace.require(["ace/snippets/flix"],(function(o){e&&(e.exports=o)}))}}]);
+(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[48575],{48575:(e,k,n)=>{e=n.nmd(e),ace.require(["ace/snippets/flix"],(function(k){e&&(e.exports=k)}))}}]);

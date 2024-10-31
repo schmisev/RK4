@@ -1,1 +1,1 @@
-(self.webpackChunkrobot_karol_4=self.webpackChunkrobot_karol_4||[]).push([[32521],{32521:(e,o,a)=>{e=a.nmd(e),ace.require(["ace/snippets/mixal"],(function(o){e&&(e.exports=o)}))}}]);
+(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[32521],{32521:(e,k,n)=>{e=n.nmd(e),ace.require(["ace/snippets/mixal"],(function(k){e&&(e.exports=k)}))}}]);
