@@ -244,6 +244,9 @@ export function tokenize(sourceCode: string): Token[] {
             }
             // increase line count for debug
             newLine(); // lineCount += 1;
+        } else if (src[0] == ';') {
+            tokens.push(token(src.shift(), TokenType.EndLine, getPos()));
+            nextPos();
         } else if (src[0] == '.'){
             tokens.push(token(src.shift(), TokenType.Period, getPos()));
             nextPos();

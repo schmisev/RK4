@@ -221,6 +221,19 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
         }
     );
 
+    mkRobotMethod(
+        ENV.robot.mth.SEES_ROBOT,
+        (r, args) => {
+            if (args.length > 1)
+                throw new RuntimeError(ENV.robot.mth.SEES_VOID + `() erwartet einen oder keinen Parameter!`);
+            if (args.length == 1) {
+                if (args[0].type != ValueAlias.Number) throw new RuntimeError(`Erwarte eine Zahl als Parameter!`);
+                return MK_BOOL(r.seesRobot(args[0].value));
+            }
+            else return MK_BOOL(r.seesRobot(null));
+        }
+    );
+
     return robotCls;
 }
 
@@ -499,6 +512,18 @@ export class Robot {
         this.triggerWatchAnim(check);
         this.triggerThoughtAnim(check, ThoughtType.Void);
         return check;
+    }
+
+    seesRobot(index: number | null) {
+        // logic
+        const target = this.targetPos();
+        for (const r of this.world.robots) {
+            if (r.index != this.index && r.pos.x == target.x && r.pos.y == target.y) {
+                if (index == null) return true;
+                else if (r.index == index) return true;
+            }
+        }
+        return false;
     }
 
     // utils

@@ -38,6 +38,7 @@ export const ENV = {
             SEES_BLOCK : "siehtZiegel",
             SEES_WALL : "siehtWand",
             SEES_VOID : "siehtAbgrund",
+            SEES_ROBOT: "siehtRoboter",
         }
     },
     "world": {
