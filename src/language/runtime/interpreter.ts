@@ -3,7 +3,6 @@ import { AbruptStmtKind, Program, Stmt, StmtKind, AbruptEvalResult, Expr } from 
 import { Environment } from "./environment";
 import { eval_identifier, eval_binary_expr, eval_assignment_expr, eval_unary_expr, eval_call_expr, eval_member_expr, eval_list_literal, eval_computed_member_expr } from "./eval/expressions";
 import { eval_fn_definition, eval_empty_line, eval_for_block, eval_if_else_block, eval_program, eval_show_command, eval_var_declaration, eval_while_block, eval_class_definition, eval_obj_declaration, eval_return_command, eval_ext_method_definition, eval_always_block, eval_doc_comment, eval_break_command, eval_continue_command, eval_switch_block, eval_from_to_block, eval_for_in_block } from "./eval/statements";
-import { Break, Continue } from "./eval/errors";
 import { CodePosition } from "../frontend/lexer";
 
 export type SteppedEval<T> = Generator<CodePosition, T, void>;
