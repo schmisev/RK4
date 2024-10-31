@@ -33,6 +33,7 @@ import {
     ILLEGAL_CODE_POS,
     START_CODE_POS,
     mergeCodePos,
+    CodePosition,
 } from "./lexer";
 import { ParserError } from "../../errors";
 import { ValueAlias } from "../runtime/values";
@@ -471,27 +472,31 @@ export default class Parser {
     parse_loop_block<A extends AbruptStmtKind>(
         allowedControl: Set<A>
     ): Stmt<A> {
+        const codePos = this.at().codePos;
+
         this.eat(); // eat 'wiederhole'
+        let loop: Stmt<A>;
         if (this.at().type == TokenType.RepWhile) {
-            this.eat(); // eat 'solange'
-            return this.parse_while_loop(allowedControl);
+            loop = this.parse_while_loop(allowedControl);
         } else if (this.at().type == TokenType.RepAlways) {
-            this.eat(); // eat 'immer'
-            return this.parse_always_loop(allowedControl);
+            loop = this.parse_always_loop(allowedControl);
         } else if (this.at().type == TokenType.For) {
-            return this.parse_iter_loop(allowedControl);
-            // return this.parse_from_to_loop(allowedControl);
+            loop = this.parse_iter_loop(allowedControl);
         } else if (this.at().type == TokenType.From) {
-            return this.parse_from_to_loop(allowedControl, undefined);
+            loop = this.parse_from_to_loop(allowedControl, undefined);
         } else {
-            return this.parse_for_loop(allowedControl);
+            loop = this.parse_for_loop(allowedControl);
         }
+
+        // injecting the codePos of 'wiederhole' into the loop node
+        loop.codePos = mergeCodePos(codePos, loop.codePos);
+        return loop;
     }
 
     parse_for_loop<A extends AbruptStmtKind>(
         allowedControl: Set<A>
     ): ForBlock<A> {
-        let codePos = this.at().codePos;
+        let codePos = this.lastEaten.codePos;
 
         const counter = this.parse_expr();
         this.expect(TokenType.RepTimes, "Auf den Zähler sollte 'mal' folgen!");
@@ -514,7 +519,8 @@ export default class Parser {
         allowedControl: Set<A>
     ): WhileBlock<A> {
         let codePos = this.lastEaten.codePos;
-
+        
+        this.eat(); // eat 'solange'
         const condition = this.parse_expr();
         this.expect(
             TokenType.EndLine,
@@ -536,6 +542,7 @@ export default class Parser {
     ): AlwaysBlock<A> {
         let codePos = this.lastEaten.codePos;
 
+        this.eat(); // eat 'immer'
         this.expect(
             TokenType.EndLine,
             "Nach 'immer' sollte eine neue Zeile folgen!"
