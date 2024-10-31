@@ -101,6 +101,7 @@ export function robotSketch(p5: p5) {
     const TXRMARKER = createTextTexture("🔴")
     const TXGMARKER = createTextTexture("🟢")
     const TXBMARKER = createTextTexture("🔵")
+    const TXROBOT = createTextTexture("🤖")
 
     const RGIDX = [
         createTextTexture("1", "#CCC", true),
@@ -343,7 +344,7 @@ export function robotSketch(p5: p5) {
 
         p5.push(); // rotations
         // facing direction
-        p5.rotateZ(2 * p5.PI * lerp(r.animLastRot + r.animRotRnd, r.animCurrRot + r.animRotRnd, interpRot) / 360);
+        p5.rotateZ(2 * p5.PI * lerp(r.animLastRot + r.animRotRnd * animStrength, r.animCurrRot + r.animRotRnd * animStrength, interpRot) / 360);
         // doing the little hop
         p5.rotateX(animStrength * p5.PI * 0.05 * easeBump(1 - r.animHopProg));
         // placing nod
@@ -416,7 +417,7 @@ export function robotSketch(p5: p5) {
         if (r.animPlaceDir > 0) p5.translate(0, 0, animStrength * lerp(0, r.animPlaceDir * BLH * 0.7, interpPlace));
         else p5.translate(0, 0, lerp(0, animStrength * r.animPlaceDir * BLH * 0.5, interpPlace));
         
-        p5.translate(0, -lerp(0, - BLH * 0.1, interpPlace), 0)
+        p5.translate(0, animStrength * -lerp(0, - BLH * 0.1, interpPlace), 0)
 
         p5.fill(CBOT2);
         p5.push(); // left arm
@@ -508,9 +509,11 @@ export function robotSketch(p5: p5) {
                     case ThoughtType.Remove:
                         p5.texture(TXREMOVE);
                         break;
-                    default:
-                        p5.texture(TXEYE);
+                    case ThoughtType.Robot:
+                        p5.texture(TXROBOT);
                         break;
+                    default:
+                        const _UNREACHABLE: never = r.animThoughtType;
                 }
                 // popping
                 p5.scale(easeOutCubic(1 - r.animThoughtProg));

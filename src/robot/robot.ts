@@ -22,6 +22,7 @@ export enum ThoughtType {
     Pickup,
     Mark,
     Remove,
+    Robot,
 }
 
 export const DIR2GER: Record<string, string> = {
@@ -516,14 +517,20 @@ export class Robot {
 
     seesRobot(index: number | null) {
         // logic
+        let check = false;
         const target = this.targetPos();
         for (const r of this.world.robots) {
             if (r.index != this.index && r.pos.x == target.x && r.pos.y == target.y) {
-                if (index == null) return true;
-                else if (r.index == index) return true;
+                if (index == null || r.index == index) {
+                    check = true;
+                    break;
+                }
             }
         }
-        return false;
+        // animation
+        this.triggerWatchAnim(check);
+        this.triggerThoughtAnim(check, ThoughtType.Robot);
+        return check;
     }
 
     // utils
