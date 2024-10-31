@@ -42,7 +42,7 @@ import { ENV } from "./spec";
 // Global variables
 export let maxDt = 500;
 export let dt = 50; // ms to sleep between function calls
-let dtIDE = 300; // ms to wait for IDE update
+let dtIDE = 200; // ms to wait for IDE update
 let frameLagSum = 0; // running sum of frame lag
 export let isRunning = false;
 export let queueInterrupt = false;
@@ -95,23 +95,21 @@ function createCompleter(wordList: string[], metaText: string) {
     }
 }
 
-let liveWordList: string[] = [];
-const liveCompleter = {
-    getCompletions: function (editor: any, session: any, pos: any, prefix: any, callback: any) {
-        callback(null, liveWordList.map(function(word) {
-            return {
-                caption: word,
-                value: word,
-                meta: "✏️ im Skript"
-            };
-        }));
+function updateLiveWordList(newWordList: string[] | Set<string>) {
+    while (liveWordList.length > 0) {
+        liveWordList.shift();
+    }
+    for (const ident of newWordList) {
+        liveWordList.push(ident)
     }
 }
 
+const liveWordList: string[] = []; // this will be updated live
+const liveCompleter = createCompleter(liveWordList, "✒️ im Skript")
 const robotCompleter = createCompleter(Object.values(ENV.robot.mth), "🤖 Roboter");
 const worldCompleter = createCompleter(Object.values(ENV.world.mth), "🌍 Welt")
-
 const allCompleters = [robotCompleter, worldCompleter, aceLangTools.snippetCompleter, aceLangTools.keyWordCompleter, liveCompleter];
+
 aceLangTools.setCompleters(allCompleters)
 export const editor = ace.edit("code-editor", {
     minLines: 30,
@@ -272,7 +270,8 @@ export async function updateIDE() {
     //if (!code) return;
     try {
         program = parser.produceAST(code);
-        liveWordList = Array(...parser.collectedIdents);
+        updateLiveWordList(parser.collectedIdents);
+        // liveWordList = Array(...parser.collectedIdents);
 
         setFlowchartVisibility(toggleFlowchart.active);
         setStructogramVisibility(!toggleFlowchart.active);
