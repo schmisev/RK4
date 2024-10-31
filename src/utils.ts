@@ -1,8 +1,5 @@
 import { toPng } from "html-to-image";
-import { ParserError } from "./errors";
-import { Stmt, StmtKind } from "./language/frontend/ast";
 import { RuntimeVal, ValueAlias } from "./language/runtime/values";
-import { DEFAULT_TASK } from "./robot/tasks";
 
 export class Vec2 {
   x: number = 0;

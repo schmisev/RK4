@@ -1,7 +1,6 @@
 import { objOverlay } from "..";
 import { DIR2SHORTGER, Robot } from "../robot/robot";
 import { World } from "../robot/world";
-import { Vec2 } from "../utils";
 
 export let robotDiagramIndex = -1
 

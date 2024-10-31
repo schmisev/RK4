@@ -14,8 +14,8 @@ import "./ui/flowcharts";
 import Parser from "./language/frontend/parser";
 import { Program } from './language/frontend/ast';
 import { GlobalEnvironment, declareGlobalEnv } from "./language/runtime/environment";
-import { evaluate, SteppedEval } from "./language/runtime/interpreter";
-import { easeInCubic, easeInQuad, easeOutElastic, sleep } from "./utils";
+import { evaluate } from "./language/runtime/interpreter";
+import { easeInCubic, sleep } from "./utils";
 
 // Robot imports
 import { declareWorld, World } from "./robot/world";
@@ -32,8 +32,7 @@ import './assets/ace/mode-rkscript.js';
 import './assets/ace/theme-rklight.js';
 
 // General errors 
-import { DebugError, LexerError, ParserError, RuntimeError } from './errors';
-import { Session } from "inspector";
+import { DebugError, LexerError, ParserError } from './errors';
 import { setFlowchartVisibility, showFlowchart } from "./ui/flowcharts";
 import { toggleFlowchart } from "./ui/toggle-buttons";
 import { CodePosition, ILLEGAL_CODE_POS } from "./language/frontend/lexer";
@@ -352,7 +351,7 @@ async function resetEnv(stage = 0) {
     addRobotButtons(objBar, objOverlay, world);
     // run preload so it works in the cmd
     await runCode(preloadCode, false, false);
-};
+}
 
 // Run cmds
 async function runCmd() {
@@ -369,7 +368,7 @@ async function runCmd() {
 
     console.log(">>", cmdCode);
     await runCode(cmdCode, true, false);
-};
+}
 
 // Get past commands via keyboard
 function fetchCmd(e: KeyboardEvent) {
@@ -436,7 +435,7 @@ async function startCode() {
     console.log("🏅 Du hast alle Teilaufgaben erfüllt!");
     editor.setReadOnly(false);
     return;
-};
+}
 
 // Stop code via button
 export async function stopCode() {
@@ -541,7 +540,7 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
 
     isRunning = false;
     return false;
-};
+}
 
 // updating lag sum
 export function updateLagSum(dt: number) {

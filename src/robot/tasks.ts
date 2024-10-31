@@ -1,4 +1,3 @@
-import { random } from "mermaid/dist/utils";
 import { World, Field, BlockType, MarkerType } from "./world";
 
 export type WorldGen = ((w: World, idx: number) => void)

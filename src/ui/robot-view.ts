@@ -3,8 +3,8 @@ import * as p5 from 'p5';
 import { isRunning, queueInterrupt, world, objOverlay, taskCheck, updateLagSum, resetLagSum, taskName, dt, maxDt } from '..';
 import { Robot, ThoughtType } from '../robot/robot';
 import { CR, CY, CG, CB, BlockType, MarkerType, World, CBOT, CBOT2, Field } from '../robot/world';
-import { robotDiagramIndex, showRobotDiagram, hideRobotDiagram, updateRobotDiagram } from './objectigrams';
-import { clamp, easeBump, easeInCubic, easeInOutBack, easeInOutQuad, easeInQuad, easeJump, easeOutCubic, easeOutElastic, easeOutQuad, lerp } from '../utils';
+import { robotDiagramIndex, hideRobotDiagram, updateRobotDiagram } from './objectigrams';
+import { clamp, easeBump, easeInOutQuad, easeOutCubic, easeOutQuad, lerp } from '../utils';
 import { toggleAnimation, toggleThoughts } from './toggle-buttons';
 
 

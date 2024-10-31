@@ -1,5 +1,21 @@
-import { toBlob } from "html-to-image";
-import { AnyStmt, BinaryExpr, ClassDefinition, Expr, ExtMethodDefinition, AnyForBlock, FunctionDefinition, AnyIfElseBlock, Program, UnaryExpr, AnyWhileBlock, AnyAlwaysBlock, StmtKind, SwitchBlock, AnySwitchBlock, AnyCaseBlock, AnyFromToBlock, AnyForInBlock } from "../language/frontend/ast";
+import {
+    AnyStmt,
+    BinaryExpr,
+    ClassDefinition,
+    Expr,
+    ExtMethodDefinition,
+    AnyForBlock,
+    FunctionDefinition,
+    AnyIfElseBlock,
+    Program,
+    UnaryExpr,
+    AnyWhileBlock,
+    AnyAlwaysBlock,
+    StmtKind,
+    AnySwitchBlock,
+    AnyFromToBlock,
+    AnyForInBlock,
+} from "../language/frontend/ast";
 import { ValueAlias } from "../language/runtime/values";
 import { ENV } from "../spec";
 import { screenshotDiv, translateOperator } from "../utils";

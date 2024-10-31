@@ -1,4 +1,3 @@
-import { assert } from "console";
 import { editor, stopCode, taskName } from "..";
 import { animalNames } from "../assets/misc/animal-names";
 import { createOption } from "../utils";

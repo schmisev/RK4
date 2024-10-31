@@ -23,7 +23,6 @@ import {
     SwitchBlock,
     FromToBlock,
     ListLiteral,
-    MemberExpr,
     ForInBlock,
 } from "./ast";
 import {
