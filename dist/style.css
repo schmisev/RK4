@@ -102,6 +102,13 @@ button:active {
     transition: background-color 0.2s, outline-color 0.2s;
 }
 
+.emoji-button.active {
+    background-color: black;
+    color: white;
+    outline: 1px black solid;
+    outline-offset: -1px;
+}
+
 #debug-show-functions.active {
     background-color: lightblue;
     outline-color: #3ca2c3;

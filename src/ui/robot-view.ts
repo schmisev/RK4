@@ -5,6 +5,7 @@ import { Robot, ThoughtType } from '../robot/robot';
 import { CR, CY, CG, CB, BlockType, MarkerType, World, CBOT, CBOT2, Field } from '../robot/world';
 import { robotDiagramIndex, showRobotDiagram, hideRobotDiagram, updateRobotDiagram } from './objectigrams';
 import { clamp, easeBump, easeInCubic, easeInOutBack, easeInOutQuad, easeInQuad, easeJump, easeOutCubic, easeOutElastic, easeOutQuad, lerp } from '../utils';
+import { toggleAnimation, toggleThoughts } from './toggle-buttons';
 
 
 // Setup robot sketch
@@ -326,7 +327,7 @@ export function robotSketch(p5: p5) {
         p5.push(); // bot
         
         // update animation
-        const animStrength = easeInOutQuad(dt / maxDt);
+        const animStrength = toggleAnimation.active ? easeInOutQuad(dt / maxDt) : 0;
         const interpHop = easeInOutQuad(1 - r.animHopProg);
         const interpFall = 1 - r.animFallProg;
         const interpRot = easeInOutQuad(1 - r.animRotProg);
@@ -451,6 +452,7 @@ export function robotSketch(p5: p5) {
         p5.translate(0, 0, 1.4 * RBH);
         
         // draw "thought"
+        if (toggleThoughts.active)
         drawBillboard(() => {
             p5.push(); // thought
             p5.noStroke();
