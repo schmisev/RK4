@@ -81,6 +81,20 @@ const preloadEditor = ace.edit("preload-editor", {
 });
 
 // deactivate text completer
+function createCompleter(wordList: string[], metaText: string) {
+    return {
+        getCompletions: function (editor: any, session: any, pos: any, prefix: any, callback: any) {
+            callback(null, wordList.map(function(word) {
+                return {
+                    caption: word,
+                    value: word,
+                    meta: metaText,
+                };
+            }));
+        }
+    }
+}
+
 let liveWordList: string[] = [];
 const liveCompleter = {
     getCompletions: function (editor: any, session: any, pos: any, prefix: any, callback: any) {
@@ -88,40 +102,16 @@ const liveCompleter = {
             return {
                 caption: word,
                 value: word,
-                meta: "✏️ live"
+                meta: "✏️ im Skript"
             };
         }));
     }
 }
 
-let robotWordList: string[] = Object.values(ENV.robot.mth);
-const robotCompleter = {
-    getCompletions: function (editor: any, session: any, pos: any, prefix: any, callback: any) {
-        callback(null, robotWordList.map(function(word) {
-            return {
-                caption: word,
-                value: word,
-                meta: "🤖 roboter"
-            };
-        }));
-    }
-}
+const robotCompleter = createCompleter(Object.values(ENV.robot.mth), "🤖 Roboter");
+const worldCompleter = createCompleter(Object.values(ENV.world.mth), "🌍 Welt")
 
-let worldWordList: string[] = Object.values(ENV.world.mth);
-const worldCompleter = {
-    getCompletions: function (editor: any, session: any, pos: any, prefix: any, callback: any) {
-        callback(null, worldWordList.map(function(word) {
-            return {
-                caption: word,
-                value: word,
-                meta: "🌍 welt"
-            };
-        }));
-    }
-}
-
-const allCompleters = [aceLangTools.snippetCompleter, aceLangTools.keyWordCompleter, robotCompleter, worldCompleter, liveCompleter];
-
+const allCompleters = [robotCompleter, worldCompleter, aceLangTools.snippetCompleter, aceLangTools.keyWordCompleter, liveCompleter];
 aceLangTools.setCompleters(allCompleters)
 export const editor = ace.edit("code-editor", {
     minLines: 30,
