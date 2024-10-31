@@ -273,7 +273,7 @@ export class Robot {
         this.animLastPos = new Vec2(x, y);
         this.animCurrRot = this.dir2Angle();
         this.animLastRot = this.dir2Angle();
-        this.animLastHeight = 0;
+        this.animLastHeight = this.world.H;
         this.animCurrHeight = 0;
     }
 
