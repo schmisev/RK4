@@ -657,7 +657,7 @@ export class Robot {
         // update progress variables
         this.animWatchProg = toZero(this.animWatchProg, deltaProg);
         this.animHopProg = toZero(this.animHopProg, deltaProg);
-        this.animFallProg = toZero(this.animFallProg, deltaProg);
+        this.animFallProg = toZero(this.animFallProg, deltaProg * 2);
         this.animRotProg = toZero(this.animRotProg, deltaProg);
         this.animPlaceProg = toZero(this.animPlaceProg, deltaProg);
         this.animMarkerProg = toZero(this.animMarkerProg, deltaProg);

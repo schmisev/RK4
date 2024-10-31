@@ -321,8 +321,117 @@ export function robotSketch(p5: p5) {
             // do the drawing
             drawSingleRobot(r);
         }
+
+        for (const [i, r] of w.robots.entries()) {
+            // do the post fx
+            drawSingleRobotPostFX(r);
+        }
+
         p5.pop();
     };
+
+    const drawSingleRobotPostFX = (r: Robot) => {
+        p5.push(); // bot
+        
+        // update animation
+        const animStrength = toggleAnimation.active ? easeInOutQuad(dt / maxDt) : 0;
+        const interpHop = easeInOutQuad(1 - r.animHopProg);
+        const interpFall = 1 - r.animFallProg;
+        const interpRot = easeInOutQuad(1 - r.animRotProg);
+        
+        // drawing the robot!
+        p5.translate(0, 0, 0.1 * BLH * p5.abs(p5.sin(r.index + p5.frameCount * 0.1)));
+        p5.translate(
+            lerp(r.animLastPos.x, r.pos.x, interpHop) * TSZ,
+            lerp(r.animLastPos.y, r.pos.y, interpHop) * TSZ,
+            ( lerp(r.animLastHeight, r.animCurrHeight, interpFall) - 0.5 ) * BLH
+        );
+        p5.translate(0, 0, animStrength * BLH * easeBump(1 - r.animHopProg));
+
+        // status indicators
+        p5.translate(0, 0, 1.4 * RBH);
+
+        // draw "thought"
+        if (toggleThoughts.active)
+            drawBillboard(() => {
+                p5.push(); // thought
+                p5.noStroke();
+                p5.fill(255);
+                p5.rotateY(p5.HALF_PI);
+                p5.rotateZ(-p5.HALF_PI);
+                
+                if (r.animThoughtType != ThoughtType.Nothing) {
+                    // main
+                    switch (r.animThoughtType) {
+                        case ThoughtType.Block:
+                            p5.texture(TXBLOCK);
+                            break;
+                        case ThoughtType.Wall:
+                            p5.texture(TXWALL);
+                            break;
+                        case ThoughtType.Void:
+                            p5.texture(TXVOID);
+                            break;
+                        case ThoughtType.Place:
+                            p5.texture(TXPLACE);
+                            break;
+                        case ThoughtType.Pickup:
+                            p5.texture(TXPICK);
+                            break;
+                        case ThoughtType.RedBlock:
+                            p5.texture(TXRBLOCK);
+                            break;
+                        case ThoughtType.GreenBlock:
+                            p5.texture(TXGBLOCK);
+                            break;
+                        case ThoughtType.BlueBlock:
+                            p5.texture(TXBBLOCK);
+                            break;
+                        case ThoughtType.YellowBlock:
+                            p5.texture(TXYBLOCK);
+                            break;
+                        case ThoughtType.RedMarker:
+                            p5.texture(TXRMARKER);
+                            break;
+                        case ThoughtType.GreenMarker:
+                            p5.texture(TXGMARKER);
+                            break
+                        case ThoughtType.BlueMarker:
+                            p5.texture(TXBMARKER);
+                            break
+                        case ThoughtType.YellowMarker:
+                            p5.texture(TXYMARKER);
+                            break
+                        case ThoughtType.Mark:
+                            p5.texture(TXMARK);
+                            break;
+                        case ThoughtType.Remove:
+                            p5.texture(TXREMOVE);
+                            break;
+                        case ThoughtType.Robot:
+                            p5.texture(TXROBOT);
+                            break;
+                        default:
+                            const _UNREACHABLE: never = r.animThoughtType;
+                    }
+                    // popping
+                    p5.scale(easeOutCubic(1 - r.animThoughtProg));
+                    p5.translate(0, 0, animStrength * 0.7 * TSZ * easeBump(clamp((1 - r.animThoughtProg) * 2, 0, 1))
+                    );
+                    // main
+                    p5.plane(TSZ * 1);
+                    // cond
+                    p5.translate(0, 0, 0.2);
+                    if (!r.animThoughtCond) {
+                        p5.texture(TXNO);
+                        p5.plane(TSZ * 1);
+                    }
+                }
+                p5.pop(); // end thought
+            })
+    
+        p5.pop(); // end bot
+    }
 
     const drawSingleRobot = (r: Robot) => {
         p5.push(); // bot
@@ -453,6 +562,7 @@ export function robotSketch(p5: p5) {
         p5.translate(0, 0, 1.4 * RBH);
         
         // draw "thought"
+        /*
         if (toggleThoughts.active)
         drawBillboard(() => {
             p5.push(); // thought
@@ -530,6 +640,7 @@ export function robotSketch(p5: p5) {
             }
             p5.pop(); // end thought
         })
+        */
 
         p5.pop(); // end bot
     };
