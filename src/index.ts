@@ -289,6 +289,7 @@ export function loadRawTask(key: string, task: Task, ignoreTitleInKey = false) {
     <p>${task.description}</p>`;
 
     preloadEditor.setValue(preloadCode, 0);
+    preloadEditor.moveCursorTo(0, 0);
 
     resetEnv();
     world.loadWorldLog();

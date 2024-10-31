@@ -88,6 +88,7 @@ function loadFromStore() {
     const key = storeSelector.value;
     if (key == "(neu)") return;
     editor.setValue(codeStore[key], 0);
+    editor.moveCursorTo(0, 0);
     console.log("📝📂 Code geladen: " + key);
     stopCode(); // stop execution
 }

@@ -55,6 +55,7 @@ function loadFile(evt: Event) {
             case "rk":
                 console.log(`Lade Programm '${justName}'`);
                 editor.setValue(event.target.result, 0);
+                editor.moveCursorTo(0, 0);
                 break;
             case "csv":
                 console.log(`Lade Welt '${justName}'`);

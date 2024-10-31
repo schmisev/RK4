@@ -23,7 +23,8 @@ var RKScriptHighlightRules = function () {
                 unicode: true,
             }, {
                 token: "string", // " string
-                regex: '".*?"'
+                regex: '"',
+                next: "string",
             }, {
                 token: "entity.other.attribute-name",
                 regex: '(?<=\\.)([\\p{L}0-9]+)'
@@ -57,6 +58,15 @@ var RKScriptHighlightRules = function () {
                 next: "start"
             }, {
                 defaultToken: "comment"
+            }
+        ],
+        "string": [
+            {
+                token: "string", // closing string
+                regex: '"',
+                next: "start"
+            }, {
+                defaultToken: "string"
             }
         ]
     };
