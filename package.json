@@ -11,7 +11,7 @@
     "cleanup": "(del-cli dist/node_modules*.js) && (del-cli dist/vendors-node_modules*.js)",
     "cleanup-bundle": "(del-cli dist/*.bundle.js) && (del-cli dist/*.LICENSE.txt)",
     "del-bundle": "(del-cli dist/bundle.js)",
-    "upload": "npm run build && npm run cleanup && npm run cleanup-bundle && npm run deploy && npm run del-bundle",
+    "upload": "npm run build && npm run deploy && npm run cleanup && npm run cleanup-bundle && npm run del-bundle",
     "upload-raw": "webpack && npm run deploy && npm run cleanup && npm run del-bundle"
   },
   "author": "",

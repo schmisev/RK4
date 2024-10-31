@@ -447,9 +447,7 @@ export default class Parser {
             TokenType.EndLine,
             "Nach 'falls' sollte auf den Wert eine neue Zeile folgen."
         );
-        const body: Stmt<
-            StmtKind.ContinueCommand | StmtKind.BreakCommand | A
-        >[] = [];
+        const body: Stmt<StmtKind.ContinueCommand | StmtKind.BreakCommand | A>[] = [];
 
         while (
             this.at().type != TokenType.Case &&
