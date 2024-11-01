@@ -89,6 +89,16 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
             return MK_STRING(DIR2SHORTGER[r.dir]);
         }
     );
+
+    mkRobotMethod(
+        ENV.robot.mth.GET_HEIGHT,
+        (r, args) => {
+            if (args.length != 0)
+                throw new RuntimeError(ENV.robot.mth.GET_HEIGHT + `() erwartet keine Parameter!`);
+            const field = r.world.getField(r.pos.x, r.pos.y)!;
+            return MK_NUMBER(field.blocks.length);
+        }
+    );
     
     mkRobotMethod(
         ENV.robot.mth.STEP,
@@ -226,12 +236,26 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
         ENV.robot.mth.SEES_ROBOT,
         (r, args) => {
             if (args.length > 1)
-                throw new RuntimeError(ENV.robot.mth.SEES_VOID + `() erwartet einen oder keinen Parameter!`);
+                throw new RuntimeError(ENV.robot.mth.SEES_ROBOT + `() erwartet einen oder keinen Parameter!`);
             if (args.length == 1) {
                 if (args[0].type != ValueAlias.Number) throw new RuntimeError(`Erwarte eine Zahl als Parameter!`);
                 return MK_BOOL(r.seesRobot(args[0].value));
             }
             else return MK_BOOL(r.seesRobot(null));
+        }
+    );
+
+    mkRobotMethod(
+        ENV.robot.mth.CAN_MOVE_HERE,
+        (r, args) => {
+            if (args.length > 0)
+                throw new RuntimeError(ENV.robot.mth.CAN_MOVE_HERE + `() erwartet keine Parameter!`);
+            try {
+                r.canMoveTo(r.targetPos());
+                return MK_BOOL(true);
+            } catch {
+                return MK_BOOL(false);
+            }
         }
     );
 

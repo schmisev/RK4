@@ -27,6 +27,7 @@ export const ENV = {
             GET_X : "x",
             GET_Y : "y",
             GET_DIR : "richtung",
+            GET_HEIGHT: "höhe",
             STEP : "schritt",
             TURN_LEFT : "linksDrehen",
             TURN_RIGHT : "rechtsDrehen",
@@ -39,6 +40,7 @@ export const ENV = {
             SEES_WALL : "siehtWand",
             SEES_VOID : "siehtAbgrund",
             SEES_ROBOT: "siehtRoboter",
+            CAN_MOVE_HERE: "schrittMöglich",
         }
     },
     "world": {

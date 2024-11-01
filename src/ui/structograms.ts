@@ -36,6 +36,7 @@ const ROBOT_PSEUDO_CLASS =
         ${makeTooltip(ENV.robot.mth.GET_X , `Gibt die aktuelle x-Koordinate des Roboters zurück!`) + "()<br>"}
         ${makeTooltip(ENV.robot.mth.GET_Y, `Gibt die aktuelle y-Koordinate des Roboters zurück!`) + "()<br>"}
         ${makeTooltip(ENV.robot.mth.GET_DIR, `Gibt die aktuelle Richtung des Roboters als Text zurück: <span class="struct-string">"N"</span>, <span class="struct-string">"S"</span>, <span class="struct-string">"W"</span> oder <span class="struct-string">"O"</span>!`) + "()<br>"}
+        ${makeTooltip(ENV.robot.mth.GET_HEIGHT, `Gibt die aktuelle Höhe des Roboters als Zahl zurück. <span class="struct-literal">0</span> ist am Weltboden.`) + "()<br>"}
         <div class="struct-dot"></div>
         ${makeTooltip(ENV.robot.mth.STEP, `Der Roboter geht ein Feld nach vorne - wenn das möglich ist.`) + "()<br>"}
         ${makeTooltip(ENV.robot.mth.PLACE_BLOCK, `Der Roboter legt vor sich einen roten Block. Du kannst natürlich auch eine eigene Farbe angeben!`) + `(farbe?)<br>`}
@@ -48,6 +49,7 @@ const ROBOT_PSEUDO_CLASS =
         ${makeTooltip(ENV.robot.mth.SEES_WALL, `Gibt <span class="struct-literal">wahr</span> zurück, wenn der Roboter vor einer Wand steht, sonst <span class="struct-literal">falsch</span>.`) + `()<br>`}
         ${makeTooltip(ENV.robot.mth.SEES_VOID, `Gibt <span class="struct-literal">wahr</span> zurück, wenn der Roboter vor dem Abgrund steht, sonst <span class="struct-literal">falsch</span>.`) + `()<br>`}
         ${makeTooltip(ENV.robot.mth.SEES_ROBOT, `Gibt <span class="struct-literal">wahr</span> zurück, wenn der Roboter vor einem anderen Roboter steht, sonst <span class="struct-literal">falsch</span>.`) + `()<br>`}
+        ${makeTooltip(ENV.robot.mth.CAN_MOVE_HERE, `Gibt <span class="struct-literal">wahr</span> zurück, wenn der Roboter einen Schritt nach vorne machen kann, sonst <span class="struct-literal">falsch</span>.`) + `()<br>`}
         <div class="struct-dot"></div>
     </div>
 </div>`
