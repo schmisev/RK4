@@ -644,7 +644,8 @@ export class Robot {
             if (this.animCurrHeight != this.animLastHeight) this.triggerFallAnim();
         }
         // trigger falls
-        if (this.animFallProg <= 0) this.animLastHeight = this.animCurrHeight;
+        if (this.animFallProg <= 0 || Math.abs(this.animCurrHeight - this.animLastHeight) > 1)
+            this.animLastHeight = this.animCurrHeight;
         // auto blink
         if (this.animBlinkProg == 0 && Math.random() < 0.001) {
             this.triggerBlinkAnim();

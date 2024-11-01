@@ -159,7 +159,9 @@ const waitSlider = document.getElementById("wait-slider") as HTMLInputElement;
 function updateSlider() {
     const value = parseInt(waitSlider.value);
     dt = maxDt * easeInCubic((value / 10) / maxDt);
-    document.getElementById("wait-time")!.innerHTML = dt.toFixed(1) + " ms";
+    const hz = 1000 / dt;
+    const hzText = hz > 5000 ? "schnell" : hz.toFixed(0);
+    document.getElementById("wait-time")!.innerHTML =  hzText + " Hz | ~" + dt.toFixed(2) + " ms pro Anweisung";
 }
 
 waitSlider.max = (maxDt * 10).toString();
