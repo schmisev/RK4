@@ -47,6 +47,7 @@ const ROBOT_PSEUDO_CLASS =
         ${makeTooltip(ENV.robot.mth.IS_ON_MARKER, `Gibt <span class="struct-literal">wahr</span> zurück, wenn der Roboter auf einer Marke steht, sonst <span class="struct-literal">falsch</span>. Wenn du eine Farbe angibst, wird nur <span class="struct-literal">wahr</span> zurückgegeben, wenn die Marke diese Farbe hat.`) + `(farbe?)<br>`}
         ${makeTooltip(ENV.robot.mth.SEES_WALL, `Gibt <span class="struct-literal">wahr</span> zurück, wenn der Roboter vor einer Wand steht, sonst <span class="struct-literal">falsch</span>.`) + `()<br>`}
         ${makeTooltip(ENV.robot.mth.SEES_VOID, `Gibt <span class="struct-literal">wahr</span> zurück, wenn der Roboter vor dem Abgrund steht, sonst <span class="struct-literal">falsch</span>.`) + `()<br>`}
+        ${makeTooltip(ENV.robot.mth.SEES_ROBOT, `Gibt <span class="struct-literal">wahr</span> zurück, wenn der Roboter vor einem anderen Roboter steht, sonst <span class="struct-literal">falsch</span>.`) + `()<br>`}
         <div class="struct-dot"></div>
     </div>
 </div>`
