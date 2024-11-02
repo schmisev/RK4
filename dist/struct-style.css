@@ -15,9 +15,9 @@
     /*font-weight: bold;/**/
     /*font-style: italic;/**/
     box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, .2);/**/
-    width: fit-content;
-    max-width: 250px;
-    margin: auto;
+    /* width: fit-content; */
+    /* max-width: 250px; */
+    /* margin: auto; */
     overflow-wrap: anywhere;
 
     border-top-left-radius: 255px 15px;

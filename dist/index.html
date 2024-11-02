@@ -14,7 +14,7 @@
     <link crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
     <link crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
     <link crossorigin="anonymous" href="https://fonts.cdnfonts.com/css/cascadia-code" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=play_arrow,skip_previous" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=play_arrow,play_pause,skip_previous" />
 
     <title>RK4 (beta)</title>
 </head>
@@ -107,7 +107,9 @@
                 <!-- Command line UI -->
                 <input class="cmd-line cascadia" id="cmd-line" autocomplete="off">
                 <div class="cmd-start cascadia lc30">&gt;&gt;</div>
-                <button class="cmd-run" id="cmd-run">↩</button>
+                <button class="cmd-run" id="cmd-run">
+                    <span class="material-symbols-outlined">play_pause</span>
+                </button>
                 <!-- Task view UI -->
                 <div class="task-description wsr text" id="task-description">Aufgabe</div>
                 <!-- Console -->
