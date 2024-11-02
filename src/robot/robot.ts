@@ -2,7 +2,7 @@ import { RuntimeError } from "../errors";
 import { ClassPrototype, GlobalEnvironment, VarHolder } from "../language/runtime/environment";
 import { MK_BOOL, MK_STRING, MK_NUMBER, RuntimeVal, BuiltinClassVal, ObjectVal, MK_NATIVE_METHOD, ValueAlias } from "../language/runtime/values";
 import { ENV } from "../spec";
-import { toZero, Vec2 } from "../utils";
+import { easeInOutQuad, toZero, Vec2 } from "../utils";
 import { BlockType, CHAR2BLOCK, CHAR2MARKER, Field, MarkerType, World } from "./world";
 
 export enum ThoughtType {
@@ -661,6 +661,10 @@ export class Robot {
     animMarkerProg: number = 0.0;
     animMarkerCond: boolean = false; // false is "remove"
 
+    interpHop: number = 0;
+    interpFall: number = 0;
+    interpRot: number = 0;
+
     prepare(fieldHeight: number): void {
         // update height
         if (this.animCurrHeight != fieldHeight) {
@@ -689,6 +693,10 @@ export class Robot {
         // real time
         this.animThoughtProg = toZero(this.animThoughtProg, deltaProg * 0.5);
         this.animBlinkProg = toZero(this.animBlinkProg, 0.005 * delta);
+        // interps
+        this.interpHop = easeInOutQuad(1 - this.animHopProg);
+        this.interpFall = 1 - this.animFallProg;
+        this.interpRot = easeInOutQuad(1 - this.animRotProg);
     }
 
     triggerWatchAnim(condition: boolean) {

@@ -7,14 +7,13 @@
     font-family: 'Cascadia Code', "Consolas", monospace;
 }
 
-.material-symbols-rounded {
-    font-size: 20px !important;
-    line-height: 30px !important;
+
+.material-symbols-outlined {
     font-variation-settings:
-        'FILL' 0,
-        'wght' 400,
-        'GRAD' 0,
-        'opsz' 30;
+    'FILL' 1,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24
 }
 
 /* general */
@@ -38,6 +37,10 @@ code {
 }
 
 button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    text-shadow: rgba(0, 0, 0, .2) 1px 1px 3px;
     background-color: whitesmoke;
     border-radius: 5px;
     border: none;
@@ -102,11 +105,12 @@ button:active {
     transition: background-color 0.2s, outline-color 0.2s;
 }
 
-.emoji-button.active {
-    background-color: black;
-    color: white;
-    outline: 1px black solid;
-    outline-offset: -1px;
+.xcheck::after {
+    content: "❌";
+}
+
+.xcheck.active::after {
+    content: "✅";
 }
 
 #debug-show-functions.active {

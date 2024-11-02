@@ -160,8 +160,8 @@ function updateSlider() {
     const value = parseInt(waitSlider.value);
     dt = maxDt * easeInCubic((value / 10) / maxDt);
     const hz = 1000 / dt;
-    const hzText = hz > 5000 ? "schnell" : hz.toFixed(0);
-    document.getElementById("wait-time")!.innerHTML =  hzText + " Hz | ~" + dt.toFixed(2) + " ms pro Anweisung";
+    const hzText = hz > 5000 ? ">5000 Hz" : hz.toFixed(0) + " Hz";
+    document.getElementById("wait-time")!.innerHTML =  hzText + " | ~" + dt.toFixed(2) + " ms pro Anweisung";
 }
 
 waitSlider.max = (maxDt * 10).toString();
