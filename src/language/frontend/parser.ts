@@ -905,7 +905,10 @@ export default class Parser {
         while (
             this.at().type == TokenType.Equal ||
             this.at().type == TokenType.Greater ||
-            this.at().type == TokenType.Lesser
+            this.at().type == TokenType.Lesser ||
+            this.at().type == TokenType.LEQ ||
+            this.at().type == TokenType.GEQ ||
+            this.at().type == TokenType.NEQ
         ) {
             const operator = this.eat().value;
             const right = this.parse_additive_expr();

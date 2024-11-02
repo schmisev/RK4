@@ -32,9 +32,12 @@ export enum TokenType {
     Divide,
     Mod,
     Greater,
+    GEQ,
     Lesser,
+    LEQ,
     Equal,
     Not,
+    NEQ,
     And,
     Or,
     // GeneralOperator,
@@ -228,10 +231,34 @@ export function tokenize(sourceCode: string): Token[] {
             tokens.push(token(src.shift(), TokenType.Equal, getPos()));
             nextPos();
         } else if (src[0] == '>'){
-            tokens.push(token(src.shift(), TokenType.Greater, getPos()));
+            let str = src.shift()!;
+            if (src.length > 0 && src.at(0) == "=") {
+                str += src.shift()!;
+                widenPos();
+                tokens.push(token(str, TokenType.GEQ, getPos()));
+            } else {
+                tokens.push(token(str, TokenType.Greater, getPos()));
+            }
             nextPos();
         } else if (src[0] == '<'){
-            tokens.push(token(src.shift(), TokenType.Lesser, getPos()));
+            let str = src.shift()!;
+            if (src.length > 0 && src.at(0) == "=") {
+                str += src.shift()!;
+                widenPos();
+                tokens.push(token(str, TokenType.LEQ, getPos()));
+            } else {
+                tokens.push(token(str, TokenType.Lesser, getPos()));
+            }
+            nextPos();
+        } else if (src[0] == '!'){
+            let str = src.shift();
+            if (src.length > 0 && src.at(0) == "=") {
+                str += src.shift()!;
+                widenPos();
+                tokens.push(token(str, TokenType.NEQ, getPos()));
+            } else {
+                tokens.push(token(str, TokenType.Not, getPos()));
+            }
             nextPos();
         } else if (src[0] == '-'){
             tokens.push(token(src.shift(), TokenType.Minus, getPos()));

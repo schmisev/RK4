@@ -78,7 +78,7 @@ ace.define(
                     },
                     {
                         token: "keyword.operator",
-                        regex: "\\+|-|\\/|:|%|<|>|=|\\*",
+                        regex: "\\+|-|\\/|:|%|<|>|=|!=|<=|>=|!|\\*",
                     },
                 ],
                 comment: [

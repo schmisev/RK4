@@ -193,6 +193,12 @@ export function eval_numeric_binary_expr(
         return MK_BOOL(lhs.value > rhs.value);
     } else if (operator == "<") {
         return MK_BOOL(lhs.value < rhs.value);
+    } else if (operator == ">=") {
+        return MK_BOOL(lhs.value >= rhs.value);
+    } else if (operator == "<=") {
+        return MK_BOOL(lhs.value <= rhs.value);
+    } else if (operator == "!=") {
+        return MK_BOOL(lhs.value != rhs.value);
     }
 
     // nothing worked
@@ -209,6 +215,10 @@ export function eval_logical_binary_expr(
         return MK_BOOL(lhs.value && rhs.value);
     } else if (operator == "oder") {
         return MK_BOOL(lhs.value || rhs.value);
+    } else if (operator == "=") {
+        return MK_BOOL(lhs.value == rhs.value);
+    } else if (operator == "!=") {
+        return MK_BOOL(lhs.value != rhs.value);
     }
     throw new RuntimeError(`Operator '${operator}' kann so nicht verwendet werden.`, codePos);
 }
@@ -223,6 +233,8 @@ export function eval_string_binary_expr(
         return MK_STRING(lhs.value + rhs.value);
     } else if (operator == "=") {
         return MK_BOOL(lhs.value === rhs.value);
+    } else if (operator == "!=") {
+        return MK_BOOL(lhs.value !== rhs.value);
     }
     throw new RuntimeError(`Operator '${operator}' kann so nicht verwendet werden.`, codePos);
 }
@@ -264,7 +276,7 @@ export function eval_logical_unary_expr(
     operator: string,
     codePos: CodePosition
 ): BooleanVal {
-    if (operator == "nicht") {
+    if (operator == "nicht" || operator == "!") {
         return MK_BOOL(!rhs.value);
     }
     throw new RuntimeError(`Operator '${operator}' kann so nicht verwendet werden.`, codePos);
@@ -275,7 +287,7 @@ export function eval_numeric_unary_expr(
     operator: string,
     codePos: CodePosition
 ): RuntimeVal {
-    if (operator == "nicht") {
+    if (operator == "nicht" || operator == "!") {
         return MK_BOOL(rhs.value == 0);
     } else if (operator == "-") {
         return MK_NUMBER(-rhs.value);
