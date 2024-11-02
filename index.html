@@ -14,7 +14,8 @@
     <link crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
     <link crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
     <link crossorigin="anonymous" href="https://fonts.cdnfonts.com/css/cascadia-code" rel="stylesheet">
-    
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=play_arrow,play_pause,skip_previous" />
+
     <title>RK4 (beta)</title>
 </head>
 <body class="roboto">
@@ -24,8 +25,8 @@
                 <div class="lc30 wsr text" id="title-bar">
                     🤖 RK4&nbsp;&nbsp;<div id="version-label" class="struct-doc-comment">BETA</div>&nbsp;&nbsp;| RKBasic, 3D, mehrere Roboter und Aufgaben |
                     <button id="fold-debug" class="toggle-button" title="Zeig/verberge Debug-Bereich">&lt;-&gt;</button>
-                    | <button id="thought-toggle" class="emoji-button" title="Aktiviere/deaktiviere Roboter-Gedanken">💭</button>
-                    <button id="animation-toggle" class="emoji-button" title="Aktiviere/deaktiviere Roboter-Animationen">💖</button>
+                    | <button id="thought-toggle" class="emoji-button xcheck" title="Aktiviere/deaktiviere Roboter-Gedanken">💭</button>
+                    <button id="animation-toggle" class="emoji-button xcheck" title="Aktiviere/deaktiviere Roboter-Animationen">🏃‍♂️‍➡️</button>
                     
                     <span class="roboto" style="float: right;"> 
                         Zieh mich! ▸</span>
@@ -59,8 +60,12 @@
                     </span>
                 </div>
                 <div id="run-container">
-                    <button title="Lade die Welt neu und starte die Ausführung!" class="code-start roboto" id="code-start">▷</button>
-                    <button title="Beende die Ausführung und lade die Welt neu!" class="code-stop roboto" id="code-stop">↺</button>
+                    <button title="Lade die Welt neu und starte die Ausführung!" class="code-start roboto" id="code-start">
+                        <span class="material-symbols-outlined">play_arrow</span>
+                    </button>
+                    <button title="Beende die Ausführung und lade die Welt neu!" class="code-stop roboto" id="code-stop">
+                        <span class="material-symbols-outlined">skip_previous</span>
+                    </button>
                 </div>
                 <div class="editor cascadia" id="code-editor">Code</div>
                 <div class="code-error lc30 wsr text" id="code-error">keine Fehler gefunden</div>
@@ -102,7 +107,9 @@
                 <!-- Command line UI -->
                 <input class="cmd-line cascadia" id="cmd-line" autocomplete="off">
                 <div class="cmd-start cascadia lc30">&gt;&gt;</div>
-                <button class="cmd-run" id="cmd-run">↩</button>
+                <button class="cmd-run" id="cmd-run">
+                    <span class="material-symbols-outlined">play_pause</span>
+                </button>
                 <!-- Task view UI -->
                 <div class="task-description wsr text" id="task-description">Aufgabe</div>
                 <!-- Console -->
