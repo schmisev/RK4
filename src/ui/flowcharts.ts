@@ -230,7 +230,7 @@ function makeFlowchart(program: Program) {
         fullStr += `%%block: ${id}%%\n`;
         fullStr += "subgraph " + id + ' ["`' + block.title + '`"]\n';
         fullStr += `%%decl%%\n`;
-        fullStr += block.declStack.join("\n") + "\n";
+        fullStr += block.declStack.reverse().join("\n") + "\n";
         fullStr += `%%conn%%\n`;
         fullStr += block.connStack.join("\n") + "\n";
         fullStr += "end\n";
@@ -265,7 +265,7 @@ function chartSimpleStmt(stmt: AnyStmt): ChartNode | undefined {
         case StmtKind.ForInBlock:
             throw new RuntimeError("a control flow block is not a simple statement!");
         case StmtKind.ShowCommand:
-            return declIO(stmt.values.map(chartExpr).map((a) => a.str).join("\n"));
+            return declIO(stmt.values.map(chartExpr).map((a) => a.str).join("\n") + " ");
         case StmtKind.BreakCommand:
             return declCtrl("abbrechen", Type.Break);
         case StmtKind.ContinueCommand:
@@ -310,9 +310,9 @@ function chartExpr(expr: Expr): { str: string, type: Type } {
             const val = chartExpr(expr.value);
             return {str: chartExpr(expr.assigne).str + " := " + val.str, type: val.type};
         case StmtKind.BinaryExpr:
-            return {str: "(" + chartExpr(expr.left).str + " " + translateOperator(expr.operator) + " " + chartExpr(expr.right).str + ")", type: Type.Unwrapped};
+            return {str: "(" + chartExpr(expr.left).str + " " + translateOperator(expr.operator.value) + " " + chartExpr(expr.right).str + ")", type: Type.Unwrapped};
         case StmtKind.UnaryExpr:
-            return {str: translateOperator(expr.operator) + " " + chartExpr(expr.right).str, type: Type.Unwrapped};
+            return {str: translateOperator(expr.operator.value) + " " + chartExpr(expr.right).str, type: Type.Unwrapped};
         case StmtKind.Identifier:
             return {str: expr.symbol, type: Type.Unwrapped};
         case StmtKind.NumericLiteral:

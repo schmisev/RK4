@@ -1,6 +1,6 @@
 import { RuntimeError } from "../../../errors";
 import { Identifier, BinaryExpr, UnaryExpr, AssignmentExpr, CallExpr, MemberExpr, StmtKind, ListLiteral, ComputedMemberExpr } from "../../frontend/ast";
-import { CodePosition } from "../../frontend/lexer";
+import { CodePosition, Token, TokenType } from "../../frontend/lexer";
 import { Environment } from "../environment";
 import { SteppedEval, evaluate_expr } from "../interpreter";
 import {
@@ -123,7 +123,7 @@ export function* eval_binary_expr(
 export function eval_pure_binary_expr(
     lhs: RuntimeVal,
     rhs: RuntimeVal,
-    operator: string,
+    operator: Token,
     codePos: CodePosition,
 ): RuntimeVal {
     try {
@@ -158,12 +158,12 @@ export function eval_pure_binary_expr(
         }
     } catch {
         throw new RuntimeError(
-            `Operator in '${lhs.type} ${operator} ${rhs.type}' ist nicht unterstützt!`, codePos
+            `Operator in '${lhs.type} ${operator.value} ${rhs.type}' ist nicht unterstützt!`, codePos
         );
     }
 
     throw new RuntimeError(
-        `Unpassendende Typen im Ausdruck '${lhs.type} ${operator} ${rhs.type}'!`, codePos
+        `Unpassendende Typen im Ausdruck '${lhs.type} ${operator.value} ${rhs.type}'!`, codePos
     );
     //return MK_NULL();
 }
@@ -171,84 +171,84 @@ export function eval_pure_binary_expr(
 export function eval_numeric_binary_expr(
     lhs: NumberVal,
     rhs: NumberVal,
-    operator: string,
+    operator: Token,
     codePos: CodePosition
 ): RuntimeVal {
     // stays numeric
-    if (operator == "+") {
+    if (operator.type == TokenType.Plus) {
         return MK_NUMBER(lhs.value + rhs.value);
-    } else if (operator == "-") {
+    } else if (operator.type == TokenType.Minus) {
         return MK_NUMBER(lhs.value - rhs.value);
-    } else if (operator == "*") {
+    } else if (operator.type == TokenType.Multiply) {
         return MK_NUMBER(lhs.value * rhs.value);
-    } else if (operator == "/" || operator == ":") {
+    } else if (operator.type == TokenType.Divide) {
         return MK_NUMBER(Math.trunc(lhs.value / rhs.value));
-    } else if (operator == "%") {
+    } else if (operator.type == TokenType.Mod) {
         return MK_NUMBER(lhs.value % rhs.value);
     }
     // boolean values
-    else if (operator == "=") {
+    else if (operator.type == TokenType.Equal) {
         return MK_BOOL(lhs.value == rhs.value);
-    } else if (operator == ">") {
+    } else if (operator.type == TokenType.Greater) {
         return MK_BOOL(lhs.value > rhs.value);
-    } else if (operator == "<") {
+    } else if (operator.type == TokenType.Lesser) {
         return MK_BOOL(lhs.value < rhs.value);
-    } else if (operator == ">=") {
+    } else if (operator.type == TokenType.GEQ) {
         return MK_BOOL(lhs.value >= rhs.value);
-    } else if (operator == "<=") {
+    } else if (operator.type == TokenType.LEQ) {
         return MK_BOOL(lhs.value <= rhs.value);
-    } else if (operator == "!=") {
+    } else if (operator.type == TokenType.NEQ) {
         return MK_BOOL(lhs.value != rhs.value);
     }
 
     // nothing worked
-    throw new RuntimeError(`Operator '${operator}' kann so nicht verwendet werden.`, codePos);
+    throw new RuntimeError(`Operator '${operator.value}' kann so nicht verwendet werden.`, codePos);
 }
 
 export function eval_logical_binary_expr(
     lhs: BooleanVal,
     rhs: BooleanVal,
-    operator: string,
+    operator: Token,
     codePos: CodePosition
 ): BooleanVal {
-    if (operator == "und") {
+    if (operator.type == TokenType.And) {
         return MK_BOOL(lhs.value && rhs.value);
-    } else if (operator == "oder") {
+    } else if (operator.type == TokenType.Or) {
         return MK_BOOL(lhs.value || rhs.value);
-    } else if (operator == "=") {
+    } else if (operator.type == TokenType.Equal) {
         return MK_BOOL(lhs.value == rhs.value);
-    } else if (operator == "!=") {
+    } else if (operator.type == TokenType.NEQ) {
         return MK_BOOL(lhs.value != rhs.value);
     }
-    throw new RuntimeError(`Operator '${operator}' kann so nicht verwendet werden.`, codePos);
+    throw new RuntimeError(`Operator '${operator.value}' kann so nicht verwendet werden.`, codePos);
 }
 
 export function eval_string_binary_expr(
     lhs: StringVal,
     rhs: StringVal,
-    operator: string,
+    operator: Token,
     codePos: CodePosition
 ): RuntimeVal {
-    if (operator == "+") {
+    if (operator.type == TokenType.Plus) {
         return MK_STRING(lhs.value + rhs.value);
-    } else if (operator == "=") {
+    } else if (operator.type == TokenType.Equal) {
         return MK_BOOL(lhs.value === rhs.value);
-    } else if (operator == "!=") {
+    } else if (operator.type == TokenType.NEQ) {
         return MK_BOOL(lhs.value !== rhs.value);
     }
-    throw new RuntimeError(`Operator '${operator}' kann so nicht verwendet werden.`, codePos);
+    throw new RuntimeError(`Operator '${operator.value}' kann so nicht verwendet werden.`, codePos);
 }
 
 export function eval_list_binary_expr(
     lhs: ListVal,
     rhs: ListVal,
-    operator: string,
+    operator: Token,
     codePos: CodePosition
 ): RuntimeVal {
-    if (operator == "+") {
+    if (operator.type == TokenType.Plus) {
         return MK_LIST(lhs.elements.concat(rhs.elements));
     }
-    throw new RuntimeError(`Operator '${operator}' kann so nicht verwendet werden.`, codePos);
+    throw new RuntimeError(`Operator '${operator.value}' kann so nicht verwendet werden.`, codePos);
 }
 
 export function* eval_unary_expr(
@@ -273,10 +273,10 @@ export function* eval_unary_expr(
 
 export function eval_logical_unary_expr(
     rhs: BooleanVal,
-    operator: string,
+    operator: Token,
     codePos: CodePosition
 ): BooleanVal {
-    if (operator == "nicht" || operator == "!") {
+    if (operator.type == TokenType.Not) {
         return MK_BOOL(!rhs.value);
     }
     throw new RuntimeError(`Operator '${operator}' kann so nicht verwendet werden.`, codePos);
@@ -284,25 +284,25 @@ export function eval_logical_unary_expr(
 
 export function eval_numeric_unary_expr(
     rhs: NumberVal,
-    operator: string,
+    operator: Token,
     codePos: CodePosition
 ): RuntimeVal {
-    if (operator == "nicht" || operator == "!") {
+    if (operator.type == TokenType.Not) {
         return MK_BOOL(rhs.value == 0);
-    } else if (operator == "-") {
+    } else if (operator.type == TokenType.Minus) {
         return MK_NUMBER(-rhs.value);
-    } else if (operator == "+") {
+    } else if (operator.type == TokenType.Plus) {
         return rhs;
     }
-    throw new RuntimeError(`Operator '${operator}' kann so nicht verwendet werden.`, codePos);
+    throw new RuntimeError(`Operator '${operator.value}' kann so nicht verwendet werden.`, codePos);
 }
 
 export function eval_string_unary_expr(
     rhs: StringVal,
-    operator: string,
+    operator: Token,
     codePos: CodePosition
 ): StringVal {
-    throw new RuntimeError(`Operator '${operator}' kann so nicht verwendet werden.`, codePos);
+    throw new RuntimeError(`Operator '${operator.value}' kann so nicht verwendet werden.`, codePos);
 }
 
 export function* eval_call_expr(

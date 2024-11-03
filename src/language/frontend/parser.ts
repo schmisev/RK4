@@ -882,7 +882,7 @@ export default class Parser {
             this.at().type == TokenType.And ||
             this.at().type == TokenType.Or
         ) {
-            const operator = this.eat().value;
+            const operator = this.eat();
             const right = this.parse_comparison_expr();
 
             codePos = mergeCodePos(codePos, this.lastEaten.codePos);
@@ -910,7 +910,7 @@ export default class Parser {
             this.at().type == TokenType.GEQ ||
             this.at().type == TokenType.NEQ
         ) {
-            const operator = this.eat().value;
+            const operator = this.eat();
             const right = this.parse_additive_expr();
 
             codePos = mergeCodePos(codePos, this.lastEaten.codePos);
@@ -934,7 +934,7 @@ export default class Parser {
             this.at().type == TokenType.Plus ||
             this.at().type == TokenType.Minus
         ) {
-            const operator = this.eat().value;
+            const operator = this.eat();
             const right = this.parse_multiplicative_expr();
 
             codePos = mergeCodePos(codePos, this.lastEaten.codePos);
@@ -959,7 +959,7 @@ export default class Parser {
             this.at().type == TokenType.Divide ||
             this.at().type == TokenType.Mod
         ) {
-            const operator = this.eat().value;
+            const operator = this.eat();
             const right = this.parse_unary_expr();
 
             codePos = mergeCodePos(codePos, this.lastEaten.codePos);
@@ -983,7 +983,7 @@ export default class Parser {
             this.at().type == TokenType.Minus ||
             this.at().type == TokenType.Plus
         ) {
-            const operator = this.eat().value;
+            const operator = this.eat();
             const right = this.parse_call_expr();
 
             codePos = mergeCodePos(codePos, this.lastEaten.codePos);

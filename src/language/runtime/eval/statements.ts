@@ -25,7 +25,7 @@ import {
     FromToBlock,
     ForInBlock,
 } from "../../frontend/ast";
-import { CodePosition } from "../../frontend/lexer";
+import { CodePosition, ILLEGAL_CODE_POS, TokenType } from "../../frontend/lexer";
 import { ClassPrototype, Environment, VarHolder } from "../environment";
 import { SteppedEval, evaluate, evaluate_expr } from "../interpreter";
 import {
@@ -307,7 +307,7 @@ export function* eval_switch_block<A extends AbruptStmtKind>(
         const cond = eval_pure_binary_expr(
             selectedVal,
             compVal,
-            "=",
+            {type: TokenType.Equal, value: "=", codePos: ILLEGAL_CODE_POS()},
             block.codePos
         );
         if (cond.type != ValueAlias.Boolean)

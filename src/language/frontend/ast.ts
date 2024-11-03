@@ -1,5 +1,5 @@
 import type { AbruptBreak, AbruptContinue, AbruptReturn, ValueAlias } from "../runtime/values";
-import { CodePosition } from "./lexer";
+import { CodePosition, Token } from "./lexer";
 
 export const enum StmtKind {
     Program = "Programm",
@@ -212,14 +212,14 @@ export interface BinaryExpr {
     codePos: CodePosition;
     left: Expr;
     right: Expr;
-    operator: string;
+    operator: Token;
 }
 
 export interface UnaryExpr {
     kind: StmtKind.UnaryExpr;
     codePos: CodePosition;
     right: Expr;
-    operator: string;
+    operator: Token;
 }
 
 export interface Identifier {

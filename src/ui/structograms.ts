@@ -213,12 +213,12 @@ function structureBinaryExpr(astNode: BinaryExpr) {
     const rightSide = encapsulateExpr(astNode.right);
     const leftSide = encapsulateExpr(astNode.left);
     
-    return `${makeSpan(leftSide, "line")} ${translateOperator(astNode.operator)} ${makeSpan(rightSide, "line")}`
+    return `${makeSpan(leftSide, "line")} ${translateOperator(astNode.operator.value)} ${makeSpan(rightSide, "line")}`
 }
 
 function structureUnaryExpr(astNode: UnaryExpr) {
     let rightSide = encapsulateExpr(astNode.right);
-    let operator = translateOperator(astNode.operator);
+    let operator = translateOperator(astNode.operator.value);
     if (operator.length > 1) rightSide = " " + rightSide; // pad for multicharacter operators
     
     return `${operator}${rightSide}`
