@@ -2,7 +2,7 @@ import mermaid from "mermaid"
 import { AnyAlwaysBlock, AnyForBlock, AnyForInBlock, AnyFromToBlock, AnyIfElseBlock, AnyStmt, AnySwitchBlock, AnyWhileBlock, ClassDefinition, Expr, ExtMethodDefinition, FunctionDefinition, Program, StmtKind } from "../language/frontend/ast";
 import { RuntimeError } from "../errors";
 import { toggleFunctions, toggleMethods } from "./toggle-buttons";
-import { screenshotDiv, translateOperator } from "../utils";
+import { deepCopy, screenshotDiv, translateOperator } from "../utils";
 mermaid.initialize({ startOnLoad: true });
 
 // diagram formatting
@@ -484,7 +484,7 @@ function chartAlwaysLoop(loop: AnyAlwaysBlock, ends: LooseEnds): LooseEnds {
 function chartIfElse(block: AnyIfElseBlock, ends: LooseEnds): LooseEnds {
     const choice = declDec(chartExpr(block.condition).str + "?");
     const endsCtrl = tieNodeToEnds(ends, choice, "✔️ wahr");
-    const trueEnds = chartSequence(block.ifTrue, endsCtrl);
+    const trueEnds = deepCopy(chartSequence(block.ifTrue, endsCtrl));
     endsCtrl.runover[0].outLabel = "❌ falsch";
     const falseEnds = chartSequence(block.ifFalse, endsCtrl);
     return tieEndsParallel(trueEnds, falseEnds);
@@ -500,7 +500,7 @@ function chartSwitch(block: AnySwitchBlock, ends: LooseEnds): LooseEnds {
         endsCtrl.runover[0].outLabel = chartExpr(cas.comp).str;
         const { runover: caseRunover, break: caseBreak = [], continue: caseContinue = [], return: caseReturn = [] } = chartSequence(cas.body, endsCtrl);
         // fallthrough to next case
-        endsCtrl.runover = [endsCtrl.runover[0], ...caseContinue];
+        endsCtrl.runover = [deepCopy(endsCtrl.runover[0]), ...caseContinue];
         overallRets.push(...caseReturn);
         switchRunover.push(...caseRunover, ...caseBreak);
     }

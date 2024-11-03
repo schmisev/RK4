@@ -19,6 +19,10 @@ export class Vec2 {
   }
 }
 
+export function deepCopy<T>(obj: T): T {
+    return JSON.parse(JSON.stringify(obj));
+}
+
 export const lerp = (x: number, y: number, a: number) => x * (1 - a) + y * a;
 export const clamp = (a: number, min = 0, max = 1) => Math.min(max, Math.max(min, a));
 export const toZero = (x: number, rate: number) => clamp(x - rate, 0, x);
