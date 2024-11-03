@@ -484,7 +484,8 @@ function chartAlwaysLoop(loop: AnyAlwaysBlock, ends: LooseEnds): LooseEnds {
 function chartIfElse(block: AnyIfElseBlock, ends: LooseEnds): LooseEnds {
     const choice = declDec(chartExpr(block.condition).str + "?");
     const endsCtrl = tieNodeToEnds(ends, choice, "✔️ wahr");
-    const trueEnds = deepCopy(chartSequence(block.ifTrue, endsCtrl));
+    let trueEnds = chartSequence(block.ifTrue, endsCtrl);
+    if (block.ifTrue.length == 0) trueEnds = deepCopy(trueEnds);
     endsCtrl.runover[0].outLabel = "❌ falsch";
     const falseEnds = chartSequence(block.ifFalse, endsCtrl);
     return tieEndsParallel(trueEnds, falseEnds);
