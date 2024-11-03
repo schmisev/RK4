@@ -11,7 +11,7 @@
 .edgeLabel p {
     background-color: rgba(255, 255, 255, 0.8) !important;
     border-radius: 5px !important;
-    padding: 2px !important;
+    padding: 2px 7px !important;
 }
 
 .labelBkg {
