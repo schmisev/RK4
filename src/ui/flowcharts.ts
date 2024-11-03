@@ -230,9 +230,15 @@ function makeFlowchart(program: Program) {
         fullStr += `%%block: ${id}%%\n`;
         fullStr += "subgraph " + id + ' ["`' + block.title + '`"]\n';
         fullStr += `%%decl%%\n`;
-        fullStr += block.declStack.reverse().join("\n") + "\n";
+        fullStr += block.declStack.join("\n") + "\n";
         fullStr += `%%conn%%\n`;
-        fullStr += block.connStack.join("\n") + "\n";
+        // TODO: Find a better solution for getting rid of doubled connections
+        let lastConn = "";
+        for (const conn of block.connStack.reverse()) {
+            if (lastConn == conn) continue;
+            lastConn = conn;
+            fullStr += conn + "\n";
+        }
         fullStr += "end\n";
     }
     // connect all blocks for vertical layout
