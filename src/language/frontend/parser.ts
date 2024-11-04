@@ -47,6 +47,7 @@ export default class Parser {
     };
 
     collectedIdents: Set<string> = new Set();
+    collectedTypes: Set<string> = new Set();
 
     private not_eof(): boolean {
         return this.tokens[0].type != TokenType.EOF;
@@ -98,11 +99,10 @@ export default class Parser {
             program.body.push(this.parse_stmt(new Set<never>()));
         }
 
-        /*
-        for (const node of program.body) {
-            console.log(node.kind, JSON.stringify(node.codePos));
-        }
-        */
+        
+        console.log("IDENTS:", ...this.collectedIdents);
+        console.log("TYPES:", ...this.collectedTypes);
+        
 
         return program;
     }
@@ -267,6 +267,9 @@ export default class Parser {
             TokenType.Identifier,
             "Erwarte einen Klassennamen nach 'Klasse'!"
         ).value;
+        
+        this.collectedTypes.add(ident); // collect type
+
         const params: ParamDeclaration[] = []; // constructor parameters
         if (this.at().type == TokenType.OpenParen) {
             this.eat();
