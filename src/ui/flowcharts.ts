@@ -545,6 +545,13 @@ function chartSwitch(block: AnySwitchBlock, ends: LooseEnds): LooseEnds {
         overallRets.push(...caseReturn);
         switchRunover.push(...caseRunover, ...caseBreak);
     }
+
+    endsCtrl.runover[0].outLabel = "sonst";
+    const fallback = chartSequence(block.fallback, endsCtrl);
+    endsCtrl.runover = fallback.runover;
+    overallRets.push(...(fallback.return || []));
+    switchRunover.push(...fallback.runover, ...(fallback.break || []));
+    
     const returns = overallRets.length > 0 ? overallRets : undefined;
     return { runover: switchRunover, return: returns };
 }
