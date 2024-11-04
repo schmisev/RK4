@@ -556,4 +556,3 @@ export function resetLagSum() {
 // Start app
 loadExtTasks().catch(e => console.error(e)).then(updateTaskSelector); // get std tasks
 loadTask(DEFAULT_TASK);
-document.getElementById("loading-overlay")!.style.visibility = "hidden";

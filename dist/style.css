@@ -639,6 +639,7 @@ input[type="checkbox"] {
 }
 
 #loading-overlay {
+    font-size: x-large;
     display: flex;
     position: absolute;
     width: 100%;
@@ -649,9 +650,11 @@ input[type="checkbox"] {
     background-color: rgba(0,0,0, 0.9); /* Black w/opacity */
     overflow-x: hidden; /* Disable horizontal scroll */
     color: white;
-    visibility: visible;
+    visibility: hidden;
     align-items: center;
     justify-content: center;
+    flex-direction: column;
+    cursor: wait;
 }
 
 #task-bar {
