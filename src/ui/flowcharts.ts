@@ -5,16 +5,6 @@ import { toggleFunctions, toggleMethods } from "./toggle-buttons";
 import { deepCopy, partition, screenshotDiv, translateOperator, unique } from "../utils";
 mermaid.initialize({ startOnLoad: true });
 
-// diagram formatting
-
-const frontmatter = `%%{
-    init: {
-        'theme':'base',
-    }
-}%%
-graph TD
-`;
-
 // state
 let idCounter = 0;
 let loopScope = 0;
@@ -220,7 +210,7 @@ function mkIgnore(): ChartNode | undefined { return undefined; }
 
 export function showFlowchart(program: Program) {
     const flowchartView = document.getElementById("code-flowchart")!;
-    const flowchartStr = frontmatter + makeFlowchart(program);
+    const flowchartStr = makeFlowchart(program);
     flowchartView.innerHTML = flowchartStr;
     flowchartView.removeAttribute("data-processed")
     mermaid.contentLoaded();
@@ -246,7 +236,13 @@ function makeFlowchart(program: Program) {
         connStack.join("\n") + "\n" +  
         styleStr;
     */
-    let fullStr = "";
+    let fullStr = `%%{
+        init: {
+            'theme':'base',
+        }
+    }%%
+    flowchart TD
+    `;
     // fullStr += "%%main decl%%\n" + blockMap[defaultBlockKey].declStack.join("\n") + "\n"
     // fullStr += "%%main conn%%\n" + blockMap[defaultBlockKey].connStack.join("\n") + "\n"
 
@@ -538,7 +534,7 @@ function chartSwitch(block: AnySwitchBlock, ends: LooseEnds): LooseEnds {
     let switchRunover: Port[] = [];
 
     for (const cas of block.cases) {
-        endsCtrl.runover[0].outLabel = chartExpr(cas.comp).str;
+        endsCtrl.runover[0].outLabel = "= " + chartExpr(cas.comp).str;
         const { runover: caseRunover, break: caseBreak = [], continue: caseContinue = [], return: caseReturn = [] } = chartSequence(cas.body, endsCtrl);
         // fallthrough to next case
         endsCtrl.runover = [deepCopy(endsCtrl.runover[0]), ...caseContinue];
@@ -548,7 +544,7 @@ function chartSwitch(block: AnySwitchBlock, ends: LooseEnds): LooseEnds {
 
     endsCtrl.runover[0].outLabel = "sonst";
     const fallback = chartSequence(block.fallback, endsCtrl);
-    endsCtrl.runover = fallback.runover;
+    endsCtrl.runover = [deepCopy(endsCtrl.runover[0]), ...fallback.continue || []];
     overallRets.push(...(fallback.return || []));
     switchRunover.push(...fallback.runover, ...(fallback.break || []));
     
