@@ -23,6 +23,23 @@ export function deepCopy<T>(obj: T): T {
     return JSON.parse(JSON.stringify(obj));
 }
 
+export function partition<T>(arr: T[], condition: (v: T) => boolean): [T[], T[]] {
+    const trueArr: T[] = [];
+    const falseArr: T[] = [];
+    for (const v of arr) {
+        if (condition(v)) {
+            trueArr.push(v);
+        } else {
+            falseArr.push(v);
+        }
+    }
+    return [trueArr, falseArr];
+}
+
+export function unique<T>(arr: T[]) {
+    return arr.filter((v, i, a) => a.indexOf(v) == i);
+}
+
 export const lerp = (x: number, y: number, a: number) => x * (1 - a) + y * a;
 export const clamp = (a: number, min = 0, max = 1) => Math.min(max, Math.max(min, a));
 export const toZero = (x: number, rate: number) => clamp(x - rate, 0, x);

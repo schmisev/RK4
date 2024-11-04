@@ -2,7 +2,7 @@ import mermaid from "mermaid"
 import { AnyAlwaysBlock, AnyForBlock, AnyForInBlock, AnyFromToBlock, AnyIfElseBlock, AnyStmt, AnySwitchBlock, AnyWhileBlock, ClassDefinition, Expr, ExtMethodDefinition, FunctionDefinition, Program, StmtKind } from "../language/frontend/ast";
 import { RuntimeError } from "../errors";
 import { toggleFunctions, toggleMethods } from "./toggle-buttons";
-import { deepCopy, screenshotDiv, translateOperator } from "../utils";
+import { deepCopy, partition, screenshotDiv, translateOperator, unique } from "../utils";
 mermaid.initialize({ startOnLoad: true });
 
 // diagram formatting
@@ -17,6 +17,7 @@ graph TD
 
 // state
 let idCounter = 0;
+let loopScope = 0;
 
 interface ChartBlock {
     title: string;
@@ -90,17 +91,27 @@ interface ChartNode {
     type: Type;
     id: string;
     str?: string;
+    scope: number;
 }
 
 interface Port {
     type?: Type;
     id: string;
     outLabel?: string;
+    scope: number;
 }
 
 function nextId() {
     idCounter ++;
     return `n${idCounter}`;
+}
+
+function upInScope() {
+    loopScope += 1;
+}
+
+function downInScope() {
+    loopScope -= 1;
 }
 
 function declare(content: string, info = Type.Regular, lb = "[", rb = "]", cls?: string): ChartNode {
@@ -109,7 +120,7 @@ function declare(content: string, info = Type.Regular, lb = "[", rb = "]", cls?:
     blockMap[blockKey].declStack.push(name);
 
     if (cls) styleMap[cls].push(id);
-    return {str: content, id, type: info};
+    return {str: content, id, type: info, scope: loopScope};
 }
 
 function connect(seq: string) {
@@ -147,19 +158,23 @@ interface LooseEnds {
 }
 
 const startEnds = (node: ChartNode, outLabel?: string): LooseEnds => {
-    return { runover: [{ id: node.id, outLabel }] } 
+    return { runover: [{ id: node.id, outLabel, scope: node.scope }] } 
 }
 
 const tieEndsSequentially = (first: LooseEnds, follow: LooseEnds): LooseEnds => {
     const ret = first.return || follow.return ? [...(first.return || []), ...(follow.return || [])] : undefined;
-    const cont = first.continue || follow.continue ? [...(first.continue || []), ...(follow.continue || [])] : undefined;
+    const cont = first.continue || follow.continue 
+        ? unique([...(first.continue || []), ...(follow.continue || [])]) 
+        : undefined;
     const brk = first.break || follow.break ? [...(first.break || []), ...(follow.break || [])] : undefined;
     return { return: ret, continue: cont, break: brk, runover: follow.runover };
 }
 
 const tieEndsParallel = (first: LooseEnds, second: LooseEnds): LooseEnds => {
     const ret = first.return || second.return ? [...(first.return || []), ...(second.return || [])] : undefined;
-    const cont = first.continue || second.continue ? [...(first.continue || []), ...(second.continue || [])] : undefined;
+    const cont = first.continue || second.continue 
+        ? unique([...(first.continue || []), ...(second.continue || [])])
+        : undefined;
     const brk = first.break || second.break ? [...(first.break || []), ...(second.break || [])] : undefined;
     return { return: ret, continue: cont, break: brk, runover: [...first.runover, ...second.runover] };
 
@@ -168,7 +183,7 @@ const tieEndsParallel = (first: LooseEnds, second: LooseEnds): LooseEnds => {
 const tieNodeToEnds = (ends: LooseEnds, node?: ChartNode, outLabel?: string): LooseEnds => {
     if (!node) return ends;
     connectAll(ends.runover, node);
-    const follow = { id: node.id, outLabel };
+    const follow: Port = { id: node.id, outLabel, scope: node.scope };
     switch (node.type) {
         case Type.Break:
             return { ...ends, break: (ends.break || []).concat(follow), runover: [] };
@@ -180,10 +195,17 @@ const tieNodeToEnds = (ends: LooseEnds, node?: ChartNode, outLabel?: string): Lo
             return { ...ends, runover: [follow] }
     }
 }
+
 const tieUpLoop = (ends: LooseEnds, loopCtrl: ChartNode): LooseEnds => {
     // In a loop, any runover or continue gets connected to the loop control
-    connectAll([...ends.runover, ...(ends.continue || [])], loopCtrl);
-    return { return: ends.return, runover: ends.break || [] }
+    // but only if they are in the same loop scope or "higher" loop scope
+    const [continueTie, continueThrough] = partition(ends.continue || [], (v) => v.scope >= loopCtrl.scope);
+    connectAll([...ends.runover, ...continueTie], loopCtrl);
+    return { 
+        return: ends.return,
+        continue: continueThrough,
+        runover: ends.break || [] 
+    }
 }
 
 const declTerm = (content: string, info = Type.Regular) => declare(content, info, "([", "])", "flow-term");
@@ -211,6 +233,8 @@ export function setFlowchartVisibility(visible: boolean) {
 
 function makeFlowchart(program: Program) {
     // reset
+    idCounter = 0;
+    loopScope = 0;
     flushBlockMap();
     flushStyleMap();
     // make new flowchart
@@ -235,7 +259,7 @@ function makeFlowchart(program: Program) {
         // TODO: Find a better solution for getting rid of doubled connections
         let lastConn = "";
         for (const conn of block.connStack.reverse()) {
-            if (lastConn == conn) continue;
+            // if (lastConn == conn) continue;
             lastConn = conn;
             fullStr += conn + "\n";
         }
@@ -445,45 +469,55 @@ function chartSequence(body: AnyStmt[], ends: LooseEnds): LooseEnds {
 }
 
 function chartForLoop(loop: AnyForBlock, ends: LooseEnds): LooseEnds {
+    upInScope();
     const loopControl = declDec(chartExpr(loop.counter).str + " mal?");
     const endsCtrl = tieNodeToEnds(ends, loopControl, "🔁 nochmal");
     const seq = chartSequence(loop.body, endsCtrl);
-    seq.break = [...(seq.break || []), { id: loopControl.id, outLabel: "⏹️ beendet" }];
+    seq.break = [...(seq.break || []), { id: loopControl.id, outLabel: "⏹️ beendet", scope: loopScope }];
+    downInScope();
     return tieUpLoop(seq, loopControl);
 }
 
 function chartFromToLoop(loop: AnyFromToBlock, ends: LooseEnds): LooseEnds {
+    upInScope();
     const loopControl = declDec(
         (loop.iterIdent ? loop.iterIdent + " ∈ " : "") + chartExpr(loop.start).str + "..." + chartExpr(loop.end).str
     )
     const endsCtrl = tieNodeToEnds(ends, loopControl, "⏭️ nächster Wert");
     const seq = chartSequence(loop.body, endsCtrl);
-    seq.break = [...(seq.break || []), { id: loopControl.id, outLabel: "⏹️ beendet" }];
+    seq.break = [...(seq.break || []), { id: loopControl.id, outLabel: "⏹️ beendet", scope: loopScope }];
+    downInScope();
     return tieUpLoop(seq, loopControl);
 }
 
 function chartForInLoop(loop: AnyForInBlock, ends: LooseEnds): LooseEnds {
+    upInScope();
     const loopControl = declDec(
         loop.iterIdent + " ∈ " + chartExpr(loop.list).str
     )
     const endsCtrl = tieNodeToEnds(ends, loopControl, "⏭️ nächster Wert");
     const seq = chartSequence(loop.body, endsCtrl);
-    seq.break = [...(seq.break || []), { id: loopControl.id, outLabel: "⏹️ beendet" }];
+    seq.break = [...(seq.break || []), { id: loopControl.id, outLabel: "⏹️ beendet", scope: loopScope }];
+    downInScope();
     return tieUpLoop(seq, loopControl);
 }
 
 function chartWhileLoop(loop: AnyWhileBlock, ends: LooseEnds): LooseEnds {
+    upInScope();
     const loopControl = declDec(chartExpr(loop.condition).str + "?");
     const endsCtrl = tieNodeToEnds(ends, loopControl, "✔️ wahr");
     const seq = chartSequence(loop.body, endsCtrl);
-    seq.break = [...(seq.break || []), { id: loopControl.id, outLabel: "❌ falsch" }];
+    seq.break = [...(seq.break || []), { id: loopControl.id, outLabel: "❌ falsch", scope: loopScope }];
+    downInScope();
     return tieUpLoop(seq, loopControl);
 }
 
 function chartAlwaysLoop(loop: AnyAlwaysBlock, ends: LooseEnds): LooseEnds {
+    upInScope();
     const loopControl = declDec("immer");
     const endsCtrl = tieNodeToEnds(ends, loopControl);
     const seq = chartSequence(loop.body, endsCtrl);
+    downInScope();
     return tieUpLoop(seq, loopControl);
 }
 
