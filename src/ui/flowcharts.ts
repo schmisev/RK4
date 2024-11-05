@@ -152,20 +152,28 @@ const startEnds = (node: ChartNode, outLabel?: string): LooseEnds => {
 }
 
 const tieEndsSequentially = (first: LooseEnds, follow: LooseEnds): LooseEnds => {
-    const ret = first.return || follow.return ? [...(first.return || []), ...(follow.return || [])] : undefined;
+    const ret = first.return || follow.return 
+        ? unique([...(first.return || []), ...(follow.return || [])])
+        : undefined;
     const cont = first.continue || follow.continue 
         ? unique([...(first.continue || []), ...(follow.continue || [])]) 
         : undefined;
-    const brk = first.break || follow.break ? [...(first.break || []), ...(follow.break || [])] : undefined;
+    const brk = first.break || follow.break 
+        ? unique([...(first.break || []), ...(follow.break || [])]) 
+        : undefined;
     return { return: ret, continue: cont, break: brk, runover: follow.runover };
 }
 
 const tieEndsParallel = (first: LooseEnds, second: LooseEnds): LooseEnds => {
-    const ret = first.return || second.return ? [...(first.return || []), ...(second.return || [])] : undefined;
+    const ret = first.return || second.return 
+        ? unique([...(first.return || []), ...(second.return || [])]) 
+        : undefined;
     const cont = first.continue || second.continue 
         ? unique([...(first.continue || []), ...(second.continue || [])])
         : undefined;
-    const brk = first.break || second.break ? [...(first.break || []), ...(second.break || [])] : undefined;
+    const brk = first.break || second.break 
+        ? unique([...(first.break || []), ...(second.break || [])]) 
+        : undefined;
     return { return: ret, continue: cont, break: brk, runover: [...first.runover, ...second.runover] };
 
 }
