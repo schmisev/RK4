@@ -638,6 +638,25 @@ input[type="checkbox"] {
     }
 }
 
+#loading-overlay {
+    font-size: x-large;
+    display: flex;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    background-color: rgba(0,0,0, 0.9); /* Black w/opacity */
+    overflow-x: hidden; /* Disable horizontal scroll */
+    color: white;
+    visibility: hidden;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    cursor: wait;
+}
+
 #task-bar {
     grid-column: 8;
     grid-row: 11 / 13;
