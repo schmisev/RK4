@@ -154,6 +154,72 @@ export const STD_TASKS: Record<string, Task> = {
             w.fields[0][0].setGoalRobotIndex(0);
             w.fields[0][1].setGoalRobotIndex(1);
         }
+    },
+    "sms_Kurs_1": {
+        "title": "Start",
+        "description": "Lege einen Ziegel an die markierte Stelle! Nutze dafür k1.hinlegen()",
+        "world": "x;4;1;6;\nE:_;_:_;_:_;_:_:r",
+        "preload": "// Nichts vorgegeben"
+    },
+    "sms_Kurs_2": {
+        "title": "Um die Ecke",
+        "description": "Lege einen Ziegel an die markierte Stelle!",
+        "world": "x;3;3;6;\nS:_;_:_;_:_\n_:_;_:_;_:_\n_:_;_:_;_:r",
+        "preload": "// Nichts vorgegeben"
+    },
+    "sms_Kurs_3": {
+        "title": "Verschieben",
+        "description": "Entferne den Ziegel mit k1.aufheben() und lege dann einen Ziegel an die markierte Stelle!",
+        "world": "x;5;3;6;\n_:_;_:_;_:_;_:_;_:_\nS:_;_:_;_:_;_:_;_:r\nr:_;_:_;_:_;_:_;_:_",
+        "preload": "// Nichts vorgegeben"
+    },
+    "sms_Kurs_4": {
+        "title": "Umweltschutz",
+        "description": "Hebe alle Ziegel auf!",
+        "world": "x;5;1;6;\nE:_;_:_;r:_;_:_;r:_",
+        "preload": "// Nichts vorgegeben"
+    },
+    "sms_Kurs_5": {
+        "title": "Treppe",
+        "description": "Baue die Treppe! Nutze dafür die neue Methode stapeln(), z.B. k1.stapeln(2)",
+        "world": "x;5;1;6;\nE:_;_:r;_:rr;_:rrr;_:_",
+        "preload": "// Legt mehrere Blöcke gleichzeitig\nMethode stapeln(Zahl n) für Roboter\n    wiederhole n mal\n        hinlegen()\n    ende\nende"
+    },
+    "sms_Kurs_6": {
+        "title": "Spiegelei",
+        "description": "Setze eine Marke an die vorgegebene Stelle! Nutze dafür k1.markeSetzen()",
+        "world": "x;3;3;6;\nE:_;_:_;_:_\n_:_;_:Y;_:_\n_:_;_:_;_:_",
+        "preload": "// Nichts vorgegeben"
+    },
+    "sms_Kurs_7": {
+        "title": "Parkour",
+        "description": "Setz die Blöcke in einer Reihe!",
+        "world": "x;5;3;6;\n_:_;_:_;r;_:_;_:_\nE:_;_:r;r:rr;_:r;_:_\n_:_;_:_;r;_:_;_:_\nx;3;5;6;\n_:_;S:_;_:_\n_:_;_:r;_:_\nr:r;r:rr;r:r\n_:_;_:r;_:_\n_:_;_:_;_:_",
+        "preload": "// Nichts vorgegeben"
+    },
+    "sms_Kurs_8": {
+        "title": "Zick-Zack-Linie",
+        "description": "Lege eine Zick-Zack-Linie.",
+        "preload": "// Nichts vorgegeben",
+        "world": "x;4;4;6;\nS:_;_:_;_:_;_:_\n_:r;_:r;_:_;_:_\n_:_;_:r;_:r;_:_\n_:_;_:_;_:r;_:r\n"
+    },
+    "sms_Kurs_9": {
+        "title": "Dreierreihe",
+        "description": "Erstelle eine Methode für die Roboterklasse, die eine Reihe aus drei Ziegeln legt.",
+        "preload": "// Nichts vorgegeben",
+        "world": "x;1;4;6;\nS:_\n_:r\n_:r\n_:r\n"
+    },
+    "sms_Kurs_10": {
+        "title": "Buchstaben",
+        "description": "Schreibe den Anfangsbuchstaben deines Namens mit Marken.",
+        "preload": "// Nichts vorgegeben",
+        "world": "x;6;6;6;\nN;_;_;_;_;_\n_;_;_;_;_;_\n_;_;_;_;_;_\n_;_;_;_;_;_\n_;_;_;_;_;_\n_;_;_;_;_;_\n"
+    },
+    "sms_Kurs_11": {
+        "title": "Reihen räumen",
+        "description": "Hebe alle Blöcke auf! Nutze dafür 'wiederhole solange nicht k1.siehtWand()'",
+        "preload": "// Nichts vorgegeben",
+        "world": "x;4;1;6;\nE:_;_r:_;_r:_;_r:_\nx;7;1;6;\nE:_;_r:_;_r:_;_r:_;_r:_;_r:_;_r:_\nx;12;1;6;\nE:_;_r:_;_r:_;_r:_;_r:_;_r:_;_r:_;_r:_;_r:_;_r:_;_r:_;_r:_\n"
     }
 };
 

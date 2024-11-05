@@ -94,20 +94,22 @@ function createCompleter(wordList: string[], metaText: string) {
     }
 }
 
-function updateLiveWordList(newWordList: string[] | Set<string>) {
-    while (liveWordList.length > 0) {
-        liveWordList.shift();
+function updateLiveWordList(wordList: string[], newWordList: string[] | Set<string>) {
+    while (wordList.length > 0) {
+        wordList.shift();
     }
     for (const ident of newWordList) {
-        liveWordList.push(ident)
+        wordList.push(ident)
     }
 }
 
 const liveWordList: string[] = []; // this will be updated live
+const preloadWordList: string[] = []; // this will be updated on reset
 const liveCompleter = createCompleter(liveWordList, "✒️ im Skript")
+const preloadCompleter = createCompleter(preloadWordList, "📖 Bibliothek")
 const robotCompleter = createCompleter(Object.values(ENV.robot.mth), "🤖 Roboter");
 const worldCompleter = createCompleter(Object.values(ENV.world.mth), "🌍 Welt")
-const allCompleters = [robotCompleter, worldCompleter, aceLangTools.snippetCompleter, aceLangTools.keyWordCompleter, liveCompleter];
+const allCompleters = [robotCompleter, worldCompleter, preloadCompleter, liveCompleter, aceLangTools.snippetCompleter, aceLangTools.keyWordCompleter];
 
 aceLangTools.setCompleters(allCompleters)
 export const editor = ace.edit("code-editor", {
@@ -271,7 +273,7 @@ export async function updateIDE() {
     //if (!code) return;
     try {
         program = parser.produceAST(code);
-        updateLiveWordList(parser.collectedIdents);
+        updateLiveWordList(liveWordList, parser.collectedIdents);
         // liveWordList = Array(...parser.collectedIdents);
 
         setFlowchartVisibility(toggleFlowchart.active);
@@ -355,6 +357,8 @@ async function resetEnv(stage = 0) {
     addRobotButtons(objBar, objOverlay, world);
     // run preload so it works in the cmd
     await runCode(preloadCode, false, false);
+    // update word list
+    updateLiveWordList(preloadWordList, parser.collectedIdents);
 }
 
 // Run cmds
