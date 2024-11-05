@@ -342,9 +342,11 @@ function chartExpr(expr: Expr): { str: string, type: Type } {
             const val = chartExpr(expr.value);
             return {str: chartExpr(expr.assigne).str + " := " + val.str, type: val.type};
         case StmtKind.BinaryExpr:
-            return {str: "(" + chartExpr(expr.left).str + " " + translateOperator(expr.operator.value) + " " + chartExpr(expr.right).str + ")", type: Type.Unwrapped};
+            const binExprStr = chartExpr(expr.left).str + " " + translateOperator(expr.operator.value) + " " + chartExpr(expr.right).str;
+            return {str: expr.inParen ? "(" + binExprStr + ")" : binExprStr, type: Type.Unwrapped};
         case StmtKind.UnaryExpr:
-            return {str: translateOperator(expr.operator.value) + " " + chartExpr(expr.right).str, type: Type.Unwrapped};
+            const unExprStr = translateOperator(expr.operator.value) + " " + chartExpr(expr.right).str
+            return {str: expr.inParen ? "(" + unExprStr + ")" : unExprStr, type: Type.Unwrapped};
         case StmtKind.Identifier:
             return {str: expr.symbol, type: Type.Unwrapped};
         case StmtKind.NumericLiteral:

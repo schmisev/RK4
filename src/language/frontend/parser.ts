@@ -865,6 +865,7 @@ export default class Parser {
                 value,
                 assigne: left,
                 codePos,
+                inParen: false,
             };
         }
 
@@ -889,6 +890,7 @@ export default class Parser {
                 right,
                 operator,
                 codePos,
+                inParen: false,
             };
         }
 
@@ -917,6 +919,7 @@ export default class Parser {
                 right,
                 operator,
                 codePos,
+                inParen: false,
             };
         }
 
@@ -941,6 +944,7 @@ export default class Parser {
                 right,
                 operator,
                 codePos,
+                inParen: false,
             };
         }
 
@@ -966,6 +970,7 @@ export default class Parser {
                 right,
                 operator,
                 codePos,
+                inParen: false,
             };
         }
 
@@ -984,7 +989,7 @@ export default class Parser {
             const right = this.parse_call_expr();
 
             codePos = mergeCodePos(codePos, this.lastEaten.codePos);
-            return { kind: StmtKind.UnaryExpr, right, operator, codePos };
+            return { kind: StmtKind.UnaryExpr, right, operator, codePos, inParen: false };
         } else {
             return this.parse_call_expr();
         }
@@ -1012,7 +1017,7 @@ export default class Parser {
             ); // eat close paren
 
             codePos = mergeCodePos(codePos, this.lastEaten.codePos);
-            return { kind: StmtKind.CallExpr, ident, args, codePos };
+            return { kind: StmtKind.CallExpr, ident, args, codePos, inParen: false };
         } else {
             return ident;
         }
@@ -1043,6 +1048,7 @@ export default class Parser {
                     container,
                     member,
                     codePos,
+                    inParen: false,
                 };
             } else if (operator.type == TokenType.OpenBracket) {
                 const member = this.parse_expr(); // can be anything
@@ -1057,6 +1063,7 @@ export default class Parser {
                     container,
                     accessor: member,
                     codePos,
+                    inParen: false,
                 };
             }
         }
@@ -1074,24 +1081,28 @@ export default class Parser {
                     kind: StmtKind.Identifier,
                     symbol: this.eat().value,
                     codePos,
+                    inParen: false,
                 };
             case TokenType.Number:
                 return {
                     kind: StmtKind.NumericLiteral,
                     value: parseInt(this.eat().value),
                     codePos,
+                    inParen: false,
                 };
             case TokenType.String:
                 return {
                     kind: StmtKind.StringLiteral,
                     value: this.eat().value,
                     codePos,
+                    inParen: false,
                 };
             case TokenType.OpenBracket:
                 return this.parse_list_expr();
             case TokenType.OpenParen: {
                 this.eat(); // eat opening paren
                 const value = this.parse_expr();
+                value.inParen = true;
                 this.expect(TokenType.CloseParen, "Schließende Klammer fehlt!"); // eat closing paren
                 return value;
             }
@@ -1126,6 +1137,7 @@ export default class Parser {
             kind: StmtKind.ListLiteral,
             elements,
             codePos,
+            inParen: false,
         };
     }
 }

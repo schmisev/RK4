@@ -205,6 +205,7 @@ export interface AssignmentExpr {
     codePos: CodePosition;
     assigne: Expr;
     value: Expr;
+    inParen: boolean;
 }
 
 export interface BinaryExpr {
@@ -213,6 +214,7 @@ export interface BinaryExpr {
     left: Expr;
     right: Expr;
     operator: Token;
+    inParen: boolean;
 }
 
 export interface UnaryExpr {
@@ -220,42 +222,49 @@ export interface UnaryExpr {
     codePos: CodePosition;
     right: Expr;
     operator: Token;
+    inParen: boolean;
 }
 
 export interface Identifier {
     kind: StmtKind.Identifier;
     codePos: CodePosition;
     symbol: string;
+    inParen: boolean;
 }
 
 export interface NumericLiteral {
     kind: StmtKind.NumericLiteral;
     codePos: CodePosition;
     value: number;
+    inParen: boolean;
 }
 
 export interface NullLiteral {
     kind: StmtKind.NullLiteral;
     codePos: CodePosition;
     value: ValueAlias.Null;
+    inParen: undefined | boolean;
 }
 
 export interface BooleanLiteral {
     kind: StmtKind.BooleanLiteral;
     codePos: CodePosition;
     value: boolean;
+    inParen: boolean;
 }
 
 export interface StringLiteral {
     kind: StmtKind.StringLiteral;
     codePos: CodePosition;
     value: string;
+    inParen: boolean;
 }
 
 export interface ListLiteral {
     kind: StmtKind.ListLiteral;
     codePos: CodePosition;
     elements: Expr[];
+    inParen: boolean;
 }
 
 export interface ComputedMemberExpr {
@@ -263,6 +272,7 @@ export interface ComputedMemberExpr {
     codePos: CodePosition;
     container: Expr;
     accessor: Expr;
+    inParen: boolean;
 }
 
 export interface MemberExpr {
@@ -270,6 +280,7 @@ export interface MemberExpr {
     codePos: CodePosition;
     container: Expr;
     member: Identifier;
+    inParen: boolean;
 }
 
 export interface CallExpr {
@@ -277,6 +288,7 @@ export interface CallExpr {
     codePos: CodePosition;
     ident: Expr;
     args: Expr[];
+    inParen: boolean;
 }
 
 export interface ClassDefinition {

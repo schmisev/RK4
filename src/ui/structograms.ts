@@ -190,9 +190,7 @@ function structure(astNode: Program | AnyStmt): string {
 
 function encapsulateExpr(astNode: Expr) {
     const expr = structure(astNode)
-
-    if (astNode.kind == StmtKind.BinaryExpr || astNode.kind == StmtKind.UnaryExpr)
-        return "(" + expr + ")";
+    if (astNode.inParen) return "(" + expr + ")";
     return expr;
 }
 
