@@ -102,6 +102,14 @@ export function showStructogram(program: Program) {
     }
 }
 
+export function unloadStructogram() {
+    const structogramView = document.getElementById("structogram-diagram-canvas")!;
+    const classView = document.getElementById("class-diagram-canvas")!;
+
+    structogramView.innerHTML = "";
+    classView.innerHTML = "";
+}
+
 export function setStructogramVisibility(visible: boolean) {
     document.getElementById("class-diagram-canvas")!.style.visibility = visible ? "visible" : "hidden";
     document.getElementById("class-diagram-title")!.style.visibility = visible ? "visible" : "hidden";

@@ -204,6 +204,12 @@ export function showFlowchart(program: Program) {
     mermaid.contentLoaded();
 }
 
+export function unloadFlowchart() {
+    const flowchartView = document.getElementById("code-flowchart")!;
+
+    flowchartView.innerHTML = "";
+}
+
 export function setFlowchartVisibility(visible: boolean) {
     document.getElementById("flowchart-diagram-canvas")!.style.visibility = visible ? "visible" : "hidden";
     document.getElementById("flowchart-diagram-title")!.style.visibility = visible ? "visible" : "hidden";
@@ -244,7 +250,7 @@ function makeFlowchart(program: Program) {
     // connect all blocks for vertical layout
     fullStr += "%%connect blocks%%\n" + Object.keys(blockMap).join("~~~") + "\n";
 
-    fullStr += styleStr;
+    fullStr += '%%styling%%\n' + styleStr;
     // reset
     flushBlockMap();
     flushStyleMap();
@@ -491,7 +497,7 @@ function chartIfElse(block: AnyIfElseBlock, ends: LooseEnds): LooseEnds {
     const choice = declDec(chartExpr(block.condition).str + "?");
     const endsCtrl = tieNodeToEnds(ends, choice, "✔️ wahr");
     let trueEnds = chartSequence(block.ifTrue, endsCtrl);
-    if (block.ifTrue.length == 0) trueEnds = deepCopy(trueEnds);
+    // if (block.ifTrue.length == 0) trueEnds = deepCopy(trueEnds);
     endsCtrl.runover[0].outLabel = "❌ falsch";
     const falseEnds = chartSequence(block.ifFalse, endsCtrl);
     return tieEndsParallel(trueEnds, falseEnds);
@@ -507,7 +513,8 @@ function chartSwitch(block: AnySwitchBlock, ends: LooseEnds): LooseEnds {
         endsCtrl.runover[0].outLabel = chartExpr(cas.comp).str;
         const { runover: caseRunover, break: caseBreak = [], continue: caseContinue = [], return: caseReturn = [] } = chartSequence(cas.body, endsCtrl);
         // fallthrough to next case
-        endsCtrl.runover = [deepCopy(endsCtrl.runover[0]), ...caseContinue];
+        endsCtrl.runover = [endsCtrl.runover[0], ...caseContinue];
+        // endsCtrl.runover = [deepCopy(endsCtrl.runover[0]), ...caseContinue];
         overallRets.push(...caseReturn);
         switchRunover.push(...caseRunover, ...caseBreak);
     }

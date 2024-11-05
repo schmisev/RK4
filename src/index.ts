@@ -6,7 +6,7 @@ import "./ui/save-load-files";
 import "./ui/task-selector";
 import "./ui/store-code";
 import { updateTaskSelector } from "./ui/task-selector";
-import { setStructogramVisibility, showStructogram } from './ui/structograms';
+import { setStructogramVisibility, showStructogram, unloadStructogram } from './ui/structograms';
 import { addRobotButtons } from './ui/objectigrams';
 import "./ui/flowcharts";
 
@@ -33,7 +33,7 @@ import './assets/ace/theme-rklight.js';
 
 // General errors 
 import { DebugError, LexerError, ParserError } from './errors';
-import { setFlowchartVisibility, showFlowchart } from "./ui/flowcharts";
+import { setFlowchartVisibility, showFlowchart, unloadFlowchart } from "./ui/flowcharts";
 import { toggleFlowchart } from "./ui/toggle-buttons";
 import { CodePosition, ILLEGAL_CODE_POS } from "./language/frontend/lexer";
 import { ENV } from "./spec";
@@ -279,8 +279,10 @@ export async function updateIDE() {
 
         if (toggleFlowchart.active) {
             showFlowchart(program);
+            unloadStructogram();
         } else {
             showStructogram(program);
+            unloadFlowchart();
         }
 
         // set debug timer
