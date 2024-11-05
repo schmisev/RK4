@@ -106,7 +106,7 @@ function downInScope() {
 
 function declare(content: string, info = Type.Regular, lb = "[", rb = "]", cls?: string): ChartNode {
     const id = nextId();
-    const name = id + lb + '"`' + content + '`"' + rb;
+    const name = id + lb + '"` ' + content + ' `"' + rb;
     blockMap[blockKey].declStack.push(name);
 
     if (cls) styleMap[cls].push(id);

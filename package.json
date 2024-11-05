@@ -31,13 +31,13 @@
     "webpack": "^5.93.0",
     "webpack-cleanup-plugin": "^0.5.1",
     "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^5.0.4"
+    "webpack-dev-server": "^5.0.4",
+    "del-cli": "^5.1.0",
   },
   "dependencies": {
     "@octokit/rest": "^21.0.2",
     "@types/node": "^22.1.0",
     "ace-builds": "^1.35.4",
-    "del-cli": "^5.1.0",
     "downloadjs": "^1.4.7",
     "fs": "^0.0.1-security",
     "html-to-image": "^1.11.11",
