@@ -113,6 +113,14 @@ button:active {
     content: "✅";
 }
 
+#debug-show-flowchart::after {
+    content: "🌊";
+}
+
+#debug-show-flowchart.active::after {
+    content: "📐";
+}
+
 #debug-show-functions.active {
     background-color: lightblue;
     outline-color: #3ca2c3;

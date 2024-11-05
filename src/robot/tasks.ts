@@ -204,22 +204,64 @@ export const STD_TASKS: Record<string, Task> = {
         "world": "x;4;4;6;\nS:_;_:_;_:_;_:_\n_:r;_:r;_:_;_:_\n_:_;_:r;_:r;_:_\n_:_;_:_;_:r;_:r\n"
     },
     "sms_Kurs_9": {
-        "title": "Dreierreihe",
-        "description": "Erstelle eine Methode für die Roboterklasse, die eine Reihe aus drei Ziegeln legt.",
-        "preload": "// Nichts vorgegeben",
-        "world": "x;1;4;6;\nS:_\n_:r\n_:r\n_:r\n"
-    },
-    "sms_Kurs_10": {
         "title": "Buchstaben",
         "description": "Schreibe den Anfangsbuchstaben deines Namens mit Marken.",
         "preload": "// Nichts vorgegeben",
         "world": "x;6;6;6;\nN;_;_;_;_;_\n_;_;_;_;_;_\n_;_;_;_;_;_\n_;_;_;_;_;_\n_;_;_;_;_;_\n_;_;_;_;_;_\n"
     },
-    "sms_Kurs_11": {
+    "sms_Kurs_10": {
         "title": "Reihen räumen",
         "description": "Hebe alle Blöcke auf! Nutze dafür 'wiederhole solange nicht k1.siehtWand()'",
         "preload": "// Nichts vorgegeben",
         "world": "x;4;1;6;\nE:_;_r:_;_r:_;_r:_\nx;7;1;6;\nE:_;_r:_;_r:_;_r:_;_r:_;_r:_;_r:_\nx;12;1;6;\nE:_;_r:_;_r:_;_r:_;_r:_;_r:_;_r:_;_r:_;_r:_;_r:_;_r:_;_r:_\n"
+    },
+    "sms_Kurs_11": {
+        "title": "Umbau",
+        "description": "Benutze <code>wiederhole 3 mal ... ende</code>, um den Ziegelhaufen abzubauen und auf der anderen Seite wieder aufzubauen! ",
+        "preload": "// Nichts vorgegeben",
+        "world": "x;5;5;6;\n_:_;rrr:_;rrr:_;rrr:_;_:_\n_:_;N:_;_:_;_:_;_:_\n_:_;_:_;_:_;_:_;_:_\n_:_;_:_;_:_;_:_;_:_\n_:_;_:rrr;_:rrr;_:rrr;_:_\n"
+    },
+    "sms_Kurs_12": {
+        "title": "Ecken",
+        "description": "Benutze 'wiederhole 4 mal ... ende', um in jede Ecke einen Ziegelstein zu legen.",
+        "preload": "// Nichts vorgegeben",
+        "world": "x;5;5;6;\nS:r;_:_;_:_;_:_;_:r\n_:_;_:_;_:_;_:_;_:_\n_:_;_:_;_:_;_:_;_:_\n_:_;_:_;_:_;_:_;_:_\n_:r;_:_;_:_;_:_;_:r\n"
+    },
+    "sms_Kurs_13": {
+        "title": "Markierungen",
+        "description": "Nutze eine Wiederholung und <code>k1.markeSetzen()</code>!",
+        "preload": "// Nichts vorgegeben",
+        "world": "x;8;3;6;\n_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_\nEY:Y;_:_;_:Y;_:_;_:Y;_:_;_:Y;_:_\n_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_\n"
+    },
+    "sms_Kurs_14": {
+        "title": "Demo: Burg",
+        "description": "Wir bauen eine Burg!",
+        "preload": "// Nichts vorgegeben",
+        "world": "x;5;5;6;\nS_:rrr;_:rr;_:rrr;_:rr;_:rrr\n_:rr;_:_;_:_;_:_;_:rr\n_:rrr;_:_;_:_;_:_;_:rrr\n_:rr;_:_;_:_;_:_;_:rr\n_:rrr;_:rr;_:rrr;_:rr;_:rrr\n"
+    },
+    "sms_Kurs_15": {
+        "title": "Dreierreihe",
+        "description": "Erstelle eine Methode für die Roboterklasse, die eine Reihe aus drei Ziegeln legt.",
+        "preload": "// Nichts vorgegeben",
+        "world": "x;1;4;6;\nS:_\n_:r\n_:r\n_:r\n"
+    },
+    "sms_Kurs_16": {
+        "title": "Turm aus Dreierreihen",
+        "description": "Baue einen Turm, indem du immer wieder die Methode <code>k1.dreierreihe()</code>, die du selbst geschrieben hast, aufrufst!",
+        "preload": "// Nichts vorgegeben",
+        "world": "x;7;7;6;\nS:rrrrrr;_:rrrrrr;_:rrrrrr;_:rrrrrr;_:_;_:_;_:_\n_:rrrrrr;_:_;_:_;_:rrrrrr;_:_;_:_;_:_\n_:rrrrrr;_:_;_:_;_:rrrrrr;_:_;_:_;_:_\n_:rrrrrr;_:rrrrrr;_:rrrrrr;_:rrrrrr;_:_;_:_;_:_\n_:_;_:_;_:_;_:_;_:_;_:_;_:_\n_:_;_:_;_:_;_:_;_:_;_:_;_:_\n_:_;_:_;_:_;_:_;_:_;_:_;_:_\n"
+    },
+    "sms_Kurs_17": {
+        "title": "Meine Burg",
+        "description": "Baue eine (niedrige) Burg, indem du erst die Methode <code>zinneBauen</code> entwirfst und diese dann wiederholt aufrufst.",
+        "preload": "// Nichts vorgegeben",
+        "world": "x;5;5;2;\nE:rr;_:r;_:rr;_:r;_:rr\n_:r;_:_;_:_;_:_;_:r\n_:rr;_:_;_:_;_:_;_:rr\n_:r;_:_;_:_;_:_;_:r\n_:rr;_:r;_:rr;_:r;_:rr\n"
+    },
+    "sms_Kurs_18": {
+        "title": "Teppich flicken",
+        "description": "Schreibe eine Methode <code>dreiMarkenLegen</code> und nutze sie, um den Teppich zu flicken.",
+        "preload": "// Nichts vorgegeben",
+        "world": "x;5;5;1;\n_:_;_:_;_S:_;_:_;_:_\nY;Y;_:_Y;Y;Y\nY;Y;_:_Y;Y;Y\nY;Y;_:_Y;Y;Y\n_:_;_:_;_:_;_:_;_:_\nx;5;5;1;\n_:_;Y;Y;Y;_:_\n_:_;Y;Y;Y;_:_\n_:_;Y;Y;Y;_:_\n_E:_;_:Y;_:Y;_:Y;_:_\n_:_;Y;Y;Y;_:_\n"
     }
 };
 
