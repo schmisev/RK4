@@ -166,7 +166,7 @@ function isskippable(src: string) {
     return src == " " || src == "\t" || src == "\r";
 }
 
-export function tokenize(sourceCode: string): Token[] {
+export function tokenize(sourceCode: string, trackPos: boolean): Token[] {
     const tokens = new Array<Token>();
     const src = sourceCode.split("");
     let lineIndex = 0;
@@ -176,6 +176,7 @@ export function tokenize(sourceCode: string): Token[] {
 
     // helper functions
     const getPos = () => {
+        if (!trackPos) return ILLEGAL_CODE_POS();
         return {lineIndex, lineIndexEnd, startPos, endPos};
     }
 

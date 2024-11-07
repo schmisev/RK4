@@ -272,7 +272,7 @@ export async function updateIDE() {
     const code = editor.getValue();
     //if (!code) return;
     try {
-        program = parser.produceAST(code);
+        program = parser.produceAST(code, true);
         updateLiveWordList(liveWordList, parser.collectedIdents);
         // liveWordList = Array(...parser.collectedIdents);
 
@@ -356,7 +356,7 @@ async function resetEnv(stage = 0) {
     world.declareAllRobots(env);
     addRobotButtons(objBar, objOverlay, world);
     // run preload so it works in the cmd
-    await runCode(preloadCode, false, false);
+    await runCode(preloadCode, false, false, false);
     // update word list
     updateLiveWordList(preloadWordList, parser.collectedIdents);
 }
@@ -375,7 +375,7 @@ async function runCmd() {
     cmdLineStackPointer = cmdLineStack.length;
 
     console.log(">>", cmdCode);
-    await runCode(cmdCode, true, false);
+    await runCode(cmdCode, true, false, false);
 }
 
 // Get past commands via keyboard
@@ -413,7 +413,7 @@ async function startCode() {
         }
         console.log("\n▷ Code wird ausgeführt!");
         
-        if (await runCode(code, true, true)) {
+        if (await runCode(code, true, true, true)) {
             editor.setReadOnly(false);
             return; // return immediatly if codeRun was interrupted
         }
@@ -464,7 +464,7 @@ async function interrupt() {
 }
 
 // Run ANY code
-async function runCode(code: string, stepped: boolean, showHighlighting: boolean): Promise<boolean> {
+async function runCode(code: string, stepped: boolean, showHighlighting: boolean, trackPos: boolean): Promise<boolean> {
     let skippedSleep = 0;
     let lastCodePos: CodePosition = ILLEGAL_CODE_POS();
     let markerIds: number[] = [];
@@ -476,7 +476,7 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
     }
 
     try {
-        program = parser.produceAST(code);
+        program = parser.produceAST(code, trackPos);
         let stepper = evaluate(program, env);
 
         isRunning = true;

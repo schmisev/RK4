@@ -84,10 +84,10 @@ export default class Parser {
         return prev;
     }
 
-    public produceAST(sourceCode: string): Program {
+    public produceAST(sourceCode: string, trackPos: boolean): Program {
         this.collectedIdents.clear(); // remove old idents
 
-        this.tokens = tokenize(sourceCode);
+        this.tokens = tokenize(sourceCode, trackPos);
         const program: Program = {
             kind: StmtKind.Program,
             body: [],

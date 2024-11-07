@@ -812,6 +812,14 @@ input[type="checkbox"] {
     scrollbar-width: thin;
 }
 
+#task-description code {
+    border: 1px rgba(0, 0, 0, .2) solid;
+    padding-inline: 2px;
+    background-color: rgba(0, 0, 0, .2);
+    border-radius: 2px;
+    font-family: 'Cascadia Code', monospace;
+}
+
 #console-title {
     grid-column: 8 / 11;
     grid-row: 18;
