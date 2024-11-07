@@ -113,6 +113,14 @@ button:active {
     content: "✅";
 }
 
+#debug-show-flowchart::after {
+    content: "🌊";
+}
+
+#debug-show-flowchart.active::after {
+    content: "📐";
+}
+
 #debug-show-functions.active {
     background-color: lightblue;
     outline-color: #3ca2c3;
@@ -802,6 +810,14 @@ input[type="checkbox"] {
     white-space: wrap;
     overflow-y: scroll;
     scrollbar-width: thin;
+}
+
+#task-description code {
+    border: 1px rgba(0, 0, 0, .2) solid;
+    padding-inline: 2px;
+    background-color: rgba(0, 0, 0, .2);
+    border-radius: 2px;
+    font-family: 'Cascadia Code', monospace;
 }
 
 #console-title {
