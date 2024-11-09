@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[91316],{91316:(e,k,n)=>{e=n.nmd(e),ace.require(["ace/snippets/gherkin"],(function(k){e&&(e.exports=k)}))}}]);

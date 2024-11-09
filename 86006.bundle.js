@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[86006],{86006:(e,c,k)=>{e=k.nmd(e),ace.require(["ace/snippets/ocaml"],(function(c){e&&(e.exports=c)}))}}]);

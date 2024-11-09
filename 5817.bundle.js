@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[5817],{5817:(e,p,s)=>{e=s.nmd(e),ace.require(["ace/snippets/sparql"],(function(p){e&&(e.exports=p)}))}}]);

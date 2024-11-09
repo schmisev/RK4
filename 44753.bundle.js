@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[44753],{44753:(e,c,k)=>{e=k.nmd(e),ace.require(["ace/snippets/cobol"],(function(c){e&&(e.exports=c)}))}}]);

@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[67015],{67015:(e,p,s)=>{e=s.nmd(e),ace.require(["ace/snippets/mips"],(function(p){e&&(e.exports=p)}))}}]);

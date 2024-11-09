@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[81534],{81534:(e,k,n)=>{e=n.nmd(e),ace.require(["ace/snippets/latex"],(function(k){e&&(e.exports=k)}))}}]);

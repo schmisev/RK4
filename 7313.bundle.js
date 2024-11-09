@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[7313],{7313:(e,p,s)=>{e=s.nmd(e),ace.require(["ace/snippets/pgsql"],(function(p){e&&(e.exports=p)}))}}]);

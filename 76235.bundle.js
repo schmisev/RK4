@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[76235],{76235:(e,s,c)=>{e=c.nmd(e),ace.require(["ace/snippets/scad"],(function(s){e&&(e.exports=s)}))}}]);

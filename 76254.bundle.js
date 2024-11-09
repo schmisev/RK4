@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[76254],{76254:(e,p,k)=>{e=k.nmd(e),ace.require(["ace/snippets/pig"],(function(p){e&&(e.exports=p)}))}}]);

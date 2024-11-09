@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[92657],{92657:(e,p,s)=>{e=s.nmd(e),ace.require(["ace/snippets/applescript"],(function(p){e&&(e.exports=p)}))}}]);

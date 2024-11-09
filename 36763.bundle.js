@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[36763],{36763:(e,p,k)=>{e=k.nmd(e),ace.require(["ace/snippets/prql"],(function(p){e&&(e.exports=p)}))}}]);

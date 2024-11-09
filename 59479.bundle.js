@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[59479],{59479:(e,p,k)=>{e=k.nmd(e),ace.require(["ace/snippets/prolog"],(function(p){e&&(e.exports=p)}))}}]);

@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[80008],{80008:(e,n,s)=>{e=s.nmd(e),ace.require(["ace/snippets/handlebars"],(function(n){e&&(e.exports=n)}))}}]);

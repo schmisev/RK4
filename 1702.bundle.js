@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[1702],{1702:(e,k,c)=>{e=c.nmd(e),ace.require(["ace/snippets/dockerfile"],(function(k){e&&(e.exports=k)}))}}]);

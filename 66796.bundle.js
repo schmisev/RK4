@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[66796],{66796:(e,n,k)=>{e=k.nmd(e),ace.require(["ace/snippets/gitignore"],(function(n){e&&(e.exports=n)}))}}]);

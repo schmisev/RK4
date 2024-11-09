@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[58972],{58972:(e,n,k)=>{e=k.nmd(e),ace.require(["ace/snippets/odin"],(function(n){e&&(e.exports=n)}))}}]);

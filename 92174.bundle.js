@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[92174],{92174:(e,k,n)=>{e=n.nmd(e),ace.require(["ace/snippets/bibtex"],(function(k){e&&(e.exports=k)}))}}]);

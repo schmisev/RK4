@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[91951],{91951:(e,p,k)=>{e=k.nmd(e),ace.require(["ace/snippets/partiql"],(function(p){e&&(e.exports=p)}))}}]);

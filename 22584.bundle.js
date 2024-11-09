@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[22584],{22584:(e,n,k)=>{e=k.nmd(e),ace.require(["ace/snippets/ini"],(function(n){e&&(e.exports=n)}))}}]);

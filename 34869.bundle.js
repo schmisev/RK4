@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[34869],{34869:(e,s,c)=>{e=c.nmd(e),ace.require(["ace/snippets/csound_score"],(function(s){e&&(e.exports=s)}))}}]);

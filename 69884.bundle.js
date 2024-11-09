@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[69884],{69884:(e,s,c)=>{e=c.nmd(e),ace.require(["ace/snippets/scss"],(function(s){e&&(e.exports=s)}))}}]);

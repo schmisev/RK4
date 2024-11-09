@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[14879],{14879:(e,p,k)=>{e=k.nmd(e),ace.require(["ace/snippets/protobuf"],(function(p){e&&(e.exports=p)}))}}]);

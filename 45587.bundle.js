@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[45587],{45587:(e,p,s)=>{e=s.nmd(e),ace.require(["ace/snippets/typescript"],(function(p){e&&(e.exports=p)}))}}]);

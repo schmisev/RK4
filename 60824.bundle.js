@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[60824],{60824:(e,c,k)=>{e=k.nmd(e),ace.require(["ace/snippets/batchfile"],(function(c){e&&(e.exports=c)}))}}]);

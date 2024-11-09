@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[49372],{49372:(e,p,s)=>{e=s.nmd(e),ace.require(["ace/snippets/prisma"],(function(p){e&&(e.exports=p)}))}}]);

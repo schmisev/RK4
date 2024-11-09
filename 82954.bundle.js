@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[82954],{82954:(e,k,n)=>{e=n.nmd(e),ace.require(["ace/snippets/turtle"],(function(k){e&&(e.exports=k)}))}}]);

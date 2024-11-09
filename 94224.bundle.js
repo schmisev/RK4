@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[94224],{94224:(e,k,n)=>{e=n.nmd(e),ace.require(["ace/snippets/logiql"],(function(k){e&&(e.exports=k)}))}}]);

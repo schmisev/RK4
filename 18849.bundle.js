@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[18849],{18849:(e,k,n)=>{e=n.nmd(e),ace.require(["ace/snippets/dot"],(function(k){e&&(e.exports=k)}))}}]);

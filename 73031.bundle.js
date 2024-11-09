@@ -1,1 +1,0 @@
-(self.webpackChunkrk4=self.webpackChunkrk4||[]).push([[73031],{73031:(e,k,n)=>{e=n.nmd(e),ace.require(["ace/snippets/eiffel"],(function(k){e&&(e.exports=k)}))}}]);
