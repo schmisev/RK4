@@ -26,8 +26,9 @@ import { clamp } from './utils';
 
 // ACE imports
 import * as ace from "ace-builds";
-import "ace-builds/esm-resolver";
-const aceLangTools = require("ace-builds/src-noconflict/ext-language_tools");
+// import "ace-builds/esm-resolver";
+import { setCompleters, snippetCompleter, keyWordCompleter } from "ace-builds/src-noconflict/ext-language_tools";
+// const aceLangTools = require("ace-builds/src-noconflict/ext-language_tools");
 import './assets/ace/mode-rkscript.js';
 import './assets/ace/theme-rklight.js';
 
@@ -109,9 +110,9 @@ const liveCompleter = createCompleter(liveWordList, "✒️ im Skript")
 const preloadCompleter = createCompleter(preloadWordList, "📖 Bibliothek")
 const robotCompleter = createCompleter(Object.values(ENV.robot.mth), "🤖 Roboter");
 const worldCompleter = createCompleter(Object.values(ENV.world.mth), "🌍 Welt")
-const allCompleters = [robotCompleter, worldCompleter, preloadCompleter, liveCompleter, aceLangTools.snippetCompleter, aceLangTools.keyWordCompleter];
+const allCompleters = [robotCompleter, worldCompleter, preloadCompleter, liveCompleter, snippetCompleter, keyWordCompleter];
 
-aceLangTools.setCompleters(allCompleters)
+setCompleters(allCompleters)
 export const editor = ace.edit("code-editor", {
     minLines: 30,
     mode: "ace/mode/RKScript",
@@ -172,7 +173,7 @@ updateSlider();
 
 // automatic parse timeout to avoid lagging the editor
 let autoUpdateIDE = setTimeout(updateIDE, dtIDE);
-editor.on("change", async (e: ace.Ace.Delta) => {
+editor.on("change", async (e: any) => {
     clearTimeout(autoUpdateIDE);
     autoUpdateIDE = setTimeout(updateIDE, dtIDE);
     setDebugTimer(true);
