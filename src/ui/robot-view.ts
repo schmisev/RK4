@@ -1,6 +1,6 @@
 import * as p5 from 'p5';
 
-import { isRunning, queueInterrupt, world, objOverlay, taskCheck, updateLagSum, resetLagSum, taskName, dt, maxDt } from '..';
+import { isRunning, queueInterrupt, world, objOverlay, taskCheck, updateLagSum, resetLagSum, taskName, dt, maxDt, playState, manualMode } from '..';
 import { Robot, ThoughtType } from '../robot/robot';
 import { CR, CY, CG, CB, BlockType, MarkerType, World, CBOT, CBOT2, Field } from '../robot/world';
 import { robotDiagramIndex, hideRobotDiagram, updateRobotDiagram } from './objectigrams';
@@ -183,6 +183,9 @@ export function robotSketch(p5: p5) {
         } else {
             resetLagSum();
         }
+
+        // update play state
+        playState.innerHTML = queueInterrupt ? "report" : (!isRunning ? "stop" : (manualMode ? "pause" : "play_arrow"))
 
         // update task status
         if (!world.isGoalReached()) {

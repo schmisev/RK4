@@ -98,6 +98,7 @@ export let world: World
 // HTML elements
 // Fetch task check
 export const taskCheck = document.getElementById("task-check")!;
+export const playState = document.getElementById("play-state-symbol")!;
 
 // Fetch object overlay & object bar
 export const objOverlay = document.getElementById("object-overlay")!;
@@ -472,9 +473,12 @@ function fetchCmd(e: KeyboardEvent) {
 
 // Start code via button
 async function startCode() {
-    if (queueInterrupt) return;
-    
-    exitManualMode();
+    if (queueInterrupt) return; // exit during interrupt to avoid piling up executions
+    if (manualMode) {
+        exitManualMode();
+        return; // exit in manual mode, so the execution can continue
+    }
+
     resetErrorMarkers();
     
     await interrupt();

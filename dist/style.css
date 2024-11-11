@@ -489,8 +489,19 @@ input[type="checkbox"] {
 #code-next {
     grid-column: 7;
     grid-row: 23;
-    background-color: whitesmoke;
+    background-color: lightblue;
     padding: 0px;
+}
+
+#play-state {
+    grid-column: 13;
+    grid-row: 3;
+
+    text-align: right;
+    background-color: none;
+    color: white;
+    padding: 2px;
+    pointer-events: none;
 }
 
 #save-container {
