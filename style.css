@@ -486,6 +486,24 @@ input[type="checkbox"] {
     padding: 0px;
 }
 
+#code-next {
+    grid-column: 7;
+    grid-row: 23;
+    background-color: lightcoral;
+    padding: 0px;
+}
+
+#play-state {
+    grid-column: 13;
+    grid-row: 3;
+
+    text-align: right;
+    background-color: none;
+    color: white;
+    padding: 2px;
+    pointer-events: none;
+}
+
 #save-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -846,7 +864,7 @@ input[type="checkbox"] {
 }
 
 .wait-slider-container {
-    grid-column: 3 / 8;
+    grid-column: 3 / 7;
     grid-row: 23;
     text-align: center;
     align-content: center;
@@ -855,7 +873,6 @@ input[type="checkbox"] {
 }
 
 .wait-slider {
-    direction: rtl;
     -webkit-appearance: none;
     appearance: none; 
     width: calc(100% - 4px);
@@ -980,9 +997,9 @@ input[type="checkbox"] {
 }
 
 .code-error.lexer {
-    background-color: lightblue;
+    background-color: lightcoral;
 }
 
 .code-error.parser {
-    background-color: lightgoldenrodyellow;
+    background-color: lightcoral;
 }
