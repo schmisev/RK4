@@ -15,7 +15,7 @@ import Parser from "./language/frontend/parser";
 import { Program } from './language/frontend/ast';
 import { GlobalEnvironment, declareGlobalEnv } from "./language/runtime/environment";
 import { evaluate } from "./language/runtime/interpreter";
-import { easeInCubic, sleep } from "./utils";
+import { easeInCubic, easeInQuint, getKeys, getVals, lerp, sleep } from "./utils";
 
 // Robot imports
 import { declareWorld, World } from "./robot/world";
@@ -27,7 +27,7 @@ import { clamp } from './utils';
 // ACE imports
 import * as ace from "ace-builds";
 // import "ace-builds/esm-resolver";
-import { setCompleters, snippetCompleter, keyWordCompleter } from "ace-builds/src-noconflict/ext-language_tools";
+import * as langTools from "ace-builds/src-noconflict/ext-language_tools";
 // const aceLangTools = require("ace-builds/src-noconflict/ext-language_tools");
 import './assets/ace/mode-rkscript.js';
 import './assets/ace/theme-rklight.js';
@@ -36,13 +36,15 @@ import './assets/ace/theme-rklight.js';
 import { DebugError, LexerError, ParserError } from './errors';
 import { setFlowchartVisibility, showFlowchart, unloadFlowchart } from "./ui/flowcharts";
 import { toggleFlowchart } from "./ui/toggle-buttons";
-import { CodePosition, ILLEGAL_CODE_POS } from "./language/frontend/lexer";
+import { CodePosition, ILLEGAL_CODE_POS, KEYWORDS } from "./language/frontend/lexer";
 import { ENV } from "./spec";
+import { parse } from "path";
 
 // Global variables
-export let maxDt = 500;
+export let maxDt = 250;
+export let minDt = 0.1;
 export let dt = 50; // ms to sleep between function calls
-let dtIDE = 200; // ms to wait for IDE update
+let dtIDE = 300; // ms to wait for IDE update
 let frameLagSum = 0; // running sum of frame lag
 export let isRunning = false;
 export let queueInterrupt = false;
@@ -60,7 +62,7 @@ const errorMarkers: number[] = [];
 const parser = new Parser();
 let env: GlobalEnvironment;
 export let world: World
-let program: Program;
+// let program: Program;
 
 // HTML elements
 // Fetch task check
@@ -83,8 +85,12 @@ const preloadEditor = ace.edit("preload-editor", {
 // deactivate text completer
 function createCompleter(wordList: string[], metaText: string) {
     return {
+        list: wordList,
+        updateList: function (wordList: Array<string> | Set<string>) {
+            this.list = [...wordList];
+        },
         getCompletions: function (editor: any, session: any, pos: any, prefix: any, callback: any) {
-            callback(null, wordList.map(function(word) {
+            callback(null, this.list.map(function(word) {
                 return {
                     caption: word,
                     value: word,
@@ -95,24 +101,56 @@ function createCompleter(wordList: string[], metaText: string) {
     }
 }
 
-function updateLiveWordList(wordList: string[], newWordList: string[] | Set<string>) {
-    while (wordList.length > 0) {
-        wordList.shift();
-    }
-    for (const ident of newWordList) {
-        wordList.push(ident)
+function createFieldCompleter(classFieldMap: Record<string, Set<string>>) {
+    return {
+        map: classFieldMap,
+        updateMap: function (map: Record<string, Set<string>>) {
+            this.map = map;
+        },
+        getCompletions: function (editor: any, session: any, pos: any, prefix: any, callback: any) {
+            for (const [k, v] of Object.entries(this.map)) {
+                callback(null, [...v].map(function(word) {
+                    return {
+                        caption: word,
+                        value: word,
+                        meta: k + ".___"
+                    }
+                }))
+            }
+        }
     }
 }
 
-const liveWordList: string[] = []; // this will be updated live
-const preloadWordList: string[] = []; // this will be updated on reset
-const liveCompleter = createCompleter(liveWordList, "✒️ im Skript")
-const preloadCompleter = createCompleter(preloadWordList, "📖 Bibliothek")
-const robotCompleter = createCompleter(Object.values(ENV.robot.mth), "🤖 Roboter");
-const worldCompleter = createCompleter(Object.values(ENV.world.mth), "🌍 Welt")
-const allCompleters = [robotCompleter, worldCompleter, preloadCompleter, liveCompleter, snippetCompleter, keyWordCompleter];
+// UNUSED
+const liveCompleter = createCompleter([], "Lokal")
 
-setCompleters(allCompleters)
+// dynamic completers
+const functionCompleter = createCompleter([], "Funktion");
+const classCompleter = createCompleter([], "Klassen");
+const methodCompleter = createFieldCompleter({});
+
+// static completers
+const keyWordCompleter = createCompleter(getKeys(KEYWORDS), "Schlüsselwort");
+const globalConstCompleter = createCompleter(getVals(ENV.global.const), "Globale Konstante")
+const globalFnCompleter = createCompleter(getVals(ENV.global.fn), "Globale Funktion")
+const stdClassCompleter = createCompleter([ENV.robot.cls, ENV.world.cls], "Klassen");
+const robotCompleter = createCompleter(Object.values(ENV.robot.mth), "Roboter.__");
+const worldCompleter = createCompleter(Object.values(ENV.world.mth), "Welt.__")
+
+const allCompleters = [
+    robotCompleter, 
+    worldCompleter, 
+    functionCompleter, 
+    methodCompleter, 
+    classCompleter, 
+    stdClassCompleter, 
+    globalConstCompleter, 
+    globalFnCompleter, 
+    keyWordCompleter,
+    liveCompleter
+];
+
+langTools.setCompleters(allCompleters)
 export const editor = ace.edit("code-editor", {
     minLines: 30,
     mode: "ace/mode/RKScript",
@@ -160,14 +198,19 @@ const taskDescription = document.getElementById("task-description") as HTMLEleme
 // Setup slider
 const waitSlider = document.getElementById("wait-slider") as HTMLInputElement;
 function updateSlider() {
-    const value = parseInt(waitSlider.value);
-    dt = maxDt * easeInCubic((value / 10) / maxDt);
-    const hz = 1000 / dt;
-    const hzText = hz > 5000 ? ">5000 Hz" : hz.toFixed(0) + " Hz";
-    document.getElementById("wait-time")!.innerHTML =  hzText + " | ~" + dt.toFixed(2) + " ms pro Anweisung";
+    const val = parseInt(waitSlider.value);
+    let hz = lerp((1000 / maxDt), (1000 / minDt), easeInQuint(val / 100));
+
+    console.log(val, hz);
+
+    dt = 1000 / hz;
+    const hzText = hz.toFixed(1) + " Hz";
+    document.getElementById("wait-time")!.innerHTML =  hzText + " | " + dt.toFixed(1) + " ms pro Anweisung";
 }
 
-waitSlider.max = (maxDt * 10).toString();
+// waitSlider.min = (1000 / maxDt).toString();
+// waitSlider.max = (1000 / minDt).toString();
+// waitSlider.value = (1000 / dt).toString();
 waitSlider.oninput = updateSlider
 updateSlider();
 
@@ -273,9 +316,14 @@ export async function updateIDE() {
     const code = editor.getValue();
     //if (!code) return;
     try {
-        program = parser.produceAST(code, true);
-        updateLiveWordList(liveWordList, parser.collectedIdents);
-        // liveWordList = Array(...parser.collectedIdents);
+        parser.produceAST(preloadCode, false, true);
+        const program = parser.produceAST(code, true, false);
+        
+        methodCompleter.updateMap(parser.collectedFields);
+        classCompleter.updateList(parser.collectedClasses);
+        functionCompleter.updateList(parser.collectedFunctions);
+
+        liveCompleter.updateList(parser.collectedIdents);
 
         setFlowchartVisibility(toggleFlowchart.active);
         setStructogramVisibility(!toggleFlowchart.active);
@@ -358,8 +406,6 @@ async function resetEnv(stage = 0) {
     addRobotButtons(objBar, objOverlay, world);
     // run preload so it works in the cmd
     await runCode(preloadCode, false, false, false);
-    // update word list
-    updateLiveWordList(preloadWordList, parser.collectedIdents);
 }
 
 // Run cmds
@@ -477,7 +523,7 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
     }
 
     try {
-        program = parser.produceAST(code, trackPos);
+        const program = parser.produceAST(code, trackPos, true);
         let stepper = evaluate(program, env);
 
         isRunning = true;
@@ -510,7 +556,7 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
                 }
 
                 lastCodePos = next.value;
-                
+
                 skippedSleep += dt; // assume sleep is skipped
                 if (skippedSleep > frameLagSum) {
                     // console.timeEnd()
@@ -562,4 +608,4 @@ export function resetLagSum() {
 
 // Start app
 loadExtTasks().catch(e => console.error(e)).then(updateTaskSelector); // get std tasks
-loadTask(DEFAULT_TASK);
+loadTask(DEFAULT_TASK).catch(e => console.error(e)).then(updateIDE);

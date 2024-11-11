@@ -855,7 +855,6 @@ input[type="checkbox"] {
 }
 
 .wait-slider {
-    direction: rtl;
     -webkit-appearance: none;
     appearance: none; 
     width: calc(100% - 4px);
@@ -980,9 +979,9 @@ input[type="checkbox"] {
 }
 
 .code-error.lexer {
-    background-color: lightblue;
+    background-color: lightcoral;
 }
 
 .code-error.parser {
-    background-color: lightgoldenrodyellow;
+    background-color: lightcoral;
 }
