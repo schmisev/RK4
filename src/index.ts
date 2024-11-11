@@ -201,8 +201,6 @@ function updateSlider() {
     const val = parseInt(waitSlider.value);
     let hz = lerp((1000 / maxDt), (1000 / minDt), easeInQuint(val / 100));
 
-    console.log(val, hz);
-
     dt = 1000 / hz;
     const hzText = hz.toFixed(1) + " Hz";
     document.getElementById("wait-time")!.innerHTML =  hzText + " | " + dt.toFixed(1) + " ms pro Anweisung";
