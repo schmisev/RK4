@@ -38,7 +38,7 @@ import { setFlowchartVisibility, showFlowchart, unloadFlowchart } from "./ui/flo
 import { toggleFlowchart } from "./ui/toggle-buttons";
 import { CodePosition, ILLEGAL_CODE_POS, KEYWORDS } from "./language/frontend/lexer";
 import { ENV } from "./spec";
-import { parse } from "path";
+import { rejects } from "assert";
 
 // Global variables
 export let maxDt = 250;
@@ -47,10 +47,42 @@ export let dt = 50; // ms to sleep between function calls
 let dtIDE = 300; // ms to wait for IDE update
 let frameLagSum = 0; // running sum of frame lag
 export let isRunning = false;
+export let manualMode = false;
 export let queueInterrupt = false;
 export let liveTasks = STD_TASKS;
 export let extTasks: Record<string, string> = {};
 export let taskName: string
+
+// manual mode
+function listenForExitManualMode() {
+    return new Promise((resolve) => {
+        document.addEventListener("exit-manual-mode", resolve, {once: true});
+        /*
+        document.getElementById("code-next")!.addEventListener("click", resolve, {once: true});
+        document.getElementById("code-start")!.addEventListener("click", resolve, {once: true});
+        document.getElementById("code-stop")!.addEventListener("click", resolve, {once: true});
+        document.getElementById("store-data")!.addEventListener("change", resolve, {once: true});
+        document.getElementById("load-task")!.addEventListener("change", resolve, {once: true});
+        */
+    });
+}
+
+function exitManualMode() {
+    if (!manualMode) return;
+    document.dispatchEvent(new Event("exit-manual-mode"));
+    manualMode = false;
+}
+
+// interrupts
+// interrupts for run code
+async function interrupt() {
+    if (!isRunning) return;
+    queueInterrupt = true;
+    while (isRunning) {
+        await sleep(10); // wait long enough for execution loop to exit
+    }
+    queueInterrupt = false;
+}
 
 // Code state
 let preloadCode = STD_PRELOAD;
@@ -62,7 +94,6 @@ const errorMarkers: number[] = [];
 const parser = new Parser();
 let env: GlobalEnvironment;
 export let world: World
-// let program: Program;
 
 // HTML elements
 // Fetch task check
@@ -223,6 +254,7 @@ editor.on("change", async (e: any) => {
 // Start / stop buttons
 document.getElementById("code-start")!.onclick = startCode
 document.getElementById("code-stop")!.onclick = stopCode
+document.getElementById("code-next")!.onclick = nextCode
 
 // Setup tabs
 const consoleTab = document.getElementById("console-title")!;
@@ -440,6 +472,9 @@ function fetchCmd(e: KeyboardEvent) {
 
 // Start code via button
 async function startCode() {
+    if (queueInterrupt) return;
+    
+    exitManualMode();
     resetErrorMarkers();
     
     await interrupt();
@@ -490,22 +525,22 @@ async function startCode() {
     return;
 }
 
+async function nextCode() {
+    exitManualMode();
+
+    if (!isRunning) {
+        startCode();
+    }
+
+    manualMode = true; // always reenable to manual mode
+}
+
 // Stop code via button
 export async function stopCode() {
-    // if (!isRunning) return;
+    exitManualMode();
     resetErrorMarkers();
     await interrupt();
     await resetEnv();
-}
-
-// interrupts for run code
-async function interrupt() {
-    if (!isRunning) return;
-    queueInterrupt = true;
-    while (isRunning) {
-        await sleep(10); // wait long enough for execution loop to exit
-    }
-    queueInterrupt = false;
 }
 
 // Run ANY code
@@ -525,12 +560,14 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
         let stepper = evaluate(program, env);
 
         isRunning = true;
-        await sleep(dt);
+        
+        // await sleep(dt);
+        
         frameLagSum = 0;
         while (true) {
             const next = stepper.next();
             if (next.done) break;
-
+            
             if (queueInterrupt) {
                 console.log("▽ Ausführung wird abgebrochen!");
                 isRunning = false;
@@ -567,6 +604,12 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
                     await sleep(dtRest);
                 }
             }
+
+            /* there has got to be a better way */
+            if (manualMode) {
+                await listenForExitManualMode();
+            }
+
             // clean old markers
             cleanupMarkers();
         }
