@@ -42,7 +42,7 @@ import { parse } from "path";
 
 // Global variables
 export let maxDt = 250;
-export let minDt = 0.1;
+export let minDt = 0.5;
 export let dt = 50; // ms to sleep between function calls
 let dtIDE = 300; // ms to wait for IDE update
 let frameLagSum = 0; // running sum of frame lag
