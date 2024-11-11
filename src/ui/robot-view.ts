@@ -178,7 +178,7 @@ export function robotSketch(p5: p5) {
 
     p5.draw = () => {
         // update sum of frame lag
-        if (isRunning) {
+        if (isRunning && !manualMode) {
             updateLagSum(p5.deltaTime);
         } else {
             resetLagSum();
@@ -190,10 +190,10 @@ export function robotSketch(p5: p5) {
         // update task status
         if (!world.isGoalReached()) {
             taskCheck.style.backgroundColor = "whitesmoke";
-            taskCheck.innerHTML = "❌<br>" + `${world.getStageIndex()} / ${world.getStageCount()}`;
+            taskCheck.innerHTML = `❌<br>${world.getStageIndex()} / ${world.getStageCount()}`;
         } else {
             taskCheck.style.backgroundColor = "lightgreen";
-            taskCheck.innerHTML = "✔️<br>" + `${world.getStageIndex() + 1} / ${world.getStageCount()}`;
+            taskCheck.innerHTML = `✔️<br>${world.getStageIndex() + 1} / ${world.getStageCount()}`;
         }
 
         const worldInst = world
@@ -204,7 +204,6 @@ export function robotSketch(p5: p5) {
         }
         if (bg > 0) bg = p5.lerp(0, bg, 0.9);
         if (!isRunning || queueInterrupt) bg = 0;
-
         p5.background(bg);
 
         p5.orbitControl();

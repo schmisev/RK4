@@ -452,6 +452,8 @@ async function runCmd() {
     if (cmdLineStack.length > 30) cmdLineStack.shift()
     cmdLineStackPointer = cmdLineStack.length;
 
+    if (manualMode || isRunning || queueInterrupt) return;
+    
     console.log(">>", cmdCode);
     await runCode(cmdCode, true, false, false);
 }

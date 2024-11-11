@@ -489,7 +489,7 @@ input[type="checkbox"] {
 #code-next {
     grid-column: 7;
     grid-row: 23;
-    background-color: lightblue;
+    background-color: lightcoral;
     padding: 0px;
 }
 
