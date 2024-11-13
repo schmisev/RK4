@@ -1,6 +1,6 @@
 import { RuntimeError } from "../errors";
 import { ClassPrototype, GlobalEnvironment, VarHolder } from "../language/runtime/environment";
-import { MK_BOOL, MK_STRING, MK_NUMBER, RuntimeVal, BuiltinClassVal, ObjectVal, MK_NATIVE_METHOD, ValueAlias } from "../language/runtime/values";
+import { MK_BOOL, MK_STRING, MK_NUMBER, RuntimeVal, BuiltinClassVal, ObjectVal, MK_NATIVE_METHOD, ValueAlias, MK_NULL } from "../language/runtime/values";
 import { ENV } from "../spec";
 import { easeInOutQuad, toZero, Vec2 } from "../utils";
 import { BlockType, CHAR2BLOCK, CHAR2MARKER, Field, MarkerType, World } from "./world";
@@ -259,6 +259,16 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
         }
     );
 
+    mkRobotMethod(
+        ENV.robot.mth.WAIT,
+        (r, args) => {
+            if (args.length > 0)
+                throw new RuntimeError(ENV.robot.mth.WAIT + `() erwartet keine Parameter!`);
+            r.wait();
+            return MK_NULL();
+        }
+    )
+
     return robotCls;
 }
 
@@ -414,6 +424,11 @@ export class Robot {
             this.triggerThoughtAnim(true, ThoughtType.Pickup);
             return field.removeBlock();
         }
+    }
+
+    wait() {
+        // do nothing
+        this.triggerWaitAnim();
     }
 
     setMarker(m: MarkerType = MarkerType.Y) {
@@ -660,6 +675,8 @@ export class Robot {
     animBlinkProg: number = 0.0;
     animMarkerProg: number = 0.0;
     animMarkerCond: boolean = false; // false is "remove"
+    animWaitProg: number = 0.0;
+    animWaitDir: number = 1.0; // left/right
 
     interpHop: number = 0;
     interpFall: number = 0;
@@ -690,6 +707,7 @@ export class Robot {
         this.animRotProg = toZero(this.animRotProg, deltaProg);
         this.animPlaceProg = toZero(this.animPlaceProg, deltaProg);
         this.animMarkerProg = toZero(this.animMarkerProg, deltaProg);
+        this.animWaitProg = toZero(this.animWaitProg, deltaProg);
         // real time
         this.animThoughtProg = toZero(this.animThoughtProg, deltaProg * 0.5);
         this.animBlinkProg = toZero(this.animBlinkProg, 0.005 * delta);
@@ -738,7 +756,7 @@ export class Robot {
     }
 
     triggerMarkerAnim(condition: boolean) {
-        this.animMarkerProg = 1.0
+        this.animMarkerProg = 1.0;
         this.animMarkerCond = condition;
     }
 
@@ -746,5 +764,10 @@ export class Robot {
         this.animThoughtProg = 1.0;
         this.animThoughtCond = condition;
         this.animThoughtType = type;
+    }
+
+    triggerWaitAnim() {
+        this.animWaitProg = 1.0;
+        this.animWaitDir = Math.random() > 0.5 ? 1 : -1;
     }
 }

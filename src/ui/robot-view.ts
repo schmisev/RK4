@@ -340,6 +340,7 @@ export function robotSketch(p5: p5) {
         // drawing the robot!
         p5.translate(0, 0, animStrength * 0.1 * BLH * p5.abs(p5.sin(r.index + p5.frameCount * 0.1))); // bobbing
         p5.translate(0, 0, animStrength * BLH * easeBump(1 - r.animHopProg)); // hop
+        p5.translate(0, 0, animStrength * 0.2 * BLH * easeBump(1 - r.animMarkerProg)); // marker hop
         // sliding
         if (toggleAnimation.active) {
             p5.translate(
@@ -364,6 +365,11 @@ export function robotSketch(p5: p5) {
             p5.rotateZ(2 * p5.PI * r.animCurrRot / 360);
         // doing the little hop
         p5.rotateX(animStrength * p5.PI * 0.05 * easeBump(1 - r.animHopProg));
+        // doing the little hop on marker
+        p5.rotateX(animStrength * p5.PI * 0.05 * easeBump(1 - r.animMarkerProg));
+        // doing wait tilt
+        p5.rotateY(animStrength * r.animWaitDir * p5.PI * 0.02 * easeBump(1 - r.animWaitProg));
+
         // placing nod
         p5.rotateX(animStrength * r.animPlaceDir * p5.PI * 0.02 * easeBump(1 - r.animPlaceProg));
     }
