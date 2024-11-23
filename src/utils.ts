@@ -40,6 +40,14 @@ export function unique<T>(arr: T[]) {
     return arr.filter((v, i, a) => a.indexOf(v) == i);
 }
 
+export function getKeys(obj: Object) {
+    return Object.keys(obj);
+}
+
+export function getVals(obj: Object) {
+    return Object.values(obj);
+}
+
 export const lerp = (x: number, y: number, a: number) => x * (1 - a) + y * a;
 export const clamp = (a: number, min = 0, max = 1) => Math.min(max, Math.max(min, a));
 export const toZero = (x: number, rate: number) => clamp(x - rate, 0, x);
@@ -70,6 +78,9 @@ export const easeInOutBack = (x: number) => {
     return x < 0.5
         ? (Math.pow(2 * x, 2) * ((c2 + 1) * 2 * x - c2)) / 2
         : (Math.pow(2 * x - 2, 2) * ((c2 + 1) * (x * 2 - 2) + c2) + 2) / 2;
+}
+export const easeInQuint = (x: number): number => {
+    return x * x * x * x * x;
 }
 
 export function sleep(ms: number): Promise<void> {

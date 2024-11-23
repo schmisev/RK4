@@ -41,6 +41,7 @@ export const ENV = {
             SEES_VOID : "siehtAbgrund",
             SEES_ROBOT: "siehtRoboter",
             CAN_MOVE_HERE: "schrittMöglich",
+            WAIT: "warten",
         }
     },
     "world": {

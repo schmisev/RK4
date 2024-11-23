@@ -111,7 +111,7 @@ ende
 Methode zeileAufräumen() für Roboter
     # Methodendefinition
     wiederhole immer
-        wenn nicht siehtWand() dann
+        wenn siehtWand() dann
             abbrechen
         ende
         aufheben()
@@ -136,29 +136,49 @@ wenn welt.fertig() dann
 ende
 `, false);
 
-storeRawCode("Demo: Hallo Welt!",
-`# Gibt "Karol sagt: 'Hallo, Welt!'" zurück.
-Text name ist "Karol"
-zeig name, "sagt: 'Hallo Welt!'"
-`, false);
+storeRawCode("Demo: 'zeig'",
+`# Hallo Welt
+Text name sei "Karol"
+zeig "Hallo, " + name + "!"
+`, false)
 
-storeRawCode("Demo: Viele Hallos",
-`# Viele Grüße!
-Zahl n ist 0
-wiederhole solange n < 10
-    zeig n, "Mal gegrüßt..."
-    n ist n+1
-ende
+storeRawCode("Demo: 'aufheben & hinlegen'",
+`# Aufheben & Hinlegen
+// so legt man einen roten Block
+k1.hinlegen()
 
-wiederhole n mal
-    zeig "Hallo, User " + zuText(zufallszahl()) + "."
-ende
+// man kann genau einen BLock erklimmen
+k1.schritt()
 
-Liste namen ist ["Anna", "Benno", "Carl", "Dora", "Emil", "Frieda"]
-wiederhole für i von 0 bis länge(namen)
-    zeig "Hallo, " + namen[i] + "!"
-ende
-`, false);
+// man kann Blöcke verschiedener Farben legen
+k1.hinlegen(blau)
+k1.hinlegen(grün)
+k1.hinlegen(gelb)
+k1.hinlegen(rot)
+
+// man kann die Farben auch als Text übergeben angeben (Achtung: gelb = "Y")
+zeig blau, grün, rot, gelb
+
+k1.hinlegen("B")
+k1.hinlegen("G")
+k1.hinlegen("Y")
+k1.hinlegen("R")
+
+// so hebt man Blöcke wieder auf
+k1.aufheben()
+k1.aufheben()
+k1.aufheben()
+k1.aufheben()
+k1.aufheben()
+k1.aufheben()
+k1.aufheben()
+k1.aufheben()
+
+k1.schritt()
+k1.linksDrehen()
+k1.linksDrehen()
+k1.aufheben()
+`, false)
 
 // retrieve backup, if there is one
 retrieveLocalBackup();

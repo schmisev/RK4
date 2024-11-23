@@ -33,7 +33,6 @@ import {
     ILLEGAL_CODE_POS,
     START_CODE_POS,
     mergeCodePos,
-    CodePosition,
 } from "./lexer";
 import { ParserError } from "../../errors";
 import { ValueAlias } from "../runtime/values";
@@ -47,7 +46,23 @@ export default class Parser {
     };
 
     collectedIdents: Set<string> = new Set();
-    collectedTypes: Set<string> = new Set();
+    
+    collectedFunctions: Set<string> = new Set();
+    collectedClasses: Set<string> = new Set();
+    collectedFields: Record<string, Set<string>> = {};
+
+    private collectFunction(ident: string) {
+        this.collectedFunctions.add(ident);
+    }
+
+    private collectClass(classname: string) {
+        this.collectedClasses.add(classname);
+    }
+
+    private collectField(classname: string, ident: string) {
+        if (! (classname in this.collectedFields )) this.collectedFields[classname] = new Set<string>();
+        this.collectedFields[classname].add(ident);
+    }
 
     private not_eof(): boolean {
         return this.tokens[0].type != TokenType.EOF;
@@ -84,8 +99,14 @@ export default class Parser {
         return prev;
     }
 
-    public produceAST(sourceCode: string, trackPos: boolean): Program {
-        this.collectedIdents.clear(); // remove old idents
+    public produceAST(sourceCode: string, trackPos: boolean, resetCollected: boolean): Program {
+        if (resetCollected) {
+            // remove old idents
+            this.collectedIdents.clear();
+            this.collectedClasses.clear();
+            this.collectedFunctions.clear();
+            this.collectedFields = {};
+        }
 
         this.tokens = tokenize(sourceCode, trackPos);
         const program: Program = {
@@ -98,6 +119,7 @@ export default class Parser {
         while (this.not_eof()) {
             program.body.push(this.parse_stmt(new Set<never>()));
         }
+
         return program;
     }
 
@@ -261,8 +283,7 @@ export default class Parser {
             TokenType.Identifier,
             "Erwarte einen Klassennamen nach 'Klasse'!"
         ).value;
-        
-        this.collectedTypes.add(ident); // collect type
+        this.collectClass(ident);
 
         const params: ParamDeclaration[] = []; // constructor parameters
         if (this.at().type == TokenType.OpenParen) {
@@ -292,6 +313,7 @@ export default class Parser {
                 "Erwarte eine neue Zeile nach jedem Attribut!"
             );
             attributes.push(declaration);
+            this.collectField(ident, declaration.ident);
         }
         while (
             this.at().type != TokenType.EndBlock &&
@@ -303,6 +325,7 @@ export default class Parser {
                 "Erwarte eine neue Zeile nach jeder Methode!"
             );
             methods.push(definition);
+            this.collectField(ident, definition.name);
         }
         this.eat(); // eat 'ende'
 
@@ -716,13 +739,14 @@ export default class Parser {
             TokenType.Identifier,
             "Erwarte einen Funktionsnamen nach 'Funktion'"
         ).value;
+
         const params: ParamDeclaration[] = [];
         this.expect(TokenType.OpenParen, "Erwarte Klammer nach Funktiosnname!");
         while (this.at().type != TokenType.CloseParen) {
             const param = this.parse_param_declaration();
             params.push(param);
             if (this.at().type == TokenType.CloseParen) break;
-            this.expect(TokenType.Comma, "Warte Komma nach Paramtern!");
+            this.expect(TokenType.Comma, "Erwarte Komma nach Paramtern!");
         }
         this.eat();
         this.expect(
@@ -736,6 +760,8 @@ export default class Parser {
         this.eat();
 
         codePos = mergeCodePos(codePos, this.lastEaten.codePos);
+        
+        this.collectFunction(name)
         return {
             kind: StmtKind.FunctionDefinition,
             name,
@@ -751,8 +777,9 @@ export default class Parser {
         this.eat();
         const name = this.expect(
             TokenType.Identifier,
-            "Erwarte einen Funktionsnamen nach 'Funktion'"
+            "Erwarte einen Methodennamen nach 'Methode'"
         ).value;
+
         const params: ParamDeclaration[] = [];
         this.expect(TokenType.OpenParen, "Erwarte Klammer nach Methodenname!");
         while (this.at().type != TokenType.CloseParen) {
@@ -771,6 +798,7 @@ export default class Parser {
             TokenType.Identifier,
             "Erwarte Klassenname nach 'für'!"
         ).value;
+
         this.expect(
             TokenType.EndLine,
             "Erwarte neue Zeile vor Funktionskörper!"
@@ -783,6 +811,8 @@ export default class Parser {
         this.eat();
 
         codePos = mergeCodePos(codePos, this.lastEaten.codePos);
+        
+        this.collectField(classname, name);
         return {
             kind: StmtKind.ExtMethodDefinition,
             name,

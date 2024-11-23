@@ -1,5 +1,6 @@
 import { ENV } from "../../spec";
 import { KEYWORDS } from "../../language/frontend/lexer";
+import { getKeys, getVals } from "../../utils";
 
 ace.define(
     "ace/mode/RKScript_highlight_rules",
@@ -18,14 +19,14 @@ ace.define(
         var RKScriptHighlightRules = function () {
             var keywordMapper = this.createKeywordMapper(
                 {
-                    "support.function": Object.values(ENV.global.fn).join("|"),
+                    "support.function": getVals(ENV.global.fn).join("|"),
                     "support.class": ENV.robot.cls + "|" + ENV.world.cls,
-                    "entity.name.function": Object.values(ENV.robot.mth)
-                        .concat(Object.values(ENV.world.mth))
+                    "entity.name.function": getVals(ENV.robot.mth)
+                        .concat(getVals(ENV.world.mth))
                         .map((mth) => mth)
                         .join("|"),
-                    keyword: Object.keys(KEYWORDS).join("|"),
-                    "constant.language": Object.values(ENV.global.const).join("|"),
+                    keyword: getKeys(KEYWORDS).join("|"),
+                    "constant.language": getVals(ENV.global.const).join("|"),
                 },
                 "text",
                 true

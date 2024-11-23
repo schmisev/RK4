@@ -43,6 +43,7 @@ const ROBOT_PSEUDO_CLASS =
         ${makeTooltip(ENV.robot.mth.PICKUP_BLOCK, `Der Roboter hebt einen Block vor sich auf!`) + `()<br>`}
         ${makeTooltip(ENV.robot.mth.SET_MARKER, `Der Roboter setzt unter sich eine gelbe Marke. Du kannst natürlich auch eine eigene Farbe angeben!`) + `(farbe?)<br>`}
         ${makeTooltip(ENV.robot.mth.REMOVE_MARKER, `Der Roboter entfernt die Marke unter sich.`) + `()<br>`}
+        ${makeTooltip(ENV.robot.mth.WAIT, `Der Roboter tut kurz nichts.`) + `()<br>`}
         <div class="struct-dot"></div>
         ${makeTooltip(ENV.robot.mth.SEES_BLOCK, `Gibt <span class="struct-literal">wahr</span> zurück, wenn vor dem Roboter mindestens ein Ziegel liegt, sonst <span class="struct-literal">falsch</span>. Wenn du eine Farbe angibst, wird nur <span class="struct-literal">wahr</span> zurückgegeben, wenn der oberste Ziegel auf dem Stapel diese Farbe hat.`) + `(farbe?)<br>`}
         ${makeTooltip(ENV.robot.mth.IS_ON_MARKER, `Gibt <span class="struct-literal">wahr</span> zurück, wenn der Roboter auf einer Marke steht, sonst <span class="struct-literal">falsch</span>. Wenn du eine Farbe angibst, wird nur <span class="struct-literal">wahr</span> zurückgegeben, wenn die Marke diese Farbe hat.`) + `(farbe?)<br>`}
