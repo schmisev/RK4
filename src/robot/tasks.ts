@@ -225,9 +225,21 @@ export const STD_TASKS: Record<string, Task> = {
         "title": "Markierungen XXL",
         "description": "...",
         "preload": "// Nichts vorgegeben",
-        "world": "x;22;3;6;\n_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_\nE:_;_:Y;_:_;_:Y;_:_;_:Y;_:_;_:Y;_:_;_:Y;_:_;_:Y;_:_;_:Y;_:Y;_:_;_:Y;_:_;_:Y;_:_;_:Y;_:_\n_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_\n"
+        "world": "x;22;3;6;\n_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_\nE:_;_:Y;_:_;_:Y;_:_;_:Y;_:_;_:Y;_:_;_:Y;_:_;_:Y;_:_;_:Y;_:_;_:Y;_:_;_:Y;_:_;_:Y;_:_;_:Y\n_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_\n"
     },
     "sms_X-Mal-Wiederholen_4": {
+        "title": "Türmchen",
+        "description": "Nutze eine Wiederholung um einen Turm zu Bauen, der 18 Ziegel hoch ist!",
+        "preload": "// Nichts vorgegeben",
+        "world": "x;4;4;20;\nS:_;_:_;_:_;_:_\n_:_;_:rrrrrrrrrrrrrrrrrr;_:rrrrrrrrrrrrrrrrrr;_:_\n_:_;_:rrrrrrrrrrrrrrrrrr;_:rrrrrrrrrrrrrrrrrr;_:_\n_:_;_:_;_:_;_:_\n"
+    },
+    "sms_X-Mal-Wiederholen_5": {
+        "title": "Boden verlegen",
+        "description": "Nutze eine geschachtelte Wiederholung, um den gestreiften Fließenboden zu legen.",
+        "preload": "// Nichts vorgegeben",
+        "world": "x;6;7;3;\n_:b;_:b;_:b;_:b;_:b;_:b\n_:r;_:r;_:r;_:r;_:r;_:r\n_:b;_:b;_:b;_:b;_:b;_:b\n_:r;_:r;_:r;_:r;_:r;_:r\n_:b;_:b;_:b;_:b;_:b;_:b\n_:r;_:r;_:r;_:r;_:r;_:r\nN:_;_:_;_:_;_:_;_:_;_:_\n"
+    },
+    "sms_X-Mal-Wiederholen_6": {
         "title": "Umbau",
         "description": "Benutze <code>wiederhole 3 mal ... ende</code>, um den Ziegelhaufen abzubauen und auf der anderen Seite wieder aufzubauen! ",
         "preload": "// Nichts vorgegeben",
