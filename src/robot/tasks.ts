@@ -222,6 +222,12 @@ export const STD_TASKS: Record<string, Task> = {
         "world": "x;8;3;6;\n_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_\nEY:Y;_:_;_:Y;_:_;_:Y;_:_;_:Y;_:_\n_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_\n"
     },
     "sms_X-Mal-Wiederholen_3": {
+        "title": "Markierungen XXL",
+        "description": "...",
+        "preload": "// Nichts vorgegeben",
+        "world": "x;22;3;6;\n_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_\nE:_;_:Y;_:_;_:Y;_:_;_:Y;_:_;_:Y;_:_;_:Y;_:_;_:Y;_:_;_:Y;_:Y;_:_;_:Y;_:_;_:Y;_:_;_:Y;_:_\n_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_\n"
+    },
+    "sms_X-Mal-Wiederholen_4": {
         "title": "Umbau",
         "description": "Benutze <code>wiederhole 3 mal ... ende</code>, um den Ziegelhaufen abzubauen und auf der anderen Seite wieder aufzubauen! ",
         "preload": "// Nichts vorgegeben",
