@@ -253,9 +253,9 @@ export const STD_TASKS: Record<string, Task> = {
     },
     "sms_Methoden_2": {
         "title": "Dreierreihe",
-        "description": "Erstelle eine Methode für die Roboterklasse, die eine Reihe aus drei Ziegeln legt.",
+        "description": "Erstelle eine Methode für die Roboterklasse, die eine Reihe aus drei Ziegeln legt. Führe sie dann mit jedem Roboter einmal aus!",
         "preload": "// Nichts vorgegeben",
-        "world": "x;1;4;6;\nS:_\n_:r\n_:r\n_:r\n"
+        "world": "x;4;4;6;\nE:_;_:r;_:r;_:r\nE:_;_:r;_:r;_:r\nE:_;_:r;_:r;_:r\nE:_;_:r;_:r;_:r\n"
     },
     "sms_Methoden_3": {
         "title": "Turm aus Dreierreihen",
