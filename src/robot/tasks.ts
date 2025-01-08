@@ -246,10 +246,10 @@ export const STD_TASKS: Record<string, Task> = {
         "world": "x;5;5;6;\n_:_;rrr:_;rrr:_;rrr:_;_:_\n_:_;N:_;_:_;_:_;_:_\n_:_;_:_;_:_;_:_;_:_\n_:_;_:_;_:_;_:_;_:_\n_:_;_:rrr;_:rrr;_:rrr;_:_\n"
     },
     "sms_Methoden_1": {
-        "title": "Demo: Burg",
-        "description": "Wir bauen eine Burg!",
+        "title": "Demo: Hilfsmethoden",
+        "description": "Löse die Aufgabe, indem du Hilfsmethoden wie <code>umdrehen()</code>, <code>stapeln()</code> und <code>gehen()</code> definierst.",
         "preload": "// Nichts vorgegeben",
-        "world": "x;5;5;6;\nS_:rrr;_:rr;_:rrr;_:rr;_:rrr\n_:rr;_:_;_:_;_:_;_:rr\n_:rrr;_:_;_:_;_:_;_:rrr\n_:rr;_:_;_:_;_:_;_:rr\n_:rrr;_:rr;_:rrr;_:rr;_:rrr\n"
+        "world": "x;7;6;6;\n_:rrr;S:_;bbbb:_;_:_;_:_;_:_;_:Y\n_:rrrr;_:_;bb:_;_:_;_:_;_:_;_:R\n_:r;_:_;b:_;_:_;_:_;_:_;_:G\n_:rrrrr;_:_;bbbbbbb:_;_:_;_:_;_:_;_:B\n_:rrr;_:_;bb:_;_:_;_:_;_:_;_:Y\n_:rrrrrr;_:_;b:_;_:_;_:_;_:_;_:R\n"
     },
     "sms_Methoden_2": {
         "title": "Dreierreihe",
