@@ -249,7 +249,7 @@ export const STD_TASKS: Record<string, Task> = {
         "title": "Demo: Hilfsmethoden",
         "description": "Löse die Aufgabe, indem du Hilfsmethoden wie <code>umdrehen()</code>, <code>stapeln()</code> und <code>gehen()</code> definierst.",
         "preload": "// Nichts vorgegeben",
-        "world": "x;7;6;6;\n_:rrr;S:_;bbbb:_;_:_;_:_;_:_;_:Y\n_:rrrr;_:_;bb:_;_:_;_:_;_:_;_:R\n_:r;_:_;b:_;_:_;_:_;_:_;_:G\n_:rrrrr;_:_;bbbbbbb:_;_:_;_:_;_:_;_:B\n_:rrr;_:_;bb:_;_:_;_:_;_:_;_:Y\n_:rrrrrr;_:_;b:_;_:_;_:_;_:_;_:R\n"
+        "world": "x;7;6;10;\n_:rrr;S:_;bbbb:_;_:_;_:_;_:_;_:Y\n_:rrrr;_:_;bb:_;_:_;_:_;_:_;_:R\n_:r;_:_;b:_;_:_;_:_;_:_;_:G\n_:rrrrr;_:_;bbbbbbb:_;_:_;_:_;_:_;_:B\n_:rrr;_:_;bb:_;_:_;_:_;_:_;_:Y\n_:rrrrrr;_:_;b:_;_:_;_:_;_:_;_:R\n"
     },
     "sms_Methoden_2": {
         "title": "Dreierreihe",
