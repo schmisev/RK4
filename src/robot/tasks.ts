@@ -340,6 +340,155 @@ export const STD_TASKS: Record<string, Task> = {
         preload: "// Nichts vorgegeben",
         world: "x;4;4;6;\nS:R;_:R;_:R;_:R\n_:R;_:R;_:R;_:R\n_:R;_:R;_:R;_:R\n_:_;_:_;_:_;_:_\nx;6;7;6;\nS:R;_:R;_:R;_:R;_:R;_:R\n_:R;_:R;_:R;_:R;_:R;_:R\n_:R;_:R;_:R;_:R;_:R;_:R\n_:R;_:R;_:R;_:R;_:R;_:R\n_:R;_:R;_:R;_:R;_:R;_:R\n_:R;_:R;_:R;_:R;_:R;_:R\n_:_;_:_;_:_;_:_;_:_;_:_\nx;2;6;6;\nS:R;_:R\n_:R;_:R\n_:R;_:R\n_:R;_:R\n_:R;_:R\n_:_;_:_\n",
     },
+    "sms_Wenn-Dann-Sonst_1": {
+        title: "Links oder rechts?",
+        description: "Benutze <code>wenn ... dann ... sonst ... ende</code>, um die Aufgabe zu lösen. Wenn die Marke unter dem Roboter rot ist, soll er sich dabei nach links drehen und einen <b>roten</b> Block platzieren, ansonsten nach rechts und dort einen <b>blauen</b> Block setzen. Führe die Aufgabe mehrere Male durch. Klappt deine Lösung <i>immer</i>?",
+        preload: "// Nichts vorgegeben",
+        world: (w: World, idx: number) => {
+            w.H = 6;
+            w.L = 2;
+            w.W = 3;
+
+            for (let y = 0; y < w.W; y++) {
+                w.fields.push([]);
+
+                for (let x = 0; x < w.L; x++) {
+                    const f = new Field(w, false, false, w.H, x, y);
+                    // add field to line
+                    f.lastGoalStatus = f.checkGoal();
+                    if (!f.lastGoalStatus) w.addGoal();
+                    w.fields[y].push(f);
+                }
+            }
+
+            w.createRobot(0, 1, "E", "k1", 1);
+            const left = Math.random() > 0.5;
+            w.fields[1][0].setMarker(left ? MarkerType.R : MarkerType.B);
+            if (left) {
+                w.fields[0][0].addBlock(BlockType.r, true);
+            } else {
+                w.fields[2][0].addBlock(BlockType.b, true);
+            }
+        }
+    },
+    "sms_Wenn-Dann-Sonst_2": {
+        title: "Links oder rechts? XXL",
+        description: "Nutze nun zusätzlich eine bedingte Wiederholung, um je nach Marke links oder rechts den passenden Block zu legen.",
+        preload: "// Nichts vorgegeben",
+        world: (w: World, idx: number) => {
+            w.H = 6;
+            w.L = 5 + Math.floor(Math.random() * 10);
+            w.W = 3;
+
+            for (let y = 0; y < w.W; y++) {
+                w.fields.push([]);
+
+                for (let x = 0; x < w.L; x++) {
+                    const f = new Field(w, false, false, w.H, x, y);
+                    // add field to line
+                    f.lastGoalStatus = f.checkGoal();
+                    if (!f.lastGoalStatus) w.addGoal();
+                    w.fields[y].push(f);
+                }
+            }
+
+            w.createRobot(0, 1, "E", "k1", 1);
+            for (let x = 1; x  < w.L; x++) {
+                const left = Math.random() > 0.5;
+                w.fields[1][x].setMarker(left ? MarkerType.R : MarkerType.B);
+                if (left) {
+                    w.fields[0][x].addBlock(BlockType.r, true);
+                } else {
+                    w.fields[2][x].addBlock(BlockType.b, true);
+                }
+            }
+        }
+    },
+    "sms_Wenn-Dann-Sonst_3": {
+        title: "Links, rechts oder weg?",
+        description: "Nun kommen auch noch gelbe Marken dazu: Diese sollen alle entfernt werden.",
+        preload: "// Nichts vorgegeben",
+        world: (w: World, idx: number) => {
+            w.H = 6;
+            w.L = 10 + Math.floor(Math.random() * 10);
+            w.W = 3;
+
+            for (let y = 0; y < w.W; y++) {
+                w.fields.push([]);
+
+                for (let x = 0; x < w.L; x++) {
+                    const f = new Field(w, false, false, w.H, x, y);
+                    // add field to line
+                    f.lastGoalStatus = f.checkGoal();
+                    if (!f.lastGoalStatus) w.addGoal();
+                    w.fields[y].push(f);
+                }
+            }
+
+            w.createRobot(0, 1, "E", "k1", 1);
+            for (let x = 1; x  < w.L; x++) {
+                if (Math.random() < 0.33) {
+                    w.fields[1][x].setMarker(MarkerType.Y);
+                    w.fields[1][x].setMarker(MarkerType.None, true);
+                    continue;
+                }
+
+                const left = Math.random() > 0.5;
+                w.fields[1][x].setMarker(left ? MarkerType.R : MarkerType.B);
+                if (left) {
+                    w.fields[0][x].addBlock(BlockType.r, true);
+                } else {
+                    w.fields[2][x].addBlock(BlockType.b, true);
+                }
+            }
+        }
+    },
+    "sms_Wenn-Dann-Sonst_4": {
+        title: "Links, rechts, weg oder Stolperstein?",
+        description: "Grüne Marker sollen hingegeben mit einem grünen Block ersetzt werden.",
+        preload: "Methode umdrehen() für Roboter\n    linksDrehen()\n    linksDrehen()\nende",
+        world: (w: World, idx: number) => {
+            w.H = 6;
+            w.L = 10 + Math.floor(Math.random() * 10);
+            w.W = 3;
+
+            for (let y = 0; y < w.W; y++) {
+                w.fields.push([]);
+
+                for (let x = 0; x < w.L; x++) {
+                    const f = new Field(w, false, false, w.H, x, y);
+                    // add field to line
+                    f.lastGoalStatus = f.checkGoal();
+                    if (!f.lastGoalStatus) w.addGoal();
+                    w.fields[y].push(f);
+                }
+            }
+
+            w.createRobot(0, 1, "E", "k1", 1);
+            for (let x = 1; x  < w.L; x++) {
+                if (Math.random() < 0.25) {
+                    w.fields[1][x].setMarker(MarkerType.Y);
+                    w.fields[1][x].setMarker(MarkerType.None, true);
+                    continue;
+                }
+
+                if (Math.random() < 0.33) {
+                    w.fields[1][x].setMarker(MarkerType.G);
+                    w.fields[1][x].setMarker(MarkerType.None, true);
+                    w.fields[1][x].addBlock(BlockType.g, true);
+                    continue;
+                }
+
+                const left = Math.random() > 0.5;
+                w.fields[1][x].setMarker(left ? MarkerType.R : MarkerType.B);
+                if (left) {
+                    w.fields[0][x].addBlock(BlockType.r, true);
+                } else {
+                    w.fields[2][x].addBlock(BlockType.b, true);
+                }
+            }
+        }
+    }
 };
 
 /**

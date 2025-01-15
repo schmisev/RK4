@@ -93,7 +93,7 @@ function loadFromStore() {
 }
 
 // insert some Demo Code
-storeRawCode("Demo: Alles mögliche",
+storeRawCode("👨‍🏫 'Verschiedenes'",
 `Zahl zeilenZähler ist 0
 # Wiederholungen
 wiederhole 4 mal
@@ -136,13 +136,13 @@ wenn welt.fertig() dann
 ende
 `, false);
 
-storeRawCode("Demo: 'zeig'",
+storeRawCode("👨‍🏫 'zeig'",
 `# Hallo Welt
 Text name sei "Karol"
 zeig "Hallo, " + name + "!"
 `, false)
 
-storeRawCode("Demo: 'aufheben & hinlegen'",
+storeRawCode("👨‍🏫 'aufheben & hinlegen'",
 `# Aufheben & Hinlegen
 // so legt man einen roten Block
 k1.hinlegen()
@@ -178,6 +178,31 @@ k1.schritt()
 k1.linksDrehen()
 k1.linksDrehen()
 k1.aufheben()
+`, false)
+
+storeRawCode("📖 Hilfsmethoden",
+`Methode umdrehen() für Roboter
+    linksDrehen()
+    linksDrehen()
+ende
+
+Methode stapeln(Zahl n) für Roboter
+    wiederhole n mal
+        hinlegen()
+    ende
+ende
+
+Methode räumen(Zahl n) für Roboter
+    wiederhole n mal
+        aufheben()
+    ende
+ende
+
+Methode gehen(Zahl n) für Roboter
+    wiederhole n mal
+        schritt()
+    ende
+ende
 `, false)
 
 // retrieve backup, if there is one
