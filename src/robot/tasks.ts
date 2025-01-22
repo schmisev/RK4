@@ -445,7 +445,7 @@ export const STD_TASKS: Record<string, Task> = {
     },
     "sms_Wenn-Dann-Sonst_4": {
         title: "Links, rechts, weg oder Stolperstein?",
-        description: "Grüne Marker sollen hingegeben mit einem grünen Block ersetzt werden.",
+        description: "Grüne Marker sollen hingegen mit einem grünen Block ersetzt werden.",
         preload: "Methode umdrehen() für Roboter\n    linksDrehen()\n    linksDrehen()\nende",
         world: (w: World, idx: number) => {
             w.H = 6;
@@ -488,7 +488,149 @@ export const STD_TASKS: Record<string, Task> = {
                 }
             }
         }
-    }
+    },
+    "sms_Wenn-Dann-Sonst_5": {
+        title: "Um die Ecke EXTREME",
+        description: "Nutze <code>siehtAbgrund()</code> um den Robotern nach Hause zu helfen. Allerdings müssen sie dabei manchmal rechts, manchmal links abbiegen.",
+        preload: "Methode umdrehen() für Roboter\n    linksDrehen()\n    linksDrehen()\nende",
+        world: (w: World, idx: number) => {
+            w.H = 6;
+            w.L = 10 + Math.floor(Math.random() * 10);
+            w.W = 10 + Math.floor(Math.random() * 10);
+
+            for (let y = 0; y < w.W; y++) {
+                w.fields.push([]);
+
+                for (let x = 0; x < w.L; x++) {
+                    const f = new Field(w, true, false, w.H, x, y);
+                    // add field to line
+                    f.lastGoalStatus = f.checkGoal();
+                    if (!f.lastGoalStatus) w.addGoal();
+                    w.fields[y].push(f);
+                }
+            }
+
+            let yTurn = 0;
+            let lastTurns: number[] = [];
+            for (let i = 0; i < 3; i++) {
+
+                let xTurn = w.L - 2 - i * 2;
+                
+                let yTurnNew = yTurn;
+                testLoop: for (let j = 0; j < 1000; j++) {
+                    yTurnNew = 1 + Math.floor(Math.random() * (w.W - 2));
+                    for (let yTurnLast of lastTurns) {
+                        if (Math.abs(yTurnLast - yTurnNew) < 2) {
+                            continue testLoop;
+                        }
+                    }
+                    break;
+                }
+                lastTurns.push(yTurnNew);
+                yTurn = yTurnNew;
+
+                let direction = Math.random() > 0.5 ? -1 : 1;
+
+                for (let x = 0; x < xTurn; x++) {
+                    w.fields[yTurn][x].isEmpty = false;
+                    w.fields[yTurn][x].isEditable = true;
+                }
+
+                for (let y = yTurn; y >= 0 && y < w.W; y += direction) {
+                    w.fields[y][xTurn].isEmpty = false;
+                    w.fields[y][xTurn].isEditable = true;
+                }
+
+                w.createRobot(0, yTurn, "E", "k" + (i+1), i + 1);
+                w.fields[direction > 0 ? (w.W - 1) : 0][xTurn].setGoalRobotIndex(i);
+
+            }
+        }
+    },
+    "sms_Wenn-Dann-Sonst_6": {
+        title: "Wegfindung",
+        description: "Wenn der Roboter auf einen roten Block trifft, soll er den Block aufheben und nach rechts weitergehen. Bei einem blauen Block soll er nach links abbiegen, bis er sein Ziel erreicht hat.",
+        preload: "// Nichts vorgegeben",
+        world: (w: World, idx: number) => {
+            let buffer = 5;
+            
+            w.H = 6;
+            w.L = 20;
+            w.W = 5 + 2 * buffer;
+
+            for (let y = 0; y < w.W; y++) {
+                w.fields.push([]);
+
+                for (let x = 0; x < w.L; x++) {
+                    const f = new Field(w, false, false, w.H, x, y);
+                    // add field to line
+                    f.lastGoalStatus = f.checkGoal();
+                    if (!f.lastGoalStatus) w.addGoal();
+                    w.fields[y].push(f);
+                }
+            }
+
+            let x = w.L - 1;
+            let y = Math.floor(w.W / 2);
+
+            w.createRobot(x, y, "W", "k1", 1);
+
+            function randomDistance(min: number, max: number) {
+                return Math.floor(Math.random() * (max - min)) + min;
+            }
+
+            let trys = 0;
+            let direction: number = 0;
+            while (x > 0 && trys < 1000) {
+                trys += 1;
+                if (direction === 0) {
+                    // moving forward
+                    let d = randomDistance(2, 5)
+                    let xNew = Math.max(0, x - d);
+
+                    for (let xTmp = x; xTmp > xNew; xTmp -= 1) {
+                        w.fields[y][xTmp].setMarker(MarkerType.Y);
+                    }
+                    w.fields[y][x].setMarker(MarkerType.None);
+
+                    if (xNew === 0) {
+                        break;
+                    }
+
+                    x = xNew;
+
+                    if (Math.random() > 0.5) {
+                        w.fields[y][x].addBlock(BlockType.r);
+                        direction -= 1
+                    } else {
+                        w.fields[y][x].addBlock(BlockType.b);
+                        direction += 1
+                    }
+                } else {
+                    // move laterally
+                    let d = randomDistance(2, 7);
+                    let yNew = y + direction * d;
+                    if (yNew < 0 || yNew >= w.W) {
+                        // recovery --> flip direction, replace stone
+                        direction = -direction;
+                        yNew = y + direction * d;
+                        w.fields[y][x].blocks[0] = direction > 0 ? BlockType.b : BlockType.r;
+                    }
+
+                    for (let yTmp = y; yTmp !== yNew; yTmp += direction) {
+                        w.fields[yTmp][x].setMarker(MarkerType.Y);
+                    }
+                    w.fields[y][x].setMarker(MarkerType.None);
+
+                    y = yNew;
+                    w.fields[y][x].addBlock(direction > 0 ? BlockType.r : BlockType.b);
+                    direction = 0
+                }
+            }
+
+            w.fields[y][0].setGoalRobotIndex(0);
+        }
+    },
 };
 
 /**
