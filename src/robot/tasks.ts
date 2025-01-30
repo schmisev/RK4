@@ -1,3 +1,4 @@
+import { random } from "mermaid/dist/utils";
 import { World, Field, BlockType, MarkerType } from "./world";
 
 export type WorldGen = (w: World, idx: number) => void;
@@ -441,7 +442,7 @@ export const STD_TASKS: Record<string, Task> = {
                     w.fields[2][x].addBlock(BlockType.b, true);
                 }
             }
-        }
+        },
     },
     "sms_Wenn-Dann-Sonst_4": {
         title: "Links, rechts, weg oder Stolperstein?",
@@ -630,6 +631,73 @@ export const STD_TASKS: Record<string, Task> = {
 
             w.fields[y][0].setGoalRobotIndex(0);
         }
+    },
+    "sms_Algorithmen_1": {
+        title: "Zimmer aufräumen",
+        description: "Der Roboter soll ALLE Blöcke im Raum mithilfe der Methode <code>zimmerAufräumen()</code> entfernen. Implementiere dafür einzelne Hilfsmethoden!",
+        preload: "// Nichts vorgegeben",
+        world: (w: World, idx: number) => {
+            let buffer = 5;
+            
+            w.H = 6;
+            w.L = Math.floor(Math.random() * 5) + 5;
+            w.W = Math.floor(Math.random() * 5) + 5;
+
+            for (let y = 0; y < w.W; y++) {
+                w.fields.push([]);
+
+                for (let x = 0; x < w.L; x++) {
+                    const f = new Field(w, false, false, w.H, x, y);
+                    // add field to line
+                    f.lastGoalStatus = f.checkGoal();
+                    if (!f.lastGoalStatus) w.addGoal();
+                    if (x != 0 || y != 0) {
+                        
+                        f.addMultipleBlocks(Math.floor(Math.random() * w.H / 2), BlockType.r, false);
+                        f.goalBlocks = [];
+                    }
+                    w.fields[y].push(f);
+                }
+            }
+
+            w.createRobot(0, 0, "E", "k1", 1);
+        }
+    },
+    "sms_Algorithmen_2": {
+        title: "Rette den Roboter!",
+        description: "Entferne die Blocks unter dem zweiten Roboter! Nutze dafür einzelne Hilsfunktionen!",
+        preload:
+            "Methode gehen(Zahl n) für Roboter\n    wiederhole n mal\n        schritt()\n    ende\nende",
+        world: (w: World, idx: number) => {
+            w.H = 10;
+            w.W = 5;
+            w.L = 5 + Math.floor(Math.random() * 10);
+
+            for (let y = 0; y < w.W; y++) {
+                w.fields.push([]);
+
+                for (let x = 0; x < w.L; x++) {
+                    const f = new Field(w, false, false, w.H, x, y);
+                    // add field to line
+                    f.lastGoalStatus = f.checkGoal();
+                    if (!f.lastGoalStatus) w.addGoal();
+                    w.fields[y].push(f);
+                }
+            }
+
+            w.createRobot(0, 0, "S", "k1", 1);
+            const rX = 1 + Math.floor(Math.random() * (w.L - 2));
+            const rY = 1 + Math.floor(Math.random() * (w.W - 2));
+            w.createRobot(rX, rY, "S", "k2", 2);
+            const mF = w.fields[rY][rX];
+            for (let i = 0; i < Math.random() * 8 + 2; i++) {
+                mF.addBlock(BlockType.b);
+            }
+            mF.goalBlocks = Array<BlockType>();
+
+            w.fields[0][0].setGoalRobotIndex(0);
+            w.fields[0][1].setGoalRobotIndex(1);
+        },
     },
 };
 
