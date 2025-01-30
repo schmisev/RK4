@@ -12,8 +12,8 @@ function generateHomogeneousWorld(
     let result = `x;${l};${w};${h};\n`;
     for (let j = 0; j < w; j++) {
         for (let i = 0; i < l - 1; i++) {
-            if (i == 0 && j == 0) result += "S";
-            result += fieldCode + ";";
+            if (i == 0 && j == 0) result += "S_;";
+            else result += fieldCode + ";";
         }
         result += fieldCode + "\n";
     }
@@ -630,6 +630,48 @@ export const STD_TASKS: Record<string, Task> = {
 
             w.fields[y][0].setGoalRobotIndex(0);
         }
+    },
+    "sms_Algorithmen_1": {
+        title: "Zimmer aufräumen",
+        description: "Eine vollgerümpelte Welt.",
+        world: generateHomogeneousWorld(8, 6, 6, "...:_"),
+        preload: STD_PRELOAD,
+    },
+    "sms_Algorithmen_2": {
+        title: "Rette den Roboter!",
+        description: "Entferne die Blocks unter dem zweiten Roboter!",
+        preload:
+            "Methode gehen(Zahl n) für Roboter\n    wiederhole n mal\n        schritt()\n    ende\nende",
+        world: (w: World, idx: number) => {
+            w.H = 10;
+            w.W = 5;
+            w.L = 5 + Math.floor(Math.random() * 10);
+
+            for (let y = 0; y < w.W; y++) {
+                w.fields.push([]);
+
+                for (let x = 0; x < w.L; x++) {
+                    const f = new Field(w, false, false, w.H, x, y);
+                    // add field to line
+                    f.lastGoalStatus = f.checkGoal();
+                    if (!f.lastGoalStatus) w.addGoal();
+                    w.fields[y].push(f);
+                }
+            }
+
+            w.createRobot(0, 0, "S", "k1", 1);
+            const rX = 1 + Math.floor(Math.random() * (w.L - 2));
+            const rY = 1 + Math.floor(Math.random() * (w.W - 2));
+            w.createRobot(rX, rY, "S", "k2", 2);
+            const mF = w.fields[rY][rX];
+            for (let i = 0; i < Math.random() * 8 + 2; i++) {
+                mF.addBlock(BlockType.b);
+            }
+            mF.goalBlocks = Array<BlockType>();
+
+            w.fields[0][0].setGoalRobotIndex(0);
+            w.fields[0][1].setGoalRobotIndex(1);
+        },
     },
 };
 
