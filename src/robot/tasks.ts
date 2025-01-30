@@ -13,8 +13,8 @@ function generateHomogeneousWorld(
     let result = `x;${l};${w};${h};\n`;
     for (let j = 0; j < w; j++) {
         for (let i = 0; i < l - 1; i++) {
-            if (i == 0 && j == 0) result += "S";
-            result += fieldCode + ";";
+            if (i == 0 && j == 0) result += "S_;";
+            else result += fieldCode + ";";
         }
         result += fieldCode + "\n";
     }
@@ -665,7 +665,7 @@ export const STD_TASKS: Record<string, Task> = {
     },
     "sms_Algorithmen_2": {
         title: "Rette den Roboter!",
-        description: "Entferne die Blocks unter dem zweiten Roboter! Nutze dafür einzelne Hilsfunktionen!",
+        description: "Entferne die Blocks unter dem zweiten Roboter!",
         preload:
             "Methode gehen(Zahl n) für Roboter\n    wiederhole n mal\n        schritt()\n    ende\nende",
         world: (w: World, idx: number) => {

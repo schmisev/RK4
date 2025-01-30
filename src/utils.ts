@@ -108,14 +108,14 @@ export function translateOperator(op: string) {
             return "+";
         case "-":
             return "-";
-        /*
+            /*
         case "und":
             return "∧";
         case "oder":
             return "∨";
         case "nicht":
             return "¬";
-        */
+            */
         case "%":
             return "mod";
         default:
