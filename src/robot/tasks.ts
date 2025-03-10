@@ -824,7 +824,7 @@ k1.herumirren()
         preload: `// Nichts`,
         world: (w: World, idx: number) => {
             let maxValue: number = rndi(5, 10);
-            let numOfValues: number = rndi(5, 10);
+            let numOfValues: number = rndi(5, 15);
             let randomValues: number[] = [];
 
             for (let i = 0; i < numOfValues; i++) {
@@ -832,10 +832,11 @@ k1.herumirren()
             }
 
             let sortedValues = deepCopy(randomValues).sort();
+            maxValue = sortedValues.at(-1)!;
             
-            w.H = 12;
-            w.W = 5;
-            w.L = numOfValues + 1;
+            w.H = maxValue + 1;
+            w.W = maxValue + 1;
+            w.L = numOfValues;
 
             w.createRobot(0, 1, "N", "k1", 0);
 
@@ -857,7 +858,7 @@ k1.herumirren()
                 }
             }
 
-            w.fields[0][w.L-1].isWall = true;
+            // w.fields[0][w.L-1].isWall = true;
         }
     }
 };
