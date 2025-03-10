@@ -795,7 +795,7 @@ export const STD_TASKS: Record<string, Task> = {
             goal.setMarker(MarkerType.R);
             goal.setMarker(MarkerType.None, true);
 
-            w.createRobot(start.x, start.y, "S", "k1", 0);
+            w.createRobot(start.x, start.y, "S", "k1", 1);
         },
         solution: `
 Methode herumirren() für Roboter
@@ -835,10 +835,10 @@ k1.herumirren()
             maxValue = sortedValues.at(-1)!;
             
             w.H = maxValue + 1;
-            w.W = maxValue + 1;
+            w.W = 11;
             w.L = numOfValues;
 
-            w.createRobot(0, 1, "N", "k1", 0);
+            w.createRobot(0, 1, "N", "k1", 1);
 
             for (let y = 0; y < w.W; y++) {
                 w.fields.push([]);
