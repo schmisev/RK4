@@ -1,5 +1,7 @@
 import { random } from "mermaid/dist/utils";
 import { World, Field, BlockType, MarkerType } from "./world";
+import { deepCopy, rndi } from "../utils";
+import { WorldError } from "../errors";
 
 export type WorldGen = (w: World, idx: number) => void;
 export type WorldSource = string | WorldGen;
@@ -29,6 +31,7 @@ export interface Task {
     description: string;
     world: string | ((w: World, idx: number) => void);
     preload: string;
+    solution?: string;
 }
 
 export const STD_WORLD = `x;4;4;6;
@@ -705,6 +708,158 @@ export const STD_TASKS: Record<string, Task> = {
             w.fields[0][1].setGoalRobotIndex(1);
         },
     },
+    "sms_Algorithmen_3": {
+        title: "Labyrinth",
+        description: "Finde die rote Marke im Labyrinth und entferne sie! Tipp: Halte dich immer an der rechten Wand!",
+        preload:
+            "Methode gehen(Zahl n) für Roboter\n    wiederhole n mal\n        schritt()\n    ende\nende",
+        world: (w: World, idx: number) => {
+            let kernelW = rndi(5, 11);
+            let kernelL = rndi(5, 11);
+            
+            w.H = 2;
+            w.W = 1 + 2 * kernelW;
+            w.L = 1 + 2 * kernelL;
+
+            for (let y = 0; y < w.W; y++) {
+                w.fields.push([]);
+
+                for (let x = 0; x < w.L; x++) {
+                    let isWall: boolean = (x%2==0) || (y%2==0);
+                    const f = new Field(w, false, isWall, w.H, x, y);
+                    // add field to line
+                    f.lastGoalStatus = f.checkGoal();
+                    if (!f.lastGoalStatus) w.addGoal();
+                    w.fields[y].push(f);
+                }
+            }
+
+            function getNeighbors(f: Field) {
+                let neighbors: Field[] = [];
+                let w = f.world;
+                
+                function pushUnvisited(nf: Field | undefined) {
+                    if (nf && nf.marker === MarkerType.None) {
+                        neighbors.push(nf);
+                    }
+                }
+
+                // try to fetch all neighbors
+                pushUnvisited(w.getField(f.x - 2, f.y));
+                pushUnvisited(w.getField(f.x + 2, f.y));
+                pushUnvisited(w.getField(f.x, f.y - 2));
+                pushUnvisited(w.getField(f.x, f.y + 2));
+
+                return neighbors;
+            }
+
+            function generateMaze(f: Field) {
+                f.setMarker(MarkerType.G); // set as visited
+                let neighbors = getNeighbors(f);
+                let lastGoTo = f;
+                while (neighbors.length > 0) {
+                    idx = rndi(0, neighbors.length);
+                    // remove neighbor from the list
+                    let goTo = neighbors.splice(idx, 1)[0];
+                    if (goTo.marker !== MarkerType.None) break;
+
+                    let wallX = (f.x + goTo.x) / 2;
+                    let wallY = (f.y + goTo.y) / 2;
+
+                    let wall = w.getField(wallX, wallY)!;
+                    if (!wall) break;
+                    wall.isEditable = true;
+                    wall.isWall = false;
+                    wall.setMarker(MarkerType.G);
+
+                    lastGoTo = generateMaze(goTo); // recursively calling
+                }
+                return lastGoTo;
+            }
+
+            let startX = 1 + rndi(0, kernelL) * 2;
+            let startY = 1 + rndi(0, kernelW) * 2;
+            let start = w.getField(startX, startY);
+            if (!start) throw new WorldError(`Konnte keinen Einstieg bei (${startX}, ${startY}) finden! Weltgröße: (${w.W}, ${w.L})`);
+
+            let goal = generateMaze(start);
+
+            for (const row of w.fields) {
+                for (const field of row) {
+                    if (field.isEditable)
+                        field.setMarker(MarkerType.None);
+                }
+            }
+
+            start.setMarker(MarkerType.Y);
+            goal.setMarker(MarkerType.R);
+            goal.setMarker(MarkerType.None, true);
+
+            w.createRobot(start.x, start.y, "S", "k1", 0);
+        },
+        solution: `
+Methode herumirren() für Roboter
+    wiederhole solange nicht istAufMarke(rot)
+        // an Wand entlangtasten
+        rechtsDrehen()
+        wenn siehtWand() dann
+            linksDrehen()
+        ende
+        
+        // Wänden ausweichen
+        wiederhole solange siehtWand()
+            linksDrehen()
+        ende
+        schritt()
+    ende
+    k1.markeEntfernen()
+ende
+
+k1.herumirren()
+        `
+    },
+    "sms_Algorithmen_4": {
+        title: "Sortieren",
+        description: "Bringe die Blockstapel in aufsteigend sortierte Reihenfolge!",
+        preload: `// Nichts`,
+        world: (w: World, idx: number) => {
+            let maxValue: number = rndi(5, 10);
+            let numOfValues: number = rndi(5, 10);
+            let randomValues: number[] = [];
+
+            for (let i = 0; i < numOfValues; i++) {
+                randomValues.push(rndi(1, maxValue));
+            }
+
+            let sortedValues = deepCopy(randomValues).sort();
+            
+            w.H = 12;
+            w.W = 5;
+            w.L = numOfValues + 1;
+
+            w.createRobot(0, 1, "N", "k1", 0);
+
+            for (let y = 0; y < w.W; y++) {
+                w.fields.push([]);
+
+                for (let x = 0; x < w.L; x++) {
+                    const f = new Field(w, false, false, w.H, x, y);
+
+                    if (y === 0) {
+                        f.addMultipleBlocks(randomValues[x], BlockType.r, false);
+                        f.addMultipleBlocks(sortedValues[x], BlockType.r, true);
+                    }
+
+                    // add field to line
+                    f.lastGoalStatus = f.checkGoal();
+                    if (!f.lastGoalStatus) w.addGoal();
+                    w.fields[y].push(f);
+                }
+            }
+
+            w.fields[0][w.L-1].isWall = true;
+        }
+    }
 };
 
 /**
