@@ -60,6 +60,12 @@ export const STD_TASKS: Record<string, Task> = {
         world: generateHomogeneousWorld(16, 8, 10),
         preload: STD_PRELOAD,
     },
+    Leer_Hoch: {
+        title: "Sehr hohe Welt",
+        description: "Eine leere Welt.",
+        world: generateHomogeneousWorld(2, 2, 30),
+        preload: STD_PRELOAD,
+    },
     Zufall_4x4: {
         title: "Klein und verrümpelt",
         description: "Eine vollgerümpelte Welt.",
@@ -90,7 +96,7 @@ export const STD_TASKS: Record<string, Task> = {
         title: "Fallen",
         description: "Nichts zu sehen!",
         preload: "",
-        world: "x;5;1;5;\nrrrrS;W;_;",
+        world: "x;5;1;5;\nrrrrS;W;_:1;",
     },
     Generiert_1: {
         title: "Block auf Marke!",

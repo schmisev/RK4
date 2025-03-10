@@ -216,7 +216,7 @@ export class World {
                         case "7":
                         case "9":
                             if (goalMode) {
-
+                                f.goalRobotIdx = parseInt(c)-1;
                             }
                             break; // ignore if not goal mode
                         case ".":
