@@ -44,6 +44,7 @@ import { rejects } from "assert";
 export let maxDt = 250;
 export let minDt = 0.5;
 export let dt = 50; // ms to sleep between function calls
+let dtHighlight = 10; // ms under which no line by line highlighting is done
 let dtIDE = 300; // ms to wait for IDE update
 let frameLagSum = 0; // running sum of frame lag
 export let isRunning = false;
@@ -583,7 +584,7 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
 
             if (stepped) {
                 // always push marker!
-                if (showHighlighting) {
+                if (showHighlighting && dt > dtHighlight) {
                     markerIds.push(
                         editor.session.addMarker(
                             new ace.Range(
