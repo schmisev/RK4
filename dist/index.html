@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 
+    <link rel="stylesheet" type="text/css" href="common-style.css">
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="stylesheet" type="text/css" href="struct-style.css">
     <link rel="stylesheet" type="text/css" href="obj-style.css">
@@ -24,12 +25,11 @@
         <div id="left-panel">
             <div id="grid-container-left">
                 <div class="lc30 wsr text" id="title-bar">
-                    🤖 RK4&nbsp;&nbsp;<div id="version-label" class="struct-doc-comment">BETA</div>&nbsp;&nbsp;| RKBasic, 3D, mehrere Roboter und Aufgaben |
+                    🤖 RK4&nbsp;&nbsp;<div class="version-label struct-doc-comment">BETA</div>&nbsp;&nbsp;| RKBasic, 3D, mehrere Roboter und Aufgaben |
                     <button id="fold-debug" class="toggle-button" title="Zeig/verberge Debug-Bereich">&lt;-&gt;</button>
                     | <button id="thought-toggle" class="emoji-button xcheck" title="Aktiviere/deaktiviere Roboter-Gedanken">💭</button>
                     <button id="animation-toggle" class="emoji-button xcheck" title="Aktiviere/deaktiviere Roboter-Animationen">🏃‍♂️</button>
-                    
-                    <span class="roboto" style="float: right;"> 
+                    <span class="roboto" style="float: right;">
                         Zieh mich! ▸</span>
                 </div>
                 <!-- Code editor UI -->
@@ -96,7 +96,7 @@
                 <!-- 3D Robot view & associated UI -->
                 <div id="robot-canvas"></div>
                 <div id="object-bar"></div>
-                <div id="object-overlay">overlay</div>
+                <div id="object-overlay"></div>
                 <div id="task-bar">
                     <div class="wsr lc30" id="task-check">?</div>
                 </div>
@@ -189,6 +189,6 @@
     </div>
     <div id="too-small-overlay">"Hast du diese Seite auf 'nem GameBoy Color aufgemacht?"</div>
 
-    <script src="bundle.js"></script>
+    <script src="main.bundle.js"></script>
 </body>
 </html>

@@ -18,8 +18,12 @@ module.exports = {
     resolve: {
         extensions: ['.tsx', '.ts', '.js'],
     },
+	optimization: {
+        chunkIds: 'deterministic',
+	},
     output: {
-        filename: 'bundle.js',
+        filename: '[name].bundle.js',
+        chunkFilename: 'chunk/[id].chunk.js',
         path: path.resolve(__dirname, 'dist'),
     },
     optimization: {

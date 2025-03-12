@@ -1,5 +1,5 @@
 import { Octokit } from "@octokit/rest";
-import { extTasks, liveTasks, loadTask } from "..";
+import { runtime as ENV } from "..";
 import { Task } from "../robot/tasks";
 import { createOption } from "../utils";
 
@@ -15,7 +15,7 @@ export function updateTaskSelector() {
     }
 
     // First, get the live tasks
-    for (const [key, task] of Object.entries(liveTasks)) {
+    for (const [key, task] of Object.entries(ENV.liveTasks)) {
         const splitKey = destructureKey(key, false);
 
         if (currentAuthor != splitKey.author) {
@@ -32,7 +32,7 @@ export function updateTaskSelector() {
     }
 
     // Then get the online tasks
-    for (const [key, dlURL] of Object.entries(extTasks)) {
+    for (const [key, dlURL] of Object.entries(ENV.extTasks)) {
         const splitKey = destructureKey(key, true);
 
         if (currentAuthor != splitKey.author) {
@@ -56,7 +56,7 @@ export function updateTaskSelector() {
 taskSelector.onchange = (e: Event) => {
     console.log();
     console.log("🤔 Lade neue Aufgabe: " + taskSelector.value);
-    loadTask(taskSelector.value);
+    ENV.loadTask(taskSelector.value);
 };
 /**
  * Get github files
@@ -86,7 +86,7 @@ export async function loadExtTasks() {
         const key = splitFileName.join(".");
 
         if (key && fileExt == "json") {
-            extTasks[key] = file.download_url;
+            ENV.extTasks[key] = file.download_url;
             /*
             // request all the files
             */
@@ -100,7 +100,7 @@ export async function downloadExtTask(key: string, dlURL: string) {
         const dlFile = await fetch(dlURL);
         const fileContent = await dlFile.text();
         const task: Task = JSON.parse(fileContent);
-        liveTasks[key] = task;
+        ENV.liveTasks[key] = task;
     } catch {
         return; // who cares, if it fails it fails
     }

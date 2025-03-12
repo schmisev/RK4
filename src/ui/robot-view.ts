@@ -1,6 +1,6 @@
 import * as p5 from 'p5';
 
-import { isRunning, queueInterrupt, world, objOverlay, taskCheck, updateLagSum, resetLagSum, taskName, dt, maxDt, playState, manualMode } from '..';
+import type { WorldViewEnv } from '..';
 import { Robot, ThoughtType } from '../robot/robot';
 import { CR, CY, CG, CB, BlockType, MarkerType, World, CBOT, CBOT2, Field } from '../robot/world';
 import { robotDiagramIndex, hideRobotDiagram, updateRobotDiagram } from './objectigrams';
@@ -8,8 +8,9 @@ import { clamp, easeBump, easeInCubic, easeInOutQuad, easeOutCubic, easeOutQuad,
 import { toggleAnimation, toggleThoughts } from './toggle-buttons';
 
 
+let ENV: WorldViewEnv;
 // Setup robot sketch
-export function robotSketch(p5: p5) {
+function robotSketch(p5: p5) {
     let bg = 0; // Background color
     const canvasDiv = document.getElementById('robot-canvas')!;
     let canvasW = 0, canvasH = 0;
@@ -178,10 +179,11 @@ export function robotSketch(p5: p5) {
 
     p5.draw = () => {
         // update sum of frame lag
+        const { isRunning, queueInterrupt, world, taskCheck, manualMode, playState, dt, maxDt } = ENV;
         if (isRunning && !manualMode) {
-            updateLagSum(p5.deltaTime);
+            ENV.updateLagSum(p5.deltaTime);
         } else {
-            resetLagSum();
+            ENV.resetLagSum();
         }
 
         // update play state
@@ -322,7 +324,7 @@ export function robotSketch(p5: p5) {
             const fieldHeight = (f.blocks.length);
             
             r.prepare(fieldHeight); // this passes info to the robot object
-            r.animate(p5.deltaTime / dt, p5.deltaTime); // this does the timing calculation
+            r.animate(p5.deltaTime / ENV.dt, p5.deltaTime); // this does the timing calculation
 
             // do the drawing
             drawSingleRobot(r);
@@ -747,9 +749,7 @@ export function robotSketch(p5: p5) {
 
 }
 
-const robotView = new p5(robotSketch, document.body);
-
-const screenshotRobot = document.getElementById("robot-screenshot")!;
-screenshotRobot.onclick = () => {
-    robotView.saveCanvas(taskName + "_" + (new Date()).toLocaleString() + ".png");
+export function setup(env: typeof ENV) {
+    ENV = env;
+    return new p5(robotSketch, document.body);
 }

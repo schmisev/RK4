@@ -1,4 +1,4 @@
-import { editor, taskName, loadRawTask, stopCode } from "..";
+import { runtime as ENV } from "..";
 import { taskSelector } from "./task-selector";
 import { Task } from "../robot/tasks";
 
@@ -8,8 +8,8 @@ document.getElementById("load-code")!.onclick = () => fileInput.click();
 
 // Downloading
 function downloadCode() {
-    const code = editor.getValue();
-    const filename = taskName + ".rk";
+    const code = ENV.editor.getValue();
+    const filename = ENV.taskName + ".rk";
     downloadTextFile(filename, code);
 }
 
@@ -32,7 +32,7 @@ fileInput.onchange = loadFile;
 // Uploading
 function loadFile(evt: Event) {
     // stop code, just to be sure
-    stopCode();
+    ENV.stopCode();
 
     const target: HTMLInputElement = evt.target as HTMLInputElement;
     if (!target) return;
@@ -54,13 +54,13 @@ function loadFile(evt: Event) {
         switch (ext.toLowerCase()) {
             case "rk":
                 console.log(`Lade Programm '${justName}'`);
-                editor.setValue(event.target.result, 0);
-                editor.moveCursorTo(0, 0);
+                ENV.editor.setValue(event.target.result, 0);
+                ENV.editor.moveCursorTo(0, 0);
                 break;
             case "csv":
                 console.log(`Lade Welt '${justName}'`);
                 try {
-                    loadRawTask("Hochgeladen", {
+                    ENV.loadRawTask("Hochgeladen", {
                         title: `${justName}`,
                         description: "Nutze 'welt.fertig()' und die Feldlampen, um die Aufgabe zu lösen!",
                         preload: "\n",
@@ -76,7 +76,7 @@ function loadFile(evt: Event) {
                 console.log(`Lade Aufgabe aus '${justName}'`);
                 try {
                     const newTask: Task = JSON.parse(event.target.result) satisfies Task;
-                    loadRawTask("Hochgeladen", newTask);
+                    ENV.loadRawTask("Hochgeladen", newTask);
                 } catch {
                     console.log(`Die Aufgabe konnte nicht geladen werden.`);
                     console.log(`Überprüfe das Dateienformat!`);
