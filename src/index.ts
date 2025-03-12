@@ -16,7 +16,7 @@ import Parser from "./language/frontend/parser";
 import { Program } from './language/frontend/ast';
 import { GlobalEnvironment, declareGlobalEnv } from "./language/runtime/environment";
 import { evaluate } from "./language/runtime/interpreter";
-import { easeInCubic, easeInQuint, getKeys, getVals, lerp, sleep } from "./utils";
+import { easeInQuint, getKeys, getVals, lerp, sleep } from "./utils";
 
 // Robot imports
 import { declareWorld, World } from "./robot/world";
@@ -68,7 +68,7 @@ export interface InterpreterEnv {
     stopCode(): Promise<void>;
 }
 export interface EditorEnv {
-    editor: any;
+    editor: ace.Ace.Editor;
     taskName: string;
     liveTasks: typeof STD_TASKS;
     extTasks: Record<string, string>;
@@ -709,5 +709,15 @@ screenshotRobot.onclick = () => {
 
 let robotView = setupRobotView(rt);
 
-loadExtTasks().catch(e => console.error(e)).then(updateTaskSelector); // get std tasks
-loadTask(DEFAULT_TASK).catch(e => console.error(e)).then(updateIDE);
+const setup = [
+    loadExtTasks().catch(e => console.error(e)).then(updateTaskSelector), // get std tasks
+    loadTask(DEFAULT_TASK).catch(e => console.error(e)).then(updateIDE),
+];
+
+async function finishSetup() {
+    for(let task of setup) {
+        try { await task } catch(e) {}
+    }
+    document.getElementById("loading-overlay")?.classList.remove("loading");
+}
+finishSetup();

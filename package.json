@@ -8,11 +8,9 @@
     "start": "webpack serve --open",
     "build": "webpack --mode=production",
     "deploy": "gh-pages -d dist",
-    "cleanup": "(del-cli dist/node_modules*.js) && (del-cli dist/vendors-node_modules*.js)",
-    "cleanup-bundle": "(del-cli dist/*.bundle.js) && (del-cli dist/*.LICENSE.txt)",
-    "del-bundle": "(del-cli dist/bundle.js)",
-    "upload": "npm run build && npm run deploy && npm run cleanup && npm run cleanup-bundle && npm run del-bundle",
-    "upload-raw": "webpack && npm run deploy && npm run cleanup && npm run del-bundle"
+    "cleanup": "del-cli dist/chunk/ dist/*.bundle.js dist/*.bundle.js.LICENSE.txt",
+    "upload": "npm run build && npm run deploy && npm run cleanup",
+    "upload-raw": "webpack && npm run deploy"
   },
   "author": "",
   "license": "ISC",

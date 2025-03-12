@@ -295,3 +295,6 @@ input[type="checkbox"] {
     flex-direction: column;
     cursor: wait;
 }
+#loading-overlay.loading {
+    visibility: initial;
+}
