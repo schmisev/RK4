@@ -168,10 +168,6 @@
 }
 
 #zoom-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0px;
-    /* pos */
     grid-column: 3;
     grid-row: 2;
 }
@@ -179,24 +175,14 @@
 #zoom-editor {
     grid-row: 1;
     grid-column: 2;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    padding: 0px;
 }
 
 #zoom-editor-decrease {
     grid-row: 1;
     grid-column: 1;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    padding: 0px;
 }
 
 #run-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0px;
-    /* pos */
     grid-column: 7;
     grid-row: 2;
 }
@@ -204,19 +190,13 @@
 #code-start {
     grid-column: 1;
     grid-row: 1;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
     background-color: lightgreen;
-    padding: 0px;
 }
 
 #code-stop {
     grid-column: 2;
     grid-row: 1;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
     background-color: lightcoral;
-    padding: 0px;
 }
 
 #code-next {
@@ -229,19 +209,9 @@
 #play-state {
     grid-column: 13;
     grid-row: 3;
-
-    text-align: right;
-    background-color: none;
-    color: white;
-    padding: 2px;
-    pointer-events: none;
 }
 
 #save-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0px;
-
     grid-column: 8;
     grid-row: 2;
 }
@@ -249,17 +219,12 @@
 #save-code {
     grid-column: 1;
     grid-row: 1;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
     padding: 0px;
 }
 
 #load-code {
     grid-column: 2;
     grid-row: 1;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    padding: 0px;
 }
 
 #code-editor {
@@ -296,10 +261,6 @@
 }
 
 #store-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0px;
-    /* pos */
     grid-column: 4;
     grid-row: 2;
 }
@@ -316,10 +277,6 @@
 #store-code {
     grid-column: 2;
     grid-row: 1;
-    border-top-left-radius: 0px;
-    border-bottom-left-radius: 0px;
-    padding: 0px;
-    /*background-color: lightgreen;/**/
 }
 
 #store-data {
@@ -378,7 +335,6 @@
 #task-bar {
     grid-column: 8;
     grid-row: 11 / 13;
-    padding-bottom: 5px;
 }
 
 .diagram-title {
@@ -503,9 +459,6 @@
 #task-description {
     grid-column: 8 / 14;
     grid-row: 14 / 18;
-    white-space: wrap;
-    overflow-y: scroll;
-    scrollbar-width: thin;
 }
 
 #task-description code {

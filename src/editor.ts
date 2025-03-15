@@ -5,6 +5,11 @@ import { World } from "./robot/world";
 import { setup as setupRobotView } from "./ui/robot-view";
 import { makeToggle } from "./ui/toggle-buttons";
 
+// ACE imports
+import * as ace from "ace-builds";
+import './assets/ace/mode-rkscript.js';
+import './assets/ace/theme-rklight.js';
+
 const objOverlay = document.getElementById("object-overlay")!;
 const objBar = document.getElementById("object-bar")!;
 const playState = document.getElementById("play-state-symbol")!;
@@ -29,5 +34,25 @@ env = {
   toggleAnimation: makeToggle(true),
   toggleThoughts: makeToggle(true),
 }
+
+// Setup editors
+const descriptionEditor = ace.edit("task-description", {
+  minLines: 1,
+  value: "",
+  mode: "ace/mode/html",
+  theme: "ace/theme/monokai",
+  //readOnly: true,
+  showPrintMargin: false,
+  enableBasicAutocompletion: true
+});
+
+const preloadEditor = ace.edit("preload-editor", {
+    minLines: 1,
+    value: "// Bibliothek",
+    mode: "ace/mode/RKScript",
+    theme: "ace/theme/RKLight",
+    //readOnly: true,
+    showPrintMargin: false,
+});
 
 let robotView = setupRobotView(env);

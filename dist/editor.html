@@ -5,7 +5,6 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 
     <link rel="stylesheet" type="text/css" href="common-style.css">
-    <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="stylesheet" type="text/css" href="editor-style.css">
     <link rel="stylesheet" type="text/css" href="struct-style.css">
     <link rel="stylesheet" type="text/css" href="obj-style.css">
@@ -25,25 +24,24 @@
 <body class="roboto">
     <div id="grid-container">
         <div class="lc30 wsr text" id="title-bar">
-            🤖 RK4&nbsp;&nbsp;<div class="version-label struct-doc-comment">BETA</div>&nbsp;&nbsp;|&nbsp;Level Editor
+            🤖 RK4&nbsp;&nbsp;<div class="version-label struct-doc-comment">BETA</div>&nbsp;&nbsp;|&nbsp;Welteditor
         </div>
         <!-- Code editor UI -->
         <div class="lc30 wsr text" id="code-title">💻 Welteditor</div>
-        <div class="editor cascadia" id="code-editor">Code</div>
-        <div class="code-error lc30 wsr text" id="code-error">keine Fehler gefunden</div>
-        <select title="Speichere Programmcode" class="text" id="store-data" list="store-data">
+        <select title="Speichere Welt" class="text" id="store-data" list="store-data">
             <option>(neu)</option>
         </select>
-        <div id="store-container">
+        <div id="store-container" class="capsule">
             <button title="Lösche Code aus dem Speicher" id="delete-from-store">🗑️</button>
             <button title="Lege Code in den Speicher oder überschreibe aktuellen Speicherstand." id="store-code">💾</button>
         </div>
         <!-- Save / load UI -->
-        <button title="Speicher aktuellen Code in einer .rk-Datei und lade sie herunter." id="save-code">⬇️</button>
-        <button title="Lade Code (.rk), Welt (.csv) oder Aufgabe (.json) vom PC." id="load-code">📂</button>
-        <select title="Wähle Aufgabe" class="text" id="load-task">
-            <option selected disabled>Wähle eine Aufgabe</option>
-        </select>
+        <div id="save-container" class="capsule">
+            <button title="Speicher aktuelle Welt in einer .json-Datei und lade sie herunter." id="save-world">⬇️</button>
+            <button title="Lade eine Welt (.json) vom PC." id="load-world">📂</button>
+        </div>
+        <div id="task-title" class="lc30 wsr text">Aufgabentitel</div>
+        <button id="robot-screenshot" title="Screenshot der Roboteransicht">🖼️</button>
         <!-- 3D Robot view & associated UI -->
         <div id="robot-canvas"></div>
         <div id="object-bar"></div>
@@ -56,15 +54,14 @@
         </div>
         <!-- Task view UI -->
         <div class="task-description wsr text" id="task-description">Aufgabe</div>
-        <!-- Console -->
-        <button class="tab-button active" id="console-title">📥 Konsole</button>
-        <div class="console-log text cascadia" id="console-log"></div>
+        <!-- preload editor -->
+        <div class="editor cascadia" id="preload-editor">Preload</div>
         <!-- credits -->
         <div class="wsr lc30 text" id="credits-bar">Mitwirkende: <a href="https://github.com/schmisev">schmisev</a> ● <a href="https://github.com/WorldsEnder">WorldsEnder</a> 
             | 3D-Ansicht: <a href="https://p5js.org/">p5.js</a> (<a href="https://raw.githubusercontent.com/processing/p5.js/main/license.txt">Lizenz</a>)
             ● Editor: <a href="https://ace.c9.io/">Ace Editor</a> (<a href="https://raw.githubusercontent.com/ajaxorg/ace/a6ead2fcf2860c8b890f6adbd2e56f2ddc7f6d62/LICENSE">Lizenz</a>) </div>
     </div>
-    <input id="load-file" type="file" accept=".rk, .csv, .json," style="visibility: hidden;">
+    <input id="load-file" type="file" accept=".json," style="visibility: hidden;">
     <div id="loading-overlay" class="loading">
         <div><h1 style="text-align: center;">🤖<br>RK4</h1></div>
         <p>

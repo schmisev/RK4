@@ -11,3 +11,29 @@
   -o-user-select: none;
   user-select: none;
 }
+
+#play-state {
+  text-align: right;
+  background-color: none;
+  color: white;
+  padding: 2px;
+  pointer-events: none;
+}
+
+#task-description {
+  white-space: wrap;
+  overflow-y: scroll;
+  scrollbar-width: thin;
+}
+
+#robot-canvas {
+  cursor: grab;
+}
+
+#robot-canvas:active {
+  cursor: grabbing;
+}
+
+#task-bar {
+  padding-bottom: 5px;
+}
