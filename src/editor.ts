@@ -144,15 +144,14 @@ function buildWorldEdit(worldProxies: WorldProxy[], id: string, reloadWorld: () 
         if (key === "L") {
           if (newValue > worldProxy.fields[0].length) {
             addColumns(worldProxy, newValue - worldProxy.fields[0].length);
-            reloadEditor();
           }
         } else if (key === "W") {
           if (newValue > worldProxy.fields.length) {
             addRows(worldProxy, newValue - worldProxy.fields.length);
-            reloadEditor();
           }
         }
         worldProxy[key] = newValue as any;
+        reloadEditor();
         reloadWorld();
       }
 
@@ -212,9 +211,11 @@ function buildWorldEdit(worldProxies: WorldProxy[], id: string, reloadWorld: () 
     worldTable.classList.add("world-table");
 
     let w = worldProxy.fields;
-    for (let r of w) {
+    for (let j = 0; j < Math.min(worldProxy.W, worldProxy.fields.length); j++) {
+      let r = w[j];
       let row = document.createElement("tr") as HTMLTableRowElement;
-      for (let [i, f] of r.entries()) {
+      for (let i = 0; i < Math.min(worldProxy.L, worldProxy.fields[0].length); i++) {
+        let f = r[i];
         let field = document.createElement("td") as HTMLTableCellElement;
         field.classList.add("world-field");
 
@@ -224,6 +225,7 @@ function buildWorldEdit(worldProxies: WorldProxy[], id: string, reloadWorld: () 
         // field editing
         fieldEdit.onchange = (evt: Event) => {
           r[i] = fieldEdit.value;
+
           reloadWorld();
         }
 
