@@ -1,0 +1,13 @@
+#task-check {
+  margin: 0 5px;
+  height: 60px;
+  width: 60px;
+  text-align: center;
+  font-size: 20px;
+  
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}

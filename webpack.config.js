@@ -5,7 +5,10 @@ const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = {
     mode: "development",
-    entry: './src/index.ts',
+    entry: {
+        main: './src/index.ts',
+        editor: '/src/editor.ts'
+    },
     module: {
         rules: [
             {

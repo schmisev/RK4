@@ -36,10 +36,11 @@ import './assets/ace/theme-rklight.js';
 // General errors
 import { DebugError, LexerError, ParserError, RuntimeError } from './errors';
 import { setFlowchartVisibility, showFlowchart, unloadFlowchart } from "./ui/flowcharts";
-import { toggleFlowchart } from "./ui/toggle-buttons";
+import { connectDebugToggle, connectSimpleToggle, Toggle } from "./ui/toggle-buttons";
 import { CodePosition, ILLEGAL_CODE_POS, KEYWORDS } from "./language/frontend/lexer";
 import { ENV } from "./spec";
 import { rejects } from "assert";
+import { AppRuntime } from "./app";
 
 // Global variables
 let maxDt = 250;
@@ -49,34 +50,6 @@ let dtHighlight = 10; // ms under which no line by line highlighting is done
 let dtIDE = 300; // ms to wait for IDE update
 let frameLagSum = 0; // running sum of frame lag
 
-export interface WorldViewEnv {
-    isRunning: boolean;
-    manualMode: boolean;
-    queueInterrupt: boolean;
-    world: World;
-    taskCheck: HTMLElement;
-    objOverlay: HTMLElement;
-    playState: HTMLElement;
-    dt: number;
-    maxDt: number;
-    updateLagSum(dts: number): void;
-    resetLagSum(): void;
-}
-export interface InterpreterEnv {
-    program: Program;
-    env: GlobalEnvironment;
-    stopCode(): Promise<void>;
-}
-export interface EditorEnv {
-    editor: ace.Ace.Editor;
-    taskName: string;
-    liveTasks: typeof STD_TASKS;
-    extTasks: Record<string, string>;
-    loadTask(key: string): Promise<void>;
-    loadRawTask(key: string, task: Task, ignoreTitleInKey?: boolean): void;
-}
-interface AppRuntime extends WorldViewEnv, InterpreterEnv, EditorEnv {
-}
 let rt: AppRuntime;
 export { rt as runtime };
 
@@ -668,6 +641,16 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
     return false;
 }
 
+// setup toggle buttons
+export let toggleDefs = connectDebugToggle("debug-show-defs", false, updateIDE);
+export let toggleLabels = connectDebugToggle("debug-show-labels", true, updateIDE);
+export let toggleFunctions = connectDebugToggle("debug-show-functions", true, updateIDE);
+export let toggleMethods = connectDebugToggle("debug-show-methods", true, updateIDE);
+export let toggleFlowchart = connectDebugToggle("debug-show-flowchart", false, updateIDE);
+
+export let toggleThoughts = connectSimpleToggle("thought-toggle", true);
+export let toggleAnimation = connectSimpleToggle("animation-toggle", true);
+
 // Start app
 const dummyTask = STD_TASKS[DEFAULT_TASK];
 rt = {
@@ -698,7 +681,10 @@ rt = {
     },
     resetLagSum() {
         frameLagSum = 0;
-    }
+    },
+
+    toggleAnimation,
+    toggleThoughts
 };
 
 

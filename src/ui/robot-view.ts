@@ -1,12 +1,9 @@
 import * as p5 from 'p5';
-
-import type { WorldViewEnv } from '..';
+import { WorldViewEnv } from '../app';
 import { Robot, ThoughtType } from '../robot/robot';
 import { CR, CY, CG, CB, BlockType, MarkerType, World, CBOT, CBOT2, Field } from '../robot/world';
 import { robotDiagramIndex, hideRobotDiagram, updateRobotDiagram } from './objectigrams';
 import { clamp, easeBump, easeInCubic, easeInOutQuad, easeOutCubic, easeOutQuad, lerp } from '../utils';
-import { toggleAnimation, toggleThoughts } from './toggle-buttons';
-
 
 let ENV: WorldViewEnv;
 // Setup robot sketch
@@ -218,18 +215,18 @@ function robotSketch(p5: p5) {
         p5.scale(0.8);
 
         // anim strength
-        animStrength = toggleAnimation.active ? easeOutCubic(1 - dt / maxDt) : 0;
+        animStrength = ENV.toggleAnimation.active ? easeOutCubic(1 - dt / maxDt) : 0;
 
         // drawing the world
         drawWorld(worldInst);
 
         // draw object diagrams
         if (robotDiagramIndex >= world.robots.length) {
-            hideRobotDiagram(objOverlay);
+            hideRobotDiagram(ENV.objOverlay);
         }
 
         if (robotDiagramIndex >= 0) {
-            updateRobotDiagram(worldInst.robots[robotDiagramIndex], objOverlay);
+            updateRobotDiagram(worldInst.robots[robotDiagramIndex], ENV.objOverlay);
         }
 
         // draw compass
@@ -332,7 +329,7 @@ function robotSketch(p5: p5) {
 
         for (const [i, r] of w.robots.entries()) {
             // do the post fx
-            if (toggleThoughts.active) drawSingleRobotThoughts(r);
+            if (ENV.toggleThoughts.active) drawSingleRobotThoughts(r);
         }
 
         p5.pop();
@@ -344,7 +341,7 @@ function robotSketch(p5: p5) {
         p5.translate(0, 0, animStrength * BLH * easeBump(1 - r.animHopProg)); // hop
         p5.translate(0, 0, animStrength * 0.2 * BLH * easeBump(1 - r.animMarkerProg)); // marker hop
         // sliding
-        if (toggleAnimation.active) {
+        if (ENV.toggleAnimation.active) {
             p5.translate(
                 lerp(r.animLastPos.x, r.pos.x, r.interpHop) * TSZ,
                 lerp(r.animLastPos.y, r.pos.y, r.interpHop) * TSZ,
@@ -361,7 +358,7 @@ function robotSketch(p5: p5) {
 
     const rotateSingleRobot = (r: Robot) => {
         // facing direction
-        if (toggleAnimation.active)
+        if (ENV.toggleAnimation.active)
             p5.rotateZ(2 * p5.PI * lerp(r.animLastRot + r.animRotRnd * animStrength, r.animCurrRot + r.animRotRnd * animStrength, r.interpRot) / 360);
         else
             p5.rotateZ(2 * p5.PI * r.animCurrRot / 360);

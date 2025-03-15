@@ -5,9 +5,11 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 
     <link rel="stylesheet" type="text/css" href="common-style.css">
+    <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="stylesheet" type="text/css" href="editor-style.css">
     <link rel="stylesheet" type="text/css" href="struct-style.css">
     <link rel="stylesheet" type="text/css" href="obj-style.css">
+    <link rel="stylesheet" type="text/css" href="robot-view-style.css">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,45 +17,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
 
     <link href="https://fonts.cdnfonts.com/css/cascadia-code" rel="stylesheet">
+    <link rel="stylesheet" 
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=pause,play_arrow,play_pause,report,resume,skip_next,skip_previous,stop" />
 
     <title>RK4 Editor (beta)</title>
 </head>
 <body class="roboto">
     <div id="grid-container">
         <div class="lc30 wsr text" id="title-bar">
-            🤖 Robot Karol 4&nbsp;&nbsp;<div class="version-label struct-doc-comment">BETA</div>&nbsp;&nbsp;|&nbsp;Level Editor
+            🤖 RK4&nbsp;&nbsp;<div class="version-label struct-doc-comment">BETA</div>&nbsp;&nbsp;|&nbsp;Level Editor
         </div>
         <!-- Code editor UI -->
-        <div class="lc30 wsr text" id="code-title">💻 Code-Editor - Bibliothek</div>
-        <div class="lc30 text" id="code-helper">
-            <span class="hover-helper"><span class="turning">*️⃣</span>
-                <div class="tooltip" style="text-align: right;">
-                Speichern:&nbsp;&nbsp;<span class="keystroke">Strg</span> + <span class="keystroke">S</span><br>
-                Rückgängig:&nbsp;&nbsp;<span class="keystroke">Strg</span> + <span class="keystroke">Z</span><br>
-                <div class="struct-dot"></div>
-                Kopieren:&nbsp;&nbsp;<span class="keystroke">Strg</span> + <span class="keystroke">C</span><br>
-                Einfügen:&nbsp;&nbsp;<span class="keystroke">Strg</span> + <span class="keystroke">V</span><br>
-                Alles auswählen:&nbsp;&nbsp;<span class="keystroke">Strg</span> + <span class="keystroke">A</span><br>
-                <div class="struct-dot"></div>
-                Bereiche auswählen:<br>
-                <span class="keystroke">⇧ Shift</span> + 
-                <span class="keystroke">▴</span>
-                <span class="keystroke">◂</span>
-                <span class="keystroke">▸</span>
-                <span class="keystroke">▾</span>
-                <br>
-                <div class="struct-dot"></div>
-                Einrücken (Tab):&nbsp;
-                <span class="keystroke">&nbsp;&nbsp;⇥&nbsp;&nbsp;</span>
-                <div class="struct-dot"></div>
-                Zeile löschen:&nbsp;&nbsp;<span class="keystroke">Strg</span> + <span class="keystroke">D</span><br>
-                Duplizieren:&nbsp;&nbsp;<span class="keystroke">Strg</span> + <span class="keystroke">⇧ Shift</span> + <span class="keystroke">D</span><br>
-                </div>
-            </span>
-        </div>
+        <div class="lc30 wsr text" id="code-title">💻 Welteditor</div>
         <div class="editor cascadia" id="code-editor">Code</div>
         <div class="code-error lc30 wsr text" id="code-error">keine Fehler gefunden</div>
-        <select class="text" id="store-data" list="store-data">
+        <select title="Speichere Programmcode" class="text" id="store-data" list="store-data">
             <option>(neu)</option>
         </select>
         <div id="store-container">
@@ -63,13 +41,19 @@
         <!-- Save / load UI -->
         <button title="Speicher aktuellen Code in einer .rk-Datei und lade sie herunter." id="save-code">⬇️</button>
         <button title="Lade Code (.rk), Welt (.csv) oder Aufgabe (.json) vom PC." id="load-code">📂</button>
-        <select class="text" id="load-task">
+        <select title="Wähle Aufgabe" class="text" id="load-task">
             <option selected disabled>Wähle eine Aufgabe</option>
         </select>
         <!-- 3D Robot view & associated UI -->
         <div id="robot-canvas"></div>
         <div id="object-bar"></div>
         <div id="object-overlay"></div>
+        <div id="task-bar">
+            <div class="wsr lc30" id="task-check">?</div>
+        </div>
+        <div id="play-state">
+            <span class="material-symbols-outlined" id="play-state-symbol">play_arrow</span>
+        </div>
         <!-- Task view UI -->
         <div class="task-description wsr text" id="task-description">Aufgabe</div>
         <!-- Console -->
