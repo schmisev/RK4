@@ -27,21 +27,27 @@
             🤖 RK4&nbsp;&nbsp;<div class="version-label struct-doc-comment">BETA</div>&nbsp;&nbsp;|&nbsp;Welteditor
         </div>
         <!-- Code editor UI -->
-        <div class="lc30 wsr text" id="code-title">💻 Welteditor</div>
+        <div class="lc30 wsr text" id="code-title">🗺️ Welteditor</div>
         <select title="Speichere Welt" class="text" id="store-data" list="store-data">
             <option>(neu)</option>
         </select>
         <div id="store-container" class="capsule">
-            <button title="Lösche Code aus dem Speicher" id="delete-from-store">🗑️</button>
-            <button title="Lege Code in den Speicher oder überschreibe aktuellen Speicherstand." id="store-code">💾</button>
+            <button title="Lösche Welt aus dem Speicher" id="delete-from-store">🗑️</button>
+            <button title="Lege die Welt in den Speicher oder überschreibe aktuellen Speicherstand." id="store-world">💾</button>
         </div>
         <!-- Save / load UI -->
         <div id="save-container" class="capsule">
             <button title="Speicher aktuelle Welt in einer .json-Datei und lade sie herunter." id="save-world">⬇️</button>
             <button title="Lade eine Welt (.json) vom PC." id="load-world">📂</button>
         </div>
+        <div id="index-container" class="capsule">
+            <button title="Vorherige Teilaufgabe." id="prev-index">⬅️</button>
+            <button title="Nächste Teilaufgabe." id="next-index">➡️</button>
+        </div>
         <div id="task-title" class="lc30 wsr text">Aufgabentitel</div>
         <button id="robot-screenshot" title="Screenshot der Roboteransicht">🖼️</button>
+        <!-- World editor -->
+        <div id="world-edit-container" class="wsr world-edit"></div>
         <!-- 3D Robot view & associated UI -->
         <div id="robot-canvas"></div>
         <div id="object-bar"></div>

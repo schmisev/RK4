@@ -323,8 +323,9 @@ span.line {
     display: block;
     visibility: hidden;
     opacity: 0%;
-    background-color: rgba(255, 255, 255, .6);
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
+    background-color: rgba(255, 255, 255, .6);
     color: black;
     text-align: left;
     padding: 5px 10px 5px 10px;
