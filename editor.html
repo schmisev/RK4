@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+    <link rel="stylesheet" type="text/css" href="common-style.css">
+    <link rel="stylesheet" type="text/css" href="editor-style.css">
+    <link rel="stylesheet" type="text/css" href="struct-style.css">
+    <link rel="stylesheet" type="text/css" href="obj-style.css">
+    <link rel="stylesheet" type="text/css" href="robot-view-style.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
+
+    <link href="https://fonts.cdnfonts.com/css/cascadia-code" rel="stylesheet">
+    <link rel="stylesheet" 
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=pause,play_arrow,play_pause,report,resume,skip_next,skip_previous,stop" />
+
+    <title>RK4 Editor (beta)</title>
+</head>
+<body class="roboto">
+    <div id="grid-container">
+        <div class="lc30 wsr text" id="title-bar">
+            🤖 RK4&nbsp;&nbsp;<div class="version-label struct-doc-comment">BETA</div>&nbsp;&nbsp;|&nbsp;Welteditor
+        </div>
+        <!-- Code editor UI -->
+        <div class="lc30 wsr text" id="code-title">🗺️ Welteditor</div>
+        <select title="Speichere Welt" class="text" id="store-data" list="store-data">
+            <option>(neu)</option>
+        </select>
+        <div id="store-container" class="capsule">
+            <button title="Lösche Welt aus dem Speicher" id="delete-from-store">🗑️</button>
+            <button title="Lege die Welt in den Speicher oder überschreibe aktuellen Speicherstand." id="store-world">💾</button>
+        </div>
+        <div id="index-container" class="capsule">
+            <button title="Vorherige Teilaufgabe." id="prev-index">⬅️</button>
+            <button title="Nächste Teilaufgabe." id="next-index">➡️</button>
+        </div>
+        <!-- Save / load UI -->
+        <div id="save-container" class="capsule">
+            <button title="Speicher aktuelle Welt in einer .json-Datei und lade sie herunter." id="save-world">⬇️</button>
+            <button title="Lade eine Welt (.json) vom PC." id="load-world">📂</button>
+        </div>
+        <div id="task-title" class="lc30 wsr text">Aufgabentitel</div>
+        <button id="robot-screenshot" title="Screenshot der Roboteransicht">🖼️</button>
+        <!-- World editor -->
+        <div id="world-edit-bar" class="wsr lc30 edit-bar">
+            🖌️ <input id="paint-input" value="_:_">
+            <button id="reload-button" class="toggle-button">🔄️</button>
+            |<div>🧱<code>rgby+*.</code></div>
+            |<div>🏷️<code>RGBY?!</code></div>
+            |<div>🚧<code>#</code></div>
+            |<div>⬜<code>_</code></div>
+        </div>
+        <div id="world-edit-container" class="world-edit"></div>
+        <div class="code-error lc30 wsr text" id="code-error">keine Fehler gefunden</div>
+        <!-- 3D Robot view & associated UI -->
+        <div id="robot-canvas"></div>
+        <div id="object-bar"></div>
+        <div id="object-overlay"></div>
+        <div id="task-bar">
+            <div class="wsr lc30" id="task-check">?</div>
+        </div>
+        <div id="play-state">
+            <span class="material-symbols-outlined" id="play-state-symbol">play_arrow</span>
+        </div>
+        <!-- Task view UI -->
+        <div id="task-title-input">
+            <input id="author-input" type="text" placeholder="xyz" value="xyz">
+            <input id="group-input" type="text" placeholder="Thema" value="Thema">
+            <input id="index-input" type="number" placeholder="1" min="1" step="1" value="1">
+            <input id="title-input" type="text" placeholder="Aufgabentitel" value="Aufgabentitel">
+        </div>
+        <div class="task-description wsr text" id="task-description-editor">Aufgabe</div>
+        <div class="task-description wsr text" id="task-description">Aufgabe</div>
+        <!-- preload editor -->
+        <div class="editor cascadia" id="preload-editor">Preload</div>
+        <!-- credits -->
+        <div class="wsr lc30 text" id="credits-bar">Mitwirkende: <a href="https://github.com/schmisev">schmisev</a> ● <a href="https://github.com/WorldsEnder">WorldsEnder</a> 
+            | 3D-Ansicht: <a href="https://p5js.org/">p5.js</a> (<a href="https://raw.githubusercontent.com/processing/p5.js/main/license.txt">Lizenz</a>)
+            ● Editor: <a href="https://ace.c9.io/">Ace Editor</a> (<a href="https://raw.githubusercontent.com/ajaxorg/ace/a6ead2fcf2860c8b890f6adbd2e56f2ddc7f6d62/LICENSE">Lizenz</a>) </div>
+    </div>
+    <input id="load-file" type="file" accept=".json," style="visibility: hidden;">
+    <div id="loading-overlay" class="loading">
+        <div><h1 style="text-align: center;">🤖<br>RK4</h1></div>
+        <p>
+            🔌 Lädt... Warte einen Moment! ⚡
+        </p>
+    </div>
+    <div id="too-small-overlay">"Hast du diese Seite auf 'nem GameBoy Color aufgemacht?"</div>
+
+    <script src="editor.bundle.js"></script>
+</body>
+</html>
