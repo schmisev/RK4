@@ -146,16 +146,6 @@ function robotSketch(p5: p5) {
 
     const numberPlates: Record<number, p5.Graphics> = {};
 
-    const resizeToParent = () => {
-        const width = canvasDiv.offsetWidth;
-        const height = canvasDiv.offsetHeight;
-        if (canvasH != height || canvasW != width) {
-            canvasH = height;
-            canvasW = width;
-            p5.resizeCanvas(width, height);
-        }
-    };
-
     p5.setup = () => {
         const width = canvasDiv.offsetWidth;
         const height = canvasDiv.offsetHeight;

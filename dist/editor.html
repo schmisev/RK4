@@ -39,6 +39,7 @@
             <button title="Vorherige Teilaufgabe." id="prev-index">⬅️</button>
             <button title="Nächste Teilaufgabe." id="next-index">➡️</button>
         </div>
+        <button title="Lade die Welt erneut." id="reload-button">🔄️</button>
         <!-- Save / load UI -->
         <div id="save-container" class="capsule">
             <button title="Speicher aktuelle Welt in einer .json-Datei und lade sie herunter." id="save-world">⬇️</button>
@@ -48,8 +49,7 @@
         <button id="robot-screenshot" title="Screenshot der Roboteransicht">🖼️</button>
         <!-- World editor -->
         <div id="world-edit-bar" class="wsr lc30 edit-bar">
-            🖌️ <input id="paint-input" value="_:_">
-            <button id="reload-button" class="toggle-button">🔄️</button>
+            🖌️ <input id="paint-input" class="paint-edit" value="_:_">
             |<div>🧱<code>rgby+*.</code></div>
             |<div>🏷️<code>RGBY?!</code></div>
             |<div>🚧<code>#</code></div>
