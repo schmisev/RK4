@@ -2,7 +2,7 @@
     display: grid;
     gap: 5px;
     grid-template-columns: repeat(13, minmax(0, 1fr));
-    grid-template-rows: 30px 30px 30px repeat(7, minmax(0, 1fr)) 30px 30px 30px repeat(3, minmax(0, 1fr)) minmax(0, 1fr) 30px repeat(3, minmax(0, 1fr)) 30px 30px 30px;
+    grid-template-rows: 30px 30px 30px repeat(7, minmax(0, 1fr)) 30px 30px 30px 30px 30px repeat(3, minmax(0, 1fr)) repeat(3, minmax(0, 1fr)) 30px 30px;
     height: 100%;
 }
 
@@ -61,6 +61,11 @@
 }
 
 #index-container {
+    grid-column: 6;
+    grid-row: 2;
+}
+
+#reload-button {
     grid-column: 7;
     grid-row: 2;
 }
@@ -107,7 +112,7 @@
 }
 
 #store-data {
-    grid-column: 4 / 7;
+    grid-column: 4 / 6;
     grid-row: 2;
 }
 
@@ -180,14 +185,19 @@
 .edit-bar {
     box-sizing: border-box;
     display: flex;
-    flex-direction: row;
-    justify-content: center;
+    flex-flow: row nowrap;
+    overflow: hidden;
+    justify-content: left;
     align-items: center;
     width: 100%;
     gap: 5px;
     padding: 1px;
     border-radius: 5px;
     height: 30px;
+}
+
+.paint-edit {
+    width: 100px;
 }
 
 input {
