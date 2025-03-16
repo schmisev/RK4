@@ -1,6 +1,7 @@
 import { runtime as ENV } from "..";
 import { taskSelector } from "./task-selector";
-import { Task } from "../robot/tasks";
+import { type Task } from "../robot/tasks";
+import { downloadTextFile } from "../utils";
 
 // Download / load buttons
 document.getElementById("save-code")!.onclick = downloadCode;
@@ -11,19 +12,6 @@ function downloadCode() {
     const code = ENV.editor.getValue();
     const filename = ENV.taskName + ".rk";
     downloadTextFile(filename, code);
-}
-
-function downloadTextFile(filename: string, text: string) {
-    const element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-    element.setAttribute('download', filename);
-
-    element.style.display = 'none';
-    document.body.appendChild(element);
-
-    element.click();
-
-    document.body.removeChild(element);
 }
 
 const fileInput: HTMLInputElement = document.getElementById("load-file")! as HTMLInputElement;

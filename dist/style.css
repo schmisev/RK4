@@ -461,14 +461,6 @@
     grid-row: 14 / 18;
 }
 
-#task-description code {
-    border: 1px rgba(0, 0, 0, .2) solid;
-    padding-inline: 2px;
-    background-color: rgba(0, 0, 0, .2);
-    border-radius: 2px;
-    font-family: 'Cascadia Code', monospace;
-}
-
 #console-title {
     grid-column: 8 / 11;
     grid-row: 18;
@@ -610,30 +602,4 @@
 #code-error {
     grid-column: 1 / 8;
     grid-row: 22;
-    font-family: 'Cascadia Code';
-}
-
-.code-error {
-    font-size: 15px;
-    white-space: nowrap;
-    overflow-x: scroll;
-    scrollbar-width: none;
-    text-overflow: unset;
-}
-
-/* code error */
-.code-error.none {
-    background-color: lightgreen;
-}
-
-.code-error.runtime {
-    background-color: lightcoral;
-}
-
-.code-error.lexer {
-    background-color: lightcoral;
-}
-
-.code-error.parser {
-    background-color: lightcoral;
 }

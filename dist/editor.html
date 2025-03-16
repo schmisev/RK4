@@ -35,19 +35,28 @@
             <button title="Lösche Welt aus dem Speicher" id="delete-from-store">🗑️</button>
             <button title="Lege die Welt in den Speicher oder überschreibe aktuellen Speicherstand." id="store-world">💾</button>
         </div>
+        <div id="index-container" class="capsule">
+            <button title="Vorherige Teilaufgabe." id="prev-index">⬅️</button>
+            <button title="Nächste Teilaufgabe." id="next-index">➡️</button>
+        </div>
         <!-- Save / load UI -->
         <div id="save-container" class="capsule">
             <button title="Speicher aktuelle Welt in einer .json-Datei und lade sie herunter." id="save-world">⬇️</button>
             <button title="Lade eine Welt (.json) vom PC." id="load-world">📂</button>
         </div>
-        <div id="index-container" class="capsule">
-            <button title="Vorherige Teilaufgabe." id="prev-index">⬅️</button>
-            <button title="Nächste Teilaufgabe." id="next-index">➡️</button>
-        </div>
         <div id="task-title" class="lc30 wsr text">Aufgabentitel</div>
         <button id="robot-screenshot" title="Screenshot der Roboteransicht">🖼️</button>
         <!-- World editor -->
+        <div id="world-edit-bar" class="wsr lc30 edit-bar">
+            🖌️ <input id="paint-input" value="_:_">
+            <button id="reload-button" class="toggle-button">🔄️</button>
+            |<div>🧱<code>rgby+*.</code></div>
+            |<div>🏷️<code>RGBY?!</code></div>
+            |<div>🚧<code>#</code></div>
+            |<div>⬜<code>_</code></div>
+        </div>
         <div id="world-edit-container" class="world-edit"></div>
+        <div class="code-error lc30 wsr text" id="code-error">keine Fehler gefunden</div>
         <!-- 3D Robot view & associated UI -->
         <div id="robot-canvas"></div>
         <div id="object-bar"></div>
@@ -59,6 +68,13 @@
             <span class="material-symbols-outlined" id="play-state-symbol">play_arrow</span>
         </div>
         <!-- Task view UI -->
+        <div id="task-title-input">
+            <input id="author-input" type="text" placeholder="xyz" value="xyz">
+            <input id="group-input" type="text" placeholder="Thema" value="Thema">
+            <input id="index-input" type="number" placeholder="1" min="1" step="1" value="1">
+            <input id="title-input" type="text" placeholder="Aufgabentitel" value="Aufgabentitel">
+        </div>
+        <div class="task-description wsr text" id="task-description-editor">Aufgabe</div>
         <div class="task-description wsr text" id="task-description">Aufgabe</div>
         <!-- preload editor -->
         <div class="editor cascadia" id="preload-editor">Preload</div>

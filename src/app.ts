@@ -1,3 +1,4 @@
+import { type WorldProxy } from "./editor";
 import { type Program } from "./language/frontend/ast";
 import { type GlobalEnvironment } from "./language/runtime/environment";
 import { STD_TASKS, type Task } from "./robot/tasks";
@@ -34,6 +35,25 @@ export interface EditorEnv {
   extTasks: Record<string, string>;
   loadTask(key: string): Promise<void>;
   loadRawTask(key: string, task: Task, ignoreTitleInKey?: boolean): void;
+}
+
+export interface WorldEditEnv {
+  idx: number;
+  author: HTMLInputElement;
+  category: HTMLInputElement;
+  name: HTMLInputElement;
+  title: HTMLInputElement;
+  description: Ace.Editor;
+  preload: Ace.Editor;
+  descriptionPreview: HTMLDivElement;
+  titlePreview: HTMLDivElement;
+  paintInput: HTMLInputElement;
+  codeError: HTMLDivElement;
+  proxies: WorldProxy[];
+  reloadWorld: (idx?: number) => void;
+  reloadEditor: () => void;
+  reloadMetaInfo: () => void;
+  generateTask: () => Task;
 }
 
 export interface AppRuntime extends WorldViewEnv, InterpreterEnv, EditorEnv {

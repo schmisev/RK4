@@ -179,6 +179,37 @@ input[type="checkbox"] {
     font-weight: bolder;
 }
 
+.code-error {
+    font-family: 'Cascadia Code';
+    font-size: 15px;
+    white-space: nowrap;
+    overflow-x: scroll;
+    scrollbar-width: none;
+    text-overflow: unset;
+}
+
+/* code error */
+.code-error.none {
+    background-color: lightgreen;
+}
+
+.code-error.runtime {
+    background-color: lightcoral;
+}
+
+.code-error.lexer {
+    background-color: lightcoral;
+}
+
+.code-error.parser {
+    background-color: lightcoral;
+}
+
+.code-error.world {
+    background-color: lightcoral;
+}
+
+
 .turning {
     transform: rotate(0deg);
     transition: transform 0.2s;
@@ -335,4 +366,12 @@ input[type="checkbox"] {
 
 #loading-overlay.loading {
     visibility: initial;
+}
+
+code {
+    border: 1px rgba(0, 0, 0, .2) solid;
+    padding-inline: 2px;
+    background-color: rgba(0, 0, 0, .2);
+    border-radius: 2px;
+    font-family: 'Cascadia Code', monospace;
 }

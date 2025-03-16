@@ -39,7 +39,6 @@ import { setFlowchartVisibility, showFlowchart, unloadFlowchart } from "./ui/flo
 import { connectDebugToggle, connectSimpleToggle, Toggle } from "./ui/toggle-buttons";
 import { CodePosition, ILLEGAL_CODE_POS, KEYWORDS } from "./language/frontend/lexer";
 import { ENV } from "./spec";
-import { rejects } from "assert";
 import { AppRuntime } from "./app";
 
 // Global variables
