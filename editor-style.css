@@ -180,6 +180,7 @@
 
 .world-field input {
     width: 100%;
+    font-family: 'Cascadia Code', 'Consolas' !important;
 }
 
 .edit-bar {
@@ -191,13 +192,13 @@
     align-items: center;
     width: 100%;
     gap: 5px;
-    padding: 1px;
     border-radius: 5px;
     height: 30px;
 }
 
 .paint-edit {
     width: 100px;
+    font-family: 'Cascadia Code', 'Consolas' !important;
 }
 
 input {
