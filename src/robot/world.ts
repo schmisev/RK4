@@ -230,11 +230,15 @@ export class World {
                             break;
                         case "*":
                             // put down 0 or more blocks
-                            f.addMultipleBlocks(rndi(0, this.H - f.getBlockHeight()), BlockType.r, goalMode);
+                            f.addMultipleBlocks(rndi(0, this.H - f.getBlockHeight(goalMode)), BlockType.r, goalMode);
                             break;
                         case "+":
                             // put down 1 or more blocks
-                            f.addMultipleBlocks(rndi(1, this.H - f.getBlockHeight()), BlockType.r, goalMode);
+                            f.addMultipleBlocks(rndi(1, this.H - f.getBlockHeight(goalMode)), BlockType.r, goalMode);
+                            break;
+                        case "f":
+                            // fill with blocks to top
+                            f.addMultipleBlocks(this.H - f.getBlockHeight(goalMode), BlockType.r, goalMode);
                             break;
                         case "?":
                             // put down 0 or 1 marker
@@ -387,7 +391,7 @@ export class Field {
         this.wasChanged = true;
     }
 
-    addBlock(b: BlockType, goal = false) {
+    addBlock(b: BlockType, goal: boolean = false) {
         if (!goal) {
             if (!this.isEditable || this.blocks.length >= this.H)
                 throw new RuntimeError(`Kann hier keinen Block hinlegen!`);
@@ -401,7 +405,7 @@ export class Field {
         this.wasChanged = true;
     }
 
-    addMultipleBlocks(n: number, b: BlockType, goal = false) {
+    addMultipleBlocks(n: number, b: BlockType, goal: boolean = false) {
         for (let i = 0; i < n; i++) {
             this.addBlock(b, goal);
         }
@@ -418,11 +422,13 @@ export class Field {
         return oldBlock;
     }
 
-    getBlockHeight(): number {
-        return this.blocks.length;
+    getBlockHeight(goal: boolean = false): number {
+        if (!goal) return this.blocks.length;
+        if (!this.goalBlocks) return 0;
+        return this.goalBlocks.length;
     }
 
-    setMarker(m: MarkerType, goal = false) {
+    setMarker(m: MarkerType, goal: boolean = false) {
         if (!this.isEditable)
             throw new RuntimeError(`Kann hier keine Marke setzen!`);
         if (!goal) this.marker = m;
