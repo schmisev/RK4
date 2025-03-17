@@ -99,7 +99,7 @@ export const STD_TASKS: Record<string, Task> = {
         title: "Fallen",
         description: "Nichts zu sehen!",
         preload: "",
-        world: "x;5;1;5;\nrrrrS;W;_:1;",
+        world: "x;5;1;5;\nrrrrS;W;_:2;",
     },
     Generiert_1: {
         title: "Block auf Marke!",
@@ -169,8 +169,8 @@ export const STD_TASKS: Record<string, Task> = {
             }
             mF.goalBlocks = Array<BlockType>();
 
-            w.fields[0][0].setGoalRobotIndex(0);
-            w.fields[0][1].setGoalRobotIndex(1);
+            w.fields[0][0].setGoalRobotIndex(1);
+            w.fields[0][1].setGoalRobotIndex(2);
         },
     },
     sms_Basics_1: {
@@ -552,7 +552,7 @@ export const STD_TASKS: Record<string, Task> = {
                 }
 
                 w.createRobot(0, yTurn, "E", "k" + (i+1), i + 1);
-                w.fields[direction > 0 ? (w.W - 1) : 0][xTurn].setGoalRobotIndex(i);
+                w.fields[direction > 0 ? (w.W - 1) : 0][xTurn].setGoalRobotIndex(i+1);
 
             }
         }
@@ -638,7 +638,7 @@ export const STD_TASKS: Record<string, Task> = {
                 }
             }
 
-            w.fields[y][0].setGoalRobotIndex(0);
+            w.fields[y][0].setGoalRobotIndex(1);
         }
     },
     "sms_Algorithmen_1": {
@@ -704,8 +704,8 @@ export const STD_TASKS: Record<string, Task> = {
             }
             mF.goalBlocks = Array<BlockType>();
 
-            w.fields[0][0].setGoalRobotIndex(0);
-            w.fields[0][1].setGoalRobotIndex(1);
+            w.fields[0][0].setGoalRobotIndex(1);
+            w.fields[0][1].setGoalRobotIndex(2);
         },
     },
     "sms_Algorithmen_3": {

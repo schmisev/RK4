@@ -102,6 +102,7 @@ function robotSketch(p5: p5) {
     const TXROBOT = createTextTexture("🤖")
 
     const RGIDX = [
+        createTextTexture("0", "#CCC", true),
         createTextTexture("1", "#CCC", true),
         createTextTexture("2", "#CCC", true),
         createTextTexture("3", "#CCC", true),
@@ -111,7 +112,6 @@ function robotSketch(p5: p5) {
         createTextTexture("7", "#CCC", true),
         createTextTexture("8", "#CCC", true),
         createTextTexture("9", "#CCC", true),
-        createTextTexture("10", "#CCC", true),
     ]
 
     const BLOCK2COLOR: Record<BlockType, string> = {

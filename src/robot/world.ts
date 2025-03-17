@@ -186,8 +186,7 @@ export class World {
         if (srcTokens[0].length == 0) throw new WorldError("Die Welt hat eine Länge von 0!");
         this.L = srcTokens[0].length
         */
-
-        let robotCounter = 1;
+        let registeredRobots: number[] = [0]; // 0 is blocked
 
         this.fields = [];
         for (let y = 0; y < this.W; y++) {
@@ -215,10 +214,17 @@ export class World {
                         case "6":
                         case "7":
                         case "9":
+                            let robotIndex = parseInt(c);
                             if (goalMode) {
-                                f.goalRobotIdx = parseInt(c)-1;
+                                f.setGoalRobotIndex(robotIndex);
+                            } else {
+                                if (registeredRobots.includes(robotIndex)) throw new WorldError(`WELT: k${robotIndex} existiert bereits.`);
+                                if (robotCreated) throw new WorldError("WELT: Kann nicht zwei Roboter auf dasselbe Feld stellen!");
+                                registeredRobots.push(robotIndex);
+                                this.createRobot(x, y, "S", `k${robotIndex}` , robotIndex);
+                                robotCreated = true;
                             }
-                            break; // ignore if not goal mode
+                            break;
                         case ".":
                             f.addMultipleBlocks(rndi(0, 2), BlockType.r, goalMode);
                             break;
@@ -249,11 +255,15 @@ export class World {
                         case "E":
                         case "S":
                         case "W":
-                            if (robotCreated) throw new WorldError("Kann nicht zwei Roboter auf dasselbe Feld stellen!");
+                            if (robotCreated) throw new WorldError("WELT: Kann nicht zwei Roboter auf dasselbe Feld stellen!");
                             if (goalMode) break;
-                            this.createRobot(x, y, c, "k" + robotCounter, robotCounter);
+                            let i = 0;
+                            for (const v of registeredRobots) {
+                                if (i === v) i += 1;
+                            }
+                            registeredRobots.push(i); // register robot
+                            this.createRobot(x, y, c, "k" + i, i);
                             robotCreated = true;
-                            robotCounter += 1;
                             break;
                         case "r":
                         case "g":
@@ -276,8 +286,7 @@ export class World {
                         case "#":
                             break;
                         default:
-                            break;
-                            //throw new WorldError(`Welt-Datei enthält unbekannten Buchstaben: '${c}'`);
+                            throw new WorldError(`Welt-Datei enthält unbekannten Buchstaben: '${c}'`);
                     }
                 }
                 
@@ -465,10 +474,13 @@ export class Field {
         }
 
         // this is inexpensive
-        if (this.goalRobotIdx != null && this.goalRobotIdx < this.world.robots.length) {
-            const r = this.world.robots[this.goalRobotIdx]
-            if (r.pos.x != this.x || r.pos.y != this.y)
-                return false;
+        if (this.goalRobotIdx != null /* && this.goalRobotIdx < this.world.robots.length */) {
+            for (const r of this.world.robots) {
+                if (r.index !== this.goalRobotIdx) continue; // not the right robot
+                if (r.pos.x !== this.x || r.pos.y !== this.y)
+                    return false;
+            }
+            // right now, unoccupyable goals are ignored... TODO?
         }
 
         // this is super cheap
