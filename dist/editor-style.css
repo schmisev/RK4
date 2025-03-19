@@ -65,7 +65,7 @@
     grid-row: 2;
 }
 
-#reload-button {
+#reload-container {
     grid-column: 7;
     grid-row: 2;
 }
@@ -176,6 +176,14 @@
 
 .world-field {
     width: 40px;
+}
+
+.x-index-field {
+    width: 40px;
+}
+
+.y-index-field {
+    width: 25px;
 }
 
 .world-field input {

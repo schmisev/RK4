@@ -50,6 +50,7 @@ export interface WorldEditEnv {
   paintInput: HTMLInputElement;
   codeError: HTMLDivElement;
   proxies: WorldProxy[];
+  indexView: HTMLElement;
   reloadWorld: (idx?: number) => void;
   reloadEditor: () => void;
   reloadMetaInfo: () => void;

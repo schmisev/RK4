@@ -75,6 +75,7 @@ let editEnv: WorldEditEnv = {
     titlePreview: document.getElementById("task-title")! as HTMLDivElement,
     paintInput: document.getElementById("paint-input")! as HTMLInputElement,
     codeError: document.getElementById("code-error")! as HTMLDivElement,
+    indexView: document.getElementById("reset-zero-button")!,
     proxies: [
         {
             L: 4,
@@ -119,13 +120,20 @@ const stdWorldProxy: WorldProxy = {
 document.getElementById("next-index")!.onclick = () => {
     editEnv.idx = (editEnv.idx + 1) % editEnv.proxies.length;
     reloadWorld();
+    reloadMetaInfo();
 };
 document.getElementById("prev-index")!.onclick = () => {
     editEnv.idx =
         (editEnv.idx + editEnv.proxies.length - 1) % editEnv.proxies.length;
     reloadWorld();
+    reloadMetaInfo();
 };
 document.getElementById("reload-button")!.onclick = () => reloadWorld();
+document.getElementById("reset-zero-button")!.onclick = () => {
+    editEnv.idx = 0;
+    reloadWorld();
+    reloadMetaInfo();
+};
 document.getElementById("save-world")!.onclick = () => {
     downloadTextFile(
         generateFileName(".json"),
@@ -233,6 +241,8 @@ function renderWorldEdit(id: string) {
         for (let key of ["L", "W", "H"] as (keyof WorldProxy)[]) {
             let keyEdit = document.createElement("input");
             keyEdit.classList.add("key-edit");
+            keyEdit.min = "1";
+            keyEdit.step = "1";
             keyEdit.type = "number";
             keyEdit.value = worldProxy[key].toString();
 
@@ -332,10 +342,20 @@ function renderWorldEdit(id: string) {
             editBar.appendChild(upButton);
         }
 
+        let w = worldProxy.fields;
+
         let worldTable = document.createElement("table") as HTMLTableElement;
         worldTable.classList.add("world-table");
+        let headerRow = document.createElement("tr") as HTMLTableRowElement;
+        headerRow.appendChild(document.createElement("th"));
+        for (let i = 0; i < worldProxy.L; i++) {
+            let headerCell = document.createElement("th") as HTMLTableCellElement;
+            headerCell.classList.add("x-index-field");
+            headerCell.innerHTML = `${i}`;
+            headerRow.appendChild(headerCell);
+        }
+        worldTable.appendChild(headerRow);
 
-        let w = worldProxy.fields;
         for (
             let j = 0;
             j < Math.min(worldProxy.W, worldProxy.fields.length);
@@ -343,6 +363,12 @@ function renderWorldEdit(id: string) {
         ) {
             let r = w[j];
             let row = document.createElement("tr") as HTMLTableRowElement;
+            // index
+            let leftHeader = document.createElement("th") as HTMLTableCellElement;
+            leftHeader.innerHTML = `${j}`;
+            leftHeader.classList.add("y-index-field");
+            row.appendChild(leftHeader);
+            // adding fields
             for (
                 let i = 0;
                 i < Math.min(worldProxy.L, worldProxy.fields[0].length);
@@ -423,6 +449,7 @@ function reloadMetaInfo(): void {
     <p><b>🤔 ${editEnv.name.value}: "${editEnv.title.value}"</b></p>
     <p>${editEnv.description.getValue()}</p>`;
     editEnv.titlePreview.innerText = generateFileName();
+    editEnv.indexView.innerHTML = `${editEnv.idx}`;
 }
 
 // generate task
