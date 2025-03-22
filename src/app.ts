@@ -59,3 +59,6 @@ export interface WorldEditEnv {
 
 export interface AppRuntime extends WorldViewEnv, InterpreterEnv, EditorEnv {
 }
+
+export interface EditorRuntime extends WorldViewEnv, WorldEditEnv {
+}

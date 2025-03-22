@@ -1,5 +1,5 @@
 // UI imports
-import { WorldEditEnv, type WorldViewEnv } from "./app";
+import { EditorRuntime, WorldEditEnv, type WorldViewEnv } from "./app";
 import { DEFAULT_TASK, STD_TASKS, type Task } from "./robot/tasks";
 import { World } from "./robot/world";
 import { setup as setupRobotView } from "./ui/robot-view";
@@ -116,6 +116,9 @@ const stdWorldProxy: WorldProxy = {
         ["_", "_", "_"],
     ],
 };
+
+let rt: EditorRuntime;
+export { rt as runtime };
 
 document.getElementById("next-index")!.onclick = () => {
     editEnv.idx = (editEnv.idx + 1) % editEnv.proxies.length;
