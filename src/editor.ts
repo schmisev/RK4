@@ -1,16 +1,16 @@
 // UI imports
-import { EditorRuntime, WorldEditEnv, type WorldViewEnv } from "./app";
+import { WorldEditEnv, type WorldViewEnv } from "./app";
 import { DEFAULT_TASK, STD_TASKS, type Task } from "./robot/tasks";
 import { World } from "./robot/world";
 import { setup as setupRobotView } from "./ui/robot-view";
-import { connectSimpleToggle, makeToggle } from "./ui/toggle-buttons";
+import { makeToggle } from "./ui/toggle-buttons";
+import "./ui/store-world";
 
 // ACE imports
 import * as ace from "ace-builds";
 import "./assets/ace/mode-rkscript.js";
 import "./assets/ace/theme-rklight.js";
 import { deepCopy, downloadTextFile } from "./utils";
-import { WorldError } from "./errors";
 
 const objOverlay = document.getElementById("object-overlay")!;
 const objBar = document.getElementById("object-bar")!;
@@ -18,7 +18,7 @@ const playState = document.getElementById("play-state-symbol")!;
 const taskCheck = document.getElementById("task-check")!;
 
 const dummyTask = STD_TASKS[DEFAULT_TASK];
-let viewEnv: WorldViewEnv = {
+export let viewEnv: WorldViewEnv = {
     isRunning: false,
     dt: 10,
     maxDt: 10,
@@ -61,7 +61,18 @@ const preloadEditor = ace.edit("preload-editor", {
 
 const robotView = setupRobotView(viewEnv);
 
-let editEnv: WorldEditEnv = {
+export const stdWorldProxy: WorldProxy = {
+    L: 3,
+    W: 3,
+    H: 5,
+    fields: [
+        ["S_", "_", "_"],
+        ["_", "_", "_"],
+        ["_", "_", "_"],
+    ],
+};
+
+export let editEnv: WorldEditEnv = {
     idx: 0,
     author: document.getElementById("author-input")! as HTMLInputElement,
     category: document.getElementById("group-input")! as HTMLInputElement,
@@ -77,48 +88,15 @@ let editEnv: WorldEditEnv = {
     codeError: document.getElementById("code-error")! as HTMLDivElement,
     indexView: document.getElementById("reset-zero-button")!,
     proxies: [
-        {
-            L: 4,
-            W: 3,
-            H: 6,
-            fields: [
-                ["S_", "_", "_", "_"],
-                ["_", "_", "_", "_"],
-                ["_", "_", "_", "_"],
-            ],
-        },
-        {
-            L: 3,
-            W: 5,
-            H: 4,
-            fields: [
-                ["S_", "_", "_"],
-                ["_", "_", "_"],
-                ["_", "_", "_"],
-                ["_", "_", "_"],
-                ["_", "_", "_"],
-            ],
-        },
+        deepCopy(stdWorldProxy)
     ],
     reloadWorld,
     reloadEditor,
     reloadMetaInfo,
+    reloadFully,
     generateTask,
+    generateFileName,
 };
-
-const stdWorldProxy: WorldProxy = {
-    L: 3,
-    W: 3,
-    H: 5,
-    fields: [
-        ["S_", "_", "_"],
-        ["_", "_", "_"],
-        ["_", "_", "_"],
-    ],
-};
-
-let rt: EditorRuntime;
-export { rt as runtime };
 
 document.getElementById("next-index")!.onclick = () => {
     editEnv.idx = (editEnv.idx + 1) % editEnv.proxies.length;
@@ -455,6 +433,13 @@ function reloadMetaInfo(): void {
     editEnv.indexView.innerHTML = `${editEnv.idx}`;
 }
 
+// fully reloading
+function reloadFully(): void {
+    editEnv.reloadEditor();
+    editEnv.reloadMetaInfo();
+    editEnv.reloadWorld();
+}
+
 // generate task
 function generateTask(): Task {
     let genStr = "";
@@ -472,12 +457,13 @@ function generateTask(): Task {
 }
 
 // generate file name
-function generateFileName(ext: string = ""): string {
+function generateFileName(ext?: string): string {
+    if (!ext) ext = "";
     return `${editEnv.author.value}_${editEnv.category.value}_${editEnv.name.value}${ext}`;
 }
 
 // generate proxy from string
-function generateProxiesFromString(worldStr: string): WorldProxy[] {
+export function generateProxiesFromString(worldStr: string): WorldProxy[] {
     let worldCells = worldStr
         .split("x")
         .map((w: string) => w.split("\n").map((r: string) => r.split(";")));
@@ -500,7 +486,7 @@ function generateProxiesFromString(worldStr: string): WorldProxy[] {
     return newProxies;
 }
 
-// startup
+// start app
 reloadEditor();
 reloadWorld();
 reloadMetaInfo();

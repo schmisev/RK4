@@ -37,6 +37,9 @@ export interface EditorEnv {
   loadRawTask(key: string, task: Task, ignoreTitleInKey?: boolean): void;
 }
 
+export interface AppRuntime extends WorldViewEnv, InterpreterEnv, EditorEnv {
+}
+
 export interface WorldEditEnv {
   idx: number;
   author: HTMLInputElement;
@@ -54,11 +57,7 @@ export interface WorldEditEnv {
   reloadWorld: (idx?: number) => void;
   reloadEditor: () => void;
   reloadMetaInfo: () => void;
+  reloadFully: () => void;
   generateTask: () => Task;
-}
-
-export interface AppRuntime extends WorldViewEnv, InterpreterEnv, EditorEnv {
-}
-
-export interface EditorRuntime extends WorldViewEnv, WorldEditEnv {
+  generateFileName: (ext?: string) => string;
 }

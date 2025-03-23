@@ -22,7 +22,7 @@ import { easeInQuint, getKeys, getVals, lerp, sleep } from "./utils";
 import { declareWorld, World } from "./robot/world";
 import { STD_PRELOAD, STD_WORLD, STD_TASKS, DEFAULT_TASK, STD_CODE, Task, WorldSource } from "./robot/tasks";
 import { destructureKey } from "./ui/task-selector";
-import { loadExtTasks, downloadExtTask } from "./ui/task-selector";
+import { downloadExtTask } from "./ui/task-selector";
 import { clamp } from './utils';
 
 // ACE imports
@@ -695,7 +695,7 @@ screenshotRobot.onclick = () => {
 let robotView = setupRobotView(rt);
 
 const setup = [
-    loadExtTasks().catch(e => console.error(e)).then(updateTaskSelector), // get std tasks
+    updateTaskSelector(), // get std tasks
     loadTask(DEFAULT_TASK).catch(e => console.error(e)).then(updateIDE),
 ];
 
