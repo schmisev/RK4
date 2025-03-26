@@ -700,6 +700,7 @@ export class Robot {
     }
 
     animate(deltaProg: number, delta: number): void {
+        // console.log(deltaProg, delta);
         // update progress variables
         this.animWatchProg = toZero(this.animWatchProg, deltaProg);
         this.animHopProg = toZero(this.animHopProg, deltaProg);

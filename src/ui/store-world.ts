@@ -15,8 +15,8 @@ function retrieveLocalBackup() {
         updateLocalBackup();
         return
     }
-    let backupCodeStore = JSON.parse(value) as Record<string, Task>;
-    for (const [k, v] of Object.entries(backupCodeStore)) {
+    let backupTaskStore = JSON.parse(value) as Record<string, Task>;
+    for (const [k, v] of Object.entries(backupTaskStore)) {
         storeRawTask(k, v, false);
     }
 }
@@ -84,10 +84,10 @@ function loadFromStore() {
     console.log("📝📂 Aufgabe geladen: " + key);
 }
 
-storeRawTask("sms_Basics_1", {
+storeRawTask("xyz_Editor_1", {
     title: "Start",
     description:
-        "Lege einen Ziegel an die markierte Stelle! Nutze dafür k1.hinlegen()",
+        "Lege einen Ziegel an die markierte Stelle! Nutze dafür <code>k1.hinlegen()</code>",
     world: "x;4;1;6;\nE:_;_:_;_:_;_:r",
     preload: "// Nichts vorgegeben",
 }, false);

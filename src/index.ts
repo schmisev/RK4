@@ -9,7 +9,7 @@ import "./ui/store-code";
 import "./ui/task-selector";
 import "./ui/save-load-files";
 import "./ui/console-log";
-import { updateTaskSelector } from "./ui/task-selector";
+import { retrieveLocalTasks, updateTaskSelector } from "./ui/task-selector";
 
 // language imports
 import Parser from "./language/frontend/parser";
@@ -635,7 +635,7 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
             // do nothing? IGNORE!
         }
     }
-
+    
     rt.isRunning = false;
     return false;
 }
@@ -695,7 +695,7 @@ screenshotRobot.onclick = () => {
 let robotView = setupRobotView(rt);
 
 const setup = [
-    updateTaskSelector(), // get std tasks
+    retrieveLocalTasks().then(updateTaskSelector), // get std tasks
     loadTask(DEFAULT_TASK).catch(e => console.error(e)).then(updateIDE),
 ];
 

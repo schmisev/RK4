@@ -85,5 +85,13 @@ export function sortKeys(a: string, b: string) {
     return 0;
 }
 
-export { destructureKey };
+export async function retrieveLocalTasks() {
+    let value = localStorage.getItem("task-store");
+    if (value == null) {
+        return;
+    }
+    let additionalTasks = JSON.parse(value) as Record<string, Task>;
+    ENV.liveTasks = { ...ENV.liveTasks, ...additionalTasks};
+}
 
+export { destructureKey };
