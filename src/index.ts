@@ -692,9 +692,9 @@ screenshotRobot.onclick = () => {
 }
 
 let robotView = setupRobotView(rt);
+updateSlider();
 
 const setup = [
-    updateSlider,
     retrieveLocalTasks().then(updateTaskSelector), // get std tasks
     loadTask(DEFAULT_TASK).catch(e => console.error(e)).then(updateIDE),
 ];
