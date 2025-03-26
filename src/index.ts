@@ -44,9 +44,9 @@ import { AppRuntime } from "./app";
 // Global variables
 let maxDt = 250;
 let minDt = 0.5;
-let dt = 50; // ms to sleep between function calls
-let dtHighlight = 10; // ms under which no line by line highlighting is done
-let dtIDE = 300; // ms to wait for IDE update
+const dt = 50; // ms to sleep between function calls
+const dtHighlight = 10; // ms under which no line by line highlighting is done
+const dtIDE = 300; // ms to wait for IDE update
 let frameLagSum = 0; // running sum of frame lag
 
 let rt: AppRuntime;
@@ -230,16 +230,15 @@ function updateSlider() {
     const val = parseInt(waitSlider.value);
     let hz = lerp((1000 / maxDt), (1000 / minDt), easeInQuint(val / 100));
 
-    dt = 1000 / hz;
+    rt.dt = 1000 / hz;
     const hzText = hz.toFixed(1) + " Hz";
-    document.getElementById("wait-time")!.innerHTML =  hzText + " | " + dt.toFixed(1) + " ms pro Anweisung";
+    document.getElementById("wait-time")!.innerHTML =  hzText + " | " + rt.dt.toFixed(1) + " ms pro Anweisung";
 }
 
 // waitSlider.min = (1000 / maxDt).toString();
 // waitSlider.max = (1000 / minDt).toString();
 // waitSlider.value = (1000 / dt).toString();
 waitSlider.oninput = updateSlider
-updateSlider();
 
 // automatic parse timeout to avoid lagging the editor
 let autoUpdateIDE = setTimeout(updateIDE, dtIDE);
@@ -579,7 +578,7 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
 
             if (stepped) {
                 // always push marker!
-                if (showHighlighting && dt > dtHighlight) {
+                if (showHighlighting && rt.dt > dtHighlight) {
                     markerIds.push(
                         editor.session.addMarker(
                             new ace.Range(
@@ -594,7 +593,7 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
 
                 lastCodePos = next.value;
 
-                skippedSleep += dt; // assume sleep is skipped
+                skippedSleep += rt.dt; // assume sleep is skipped
                 if (skippedSleep > frameLagSum) {
                     // console.timeEnd()
                     // console.time()
@@ -695,6 +694,7 @@ screenshotRobot.onclick = () => {
 let robotView = setupRobotView(rt);
 
 const setup = [
+    updateSlider,
     retrieveLocalTasks().then(updateTaskSelector), // get std tasks
     loadTask(DEFAULT_TASK).catch(e => console.error(e)).then(updateIDE),
 ];
