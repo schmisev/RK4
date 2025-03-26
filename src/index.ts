@@ -692,7 +692,6 @@ screenshotRobot.onclick = () => {
 }
 
 let robotView = setupRobotView(rt);
-updateSlider();
 
 const setup = [
     retrieveLocalTasks().then(updateTaskSelector), // get std tasks
@@ -703,6 +702,7 @@ async function finishSetup() {
     for(let task of setup) {
         try { await task } catch(e) {}
     }
+    updateSlider();
     document.getElementById("loading-overlay")?.classList.remove("loading");
 }
 finishSetup();

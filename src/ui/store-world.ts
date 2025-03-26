@@ -37,6 +37,7 @@ function storeTask() {
     let key = ENV.generateFileName();
     storeRawTask(key, ENV.generateTask(), true);
     updateLocalBackup();
+    storeSelector.value = key;
     console.log("📝💾 Aufgabe gespeichert: " + key);
 }
 
@@ -58,13 +59,9 @@ function deleteTask() {
 function loadFromStore() {
     let key = storeSelector.value;
     let task: Task;
-    if (key == "(neu)") {
-        storeRawTask(DEFAULT_TASK, STD_TASKS[DEFAULT_TASK], true);
-        key = DEFAULT_TASK; // reassign key
-        task = STD_TASKS[DEFAULT_TASK];
-    } else {
-        task = taskStore[key];
-    }
+    if (key == "(neu)") return;
+    
+    task = taskStore[key];
     
     if (typeof task.world !== "string") return;
 
@@ -91,3 +88,5 @@ storeRawTask("xyz_Editor_1", {
     world: "x;4;1;6;\nE:_;_:_;_:_;_:r",
     preload: "// Nichts vorgegeben",
 }, false);
+
+retrieveLocalBackup();
