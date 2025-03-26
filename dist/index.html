@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 
+    <link rel="stylesheet" type="text/css" href="common-style.css">
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="stylesheet" type="text/css" href="struct-style.css">
     <link rel="stylesheet" type="text/css" href="obj-style.css">
     <link rel="stylesheet" type="text/css" href="flow-style.css">
+    <link rel="stylesheet" type="text/css" href="robot-view-style.css">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,12 +26,11 @@
         <div id="left-panel">
             <div id="grid-container-left">
                 <div class="lc30 wsr text" id="title-bar">
-                    🤖 RK4&nbsp;&nbsp;<div id="version-label" class="struct-doc-comment">BETA</div>&nbsp;&nbsp;| RKBasic, 3D, mehrere Roboter und Aufgaben |
+                    🤖 RK4&nbsp;&nbsp;<div class="version-label struct-doc-comment">BETA</div>&nbsp;&nbsp;| RKBasic, 3D, mehrere Roboter und Aufgaben |
                     <button id="fold-debug" class="toggle-button" title="Zeig/verberge Debug-Bereich">&lt;-&gt;</button>
                     | <button id="thought-toggle" class="emoji-button xcheck" title="Aktiviere/deaktiviere Roboter-Gedanken">💭</button>
                     <button id="animation-toggle" class="emoji-button xcheck" title="Aktiviere/deaktiviere Roboter-Animationen">🏃‍♂️</button>
-                    
-                    <span class="roboto" style="float: right;"> 
+                    <span class="roboto" style="float: right;">
                         Zieh mich! ▸</span>
                 </div>
                 <!-- Code editor UI -->
@@ -60,24 +61,24 @@
                         </div>
                     </span>
                 </div>
-                <div id="run-container">
-                    <button title="Lade die Welt neu und starte die Ausführung!" class="code-start roboto" id="code-start">
+                <div id="run-container" class="capsule">
+                    <button title="Lade die Welt neu und starte die Ausführung!" class="roboto" id="code-start">
                         <span class="material-symbols-outlined">play_arrow</span>
                     </button>
-                    <button title="Beende die Ausführung und lade die Welt neu!" class="code-stop roboto" id="code-stop">
+                    <button title="Beende die Ausführung und lade die Welt neu!" class="roboto" id="code-stop">
                         <span class="material-symbols-outlined">stop</span>
                     </button>
                 </div>
                 <div class="editor cascadia" id="code-editor">Code</div>
                 <div class="code-error lc30 wsr text" id="code-error">keine Fehler gefunden</div>
-                <select class="text" id="store-data" list="store-data">
+                <select title="Wähle eine Code-Datei" class="text" id="store-data" list="store-data">
                     <option>(neu)</option>
                 </select>
-                <div id="zoom-container">
+                <div id="zoom-container" class="capsule">
                     <button id="zoom-editor-decrease" title="Verkleinere die Schriftgröße im Editor">➖</button>
                     <button id="zoom-editor" title="Vergrößere die Schriftgröße im Editor">➕</button>
                 </div>
-                <div id="store-container">
+                <div id="store-container" class="capsule">
                     <button title="Lösche Code aus dem Speicher" id="delete-from-store">🗑️</button>
                     <button title="Lege Code in den Speicher oder überschreibe aktuellen Speicherstand." id="store-code">💾</button>
                 </div>
@@ -85,18 +86,18 @@
                 <button class="tab-button" id="preload-title">📖 Bibliothek</button>
                 <div class="editor cascadia" id="preload-editor" style="visibility: hidden;">Preload</div>
                 <!-- Save / load UI -->
-                <div id="save-container">
+                <div id="save-container" class="capsule">
                     <button title="Speicher aktuellen Code in einer .rk-Datei und lade sie herunter." id="save-code">⬇️</button>
                     <button title="Lade Code (.rk), Welt (.csv) oder Aufgabe (.json) vom PC." id="load-code">📂</button>
                 </div>
-                <select class="text" id="load-task">
+                <select title="Wähle eine Aufgabe" class="text" id="load-task">
                     <option selected disabled>Wähle eine Aufgabe</option>
                 </select>
                 <button id="robot-screenshot" title="Screenshot der Roboteransicht">🖼️</button>
                 <!-- 3D Robot view & associated UI -->
                 <div id="robot-canvas"></div>
                 <div id="object-bar"></div>
-                <div id="object-overlay">overlay</div>
+                <div id="object-overlay"></div>
                 <div id="task-bar">
                     <div class="wsr lc30" id="task-check">?</div>
                 </div>
@@ -181,7 +182,7 @@
         </div>
     </div>
     <input id="load-file" type="file" accept=".rk, .csv, .json," style="visibility: hidden;">
-    <div id="loading-overlay">
+    <div id="loading-overlay" class="loading">
         <div><h1 style="text-align: center;">🤖<br>RK4</h1></div>
         <p>
             🔌 Lädt... Warte einen Moment! ⚡
@@ -189,6 +190,6 @@
     </div>
     <div id="too-small-overlay">"Hast du diese Seite auf 'nem GameBoy Color aufgemacht?"</div>
 
-    <script src="bundle.js"></script>
+    <script src="main.bundle.js"></script>
 </body>
 </html>

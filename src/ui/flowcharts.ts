@@ -1,8 +1,8 @@
 import mermaid from "mermaid"
 import { AnyAlwaysBlock, AnyForBlock, AnyForInBlock, AnyFromToBlock, AnyIfElseBlock, AnyStmt, AnySwitchBlock, AnyWhileBlock, ClassDefinition, Expr, ExtMethodDefinition, FunctionDefinition, Program, StmtKind } from "../language/frontend/ast";
 import { RuntimeError } from "../errors";
-import { toggleFunctions, toggleMethods } from "./toggle-buttons";
 import { deepCopy, partition, screenshotDiv, translateOperator, unique } from "../utils";
+import { toggleFunctions, toggleMethods } from "..";
 mermaid.initialize({ startOnLoad: true });
 
 // state

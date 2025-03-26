@@ -5,7 +5,10 @@ const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = {
     mode: "development",
-    entry: './src/index.ts',
+    entry: {
+        main: './src/index.ts',
+        editor: '/src/editor.ts'
+    },
     module: {
         rules: [
             {
@@ -18,8 +21,12 @@ module.exports = {
     resolve: {
         extensions: ['.tsx', '.ts', '.js'],
     },
+	optimization: {
+        chunkIds: 'deterministic',
+	},
     output: {
-        filename: 'bundle.js',
+        filename: '[name].bundle.js',
+        chunkFilename: 'chunk/[id].chunk.js',
         path: path.resolve(__dirname, 'dist'),
     },
     optimization: {

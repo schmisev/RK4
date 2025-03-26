@@ -1,4 +1,4 @@
-import { editor, stopCode, taskName } from "..";
+import { runtime as ENV } from "..";
 import { animalNames } from "../assets/misc/animal-names";
 import { createOption } from "../utils";
 
@@ -75,10 +75,10 @@ function storeCode() {
             key = userKey!;
         } else {
             console.log(`📝🚧 Skriptname abgelehnt: '${userKey}'`);
-            key = taskName + " | " + animalNames[Math.floor(Math.random()*animalNames.length)];
+            key = ENV.taskName + " | " + animalNames[Math.floor(Math.random()*animalNames.length)];
         }
     }
-    storeRawCode(key, editor.getValue(), true);
+    storeRawCode(key, ENV.editor.getValue(), true);
     updateLocalBackup();
     console.log("📝💾 Code gespeichert: " + key);
 }
@@ -86,10 +86,10 @@ function storeCode() {
 function loadFromStore() {
     const key = storeSelector.value;
     if (key == "(neu)") return;
-    editor.setValue(codeStore[key], 0);
-    editor.moveCursorTo(0, 0);
+    ENV.editor.setValue(codeStore[key], 0);
+    ENV.editor.moveCursorTo(0, 0);
     console.log("📝📂 Code geladen: " + key);
-    stopCode(); // stop execution
+    ENV.stopCode(); // stop execution
 }
 
 // insert some Demo Code

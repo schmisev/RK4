@@ -1,13 +1,19 @@
-import { updateIDE } from "..";
-
-interface Toggle {
-    button: HTMLElement;
+export interface Toggle {
+    // button: HTMLElement;
     active: boolean;
 }
-function makeDebugToggle(id: string, init: boolean) {
+
+export function makeToggle(init: boolean): Toggle {
+    return {
+        active: init,
+    }
+}
+
+export function connectDebugToggle(id: string, init: boolean, callback: () => void): Toggle {
     const button = document.getElementById(id)!;
+
     const toggle: Toggle = {
-        button: button,
+        // button: button,
         active: init,
     };
 
@@ -15,16 +21,16 @@ function makeDebugToggle(id: string, init: boolean) {
     button.onclick = () => {
         button.classList.toggle("active");
         toggle.active = !toggle.active;
-        updateIDE();
+        callback();
     };
 
     return toggle;
 }
 
-function makeSimpleToggle(id: string, init: boolean) {
+export function connectSimpleToggle(id: string, init: boolean): Toggle {
     const button = document.getElementById(id)!;
     const toggle: Toggle = {
-        button: button,
+        // button: button,
         active: init,
     };
 
@@ -36,12 +42,3 @@ function makeSimpleToggle(id: string, init: boolean) {
 
     return toggle;
 }
-
-export let toggleDefs = makeDebugToggle("debug-show-defs", false);
-export let toggleLabels = makeDebugToggle("debug-show-labels", true);
-export let toggleFunctions = makeDebugToggle("debug-show-functions", true);
-export let toggleMethods = makeDebugToggle("debug-show-methods", true);
-export let toggleFlowchart = makeDebugToggle("debug-show-flowchart", false);
-
-export let toggleThoughts = makeSimpleToggle("thought-toggle", true);
-export let toggleAnimation = makeSimpleToggle("animation-toggle", true);

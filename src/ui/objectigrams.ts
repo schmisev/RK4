@@ -1,4 +1,3 @@
-import { objOverlay } from "..";
 import { DIR2SHORTGER, Robot } from "../robot/robot";
 import { World } from "../robot/world";
 
@@ -15,9 +14,9 @@ export function addRobotButtons(div: HTMLElement, overlay: HTMLElement, world: W
         el.onclick = (e: MouseEvent) => {
             robotDiagramIndex == i ? robotDiagramIndex = -1 : robotDiagramIndex = i;
             if (robotDiagramIndex >= 0) {
-                showRobotDiagram(objOverlay, e.clientX, e.clientY);
+                showRobotDiagram(overlay, e.clientX, e.clientY);
             } else {
-                hideRobotDiagram(objOverlay);
+                hideRobotDiagram(overlay);
             }
         };
 

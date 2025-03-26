@@ -1,15 +1,13 @@
 import * as p5 from 'p5';
-
-import { isRunning, queueInterrupt, world, objOverlay, taskCheck, updateLagSum, resetLagSum, taskName, dt, maxDt, playState, manualMode } from '..';
+import { WorldViewEnv } from '../app';
 import { Robot, ThoughtType } from '../robot/robot';
 import { CR, CY, CG, CB, BlockType, MarkerType, World, CBOT, CBOT2, Field } from '../robot/world';
 import { robotDiagramIndex, hideRobotDiagram, updateRobotDiagram } from './objectigrams';
 import { clamp, easeBump, easeInCubic, easeInOutQuad, easeOutCubic, easeOutQuad, lerp } from '../utils';
-import { toggleAnimation, toggleThoughts } from './toggle-buttons';
 
-
+let ENV: WorldViewEnv;
 // Setup robot sketch
-export function robotSketch(p5: p5) {
+function robotSketch(p5: p5) {
     let bg = 0; // Background color
     const canvasDiv = document.getElementById('robot-canvas')!;
     let canvasW = 0, canvasH = 0;
@@ -104,6 +102,7 @@ export function robotSketch(p5: p5) {
     const TXROBOT = createTextTexture("🤖")
 
     const RGIDX = [
+        createTextTexture("0", "#CCC", true),
         createTextTexture("1", "#CCC", true),
         createTextTexture("2", "#CCC", true),
         createTextTexture("3", "#CCC", true),
@@ -113,7 +112,6 @@ export function robotSketch(p5: p5) {
         createTextTexture("7", "#CCC", true),
         createTextTexture("8", "#CCC", true),
         createTextTexture("9", "#CCC", true),
-        createTextTexture("10", "#CCC", true),
     ]
 
     const BLOCK2COLOR: Record<BlockType, string> = {
@@ -148,16 +146,6 @@ export function robotSketch(p5: p5) {
 
     const numberPlates: Record<number, p5.Graphics> = {};
 
-    const resizeToParent = () => {
-        const width = canvasDiv.offsetWidth;
-        const height = canvasDiv.offsetHeight;
-        if (canvasH != height || canvasW != width) {
-            canvasH = height;
-            canvasW = width;
-            p5.resizeCanvas(width, height);
-        }
-    };
-
     p5.setup = () => {
         const width = canvasDiv.offsetWidth;
         const height = canvasDiv.offsetHeight;
@@ -178,10 +166,11 @@ export function robotSketch(p5: p5) {
 
     p5.draw = () => {
         // update sum of frame lag
+        const { isRunning, queueInterrupt, world, taskCheck, manualMode, playState, dt, maxDt } = ENV;
         if (isRunning && !manualMode) {
-            updateLagSum(p5.deltaTime);
+            ENV.updateLagSum(p5.deltaTime);
         } else {
-            resetLagSum();
+            ENV.resetLagSum();
         }
 
         // update play state
@@ -216,18 +205,18 @@ export function robotSketch(p5: p5) {
         p5.scale(0.8);
 
         // anim strength
-        animStrength = toggleAnimation.active ? easeOutCubic(1 - dt / maxDt) : 0;
+        animStrength = ENV.toggleAnimation.active ? easeOutCubic(1 - dt / maxDt) : 0;
 
         // drawing the world
         drawWorld(worldInst);
 
         // draw object diagrams
         if (robotDiagramIndex >= world.robots.length) {
-            hideRobotDiagram(objOverlay);
+            hideRobotDiagram(ENV.objOverlay);
         }
 
         if (robotDiagramIndex >= 0) {
-            updateRobotDiagram(worldInst.robots[robotDiagramIndex], objOverlay);
+            updateRobotDiagram(worldInst.robots[robotDiagramIndex], ENV.objOverlay);
         }
 
         // draw compass
@@ -322,7 +311,7 @@ export function robotSketch(p5: p5) {
             const fieldHeight = (f.blocks.length);
             
             r.prepare(fieldHeight); // this passes info to the robot object
-            r.animate(p5.deltaTime / dt, p5.deltaTime); // this does the timing calculation
+            r.animate(p5.deltaTime / ENV.dt, p5.deltaTime); // this does the timing calculation
 
             // do the drawing
             drawSingleRobot(r);
@@ -330,7 +319,7 @@ export function robotSketch(p5: p5) {
 
         for (const [i, r] of w.robots.entries()) {
             // do the post fx
-            if (toggleThoughts.active) drawSingleRobotThoughts(r);
+            if (ENV.toggleThoughts.active) drawSingleRobotThoughts(r);
         }
 
         p5.pop();
@@ -342,7 +331,7 @@ export function robotSketch(p5: p5) {
         p5.translate(0, 0, animStrength * BLH * easeBump(1 - r.animHopProg)); // hop
         p5.translate(0, 0, animStrength * 0.2 * BLH * easeBump(1 - r.animMarkerProg)); // marker hop
         // sliding
-        if (toggleAnimation.active) {
+        if (ENV.toggleAnimation.active) {
             p5.translate(
                 lerp(r.animLastPos.x, r.pos.x, r.interpHop) * TSZ,
                 lerp(r.animLastPos.y, r.pos.y, r.interpHop) * TSZ,
@@ -359,7 +348,7 @@ export function robotSketch(p5: p5) {
 
     const rotateSingleRobot = (r: Robot) => {
         // facing direction
-        if (toggleAnimation.active)
+        if (ENV.toggleAnimation.active)
             p5.rotateZ(2 * p5.PI * lerp(r.animLastRot + r.animRotRnd * animStrength, r.animCurrRot + r.animRotRnd * animStrength, r.interpRot) / 360);
         else
             p5.rotateZ(2 * p5.PI * r.animCurrRot / 360);
@@ -747,9 +736,7 @@ export function robotSketch(p5: p5) {
 
 }
 
-const robotView = new p5(robotSketch, document.body);
-
-const screenshotRobot = document.getElementById("robot-screenshot")!;
-screenshotRobot.onclick = () => {
-    robotView.saveCanvas(taskName + "_" + (new Date()).toLocaleString() + ".png");
+export function setup(env: typeof ENV) {
+    ENV = env;
+    return new p5(robotSketch, document.body);
 }

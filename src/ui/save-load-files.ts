@@ -1,6 +1,7 @@
-import { editor, taskName, loadRawTask, stopCode } from "..";
+import { runtime as ENV } from "..";
 import { taskSelector } from "./task-selector";
-import { Task } from "../robot/tasks";
+import { type Task } from "../robot/tasks";
+import { downloadTextFile } from "../utils";
 
 // Download / load buttons
 document.getElementById("save-code")!.onclick = downloadCode;
@@ -8,22 +9,9 @@ document.getElementById("load-code")!.onclick = () => fileInput.click();
 
 // Downloading
 function downloadCode() {
-    const code = editor.getValue();
-    const filename = taskName + ".rk";
+    const code = ENV.editor.getValue();
+    const filename = ENV.taskName + ".rk";
     downloadTextFile(filename, code);
-}
-
-function downloadTextFile(filename: string, text: string) {
-    const element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-    element.setAttribute('download', filename);
-
-    element.style.display = 'none';
-    document.body.appendChild(element);
-
-    element.click();
-
-    document.body.removeChild(element);
 }
 
 const fileInput: HTMLInputElement = document.getElementById("load-file")! as HTMLInputElement;
@@ -32,7 +20,7 @@ fileInput.onchange = loadFile;
 // Uploading
 function loadFile(evt: Event) {
     // stop code, just to be sure
-    stopCode();
+    ENV.stopCode();
 
     const target: HTMLInputElement = evt.target as HTMLInputElement;
     if (!target) return;
@@ -54,13 +42,13 @@ function loadFile(evt: Event) {
         switch (ext.toLowerCase()) {
             case "rk":
                 console.log(`Lade Programm '${justName}'`);
-                editor.setValue(event.target.result, 0);
-                editor.moveCursorTo(0, 0);
+                ENV.editor.setValue(event.target.result, 0);
+                ENV.editor.moveCursorTo(0, 0);
                 break;
             case "csv":
                 console.log(`Lade Welt '${justName}'`);
                 try {
-                    loadRawTask("Hochgeladen", {
+                    ENV.loadRawTask("Hochgeladen", {
                         title: `${justName}`,
                         description: "Nutze 'welt.fertig()' und die Feldlampen, um die Aufgabe zu lösen!",
                         preload: "\n",
@@ -76,7 +64,7 @@ function loadFile(evt: Event) {
                 console.log(`Lade Aufgabe aus '${justName}'`);
                 try {
                     const newTask: Task = JSON.parse(event.target.result) satisfies Task;
-                    loadRawTask("Hochgeladen", newTask);
+                    ENV.loadRawTask("Hochgeladen", newTask);
                 } catch {
                     console.log(`Die Aufgabe konnte nicht geladen werden.`);
                     console.log(`Überprüfe das Dateienformat!`);

@@ -1,7 +1,6 @@
-import { Octokit } from "@octokit/rest";
-import { extTasks, liveTasks, loadTask } from "..";
-import { Task } from "../robot/tasks";
-import { createOption } from "../utils";
+import { runtime as ENV } from "..";
+import { type Task } from "../robot/tasks";
+import { createOption, destructureKey } from "../utils";
 
 // Fill task selector
 export const taskSelector = document.getElementById("load-task") as HTMLSelectElement;
@@ -15,7 +14,7 @@ export function updateTaskSelector() {
     }
 
     // First, get the live tasks
-    for (const [key, task] of Object.entries(liveTasks)) {
+    for (const [key, task] of Object.entries(ENV.liveTasks)) {
         const splitKey = destructureKey(key, false);
 
         if (currentAuthor != splitKey.author) {
@@ -32,7 +31,7 @@ export function updateTaskSelector() {
     }
 
     // Then get the online tasks
-    for (const [key, dlURL] of Object.entries(extTasks)) {
+    for (const [key, dlURL] of Object.entries(ENV.extTasks)) {
         const splitKey = destructureKey(key, true);
 
         if (currentAuthor != splitKey.author) {
@@ -56,7 +55,7 @@ export function updateTaskSelector() {
 taskSelector.onchange = (e: Event) => {
     console.log();
     console.log("🤔 Lade neue Aufgabe: " + taskSelector.value);
-    loadTask(taskSelector.value);
+    ENV.loadTask(taskSelector.value);
 };
 /**
  * Get github files
@@ -65,61 +64,15 @@ taskSelector.onchange = (e: Event) => {
 // https://github.com/octokit/core.js#readme
 
 
-export async function loadExtTasks() {
-    const octokit = new Octokit();
-
-    /*
-    const allFiles = await octokit.request("GET /repos/{owner}/{repo}/git/trees/main/tasks", {
-        owner: "schmisev",
-        repo: "RK4Tasks",
-    });
-    */
-    const allFiles = await octokit.request("GET /repos/{owner}/{repo}/contents/tasks/", {
-        owner: "schmisev",
-        repo: "RK4Tasks",
-    });
-
-    for (const file of allFiles.data) {
-        const fileName: string = (file.name satisfies string);
-        const splitFileName = fileName.split(".");
-        const fileExt = splitFileName.pop();
-        const key = splitFileName.join(".");
-
-        if (key && fileExt == "json") {
-            extTasks[key] = file.download_url;
-            /*
-            // request all the files
-            */
-        }
-    }
-    /**/
-}
-
 export async function downloadExtTask(key: string, dlURL: string) {
     try {
         const dlFile = await fetch(dlURL);
         const fileContent = await dlFile.text();
         const task: Task = JSON.parse(fileContent);
-        liveTasks[key] = task;
+        ENV.liveTasks[key] = task;
     } catch {
         return; // who cares, if it fails it fails
     }
-}
-
-export function destructureKey(key: string, containsTitle = false) {
-    const keyParts = key.split("_");
-    let title = containsTitle ? (keyParts.pop() || "unbenannt") : "ex. Titel";
-    let name = keyParts.pop() || "unbenannt";
-    let category = keyParts.pop() || "Standard";
-    let author = keyParts.pop() || "unbekannt";
-
-    return {
-        name: name,
-        category: category,
-        author: author,
-        title: title,
-        sortStr: author + category + name + title,
-    };
 }
 
 export function sortKeys(a: string, b: string) {
@@ -132,3 +85,13 @@ export function sortKeys(a: string, b: string) {
     return 0;
 }
 
+export async function retrieveLocalTasks() {
+    let value = localStorage.getItem("task-store");
+    if (value == null) {
+        return;
+    }
+    let additionalTasks = JSON.parse(value) as Record<string, Task>;
+    ENV.liveTasks = { ...ENV.liveTasks, ...additionalTasks};
+}
+
+export { destructureKey };

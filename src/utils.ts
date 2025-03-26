@@ -159,3 +159,32 @@ export function screenshotDiv(elem: HTMLElement, filename: string) {
             link.remove();
         });
 }
+
+export function downloadTextFile(filename: string, text: string) {
+    const element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
+}
+
+export function destructureKey(key: string, containsTitle = false) {
+    const keyParts = key.split("_");
+    let title = containsTitle ? (keyParts.pop() || "unbenannt") : "ex. Titel";
+    let name = keyParts.pop() || "unbenannt";
+    let category = keyParts.pop() || "Standard";
+    let author = keyParts.pop() || "unbekannt";
+
+    return {
+        name: name,
+        category: category,
+        author: author,
+        title: title,
+        sortStr: author + category + name + title,
+    };
+}

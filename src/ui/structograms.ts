@@ -1,3 +1,4 @@
+import { toggleDefs, toggleFunctions, toggleLabels, toggleMethods } from "..";
 import {
     AnyStmt,
     BinaryExpr,
@@ -19,7 +20,6 @@ import {
 import { ValueAlias } from "../language/runtime/values";
 import { ENV } from "../spec";
 import { screenshotDiv, translateOperator } from "../utils";
-import { toggleDefs, toggleLabels, toggleMethods, toggleFunctions } from "./toggle-buttons";
 
 // Robot class
 const ROBOT_PSEUDO_CLASS = 

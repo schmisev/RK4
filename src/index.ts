@@ -1,27 +1,28 @@
 // UI imports
-import "./ui/panels";
-import "./ui/robot-view";
-import "./ui/console-log";
-import "./ui/save-load-files";
-import "./ui/task-selector";
-import "./ui/store-code";
-import { updateTaskSelector } from "./ui/task-selector";
+import { setup as setupRobotView } from "./ui/robot-view";
 import { setStructogramVisibility, showStructogram, unloadStructogram } from './ui/structograms';
 import { addRobotButtons } from './ui/objectigrams';
 import "./ui/flowcharts";
+// UI imports *with side-effects*
+import "./ui/panels";
+import "./ui/store-code";
+import "./ui/task-selector";
+import "./ui/save-load-files";
+import "./ui/console-log";
+import { retrieveLocalTasks, updateTaskSelector } from "./ui/task-selector";
 
 // language imports
 import Parser from "./language/frontend/parser";
 import { Program } from './language/frontend/ast';
 import { GlobalEnvironment, declareGlobalEnv } from "./language/runtime/environment";
 import { evaluate } from "./language/runtime/interpreter";
-import { easeInCubic, easeInQuint, getKeys, getVals, lerp, sleep } from "./utils";
+import { easeInQuint, getKeys, getVals, lerp, sleep } from "./utils";
 
 // Robot imports
 import { declareWorld, World } from "./robot/world";
 import { STD_PRELOAD, STD_WORLD, STD_TASKS, DEFAULT_TASK, STD_CODE, Task, WorldSource } from "./robot/tasks";
 import { destructureKey } from "./ui/task-selector";
-import { loadExtTasks, downloadExtTask } from "./ui/task-selector";
+import { downloadExtTask } from "./ui/task-selector";
 import { clamp } from './utils';
 
 // ACE imports
@@ -32,27 +33,24 @@ import * as langTools from "ace-builds/src-noconflict/ext-language_tools";
 import './assets/ace/mode-rkscript.js';
 import './assets/ace/theme-rklight.js';
 
-// General errors 
-import { DebugError, LexerError, ParserError } from './errors';
+// General errors
+import { DebugError, LexerError, ParserError, RuntimeError } from './errors';
 import { setFlowchartVisibility, showFlowchart, unloadFlowchart } from "./ui/flowcharts";
-import { toggleFlowchart } from "./ui/toggle-buttons";
+import { connectDebugToggle, connectSimpleToggle, Toggle } from "./ui/toggle-buttons";
 import { CodePosition, ILLEGAL_CODE_POS, KEYWORDS } from "./language/frontend/lexer";
 import { ENV } from "./spec";
-import { rejects } from "assert";
+import { AppRuntime } from "./app";
 
 // Global variables
-export let maxDt = 250;
-export let minDt = 0.5;
-export let dt = 50; // ms to sleep between function calls
-let dtHighlight = 10; // ms under which no line by line highlighting is done
-let dtIDE = 300; // ms to wait for IDE update
+let maxDt = 250;
+let minDt = 0.5;
+const dt = 50; // ms to sleep between function calls
+const dtHighlight = 10; // ms under which no line by line highlighting is done
+const dtIDE = 300; // ms to wait for IDE update
 let frameLagSum = 0; // running sum of frame lag
-export let isRunning = false;
-export let manualMode = false;
-export let queueInterrupt = false;
-export let liveTasks = STD_TASKS;
-export let extTasks: Record<string, string> = {};
-export let taskName: string
+
+let rt: AppRuntime;
+export { rt as runtime };
 
 // manual mode
 function listenForExitManualMode() {
@@ -69,20 +67,20 @@ function listenForExitManualMode() {
 }
 
 function exitManualMode() {
-    if (!manualMode) return;
+    if (!rt.manualMode) return;
     document.dispatchEvent(new Event("exit-manual-mode"));
-    manualMode = false;
+    rt.manualMode = false;
 }
 
 // interrupts
 // interrupts for run code
 async function interrupt() {
-    if (!isRunning) return;
-    queueInterrupt = true;
-    while (isRunning) {
+    if (!rt.isRunning) return;
+    rt.queueInterrupt = true;
+    while (rt.isRunning) {
         await sleep(10); // wait long enough for execution loop to exit
     }
-    queueInterrupt = false;
+    rt.queueInterrupt = false;
 }
 
 // Code state
@@ -93,16 +91,14 @@ const errorMarkers: number[] = [];
 
 // Parser and environment
 const parser = new Parser();
-let env: GlobalEnvironment;
-export let world: World
 
 // HTML elements
 // Fetch task check
-export const taskCheck = document.getElementById("task-check")!;
-export const playState = document.getElementById("play-state-symbol")!;
+const taskCheck = document.getElementById("task-check")!;
+const playState = document.getElementById("play-state-symbol")!;
 
 // Fetch object overlay & object bar
-export const objOverlay = document.getElementById("object-overlay")!;
+const objOverlay = document.getElementById("object-overlay")!;
 const objBar = document.getElementById("object-bar")!;
 
 // Setup editors
@@ -184,7 +180,7 @@ const allCompleters = [
 ];
 
 langTools.setCompleters(allCompleters)
-export const editor = ace.edit("code-editor", {
+const editor = ace.edit("code-editor", {
     minLines: 30,
     mode: "ace/mode/RKScript",
 	theme: "ace/theme/RKLight",
@@ -234,16 +230,15 @@ function updateSlider() {
     const val = parseInt(waitSlider.value);
     let hz = lerp((1000 / maxDt), (1000 / minDt), easeInQuint(val / 100));
 
-    dt = 1000 / hz;
+    rt.dt = 1000 / hz;
     const hzText = hz.toFixed(1) + " Hz";
-    document.getElementById("wait-time")!.innerHTML =  hzText + " | " + dt.toFixed(1) + " ms pro Anweisung";
+    document.getElementById("wait-time")!.innerHTML =  hzText + " | " + rt.dt.toFixed(1) + " ms pro Anweisung";
 }
 
 // waitSlider.min = (1000 / maxDt).toString();
 // waitSlider.max = (1000 / minDt).toString();
 // waitSlider.value = (1000 / dt).toString();
 waitSlider.oninput = updateSlider
-updateSlider();
 
 // automatic parse timeout to avoid lagging the editor
 let autoUpdateIDE = setTimeout(updateIDE, dtIDE);
@@ -349,7 +344,7 @@ export async function updateIDE() {
     //if (!code) return;
     try {
         parser.produceAST(preloadCode, false, true);
-        const program = parser.produceAST(code, true, false);
+        const program = rt.program = parser.produceAST(code, true, false);
         
         methodCompleter.updateMap(parser.collectedFields);
         classCompleter.updateList(parser.collectedClasses);
@@ -396,12 +391,12 @@ export async function updateIDE() {
 }
 
 // loading tasks
-export function loadRawTask(key: string, task: Task, ignoreTitleInKey = false) {
+function loadRawTask(key: string, task: Task, ignoreTitleInKey = false) {
     const splitKey = destructureKey(key, ignoreTitleInKey);
 
     preloadCode = task.preload;
     worldSpec = task.world;
-    taskName = `${key}`
+    rt.taskName = `${key}`
 
     taskDescription.innerHTML = `
     <p><b>🤔 ${splitKey.name}: "${task.title}"</b></p>
@@ -411,28 +406,28 @@ export function loadRawTask(key: string, task: Task, ignoreTitleInKey = false) {
     preloadEditor.moveCursorTo(0, 0);
 
     resetEnv();
-    world.loadWorldLog();
+    rt.world.loadWorldLog();
 }
 
-export async function loadTask(key: string) {
+async function loadTask(key: string) {
     await interrupt()
 
-    if (key in liveTasks) {
-        loadRawTask(key, liveTasks[key], false);
+    if (key in rt.liveTasks) {
+        loadRawTask(key, rt.liveTasks[key], false);
         return;
     }
-    if (key in extTasks) {
-        await downloadExtTask(key, extTasks[key]);
-        loadRawTask(key, liveTasks[key], true);
+    if (key in rt.extTasks) {
+        await downloadExtTask(key, rt.extTasks[key]);
+        loadRawTask(key, rt.liveTasks[key], true);
         return;
     }
 }
 
 // Resetting the environment
 async function resetEnv(stage = 0) {
-    env = declareGlobalEnv();
+    const env = rt.env = declareGlobalEnv();
     // create new world and register it in the global environment
-    world = new World(worldSpec, stage);
+    const world = rt.world = new World(worldSpec, stage);
     declareWorld(world, "welt", env);
     world.declareAllRobots(env);
     addRobotButtons(objBar, objOverlay, world);
@@ -453,7 +448,7 @@ async function runCmd() {
     if (cmdLineStack.length > 30) cmdLineStack.shift()
     cmdLineStackPointer = cmdLineStack.length;
 
-    if (manualMode || isRunning || queueInterrupt) return;
+    if (rt.manualMode || rt.isRunning || rt.queueInterrupt) return;
     
     console.log(">>", cmdCode);
     await runCode(cmdCode, true, false, false);
@@ -476,8 +471,8 @@ function fetchCmd(e: KeyboardEvent) {
 
 // Start code via button
 async function startCode() {
-    if (queueInterrupt) return; // exit during interrupt to avoid piling up executions
-    if (manualMode) {
+    if (rt.queueInterrupt) return; // exit during interrupt to avoid piling up executions
+    if (rt.manualMode) {
         exitManualMode();
         return; // exit in manual mode, so the execution can continue
     }
@@ -492,11 +487,11 @@ async function startCode() {
     setErrorBar("✔️ kein Fehler gefunden", "none");
 
     editor.setReadOnly(true);
-    for (let i = 0; i < world.getStageCount(); i++) {
+    for (let i = 0; i < rt.world.getStageCount(); i++) {
         await resetEnv(i);
         if (i > 0) {
             console.log();
-            world.loadWorldLog();
+            rt.world.loadWorldLog();
         }
         console.log("\n▷ Code wird ausgeführt!");
         
@@ -508,12 +503,12 @@ async function startCode() {
         console.log("▢ Ausführung beendet!");
 
         await sleep(250); // wait a bit until goal has updated
-        if (isRunning) {
+        if (rt.isRunning) {
             editor.setReadOnly(false);
             return;
         }
 
-        if (!world.isGoalReached()) {
+        if (!rt.world.isGoalReached()) {
             console.log(`❌ Du hast die Teilaufgabe ${i+1} NICHT erfüllt!`);
             editor.setReadOnly(false);
             return;
@@ -522,7 +517,7 @@ async function startCode() {
         }
         
         await sleep(250);
-        if (isRunning) {
+        if (rt.isRunning) {
             editor.setReadOnly(false);
             return;
         }
@@ -535,11 +530,11 @@ async function startCode() {
 async function nextCode() {
     exitManualMode();
 
-    if (!isRunning) {
+    if (!rt.isRunning) {
         startCode();
     }
 
-    manualMode = true; // always reenable to manual mode
+    rt.manualMode = true; // always reenable to manual mode
 }
 
 // Stop code via button
@@ -563,28 +558,27 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
     }
 
     try {
-        const program = parser.produceAST(code, trackPos, true);
+        const program = rt.program = parser.produceAST(code, trackPos, true);
+        const env = rt.env;
         let stepper = evaluate(program, env);
 
-        isRunning = true;
-        
+        rt.isRunning = true;
         // await sleep(dt);
-        
         frameLagSum = 0;
         while (true) {
             const next = stepper.next();
             if (next.done) break;
-            
-            if (queueInterrupt) {
+
+            if (rt.queueInterrupt) {
                 console.log("▽ Ausführung wird abgebrochen!");
-                isRunning = false;
+                rt.isRunning = false;
                 cleanupMarkers();
                 return true; // returns true if interrupted
             }
 
             if (stepped) {
                 // always push marker!
-                if (showHighlighting && dt > dtHighlight) {
+                if (showHighlighting && rt.dt > dtHighlight) {
                     markerIds.push(
                         editor.session.addMarker(
                             new ace.Range(
@@ -599,7 +593,7 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
 
                 lastCodePos = next.value;
 
-                skippedSleep += dt; // assume sleep is skipped
+                skippedSleep += rt.dt; // assume sleep is skipped
                 if (skippedSleep > frameLagSum) {
                     // console.timeEnd()
                     // console.time()
@@ -613,7 +607,7 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
             }
 
             /* there has got to be a better way */
-            if (manualMode) {
+            if (rt.manualMode) {
                 await listenForExitManualMode();
             }
 
@@ -640,20 +634,75 @@ async function runCode(code: string, stepped: boolean, showHighlighting: boolean
             // do nothing? IGNORE!
         }
     }
-
-    isRunning = false;
+    
+    rt.isRunning = false;
     return false;
 }
 
-// updating lag sum
-export function updateLagSum(dt: number) {
-    frameLagSum += dt;
-}
+// setup toggle buttons
+export let toggleDefs = connectDebugToggle("debug-show-defs", false, updateIDE);
+export let toggleLabels = connectDebugToggle("debug-show-labels", true, updateIDE);
+export let toggleFunctions = connectDebugToggle("debug-show-functions", true, updateIDE);
+export let toggleMethods = connectDebugToggle("debug-show-methods", true, updateIDE);
+export let toggleFlowchart = connectDebugToggle("debug-show-flowchart", false, updateIDE);
 
-export function resetLagSum() {
-    frameLagSum = 0;
-}
+export let toggleThoughts = connectSimpleToggle("thought-toggle", true);
+export let toggleAnimation = connectSimpleToggle("animation-toggle", true);
 
 // Start app
-loadExtTasks().catch(e => console.error(e)).then(updateTaskSelector); // get std tasks
-loadTask(DEFAULT_TASK).catch(e => console.error(e)).then(updateIDE);
+const dummyTask = STD_TASKS[DEFAULT_TASK];
+rt = {
+    isRunning: false,
+    queueInterrupt: false,
+    manualMode: false,
+    dt,
+    maxDt,
+    playState,
+    env: declareGlobalEnv(),
+    world: new World(dummyTask.world, 0),
+
+    taskCheck,
+    objOverlay,
+
+    program: parser.produceAST("", false, false),
+    stopCode,
+
+    editor,
+    taskName: DEFAULT_TASK,
+    liveTasks: STD_TASKS,
+    extTasks: {},
+    loadTask,
+    loadRawTask,
+
+    updateLagSum(dt: number) {
+        frameLagSum += dt;
+    },
+    resetLagSum() {
+        frameLagSum = 0;
+    },
+
+    toggleAnimation,
+    toggleThoughts
+};
+
+
+const screenshotRobot = document.getElementById("robot-screenshot")!;
+screenshotRobot.onclick = () => {
+    robotView.saveCanvas(rt.taskName + "_" + (new Date()).toLocaleString() + ".png");
+}
+
+let robotView = setupRobotView(rt);
+updateSlider();
+
+const setup = [
+    retrieveLocalTasks().then(updateTaskSelector), // get std tasks
+    loadTask(DEFAULT_TASK).catch(e => console.error(e)).then(updateIDE),
+];
+
+async function finishSetup() {
+    for(let task of setup) {
+        try { await task } catch(e) {}
+    }
+    document.getElementById("loading-overlay")?.classList.remove("loading");
+}
+finishSetup();
