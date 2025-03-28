@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8" />
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 
     <link rel="stylesheet" type="text/css" href="common-style.css">
@@ -107,13 +107,13 @@
                 <!-- Step time UI -->
                 <div class="wait-title wsr lc30">⏱️ <span class="wait-time" id="wait-time">??</span></div>
                 <div class="wait-slider-container wsr lc30">
-                    <input type="range" value="20" min="1" max="100" step="1" class="wait-slider slider" id="wait-slider">
+                    <input placeholder="20" type="range" value="20" min="1" max="100" step="1" class="wait-slider slider" id="wait-slider">
                 </div>
                 <button title="Pausiere oder führe die nächste Anweisung aus!" class="code-next roboto" id="code-next">
                     <span class="material-symbols-outlined">play_pause</span>
                 </button>
                 <!-- Command line UI -->
-                <input class="cmd-line cascadia" id="cmd-line" autocomplete="off">
+                <input placeholder="k1.schritt()" class="cmd-line cascadia" id="cmd-line" autocomplete="off">
                 <div class="cmd-start cascadia lc30">&gt;&gt;</div>
                 <button class="cmd-run" id="cmd-run">
                     <span class="material-symbols-outlined">skip_next</span>
