@@ -1,6 +1,13 @@
-import { editEnv as ENV, generateProxiesFromString } from "../editor";
+import { WorldEditEnv } from "../app";
+import { generateProxiesFromString } from "../robot/world-proxies";
 import { DEFAULT_TASK, STD_TASKS, STD_WORLD, type Task } from "../robot/tasks";
 import { createOption, destructureKey } from "../utils";
+
+let ENV: WorldEditEnv;
+export function setup(env: typeof ENV) {
+    ENV = env;
+}
+
 
 let taskStore: Record<string, Task> = {
 }

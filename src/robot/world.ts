@@ -2,8 +2,8 @@ import { RuntimeError, WorldError } from "../errors";
 import { ClassPrototype, GlobalEnvironment, VarHolder } from "../language/runtime/environment";
 import { BuiltinClassVal, MK_BOOL, MK_NATIVE_METHOD, MK_NUMBER, ObjectVal, RuntimeVal, ValueAlias } from "../language/runtime/values";
 import { ENV } from "../spec";
-import { declareRobot, Robot } from "./robot";
 import { rndi } from "../utils";
+import { declareRobot, Robot } from "./robot";
 import { WorldGen, WorldSource } from "./tasks";
 
 export enum BlockType {

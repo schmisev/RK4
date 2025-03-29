@@ -1,4 +1,3 @@
-import { random } from "mermaid/dist/utils";
 import { World, Field, BlockType, MarkerType } from "./world";
 import { deepCopy, rndi } from "../utils";
 import { WorldError } from "../errors";
@@ -23,9 +22,6 @@ function generateHomogeneousWorld(
     return result;
 }
 
-/**
- * Interface for tasks
- */
 export interface Task {
     title: string;
     description: string;

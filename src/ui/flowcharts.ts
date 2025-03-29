@@ -561,7 +561,7 @@ function chartSwitch(block: AnySwitchBlock, ends: LooseEnds): LooseEnds {
 
     endsCtrl.runover[0].outLabel = "sonst";
     const fallback = chartSequence(block.fallback, endsCtrl);
-    endsCtrl.runover = [deepCopy(endsCtrl.runover[0]), ...fallback.continue || []];
+    endsCtrl.runover = [deepCopy(endsCtrl.runover[0]), ...(fallback.continue || [])];
     overallRets.push(...(fallback.return || []));
     switchRunover.push(...fallback.runover, ...(fallback.break || []));
     

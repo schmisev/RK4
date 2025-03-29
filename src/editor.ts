@@ -1,10 +1,13 @@
 // UI imports
-import { WorldEditEnv, type WorldViewEnv } from "./app";
+import type { WorldEditEnv, WorldViewEnv } from "./app";
 import { DEFAULT_TASK, STD_TASKS, type Task } from "./robot/tasks";
 import { World } from "./robot/world";
-import { setup as setupRobotView } from "./ui/robot-view";
 import { makeToggle } from "./ui/toggle-buttons";
-import "./ui/store-world";
+import { generateProxiesFromString, type WorldProxy } from "./robot/world-proxies";
+
+// side effect free UI components :)
+import { setup as setupRobotView } from "./ui/robot-view";
+import { setup as setupWorldStore } from "./ui/store-world";
 
 // ACE imports
 import * as ace from "ace-builds";
@@ -34,14 +37,6 @@ export let viewEnv: WorldViewEnv = {
     toggleThoughts: makeToggle(true),
 };
 
-// world editor
-export interface WorldProxy {
-    L: number;
-    W: number;
-    H: number;
-    fields: string[][];
-}
-
 // Setup editors
 const descriptionEditor = ace.edit("task-description-editor", {
     minLines: 1,
@@ -58,8 +53,6 @@ const preloadEditor = ace.edit("preload-editor", {
     //readOnly: true,
     showPrintMargin: false,
 });
-
-const robotView = setupRobotView(viewEnv);
 
 export const stdWorldProxy: WorldProxy = {
     L: 3,
@@ -462,33 +455,13 @@ function generateFileName(ext?: string): string {
     return `${editEnv.author.value}_${editEnv.category.value}_${editEnv.name.value}${ext}`;
 }
 
-// generate proxy from string
-export function generateProxiesFromString(worldStr: string): WorldProxy[] {
-    let worldCells = worldStr
-        .split("x")
-        .map((w: string) => w.split("\n").map((r: string) => r.split(";")));
-
-    worldCells.shift(); // space before x is empty
-
-    let newProxies: WorldProxy[] = [];
-
-    for (const w of worldCells) {
-        let header = w.shift(); // first row
-        if (!header) throw "Weltformat fehlerhaft!";
-        newProxies.push({
-            L: parseInt(header[1]),
-            W: parseInt(header[2]),
-            H: parseInt(header[3]),
-            fields: w,
-        });
-    }
-    
-    return newProxies;
-}
-
 // start app
 reloadEditor();
 reloadWorld();
 reloadMetaInfo();
 
+setupRobotView(viewEnv);
+setupWorldStore(editEnv);
+
+// remove loading screen
 document.getElementById("loading-overlay")?.classList.remove("loading");
