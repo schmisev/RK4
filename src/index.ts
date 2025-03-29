@@ -21,7 +21,7 @@ import { easeInQuint, getKeys, getVals, lerp, sleep } from "./utils";
 // Robot imports
 import { declareWorld, World } from "./robot/world";
 import { STD_PRELOAD, STD_WORLD, STD_TASKS, DEFAULT_TASK, STD_CODE, Task, WorldSource } from "./robot/tasks";
-import { destructureKey } from "./ui/task-selector";
+import { destructureTaskKey } from "./utils";
 import { downloadExtTask } from "./ui/task-selector";
 import { clamp } from './utils';
 
@@ -392,7 +392,7 @@ export async function updateIDE() {
 
 // loading tasks
 function loadRawTask(key: string, task: Task, ignoreTitleInKey = false) {
-    const splitKey = destructureKey(key, ignoreTitleInKey);
+    const splitKey = destructureTaskKey(key, ignoreTitleInKey);
 
     preloadCode = task.preload;
     worldSpec = task.world;

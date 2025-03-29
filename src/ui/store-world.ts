@@ -1,7 +1,7 @@
 import { WorldEditEnv } from "../app";
 import { generateProxiesFromString } from "../robot/world-proxies";
-import { DEFAULT_TASK, STD_TASKS, type Task } from "../robot/tasks";
-import { createOption, destructureKey } from "../utils";
+import { type Task } from "../robot/tasks";
+import { createOption, destructureTaskKey } from "../utils";
 
 let ENV: WorldEditEnv;
 export function setup(env: typeof ENV) {
@@ -73,7 +73,7 @@ function loadFromStore() {
     let worldStr = task.world;
     let newProxies = generateProxiesFromString(worldStr);
 
-    let { author, category, name } = destructureKey(key);
+    let { author, category, name } = destructureTaskKey(key);
 
     ENV.proxies = newProxies;
     ENV.description.setValue(task.description);

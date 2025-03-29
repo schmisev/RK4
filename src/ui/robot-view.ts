@@ -10,9 +10,9 @@ let ENV: WorldViewEnv;
 function robotSketch(p5: p5) {
     let bg = 0; // Background color
     const canvasDiv = document.getElementById('robot-canvas')!;
-    let canvasW = 0, canvasH = 0;
     let cam: p5.Camera;
     let animStrength = 0;
+    let wasGoalReached: boolean;
 
     const CPS = 100; // Compass size
     const TSZ = 50; // Tilesize
@@ -176,14 +176,14 @@ function robotSketch(p5: p5) {
         // update play state
         playState.innerHTML = queueInterrupt ? "report" : (!isRunning ? "stop" : (manualMode ? "pause" : "play_arrow"))
 
-        // update task status
-        if (!world.isGoalReached()) {
-            taskCheck.style.backgroundColor = "whitesmoke";
-            taskCheck.innerHTML = `❌<br>${world.getStageIndex()} / ${world.getStageCount()}`;
-        } else {
-            taskCheck.style.backgroundColor = "lightgreen";
-            taskCheck.innerHTML = `✔️<br>${world.getStageIndex() + 1} / ${world.getStageCount()}`;
+        // update task status (only updating if not current)
+        let isGoalReached = world.isGoalReached();
+        if (isGoalReached !== wasGoalReached) {
+            taskCheck.style.backgroundColor = isGoalReached ? "lightgreen" : "whitesmoke";
+            let emoji = isGoalReached ? '✔️' : '❌';
+            taskCheck.innerHTML = `${emoji}<br>${world.getStageIndex() + 1} / ${world.getStageCount()}`;
         }
+        wasGoalReached = isGoalReached;
 
         const worldInst = world
 

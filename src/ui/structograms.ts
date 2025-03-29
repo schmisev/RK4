@@ -18,8 +18,8 @@ import {
     AnyForInBlock,
 } from "../language/frontend/ast";
 import { ValueAlias } from "../language/runtime/values";
-import { ENV } from "../spec";
 import { screenshotDiv, translateOperator } from "../utils";
+import { ENV } from "../spec";
 
 // Robot class
 const ROBOT_PSEUDO_CLASS = 
