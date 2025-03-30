@@ -14,7 +14,7 @@ export function addRobotButtons(div: HTMLElement, overlay: HTMLElement, world: W
         el.onclick = (e: MouseEvent) => {
             robotDiagramIndex == i ? robotDiagramIndex = -1 : robotDiagramIndex = i;
             if (robotDiagramIndex >= 0) {
-                showRobotDiagram(overlay, e.clientX, e.clientY);
+                showRobotDiagram(el, overlay);
             } else {
                 hideRobotDiagram(overlay);
             }
@@ -38,11 +38,9 @@ export function updateRobotDiagram(r: Robot, overlay: HTMLElement) {
     </div>`;
 }
 
-export function showRobotDiagram(overlay: HTMLElement, mx: number, my: number) {
+export function showRobotDiagram(el: HTMLElement, overlay: HTMLElement) {
+    el.appendChild(overlay); // attach overlay to button
     overlay.style.display = "block";
-    overlay.style.transform = `translateX(${mx}px)`
-    overlay.style.transform += `translateY(${my}px)`
-    //console.log(r.name);
 }
 
 export function hideRobotDiagram(overlay: HTMLElement) {

@@ -263,6 +263,8 @@
 }
 
 .object-button {
+    position: relative;
+    overflow: visible;
     margin-top: 5px;
     margin-left: 5px;
     background-color: whitesmoke;
@@ -278,6 +280,7 @@
     display: none; /* Hidden by default */
     width: auto;
     height: auto;
+    top: 115%;
     /*width: 100%;  Full width (cover the whole page) */
     /*height: 100%;  Full height (cover the whole page) */
     background-color: rgba(255,255,255,1); /* Black background with opacity */
@@ -287,6 +290,7 @@
     pointer-events: none; /* Allow clicking trough the div */
     border-radius: 10px 10px 10px 10px;
     outline: 2px black solid;
+    box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, .2);
 }
 
 #task-bar {
@@ -392,9 +396,12 @@
     padding-left: 30px;
 }
 
-.cmd-start {
+#cmd-start {
     grid-column: 8;
     grid-row: 13;
+}
+
+.cmd-start {
     padding-left: 7px;
     color: lightgreen;
     pointer-events: none;
