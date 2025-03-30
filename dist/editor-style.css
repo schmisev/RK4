@@ -103,7 +103,7 @@
 
 #task-description-editor {
     grid-column: 8 / 14;
-    grid-row: 16 / 19;
+    grid-row: 16 / 20;
 }
 
 #task-description {
@@ -123,7 +123,7 @@
 
 #preload-editor {
     grid-column: 8 / 14;
-    grid-row: 19 / 24;
+    grid-row: 20 / 24;
     font-style: italic;
     border-radius: 5px 5px 5px 5px;
 }

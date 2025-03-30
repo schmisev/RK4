@@ -399,8 +399,9 @@ function loadRawTask(key: string, task: Task, ignoreTitleInKey = false) {
     rt.taskName = `${key}`
 
     taskDescription.innerHTML = `
-    <p><b>🤔 ${splitKey.name}: "${task.title}"</b></p>
-    <p>${task.description}</p>`;
+    <div class="title">🤔 ${splitKey.name}: "${task.title}"</div>
+    <div class="body">${task.description}</div>
+    <div class="author">${splitKey.author} 👤</div>`;
 
     preloadEditor.setValue(preloadCode, 0);
     preloadEditor.moveCursorTo(0, 0);

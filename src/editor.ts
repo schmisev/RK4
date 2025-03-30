@@ -420,8 +420,9 @@ function reloadEditor(): void {
 // reloading meta info
 function reloadMetaInfo(): void {
     editEnv.descriptionPreview.innerHTML = `
-    <p><b>🤔 ${editEnv.name.value}: "${editEnv.title.value}"</b></p>
-    <p>${editEnv.description.getValue()}</p>`;
+    <div class="title">🤔 ${editEnv.name.value}: "${editEnv.title.value}"</div>
+    <div class="body">${editEnv.description.getValue()}</div>
+    <div class="author">${editEnv.author.value} 👤</div>`;
     editEnv.titlePreview.innerText = generateFileName();
     editEnv.indexView.innerHTML = `${editEnv.idx}`;
 }
