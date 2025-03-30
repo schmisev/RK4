@@ -378,6 +378,27 @@ function renderWorldEdit(id: string) {
                     }
                 };
 
+                fieldEdit.onkeydown = (evt: KeyboardEvent) => {
+                    let moveToCell: HTMLInputElement | null = null;
+                    if (evt.ctrlKey) {
+                        if (evt.key === "ArrowUp" && j >= 0) {
+                            moveToCell = worldTable.rows[j].cells[i+1].children.item(0) as HTMLInputElement;
+                        } else if (evt.key === "ArrowDown" && j < worldProxy.W-1) {
+                            moveToCell = worldTable.rows[j+2].cells[i+1].children.item(0) as HTMLInputElement;
+                        } else if (evt.key === "ArrowRight" && i < worldProxy.L-1) {
+                            moveToCell = worldTable.rows[j+1].cells[i+2].children.item(0) as HTMLInputElement;
+                        } else if (evt.key === "ArrowLeft" && i >= 0) {
+                            moveToCell = worldTable.rows[j+1].cells[i].children.item(0) as HTMLInputElement;
+                        }
+                    }
+
+                    if (moveToCell) {
+                        evt.preventDefault();
+                        moveToCell.focus();
+                        moveToCell.select();
+                    }
+                }
+
                 field.appendChild(fieldEdit);
                 row.appendChild(field);
             }
