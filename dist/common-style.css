@@ -524,8 +524,8 @@ code {
         scale: 100%;
     }
     20% {
-        translate: 0 -2px;
-        /* background-color: white; */
+        scale: 110%;
+        filter: brightness(150%);
         box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, 0.2) ;
     }
     100% {
@@ -533,7 +533,15 @@ code {
     }
 }
 @-webkit-keyframes blink-animation {
-    to {
-        visibility: hidden;
+    0% {
+        scale: 100%;
+    }
+    20% {
+        scale: 110%;
+        filter: brightness(150%);
+        box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, 0.2) ;
+    }
+    100% {
+        scale: 100%;
     }
 }
