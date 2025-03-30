@@ -315,10 +315,20 @@ input[type="checkbox"] {
     font-size: 15px;
     display: inline-block;
     transform: translateY(-5%) rotate(5deg);
-    padding: 0px 5px;
     font-weight: 400;
 
     transition: transform 0.5s;
+
+    background-color:	#FADA5E;/**/
+    border: 2px #b19b42 solid;
+    border-top-left-radius: 255px 15px;
+    border-top-right-radius: 15px 225px;
+    border-bottom-right-radius: 225px 15px;
+    border-bottom-left-radius:15px 255px;
+    padding-left: 5px;
+    padding-right: 5px;
+    font-family: "Itim";
+    box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, .2);/**/
 }
 
 .version-label:hover {
