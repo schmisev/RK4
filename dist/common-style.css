@@ -513,3 +513,27 @@ code {
     font-size: small;
     color: rgba(0, 0, 0, 0.6);
 }
+
+.blink {
+    -webkit-animation: blink-animation 1s infinite;
+    animation: blink-animation 1s infinite;
+}
+
+@keyframes blink-animation {
+    0% {
+        scale: 100%;
+    }
+    20% {
+        translate: 0 -2px;
+        /* background-color: white; */
+        box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, 0.2) ;
+    }
+    100% {
+        scale: 100%;
+    }
+}
+@-webkit-keyframes blink-animation {
+    to {
+        visibility: hidden;
+    }
+}

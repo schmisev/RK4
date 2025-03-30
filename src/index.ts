@@ -56,23 +56,22 @@ export { rt as runtime };
 function listenForExitManualMode() {
     return new Promise((resolve) => {
         document.addEventListener("exit-manual-mode", resolve, {once: true});
-        /*
-        document.getElementById("code-next")!.addEventListener("click", resolve, {once: true});
-        document.getElementById("code-start")!.addEventListener("click", resolve, {once: true});
-        document.getElementById("code-stop")!.addEventListener("click", resolve, {once: true});
-        document.getElementById("store-data")!.addEventListener("change", resolve, {once: true});
-        document.getElementById("load-task")!.addEventListener("change", resolve, {once: true});
-        */
     });
+}
+
+function enterManualMode() {
+    if (rt.manualMode) return;
+    rt.manualMode = true;
+    document.getElementById("code-start")!.classList.toggle("blink", true);
 }
 
 function exitManualMode() {
     if (!rt.manualMode) return;
     document.dispatchEvent(new Event("exit-manual-mode"));
     rt.manualMode = false;
+    document.getElementById("code-start")!.classList.toggle("blink", false);
 }
 
-// interrupts
 // interrupts for run code
 async function interrupt() {
     if (!rt.isRunning) return;
@@ -535,7 +534,7 @@ async function nextCode() {
         startCode();
     }
 
-    rt.manualMode = true; // always reenable to manual mode
+    enterManualMode();
 }
 
 // Stop code via button
