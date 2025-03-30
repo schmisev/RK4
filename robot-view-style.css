@@ -20,12 +20,6 @@
   pointer-events: none;
 }
 
-#task-description {
-  white-space: wrap;
-  overflow-y: scroll;
-  scrollbar-width: thin;
-}
-
 #robot-canvas {
   cursor: grab;
 }
