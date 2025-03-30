@@ -27,30 +27,6 @@
     color: black;
 }
 
-.tab-button {
-    background-color: whitesmoke;
-    border-radius: 5px 5px 0px 0px;
-    margin-bottom: -5px;
-    border: none;
-    font-size: medium;
-    overflow: hidden;
-    white-space: nowrap;
-    font-family: "Roboto";
-}
-
-.tab-button.active {
-    background-color: black;
-    color: white;
-    outline: 1px black solid;
-    outline-offset: -1px;
-}
-
-.editor {
-    margin: 0;
-    position: relative;
-    border-radius: 5px;
-}
-
 #panel-row {
     display: flex;
     overflow-x: hidden;
@@ -80,23 +56,6 @@
     flex: 1;
     display: grid;
     grid-template-rows: 30px repeat(22, minmax(0, 1fr)) 30px;
-}
-
-.handler {
-    width: 20px;
-    padding: 0;
-    cursor: ew-resize;
-    flex: 0 0 auto;
-}
-
-.handler::before {
-    content: '';
-    display: block;
-    width: 4px;
-    height: 100%;
-    background: gray;
-    border-radius: 2px;
-    margin: 0 auto;
 }
 
 #grid-container-left {
@@ -219,7 +178,6 @@
 #save-code {
     grid-column: 1;
     grid-row: 1;
-    padding: 0px;
 }
 
 #load-code {
@@ -241,7 +199,6 @@
 #preload-editor {
     grid-column: 8 / 14;
     grid-row: 19 / 24;
-    font-style: italic;
     border-radius: 0px 0px 5px 5px;
 }
 
@@ -306,6 +263,8 @@
 }
 
 .object-button {
+    position: relative;
+    overflow: visible;
     margin-top: 5px;
     margin-left: 5px;
     background-color: whitesmoke;
@@ -321,6 +280,7 @@
     display: none; /* Hidden by default */
     width: auto;
     height: auto;
+    top: 115%;
     /*width: 100%;  Full width (cover the whole page) */
     /*height: 100%;  Full height (cover the whole page) */
     background-color: rgba(255,255,255,1); /* Black background with opacity */
@@ -330,17 +290,12 @@
     pointer-events: none; /* Allow clicking trough the div */
     border-radius: 10px 10px 10px 10px;
     outline: 2px black solid;
+    box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, .2);
 }
 
 #task-bar {
     grid-column: 8;
     grid-row: 11 / 13;
-}
-
-.diagram-title {
-    transition: width 0.2s;
-    overflow: hidden;
-    text-overflow: clip;
 }
 
 #structogram-diagram-title {
@@ -429,29 +384,30 @@
     align-items: center;
 }
 
-.mermaid {
-    width: 100%;
-    text-align: center;
+#cmd-line {
+    grid-column: 8 / 13;
+    grid-row: 13;
 }
 
 .cmd-line {
-    grid-column: 8 / 13;
-    grid-row: 13;
     color: lightgreen;
     border-radius: 5px;
     background-color: black;
     padding-left: 30px;
 }
 
-.cmd-start {
+#cmd-start {
     grid-column: 8;
     grid-row: 13;
+}
+
+.cmd-start {
     padding-left: 7px;
     color: lightgreen;
     pointer-events: none;
 }
 
-.cmd-run {
+#cmd-run {
     grid-column: 13;
     grid-row: 13;
 }
@@ -480,15 +436,18 @@
     white-space: pre-line;
 }
 
-.wait-title {
+#wait-title {
     grid-column: 1 / 3;
     grid-row: 23;
     padding-left: 10px;
 }
 
-.wait-slider-container {
+#wait-slider-container {
     grid-column: 3 / 7;
     grid-row: 23;
+}
+
+.wait-slider-container {
     text-align: center;
     align-content: center;
     margin: 0;
@@ -539,63 +498,6 @@
 
 .wait-time {
     font-size: small;
-}
-
-/* markers */
-.error-marker {
-    background-color: #fdc0be;
-    position: absolute;
-}
-
-.error-marker.runtime {
-    background-color: #fdc0be;
-}
-
-.error-marker.lexer {
-    background-color: #fdc0be;
-}
-
-.error-marker.parser {
-    background-color: #fdc0be;
-}
-
-.exec-marker {
-    background-color: lightblue;
-    position: absolute;
-}
-
-/* legend */
-.legend {
-    outline: 2px black solid;
-    opacity: 100%;
-    margin-left: 10px;
-    padding: 0 10px;
-}
-
-.legend.dashed {
-    border-radius: 5px;
-    outline-style: dashed;
-}
-
-.legend.empty {
-    outline: none;
-    background-color: transparent;
-}
-
-.legend.classname {
-    background-color: #CF9FFF;
-}
-
-.legend.attributes {
-    background-color: #fdc0be;
-}
-
-.legend.methods {
-    background-color: #cbf7c7;
-}
-
-.legend.functions {
-    background-color: lightblue;
 }
 
 /* debug */
