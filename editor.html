@@ -53,12 +53,38 @@
         <!-- World editor -->
         <div id="world-edit-bar" class="wsr lc30 text edit-bar">
             🖌️ <input title="Rechts-klicke Felder, um diesen Text hineinzukopieren." placeholder="" id="paint-input" class="paint-edit" value="_:_">
-            |<div>🤖<code>NSEW 1-9</code></div>
-            |<div>🧱<code>rgby+*.f</code></div>
-            |<div>🏷️<code>RGBY?!</code></div>
-            |<div>🚧<code>#</code></div>
-            |<div>⬜<code>_</code></div>
-            |<div>🏁<code>:</code></div>
+        </div>
+        <div class="lc30 text" id="world-helper">
+            <span class="hover-helper"><span class="turning">*️⃣</span>
+                <div class="tooltip" style="text-align: right;">
+                    <div style="text-align: left;">
+                    Roboter einfügen (Richtung): <code>NSEW</code><br>
+                    Roboter einfügen (Nummer): <code>1-9</code><br>
+                    <div class="struct-dot"></div>
+                    Ziegel einfügen (Farbe): <code>rgby</code><br>
+                    🎲 1 oder 0 rote Ziegel: <code>.</code><br>
+                    🎲 0 oder mehr rote Ziegel: <code>*</code><br>
+                    🎲 1 oder mehr rote Ziegel: <code>+</code><br>
+                    ❗ Mit roten Ziegeln füllen: <code>f</code><br>
+                    <div class="struct-dot"></div>
+                    Marke einfügen (Farbe): <code>RGBY</code><br>
+                    🎲 1 oder keine gelbe Marke: <code>?</code><br>
+                    ❗ Gegenteil der aktuellen Marke: <code>!</code><br>
+                    <div class="struct-dot"></div>
+                    Leeres Feld initialisieren: <code>_</code><br>
+                    Ziel festlegen: <span><code>:</code></span><br>
+                    </div>
+                    <div class="struct-dot"></div>
+                    Von Feld zu Feld springen: <br>
+                    <span class="keystroke">Strg</span> +
+                    <span class="keystroke">▴</span>
+                    <span class="keystroke">◂</span>
+                    <span class="keystroke">▸</span>
+                    <span class="keystroke">▾</span>
+                    <div class="struct-dot"></div>
+                    Rechts-Klick Kopiert den 🖌️-Wert.
+                </div>
+            </span>
         </div>
         <div id="world-edit-container" class="world-edit"></div>
         <div class="code-error lc30 wsr text" id="code-error">keine Fehler gefunden</div>
