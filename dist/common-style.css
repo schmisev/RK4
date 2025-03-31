@@ -120,6 +120,10 @@ input[type="checkbox"] {
     padding-right: 10px;
 }
 
+.center {
+    text-align: center;
+}
+
 .mermaid {
     width: 100%;
     text-align: center;
@@ -512,6 +516,41 @@ code {
     text-align: right;
     font-size: small;
     color: rgba(0, 0, 0, 0.6);
+}
+
+.object-bar {
+    border-radius: 0px 0px 5px 5px;
+}
+
+.object-button {
+    position: relative;
+    overflow: visible;
+    margin-top: 5px;
+    margin-left: 5px;
+    background-color: whitesmoke;
+    cursor: pointer;
+}
+
+.object-button:hover {
+    background-color: lightblue;
+}
+
+#object-overlay {
+    position: absolute; /* Sit on top of the page content */
+    display: none; /* Hidden by default */
+    width: auto;
+    height: auto;
+    top: 115%;
+    /*width: 100%;  Full width (cover the whole page) */
+    /*height: 100%;  Full height (cover the whole page) */
+    background-color: rgba(255,255,255,1); /* Black background with opacity */
+    z-index: 500; /* Specify a stack order in case you're using a different order for other elements */
+    cursor: pointer; /* Add a pointer on hover */
+    transition: transform 0.2s; /* Sticking effect */
+    pointer-events: none; /* Allow clicking trough the div */
+    border-radius: 10px 10px 10px 10px;
+    outline: 2px black solid;
+    box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, .2);
 }
 
 .blink {

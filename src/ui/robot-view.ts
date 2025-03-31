@@ -12,7 +12,6 @@ function robotSketch(p5: p5) {
     const canvasDiv = document.getElementById('robot-canvas')!;
     let cam: p5.Camera;
     let animStrength = 0;
-    let wasGoalReached: boolean;
 
     const CPS = 100; // Compass size
     const TSZ = 50; // Tilesize
@@ -178,14 +177,9 @@ function robotSketch(p5: p5) {
 
         // update task status (only updating if not current)
         let isGoalReached = world.isGoalReached();
-        if (isGoalReached !== wasGoalReached) {
-            taskCheck.style.backgroundColor = isGoalReached ? "lightgreen" : "whitesmoke";
-            let emoji = isGoalReached ? '✔️' : '❌';
-            taskCheck.innerHTML = `${emoji}<br>${world.getStageIndex() + 1} / ${world.getStageCount()}`;
-        }
-        wasGoalReached = isGoalReached;
-
-        const worldInst = world
+        taskCheck.style.backgroundColor = isGoalReached ? "lightgreen" : "whitesmoke";
+        let emoji = isGoalReached ? '✔️' : '❌';
+        taskCheck.innerHTML = `${emoji}<br>${world.getStageIndex() + 1} / ${world.getStageCount()}`;
 
         // bg color ramping
         if (isRunning && bg == 0) {
@@ -208,7 +202,7 @@ function robotSketch(p5: p5) {
         animStrength = ENV.toggleAnimation.active ? easeOutCubic(1 - dt / maxDt) : 0;
 
         // drawing the world
-        drawWorld(worldInst);
+        drawWorld(world);
 
         // draw object diagrams
         if (robotDiagramIndex >= world.robots.length) {
@@ -216,11 +210,11 @@ function robotSketch(p5: p5) {
         }
 
         if (robotDiagramIndex >= 0) {
-            updateRobotDiagram(worldInst.robots[robotDiagramIndex], ENV.objOverlay);
+            updateRobotDiagram(world.robots[robotDiagramIndex], ENV.objOverlay);
         }
 
         // draw compass
-        drawCompass(worldInst);
+        drawCompass(world);
 
         p5.pop();
 

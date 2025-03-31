@@ -13,6 +13,7 @@ export interface WorldViewEnv {
   world: World;
   taskCheck: HTMLElement;
   objOverlay: HTMLElement;
+  objBar: HTMLElement;
   playState: HTMLElement;
   dt: number;
   maxDt: number;

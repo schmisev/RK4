@@ -663,6 +663,7 @@ rt = {
 
     taskCheck,
     objOverlay,
+    objBar,
 
     program: parser.produceAST("", false, false),
     stopCode,
