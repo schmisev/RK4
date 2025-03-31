@@ -85,3 +85,6 @@ function loadFromStore() {
     ENV.reloadFully();
     console.log("📝📂 Aufgabe geladen: " + key);
 }
+
+// fetch tasks
+retrieveLocalBackup();
