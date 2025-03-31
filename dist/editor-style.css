@@ -247,3 +247,12 @@ input {
     border: rgba(0, 0, 0, 0.2) solid 1px;
     text-align: center;
 }
+
+#world-helper {
+    grid-column: 1/8;
+    grid-row: 3;
+    z-index: 100;
+    text-align: right;
+    padding-right: 5px;
+    pointer-events: none;
+}
