@@ -281,6 +281,10 @@ export class World {
                         case "Y":
                             f.setMarker(CHAR2MARKER[c], goalMode);
                             break;
+                        case "X":
+                            // explicitly set NO marker
+                            f.setMarker(MarkerType.None, goalMode);
+                            break;
                         case "_":
                             if (goalMode) {
                                 f.goalBlocks = Array<BlockType>();

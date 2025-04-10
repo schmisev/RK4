@@ -668,8 +668,8 @@ function robotSketch(p5: p5) {
         }
 
         // goal markers
-        if (f.goalMarker != null && !goalReached) {
-            if (f.goalMarker != MarkerType.None) {
+        if (f.goalMarker !== null && !goalReached) {
+            if (f.goalMarker != MarkerType.None && f.goalMarker !== f.marker) {
                 p5.push();
                 p5.translate(0, 0, (-BLH + MRH) * 0.5);
                 const h = f.blocks.length;
