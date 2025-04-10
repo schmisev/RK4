@@ -1,8 +1,8 @@
-import { type WorldProxy } from "./editor";
 import { type Program } from "./language/frontend/ast";
 import { type GlobalEnvironment } from "./language/runtime/environment";
 import { STD_TASKS, type Task } from "./robot/tasks";
 import { type World } from "./robot/world";
+import { type WorldProxy } from "./robot/world-proxies";
 import { type Toggle } from "./ui/toggle-buttons";
 import { type Ace } from "ace-builds";
 
@@ -13,6 +13,7 @@ export interface WorldViewEnv {
   world: World;
   taskCheck: HTMLElement;
   objOverlay: HTMLElement;
+  objBar: HTMLElement;
   playState: HTMLElement;
   dt: number;
   maxDt: number;

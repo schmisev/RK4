@@ -1,6 +1,6 @@
 import { runtime as ENV } from "..";
 import { type Task } from "../robot/tasks";
-import { createOption, destructureKey } from "../utils";
+import { createOption, destructureTaskKey } from "../utils";
 
 // Fill task selector
 export const taskSelector = document.getElementById("load-task") as HTMLSelectElement;
@@ -15,7 +15,7 @@ export function updateTaskSelector() {
 
     // First, get the live tasks
     for (const [key, task] of Object.entries(ENV.liveTasks)) {
-        const splitKey = destructureKey(key, false);
+        const splitKey = destructureTaskKey(key, false);
 
         if (currentAuthor != splitKey.author) {
             currentAuthor = splitKey.author;
@@ -32,7 +32,7 @@ export function updateTaskSelector() {
 
     // Then get the online tasks
     for (const [key, dlURL] of Object.entries(ENV.extTasks)) {
-        const splitKey = destructureKey(key, true);
+        const splitKey = destructureTaskKey(key, true);
 
         if (currentAuthor != splitKey.author) {
             currentAuthor = splitKey.author;
@@ -76,8 +76,8 @@ export async function downloadExtTask(key: string, dlURL: string) {
 }
 
 export function sortKeys(a: string, b: string) {
-    const ka = destructureKey(a[0]).sortStr;
-    const kb = destructureKey(b[0]).sortStr;
+    const ka = destructureTaskKey(a[0]).sortStr;
+    const kb = destructureTaskKey(b[0]).sortStr;
 
     if (ka < kb) return -1;
     if (ka > kb) return 1;
@@ -93,5 +93,3 @@ export async function retrieveLocalTasks() {
     let additionalTasks = JSON.parse(value) as Record<string, Task>;
     ENV.liveTasks = { ...ENV.liveTasks, ...additionalTasks};
 }
-
-export { destructureKey };

@@ -4,15 +4,11 @@
 }
 
 .cascadia {
-    font-family: 'Cascadia Code', "Consolas", monospace;
+    font-family: "Cascadia Code", "Consolas", monospace;
 }
 
 .material-symbols-outlined {
-    font-variation-settings:
-    'FILL' 1,
-    'wght' 400,
-    'GRAD' 0,
-    'opsz' 24
+    font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
 }
 
 /* general */
@@ -35,19 +31,19 @@ button {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    text-shadow: rgba(0, 0, 0, .2) 1px 1px 3px;
+    text-shadow: rgba(0, 0, 0, 0.2) 1px 1px 3px;
     background-color: whitesmoke;
     border-radius: 5px;
     border: none;
     font-size: large;
     overflow: hidden;
     white-space: nowrap;
-    font-family: 'Roboto';
+    font-family: "Roboto";
     cursor: pointer;
 }
 
 button:hover {
-    box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, .2);
+    box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, 0.2);
     outline: 1px black solid;
     outline-offset: -1px;
 }
@@ -65,7 +61,7 @@ a {
 }
 
 a:hover {
-    text-decoration: underline
+    text-decoration: underline;
 }
 
 select {
@@ -89,7 +85,7 @@ input[type="checkbox"] {
 }
 
 .shadow {
-    box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, .2);
+    box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, 0.2);
 }
 
 .wsr {
@@ -101,7 +97,7 @@ input[type="checkbox"] {
 }
 
 .wsr:hover {
-    outline: 1px rgba(0, 0, 0, .2) solid;
+    outline: 1px rgba(0, 0, 0, 0.2) solid;
     outline-offset: -1px;
 }
 
@@ -124,8 +120,64 @@ input[type="checkbox"] {
     padding-right: 10px;
 }
 
+.center {
+    text-align: center;
+}
+
+.mermaid {
+    width: 100%;
+    text-align: center;
+}
+
+.diagram-title {
+    transition: width 0.2s;
+    overflow: hidden;
+    text-overflow: clip;
+}
+
+.handler {
+    width: 20px;
+    padding: 0;
+    cursor: ew-resize;
+    flex: 0 0 auto;
+}
+
+.handler::before {
+    content: "";
+    display: block;
+    width: 4px;
+    height: 100%;
+    background: gray;
+    border-radius: 2px;
+    margin: 0 auto;
+}
+
+.tab-button {
+    background-color: whitesmoke;
+    border-radius: 5px 5px 0px 0px;
+    margin-bottom: -5px;
+    border: none;
+    font-size: medium;
+    overflow: hidden;
+    white-space: nowrap;
+    font-family: "Roboto";
+}
+
+.tab-button.active {
+    background-color: black;
+    color: white;
+    outline: 1px black solid;
+    outline-offset: -1px;
+}
+
+.editor {
+    margin: 0;
+    position: relative;
+    border-radius: 5px;
+}
+
 .emoji-button {
-    font-family: 'Cascadia Code', 'Consolas' !important;
+    font-family: "Cascadia Code", "Consolas" !important;
     font-weight: bold;
     background-color: white;
     border-radius: 5px;
@@ -144,7 +196,7 @@ input[type="checkbox"] {
 }
 
 .toggle-button {
-    font-family: 'Cascadia Code', 'Consolas' !important;
+    font-family: "Cascadia Code", "Consolas" !important;
     font-weight: bold;
     background-color: white;
     border-radius: 5px;
@@ -171,12 +223,12 @@ input[type="checkbox"] {
 }
 
 .code-like {
-    font-family: 'Cascadia Code', "Consolas";
+    font-family: "Cascadia Code", "Consolas";
     font-weight: bolder;
 }
 
 .code-error {
-    font-family: 'Cascadia Code';
+    font-family: "Cascadia Code";
     font-size: 15px;
     white-space: nowrap;
     overflow-x: scroll;
@@ -205,7 +257,6 @@ input[type="checkbox"] {
     background-color: lightcoral;
 }
 
-
 .turning {
     transform: rotate(0deg);
     transition: transform 0.2s;
@@ -224,7 +275,7 @@ input[type="checkbox"] {
     position: relative;
     display: inline-block;
 }
-  
+
 /* Tooltip text */
 .hover-helper .tooltip {
     pointer-events: none;
@@ -242,7 +293,7 @@ input[type="checkbox"] {
     top: 100%;
     left: 50%;
     /*margin-left: calc(width / 2 - 10px);*/
-    transform: translateX(-50%);/**/
+    transform: translateX(-50%); /**/
     /*transform: translateX(-10%);/**/
 
     /* Position the tooltip text - see examples below! */
@@ -262,11 +313,21 @@ input[type="checkbox"] {
     line-height: 15px;
     font-size: 15px;
     display: inline-block;
-    transform: translateY(-5%) rotate(10deg);
-    padding: 0px 5px;
+    transform: translateY(-5%) rotate(5deg);
     font-weight: 400;
 
     transition: transform 0.5s;
+
+    background-color: #fada5e; /**/
+    border: 2px #b19b42 solid;
+    border-top-left-radius: 255px 15px;
+    border-top-right-radius: 15px 225px;
+    border-bottom-right-radius: 225px 15px;
+    border-bottom-left-radius: 15px 255px;
+    padding-left: 5px;
+    padding-right: 5px;
+    font-family: "Itim";
+    box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, 0.2); /**/
 }
 
 .version-label:hover {
@@ -327,7 +388,7 @@ input[type="checkbox"] {
     z-index: 100;
     left: 0;
     top: 0;
-    background-color: rgba(0,0,0, 0.9); /* Black w/opacity */
+    background-color: rgba(0, 0, 0, 0.9); /* Black w/opacity */
     overflow-x: hidden; /* Disable horizontal scroll */
     color: white;
     visibility: hidden;
@@ -350,7 +411,7 @@ input[type="checkbox"] {
     z-index: 100;
     left: 0;
     top: 0;
-    background-color: rgba(0,0,0, 0.9); /* Black w/opacity */
+    background-color: rgba(0, 0, 0, 0.9); /* Black w/opacity */
     overflow-x: hidden; /* Disable horizontal scroll */
     color: white;
     visibility: hidden;
@@ -366,9 +427,160 @@ input[type="checkbox"] {
 
 code {
     font-weight: bold;
-    border: 1px rgba(0, 0, 0, .2) solid;
+    border: 1px rgba(0, 0, 0, 0.2) solid;
     padding-inline: 5px;
-    background-color: rgba(0, 0, 0, .1);
+    background-color: rgba(0, 0, 0, 0.1);
     border-radius: 5px;
-    font-family: 'Cascadia Code', monospace;
+    font-family: "Cascadia Code", monospace;
+}
+
+/* markers */
+.error-marker {
+    background-color: #fdc0be;
+    position: absolute;
+}
+
+.error-marker.runtime {
+    background-color: #fdc0be;
+}
+
+.error-marker.lexer {
+    background-color: #fdc0be;
+}
+
+.error-marker.parser {
+    background-color: #fdc0be;
+}
+
+.exec-marker {
+    background-color: lightblue;
+    position: absolute;
+}
+
+/* legend */
+.legend {
+    outline: 2px black solid;
+    opacity: 100%;
+    margin-left: 10px;
+    padding: 0 10px;
+}
+
+.legend.dashed {
+    border-radius: 5px;
+    outline-style: dashed;
+}
+
+.legend.empty {
+    outline: none;
+    background-color: transparent;
+}
+
+.legend.classname {
+    background-color: #cf9fff;
+}
+
+.legend.attributes {
+    background-color: #fdc0be;
+}
+
+.legend.methods {
+    background-color: #cbf7c7;
+}
+
+.legend.functions {
+    background-color: lightblue;
+}
+
+.task-description {
+    white-space: wrap;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    padding-top: 10px;
+}
+
+.task-description .title {
+    width: max-content;
+    background-color: white;
+    padding: 5px;
+    font-weight: bold;
+    border-radius: 5px;
+    box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, 0.2);
+}
+
+.task-description .body {
+    margin: 10px;
+    margin-bottom: 0;
+}
+
+.task-description .author {
+    text-align: right;
+    font-size: small;
+    color: rgba(0, 0, 0, 0.6);
+}
+
+.object-bar {
+    border-radius: 0px 0px 5px 5px;
+}
+
+.object-button {
+    position: relative;
+    overflow: visible;
+    margin-top: 5px;
+    margin-left: 5px;
+    background-color: whitesmoke;
+    cursor: pointer;
+}
+
+.object-button:hover {
+    background-color: lightblue;
+}
+
+#object-overlay {
+    position: absolute; /* Sit on top of the page content */
+    display: none; /* Hidden by default */
+    width: auto;
+    height: auto;
+    top: 115%;
+    /*width: 100%;  Full width (cover the whole page) */
+    /*height: 100%;  Full height (cover the whole page) */
+    background-color: rgba(255,255,255,1); /* Black background with opacity */
+    z-index: 500; /* Specify a stack order in case you're using a different order for other elements */
+    cursor: pointer; /* Add a pointer on hover */
+    transition: transform 0.2s; /* Sticking effect */
+    pointer-events: none; /* Allow clicking trough the div */
+    border-radius: 10px 10px 10px 10px;
+    outline: 2px black solid;
+    box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, .2);
+}
+
+.blink {
+    -webkit-animation: blink-animation 1s infinite;
+    animation: blink-animation 1s infinite;
+}
+
+@keyframes blink-animation {
+    0% {
+        scale: 100%;
+    }
+    20% {
+        scale: 110%;
+        filter: brightness(150%);
+        box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, 0.2) ;
+    }
+    100% {
+        scale: 100%;
+    }
+}
+@-webkit-keyframes blink-animation {
+    0% {
+        scale: 100%;
+    }
+    20% {
+        scale: 110%;
+        filter: brightness(150%);
+        box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, 0.2) ;
+    }
+    100% {
+        scale: 100%;
+    }
 }

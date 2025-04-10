@@ -1,16 +1,20 @@
 // UI imports
-import { WorldEditEnv, type WorldViewEnv } from "./app";
+import type { WorldEditEnv, WorldViewEnv } from "./app";
 import { DEFAULT_TASK, STD_TASKS, type Task } from "./robot/tasks";
 import { World } from "./robot/world";
-import { setup as setupRobotView } from "./ui/robot-view";
 import { makeToggle } from "./ui/toggle-buttons";
-import "./ui/store-world";
+import { generateProxiesFromString, type WorldProxy } from "./robot/world-proxies";
+
+// side effect free UI components :)
+import { setup as setupRobotView } from "./ui/robot-view";
+import { setup as setupWorldStore } from "./ui/store-world";
 
 // ACE imports
 import * as ace from "ace-builds";
 import "./assets/ace/mode-rkscript.js";
 import "./assets/ace/theme-rklight.js";
 import { deepCopy, downloadTextFile } from "./utils";
+import { addRobotButtons } from "./ui/objectigrams";
 
 const objOverlay = document.getElementById("object-overlay")!;
 const objBar = document.getElementById("object-bar")!;
@@ -24,6 +28,7 @@ export let viewEnv: WorldViewEnv = {
     maxDt: 10,
     manualMode: false,
     objOverlay,
+    objBar,
     playState,
     queueInterrupt: false,
     taskCheck,
@@ -33,14 +38,6 @@ export let viewEnv: WorldViewEnv = {
     toggleAnimation: makeToggle(true),
     toggleThoughts: makeToggle(true),
 };
-
-// world editor
-export interface WorldProxy {
-    L: number;
-    W: number;
-    H: number;
-    fields: string[][];
-}
 
 // Setup editors
 const descriptionEditor = ace.edit("task-description-editor", {
@@ -58,8 +55,6 @@ const preloadEditor = ace.edit("preload-editor", {
     //readOnly: true,
     showPrintMargin: false,
 });
-
-const robotView = setupRobotView(viewEnv);
 
 export const stdWorldProxy: WorldProxy = {
     L: 3,
@@ -184,6 +179,10 @@ document.getElementById("load-file")!.onchange = (evt: Event) => {
     reader.readAsText(file);
 };
 
+document.getElementById("robot-screenshot")!.onclick = () => {
+    robotView.saveCanvas(generateFileName() + "_" + (new Date()).toLocaleString() + ".png");
+}
+
 editEnv.description.on("change", reloadMetaInfo);
 editEnv.author.onchange = reloadMetaInfo;
 editEnv.category.onchange = reloadMetaInfo;
@@ -205,13 +204,11 @@ function addRows(worldProxy: WorldProxy, count: number) {
 }
 
 function renderWorldEdit(id: string) {
-    let { idx: worldIndex, proxies: worldProxies } = editEnv;
-
     let container = document.getElementById(id);
     if (!container) return;
     container.replaceChildren();
 
-    for (let [proxyIndex, worldProxy] of worldProxies.entries()) {
+    for (let [proxyIndex, worldProxy] of editEnv.proxies.entries()) {
         let wrapper = document.createElement("div") as HTMLDivElement;
         wrapper.classList.add("world-wrapper");
 
@@ -225,11 +222,14 @@ function renderWorldEdit(id: string) {
             keyEdit.min = "1";
             keyEdit.step = "1";
             keyEdit.type = "number";
+            keyEdit.defaultValue = key;
             keyEdit.value = worldProxy[key].toString();
 
             // dim editing
             keyEdit.onchange = (evt: Event) => {
+                if (!keyEdit.value) keyEdit.value = "1"; // no value?
                 let newValue = parseInt(keyEdit.value);
+                if (newValue < 1 || !newValue) newValue = 1; // no sensible number?
                 // we need to add some rows/columns
                 // TODO: UGLY
                 if (key === "L") {
@@ -256,16 +256,16 @@ function renderWorldEdit(id: string) {
         }
 
         // delete world
-        if (worldProxies.length > 1) {
+        if (editEnv.proxies.length > 1) {
             let removeButton = document.createElement(
                 "button"
             ) as HTMLButtonElement;
             removeButton.innerHTML = "❌";
             removeButton.classList.add("toggle-button");
             removeButton.onclick = () => {
-                if (worldProxies.length <= 1) return;
-                if (proxyIndex < worldIndex) worldIndex -= 1;
-                worldProxies.splice(proxyIndex, 1);
+                if (editEnv.proxies.length <= 1) return;
+                if (proxyIndex < editEnv.idx) editEnv.idx -= 1;
+                editEnv.proxies.splice(proxyIndex, 1);
                 editEnv.reloadEditor();
                 editEnv.reloadWorld();
             };
@@ -277,25 +277,25 @@ function renderWorldEdit(id: string) {
         addButton.innerHTML = "➕";
         addButton.classList.add("toggle-button");
         addButton.onclick = () => {
-            worldProxies.splice(proxyIndex + 1, 0, deepCopy(stdWorldProxy));
+            editEnv.proxies.splice(proxyIndex + 1, 0, deepCopy(stdWorldProxy));
             editEnv.reloadEditor();
-            editEnv.reloadWorld(proxyIndex + 1);
+            editEnv.reloadWorld(proxyIndex);
         };
         editBar.appendChild(addButton);
 
         // swap worlds
-        if (proxyIndex < worldProxies.length - 1) {
+        if (proxyIndex < editEnv.proxies.length - 1) {
             let downButton = document.createElement(
                 "button"
             ) as HTMLButtonElement;
             downButton.innerHTML = "⬇️";
             downButton.classList.add("toggle-button");
             downButton.onclick = () => {
-                if (proxyIndex >= worldProxies.length - 1) return;
-                worldProxies.splice(
+                if (proxyIndex >= editEnv.proxies.length - 1) return;
+                editEnv.proxies.splice(
                     proxyIndex,
                     0,
-                    worldProxies.splice(proxyIndex + 1, 1)[0]
+                    editEnv.proxies.splice(proxyIndex + 1, 1)[0]
                 );
                 editEnv.reloadEditor();
                 editEnv.reloadWorld(proxyIndex + 1);
@@ -312,10 +312,10 @@ function renderWorldEdit(id: string) {
             upButton.classList.add("toggle-button");
             upButton.onclick = () => {
                 if (proxyIndex === 0) return;
-                worldProxies.splice(
+                editEnv.proxies.splice(
                     proxyIndex,
                     0,
-                    worldProxies.splice(proxyIndex - 1, 1)[0]
+                    editEnv.proxies.splice(proxyIndex - 1, 1)[0]
                 );
                 editEnv.reloadEditor();
                 editEnv.reloadWorld(proxyIndex - 1);
@@ -385,6 +385,27 @@ function renderWorldEdit(id: string) {
                     }
                 };
 
+                fieldEdit.onkeydown = (evt: KeyboardEvent) => {
+                    let moveToCell: HTMLInputElement | null = null;
+                    if (evt.ctrlKey) {
+                        if (evt.key === "ArrowUp" && j >= 0) {
+                            moveToCell = worldTable.rows[j].cells[i+1].children.item(0) as HTMLInputElement;
+                        } else if (evt.key === "ArrowDown" && j < worldProxy.W-1) {
+                            moveToCell = worldTable.rows[j+2].cells[i+1].children.item(0) as HTMLInputElement;
+                        } else if (evt.key === "ArrowRight" && i < worldProxy.L-1) {
+                            moveToCell = worldTable.rows[j+1].cells[i+2].children.item(0) as HTMLInputElement;
+                        } else if (evt.key === "ArrowLeft" && i >= 0) {
+                            moveToCell = worldTable.rows[j+1].cells[i].children.item(0) as HTMLInputElement;
+                        }
+                    }
+
+                    if (moveToCell) {
+                        evt.preventDefault();
+                        moveToCell.focus();
+                        moveToCell.select();
+                    }
+                }
+
                 field.appendChild(fieldEdit);
                 row.appendChild(field);
             }
@@ -404,6 +425,7 @@ function reloadWorld(idx?: number): void {
         genStr += world.fields.map((r) => r.join(";")).join("\n");
     }
     if (idx !== undefined) editEnv.idx = idx;
+    
     try {
         editEnv.codeError.classList.toggle("world", false);
         editEnv.codeError.innerHTML = `✔️ Kein Fehler bei der Welterzeugung`;
@@ -414,6 +436,7 @@ function reloadWorld(idx?: number): void {
         editEnv.codeError.classList.toggle("world", true);
         editEnv.codeError.innerHTML = `❌ ${e}`;
     }
+    addRobotButtons(viewEnv.objBar, viewEnv.objOverlay, viewEnv.world);
 }
 
 // reloading the editor
@@ -427,8 +450,9 @@ function reloadEditor(): void {
 // reloading meta info
 function reloadMetaInfo(): void {
     editEnv.descriptionPreview.innerHTML = `
-    <p><b>🤔 ${editEnv.name.value}: "${editEnv.title.value}"</b></p>
-    <p>${editEnv.description.getValue()}</p>`;
+    <div class="title">🤔 ${editEnv.name.value}: "${editEnv.title.value}"</div>
+    <div class="body">${editEnv.description.getValue()}</div>
+    <div class="author">${editEnv.author.value} 👤</div>`;
     editEnv.titlePreview.innerText = generateFileName();
     editEnv.indexView.innerHTML = `${editEnv.idx}`;
 }
@@ -462,33 +486,13 @@ function generateFileName(ext?: string): string {
     return `${editEnv.author.value}_${editEnv.category.value}_${editEnv.name.value}${ext}`;
 }
 
-// generate proxy from string
-export function generateProxiesFromString(worldStr: string): WorldProxy[] {
-    let worldCells = worldStr
-        .split("x")
-        .map((w: string) => w.split("\n").map((r: string) => r.split(";")));
-
-    worldCells.shift(); // space before x is empty
-
-    let newProxies: WorldProxy[] = [];
-
-    for (const w of worldCells) {
-        let header = w.shift(); // first row
-        if (!header) throw "Weltformat fehlerhaft!";
-        newProxies.push({
-            L: parseInt(header[1]),
-            W: parseInt(header[2]),
-            H: parseInt(header[3]),
-            fields: w,
-        });
-    }
-    
-    return newProxies;
-}
-
 // start app
 reloadEditor();
 reloadWorld();
 reloadMetaInfo();
 
+let robotView = setupRobotView(viewEnv);
+setupWorldStore(editEnv);
+
+// remove loading screen
 document.getElementById("loading-overlay")?.classList.remove("loading");

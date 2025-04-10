@@ -93,94 +93,7 @@ function loadFromStore() {
 }
 
 // insert some Demo Code
-storeRawCode("👨‍🏫 'Verschiedenes'",
-`Zahl zeilenZähler ist 0
-# Wiederholungen
-wiederhole 4 mal
-    Zahl n ist 0
-    wiederhole solange n < 10
-        wiederhole solange nicht k1.siehtWand()
-            k1.hinlegen()
-            k1.schritt()
-        ende
-        k1.linksDrehen()
-        n ist n + 1
-    ende
-ende
-
-Methode zeileAufräumen() für Roboter
-    # Methodendefinition
-    wiederhole immer
-        wenn siehtWand() dann
-            abbrechen
-        ende
-        aufheben()
-        schritt()
-    ende
-
-    zeilenZähler ist zeilenZähler + 1
-ende
-
-Funktion turmAbräumen(Objekt r)
-    # Funktionsdefinition
-    wiederhole solange r.siehtZiegel()
-        r.zeileAufräumen()
-        r.linksDrehen()
-    ende
-ende
-
-turmAbräumen(k1)
-
-wenn welt.fertig() dann
-    zeig zeilenZähler, "Zeilen abgeräumt!"
-ende
-`, false);
-
-storeRawCode("👨‍🏫 'zeig'",
-`# Hallo Welt
-Text name sei "Karol"
-zeig "Hallo, " + name + "!"
-`, false)
-
-storeRawCode("👨‍🏫 'aufheben & hinlegen'",
-`# Aufheben & Hinlegen
-// so legt man einen roten Block
-k1.hinlegen()
-
-// man kann genau einen BLock erklimmen
-k1.schritt()
-
-// man kann Blöcke verschiedener Farben legen
-k1.hinlegen(blau)
-k1.hinlegen(grün)
-k1.hinlegen(gelb)
-k1.hinlegen(rot)
-
-// man kann die Farben auch als Text übergeben angeben (Achtung: gelb = "Y")
-zeig blau, grün, rot, gelb
-
-k1.hinlegen("B")
-k1.hinlegen("G")
-k1.hinlegen("Y")
-k1.hinlegen("R")
-
-// so hebt man Blöcke wieder auf
-k1.aufheben()
-k1.aufheben()
-k1.aufheben()
-k1.aufheben()
-k1.aufheben()
-k1.aufheben()
-k1.aufheben()
-k1.aufheben()
-
-k1.schritt()
-k1.linksDrehen()
-k1.linksDrehen()
-k1.aufheben()
-`, false)
-
-storeRawCode("📖 Hilfsmethoden",
+storeRawCode("Hilfsmethoden",
 `Methode umdrehen() für Roboter
     linksDrehen()
     linksDrehen()
@@ -204,6 +117,174 @@ Methode gehen(Zahl n) für Roboter
     ende
 ende
 `, false)
+
+storeRawCode("Tutorial: Der Roboter", `// Steuerung des Roboters
+k1.schritt() // Roboter k1 macht einen Schritt vorwärts.
+
+k1.linksDrehen() // Roboter k1 dreht sich um 90° nach links.
+k1.rechtsDrehen() // ... dreht sich um 90° nacht rechts.
+k1.hinlegen() // ... legt einen Block.
+
+k1.hinlegen(blau) // Manche Methoden nehmen optionale Parameter, wie hier die Ziegelfarbe
+k1.markeSetzen(grün) // Roboter k1 setzt eine grüne Marke unter sich.
+k1.markeEntfernen() // ... löscht die Marke unter sich.
+
+zeig k1.siehtWand() // Gibt wahr zurück, wenn k1 vor einer Wand steht.
+zeig k1.siehtAbgrund() // Gibt wahr zurück, wenn k1 vor dem Abgrund steht.
+zeig k1.siehtZiegel(gelb) // Gibt wahr zurück, wenn der oberste Ziegel im Stapel vor k1 gelb ist.
+// Ohne Parameter ist die Ziegelfarbe egal.
+
+zeig k1.istAufMarke(rot) // Gibt wahr zurück, wenn die Marke unter k1 rot ist.
+// Auch hier ist der Parameter optional.
+
+zeig k1.x() // Gibt die x-Koordinate von k1 zurück.
+zeig k1.y() // Gibt die y-Koordinate zurück.
+zeig k1.richtung() // Gibt die Richtung als Text zurück: "N", "S", "W" oder "O".
+
+// im Debugbereich können weitere Robotermethoden eingesehen werden
+`, false);
+
+storeRawCode("Tutorial: Die Welt", `// Die aktuelle Aufgabe
+zeig welt.fertig() // Fragt ab, ob die aktuelle Teilaufgabe abgeschlossen wurde
+zeig welt.teilaufgabe() // Gibt an, in welcher Teilaufgabe wir uns befinden
+`, false);
+
+storeRawCode("Tutorial: Wiederholungen", `// Wiederholungen
+// k1 geht 3 Schritte vorwärts
+wiederhole 3 mal
+    k1.schritt()
+ende
+
+// k1 dreht sich solange, bis er nach Norden schaut
+// Mehr zu = und anderen Vergleichsoperatoren später
+wiederhole solange nicht (k1.richtung() = "N")
+    k1.linksDrehen()
+ende
+
+// k1 läuft unendlich lang im Kreis
+wiederhole immer
+    k1.schritt()
+    k1.rechtsDrehen()
+ende
+`, false);
+
+storeRawCode("Tutorial: Bedingte Anweisungen", `// Hier zeigen wir das Wort "Geschafft" in der Konsole an,
+// wenn die aktuelle Teilaufgabe gelöst wurde.
+wenn welt.fertig() dann
+    zeig "Geschafft!"
+ende
+
+// Hier mit sonst.
+wenn k1.siehtWand() dann
+    zeig "Oh Nein, eine Wand"
+    k1.linksDrehen()
+sonst
+    k1.schritt()
+ende
+
+// Auch 'sonst wenn' ist legal...
+// ... wird aber als geschachtelte bedingte Anweisung interpretiert.
+wenn k1.x() > 0 dann
+    k1.schritt()
+sonst wenn k1.y() > 0 dann
+    k1.linksDrehen()
+    k1.schritt()
+sonst
+    zeig "Nicht am Rand!"
+ende
+`, false)
+
+storeRawCode("Tutorial: Bedingungen", `// Bedingungen
+zeig wahr oder falsch       // In der Konsole: >> wahr
+zeig wahr und falsch        // >> falsch
+zeig nicht falsch           // >> wahr
+zeig nicht k1.siehtWand()   // >> falsch, wenn k1 die Wand sieht
+zeig 7 > 8                  // >> falsch
+zeig 7 < 100                // >> wahr
+zeig 17 = 17                // >> wahr
+`, false);
+
+storeRawCode("Tutorial: Variablen und Funktionen", `// Variablen
+Zahl a ist 7 // Deklariert eine Zahl namens x und setzt ihren Wert auf 7
+Text t ist "Hallo"
+Wahrheitswert w ist wahr
+
+zeig a, t, w
+
+// Funktionen
+Funktion hallo(Text name)
+    zeig "Hallo", name
+ende
+
+hallo("Karol") // >> Gibt 'Hallo Karol' aus
+`, false)
+
+storeRawCode("Tutorial: Klassen", `// Klassen
+Klasse Vektor
+    Zahl x ist 0
+    Zahl y ist 0
+
+    Methode setzeXY(Zahl sx, Zahl sy)
+        x ist sx
+        y ist sy 
+    ende
+
+    Methode plus(Objekt v)
+        x ist x + v.x
+        y ist y + v.y
+    ende
+
+    Methode zeigmich()
+        zeig x, y
+    ende
+ende
+
+Objekt v1 als Vektor
+v1.x ist 4
+v1.y ist 6
+
+Objekt v2 als Vektor
+v2.setzeXY(3, -9)
+
+v1.plus(v2)
+
+v1.zeigmich() // >> 7 -3
+
+// Mit Konstruktor
+Klasse Foo(Zahl n)
+    Zahl bar ist n
+    Zahl zweiBar ist 2 * n
+ende
+
+Objekt f als Foo(4)
+zeig f.bar // >> 4
+zeig f.zweiBar // >> 8
+`, false);
+
+storeRawCode("Tutorial: Externe Methoden", `// Methoden
+Methode umdrehen() für Roboter
+    linksDrehen() // Da wir 'im' Roboter sind, kann man hier 'k1.' weglassen
+    linksDrehen()
+ende
+
+Methode gehen(Zahl n) für Roboter
+    wiederhole n mal
+        wenn siehtWand() dann
+            zurück falsch // wir haben bei einer Wand gestoppt
+        ende
+        schritt()
+    ende
+    zurück wahr // wir wurden nicht behindert
+ende
+
+Methode feldAufräumen() für Roboter
+    wiederhole solange siehtZiegel()
+        aufheben()
+    ende
+ende
+
+k1.umdrehen() // Funktioniert!
+`, false);
 
 // retrieve backup, if there is one
 retrieveLocalBackup();

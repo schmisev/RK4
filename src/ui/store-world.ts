@@ -1,6 +1,12 @@
-import { editEnv as ENV, generateProxiesFromString } from "../editor";
-import { DEFAULT_TASK, STD_TASKS, STD_WORLD, type Task } from "../robot/tasks";
-import { createOption, destructureKey } from "../utils";
+import { WorldEditEnv } from "../app";
+import { generateProxiesFromString } from "../robot/world-proxies";
+import { type Task } from "../robot/tasks";
+import { createOption, destructureTaskKey } from "../utils";
+
+let ENV: WorldEditEnv;
+export function setup(env: typeof ENV) {
+    ENV = env;
+}
 
 let taskStore: Record<string, Task> = {
 }
@@ -58,20 +64,16 @@ function deleteTask() {
 function loadFromStore() {
     let key = storeSelector.value;
     let task: Task;
-    if (key == "(neu)") {
-        storeRawTask(DEFAULT_TASK, STD_TASKS[DEFAULT_TASK], true);
-        key = DEFAULT_TASK; // reassign key
-        task = STD_TASKS[DEFAULT_TASK];
-    } else {
-        task = taskStore[key];
-    }
+    if (key === "(neu)") return;
+    
+    task = taskStore[key];
     
     if (typeof task.world !== "string") return;
 
     let worldStr = task.world;
     let newProxies = generateProxiesFromString(worldStr);
 
-    let { author, category, name } = destructureKey(key);
+    let { author, category, name } = destructureTaskKey(key);
 
     ENV.proxies = newProxies;
     ENV.description.setValue(task.description);
@@ -84,10 +86,5 @@ function loadFromStore() {
     console.log("📝📂 Aufgabe geladen: " + key);
 }
 
-storeRawTask("xyz_Editor_1", {
-    title: "Start",
-    description:
-        "Lege einen Ziegel an die markierte Stelle! Nutze dafür <code>k1.hinlegen()</code>",
-    world: "x;4;1;6;\nE:_;_:_;_:_;_:r",
-    preload: "// Nichts vorgegeben",
-}, false);
+// fetch tasks
+retrieveLocalBackup();

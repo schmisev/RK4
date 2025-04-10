@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8" />
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 
     <link rel="stylesheet" type="text/css" href="common-style.css">
@@ -26,12 +26,13 @@
         <div id="left-panel">
             <div id="grid-container-left">
                 <div class="lc30 wsr text" id="title-bar">
-                    🤖 RK4&nbsp;&nbsp;<div class="version-label struct-doc-comment">BETA</div>&nbsp;&nbsp;| RKBasic, 3D, mehrere Roboter und Aufgaben |
+                    🤖 RK4&nbsp;&nbsp;<div class="version-label">BETA</div>&nbsp;&nbsp;| RKBasic, 3D, mehrere Roboter und Aufgaben |
                     <button id="fold-debug" class="toggle-button" title="Zeig/verberge Debug-Bereich">&lt;-&gt;</button>
                     | <button id="thought-toggle" class="emoji-button xcheck" title="Aktiviere/deaktiviere Roboter-Gedanken">💭</button>
                     <button id="animation-toggle" class="emoji-button xcheck" title="Aktiviere/deaktiviere Roboter-Animationen">🏃‍♂️</button>
                     <span class="roboto" style="float: right;">
-                        Zieh mich! ▸</span>
+                        Zieh mich! ▸
+                    </span>
                 </div>
                 <!-- Code editor UI -->
                 <div class="lc30 wsr text" id="code-title">💻 Code-Editor</div>
@@ -105,16 +106,16 @@
                     <span class="material-symbols-outlined" id="play-state-symbol">play_arrow</span>
                 </div>
                 <!-- Step time UI -->
-                <div class="wait-title wsr lc30">⏱️ <span class="wait-time" id="wait-time">??</span></div>
-                <div class="wait-slider-container wsr lc30">
-                    <input type="range" value="20" min="1" max="100" step="1" class="wait-slider slider" id="wait-slider">
+                <div id="wait-title" class="wait-title wsr lc30">⏱️ <span class="wait-time" id="wait-time">??</span></div>
+                <div id="wait-slider-container" class="wait-slider-container wsr lc30">
+                    <input placeholder="20" type="range" value="20" min="1" max="100" step="1" class="wait-slider slider" id="wait-slider">
                 </div>
                 <button title="Pausiere oder führe die nächste Anweisung aus!" class="code-next roboto" id="code-next">
                     <span class="material-symbols-outlined">play_pause</span>
                 </button>
                 <!-- Command line UI -->
-                <input class="cmd-line cascadia" id="cmd-line" autocomplete="off">
-                <div class="cmd-start cascadia lc30">&gt;&gt;</div>
+                <input placeholder="k1.schritt()" class="cmd-line cascadia" id="cmd-line" autocomplete="off">
+                <div id="cmd-start" class="cmd-start cascadia lc30">&gt;&gt;</div>
                 <button class="cmd-run" id="cmd-run">
                     <span class="material-symbols-outlined">skip_next</span>
                 </button>
@@ -128,6 +129,8 @@
                     | 3D-Ansicht: <a href="https://p5js.org/">p5.js</a> (<a href="https://raw.githubusercontent.com/processing/p5.js/main/license.txt">Lizenz</a>)
                     ● Editor: <a href="https://ace.c9.io/">Ace Editor</a> (<a href="https://raw.githubusercontent.com/ajaxorg/ace/a6ead2fcf2860c8b890f6adbd2e56f2ddc7f6d62/LICENSE">Lizenz</a>)
                     ● Flussdiagramme: <a href="https://mermaid.js.org/">Mermaid.js</a> (<a href="https://raw.githubusercontent.com/mermaid-js/mermaid/refs/heads/develop/LICENSE">Lizenz</a>)
+                    | <a href="./editor.html">Welteditor</a>
+                    | <a href="https://github.com/schmisev/RK4">Infos</a>
                 </div>
             </div>
         </div>

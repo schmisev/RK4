@@ -173,7 +173,7 @@ export function downloadTextFile(filename: string, text: string) {
     document.body.removeChild(element);
 }
 
-export function destructureKey(key: string, containsTitle = false) {
+export function destructureTaskKey(key: string, containsTitle = false) {
     const keyParts = key.split("_");
     let title = containsTitle ? (keyParts.pop() || "unbenannt") : "ex. Titel";
     let name = keyParts.pop() || "unbenannt";

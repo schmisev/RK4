@@ -1,5 +1,5 @@
 export interface Toggle {
-    // button: HTMLElement;
+    // this just wraps a boolean now...
     active: boolean;
 }
 

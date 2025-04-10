@@ -10,9 +10,10 @@ let ENV: WorldViewEnv;
 function robotSketch(p5: p5) {
     let bg = 0; // Background color
     const canvasDiv = document.getElementById('robot-canvas')!;
-    let canvasW = 0, canvasH = 0;
     let cam: p5.Camera;
     let animStrength = 0;
+    let timer = 0;
+    let taskCheckReloadTime = 200;
 
     const CPS = 100; // Compass size
     const TSZ = 50; // Tilesize
@@ -176,17 +177,15 @@ function robotSketch(p5: p5) {
         // update play state
         playState.innerHTML = queueInterrupt ? "report" : (!isRunning ? "stop" : (manualMode ? "pause" : "play_arrow"))
 
-        // update task status
-        if (!world.isGoalReached()) {
-            taskCheck.style.backgroundColor = "whitesmoke";
-            taskCheck.innerHTML = `❌<br>${world.getStageIndex()} / ${world.getStageCount()}`;
-        } else {
-            taskCheck.style.backgroundColor = "lightgreen";
-            taskCheck.innerHTML = `✔️<br>${world.getStageIndex() + 1} / ${world.getStageCount()}`;
+        // update task status (only updating if not current)
+        timer = (timer + p5.deltaTime);
+        if (timer > taskCheckReloadTime) {
+            timer = 0;
+            let isGoalReached = world.isGoalReached();
+            taskCheck.style.backgroundColor = isGoalReached ? "lightgreen" : "whitesmoke";
+            let emoji = isGoalReached ? '✔️' : '❌';
+            taskCheck.innerHTML = `${emoji}<br>${world.getStageIndex() + 1} / ${world.getStageCount()}`;
         }
-
-        const worldInst = world
-
         // bg color ramping
         if (isRunning && bg == 0) {
             bg = 255;
@@ -208,7 +207,7 @@ function robotSketch(p5: p5) {
         animStrength = ENV.toggleAnimation.active ? easeOutCubic(1 - dt / maxDt) : 0;
 
         // drawing the world
-        drawWorld(worldInst);
+        drawWorld(world);
 
         // draw object diagrams
         if (robotDiagramIndex >= world.robots.length) {
@@ -216,11 +215,11 @@ function robotSketch(p5: p5) {
         }
 
         if (robotDiagramIndex >= 0) {
-            updateRobotDiagram(worldInst.robots[robotDiagramIndex], ENV.objOverlay);
+            updateRobotDiagram(world.robots[robotDiagramIndex], ENV.objOverlay);
         }
 
         // draw compass
-        drawCompass(worldInst);
+        drawCompass(world);
 
         p5.pop();
 
