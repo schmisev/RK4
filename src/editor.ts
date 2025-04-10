@@ -366,21 +366,21 @@ function renderWorldEdit(id: string) {
                 ) as HTMLInputElement;
                 fieldEdit.value = f;
 
-                // field editing
-                fieldEdit.onchange = (evt: Event) => {
+                const setFieldValue = () => {
                     fieldEdit.value = fieldEdit.value.replaceAll("x", "");
+                    fieldEdit.value = fieldEdit.value.replaceAll(";", "");
                     r[i] = fieldEdit.value;
                     editEnv.reloadWorld();
-                };
+                }
 
+                // field editing
+                fieldEdit.onchange = setFieldValue;
                 fieldEdit.oncontextmenu = () => false;
-
                 fieldEdit.onmousedown = (evt: MouseEvent) => {
                     if (evt.button === 2) {
                         evt.preventDefault();
                         fieldEdit.value = editEnv.paintInput.value;
-                        fieldEdit.value = fieldEdit.value.replaceAll("x", "");
-                        r[i] = fieldEdit.value;
+                        setFieldValue();
                         editEnv.reloadWorld();
                     }
                 };
