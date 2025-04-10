@@ -13,6 +13,8 @@ export enum BlockType {
     y = "Y"
 }
 
+export const blockList = Object.values(BlockType);
+
 export enum MarkerType {
     None = "", 
     R = "R", 
@@ -20,6 +22,8 @@ export enum MarkerType {
     B = "B", 
     Y = "Y"
 }
+
+export const markerList = Object.values(MarkerType).filter((m) => (m !== MarkerType.None));
 
 export const CBOT = "#b1b1bb";
 export const CBOT2 = "#8a8a93"
@@ -236,6 +240,23 @@ export class World {
                             // put down 1 or more blocks
                             f.addMultipleBlocks(rndi(1, this.H - f.getBlockHeight(goalMode)), BlockType.r, goalMode);
                             break;
+                        case "-": {
+                            // remove random block from block list
+                            if (goalMode && f.goalBlocks) {
+                                let i = rndi(0, f.goalBlocks.length);
+                                f.goalBlocks.splice(i, 1);
+                            } else {
+                                let i = rndi(0, f.blocks.length);
+                                f.blocks.splice(i, 1);
+                            }
+                            break;
+                        }
+                        case "c": {
+                            // add block of random color
+                            let type = blockList[rndi(0, blockList.length)];
+                            f.addMultipleBlocks(1, type, goalMode);
+                            break;
+                        }
                         case "f":
                             // fill with blocks to top
                             f.addMultipleBlocks(this.H - f.getBlockHeight(goalMode), BlockType.r, goalMode);
@@ -285,6 +306,12 @@ export class World {
                             // explicitly set NO marker
                             f.setMarker(MarkerType.None, goalMode);
                             break;
+                        case "C": {
+                            // set random marker
+                            let type = markerList[rndi(0, markerList.length)];
+                            f.setMarker(type, goalMode);
+                            break;
+                        }
                         case "_":
                             if (goalMode) {
                                 f.goalBlocks = Array<BlockType>();
