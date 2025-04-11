@@ -648,6 +648,7 @@ export let toggleFlowchart = connectDebugToggle("debug-show-flowchart", false, u
 
 export let toggleThoughts = connectSimpleToggle("thought-toggle", true);
 export let toggleAnimation = connectSimpleToggle("animation-toggle", true);
+export let toggleOrtho = connectSimpleToggle("ortho-toggle", false);
 
 // Start app
 const dummyTask = STD_TASKS[DEFAULT_TASK];
@@ -683,7 +684,8 @@ rt = {
     },
 
     toggleAnimation,
-    toggleThoughts
+    toggleThoughts,
+    toggleOrtho
 };
 
 

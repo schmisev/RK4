@@ -37,6 +37,7 @@ export let viewEnv: WorldViewEnv = {
     resetLagSum() {},
     toggleAnimation: makeToggle(true),
     toggleThoughts: makeToggle(true),
+    toggleOrtho: makeToggle(false)
 };
 
 // Setup editors

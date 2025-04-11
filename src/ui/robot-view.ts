@@ -4,6 +4,7 @@ import { Robot, ThoughtType } from '../robot/robot';
 import { CR, CY, CG, CB, BlockType, MarkerType, World, CBOT, CBOT2, Field } from '../robot/world';
 import { robotDiagramIndex, hideRobotDiagram, updateRobotDiagram } from './objectigrams';
 import { clamp, easeBump, easeInCubic, easeInOutQuad, easeOutCubic, easeOutQuad, lerp } from '../utils';
+import { toggleOrtho } from '..';
 
 let ENV: WorldViewEnv;
 // Setup robot sketch
@@ -14,6 +15,7 @@ function robotSketch(p5: p5) {
     let animStrength = 0;
     let timer = 0;
     let taskCheckReloadTime = 200;
+    let isOrtho = false;
 
     const CPS = 100; // Compass size
     const TSZ = 50; // Tilesize
@@ -172,6 +174,16 @@ function robotSketch(p5: p5) {
             ENV.updateLagSum(p5.deltaTime);
         } else {
             ENV.resetLagSum();
+        }
+
+        // ortho
+        if (toggleOrtho.active !== isOrtho) {
+            isOrtho = toggleOrtho.active;
+            if (isOrtho) {
+                p5.ortho(-p5.width/2, p5.width/2, -p5.height/2, p5.height/2, 1, 10000);
+            } else {
+                p5.perspective();
+            }
         }
 
         // update play state

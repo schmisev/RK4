@@ -19,6 +19,7 @@ export interface WorldViewEnv {
   maxDt: number;
   toggleAnimation: Toggle;
   toggleThoughts: Toggle;
+  toggleOrtho: Toggle;
   updateLagSum(dts: number): void;
   resetLagSum(): void;
 }
