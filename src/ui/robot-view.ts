@@ -4,7 +4,6 @@ import { Robot, ThoughtType } from '../robot/robot';
 import { CR, CY, CG, CB, BlockType, MarkerType, World, CBOT, CBOT2, Field } from '../robot/world';
 import { robotDiagramIndex, hideRobotDiagram, updateRobotDiagram } from './objectigrams';
 import { clamp, easeBump, easeInCubic, easeInOutQuad, easeOutCubic, easeOutQuad, lerp } from '../utils';
-import { toggleOrtho } from '..';
 
 let ENV: WorldViewEnv;
 // Setup robot sketch
@@ -177,8 +176,8 @@ function robotSketch(p5: p5) {
         }
 
         // ortho
-        if (toggleOrtho.active !== isOrtho) {
-            isOrtho = toggleOrtho.active;
+        if (ENV.toggleOrtho.active !== isOrtho) {
+            isOrtho = ENV.toggleOrtho.active;
             if (isOrtho) {
                 p5.ortho(-p5.width/2, p5.width/2, -p5.height/2, p5.height/2, 1, 10000);
             } else {
