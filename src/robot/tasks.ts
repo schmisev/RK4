@@ -642,8 +642,6 @@ export const STD_TASKS: Record<string, Task> = {
         description: "Der Roboter soll ALLE Blöcke im Raum mithilfe der Methode <code>zimmerAufräumen()</code> entfernen. Implementiere dafür einzelne Hilfsmethoden!",
         preload: "// Nichts vorgegeben",
         world: (w: World, idx: number) => {
-            let buffer = 5;
-            
             w.H = 6;
             w.L = Math.floor(Math.random() * 5) + 5;
             w.W = Math.floor(Math.random() * 5) + 5;
