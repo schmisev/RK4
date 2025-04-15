@@ -160,11 +160,20 @@ function robotSketch(p5: p5) {
                 p5.resizeCanvas(width, height);
             canvasH = height;
             canvasW = width;
+            setPerspective();
         });
         observer.observe(canvasDiv, { box: 'content-box' });
         cam = p5.createCamera();
         cvs.parent("robot-canvas");
     };
+
+    const setPerspective = () => {
+        if (isOrtho) {
+            p5.ortho(-p5.width/2, p5.width/2, -p5.height/2, p5.height/2, 1, 10000);
+        } else {
+            p5.perspective();
+        }
+    }
 
     p5.draw = () => {
         // update sum of frame lag
@@ -178,11 +187,7 @@ function robotSketch(p5: p5) {
         // ortho
         if (ENV.toggleOrtho.active !== isOrtho) {
             isOrtho = ENV.toggleOrtho.active;
-            if (isOrtho) {
-                p5.ortho(-p5.width/2, p5.width/2, -p5.height/2, p5.height/2, 1, 10000);
-            } else {
-                p5.perspective();
-            }
+            setPerspective();
         }
 
         // update play state
