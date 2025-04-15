@@ -29,7 +29,7 @@ ace.define(
                     "constant.language": getVals(ENV.global.const).join("|"),
                 },
                 "text",
-                true
+                false // CASE SENSITIVE
             );
             this.$rules = {
                 start: [
