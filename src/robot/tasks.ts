@@ -348,7 +348,8 @@ export const STD_TASKS: Record<string, Task> = {
     },
     "sms_Wenn-Dann-Sonst_1": {
         title: "Links oder rechts?",
-        description: "Benutze <code>wenn ... dann ... sonst ... ende</code>, um die Aufgabe zu lösen. Wenn die Marke unter dem Roboter rot ist, soll er sich dabei nach links drehen und einen <b>roten</b> Block platzieren, ansonsten nach rechts und dort einen <b>blauen</b> Block setzen. Führe die Aufgabe mehrere Male durch. Klappt deine Lösung <i>immer</i>?",
+        description:
+            "Benutze <code>wenn ... dann ... sonst ... ende</code>, um die Aufgabe zu lösen. Wenn die Marke unter dem Roboter rot ist, soll er sich dabei nach links drehen und einen <b>roten</b> Block platzieren, ansonsten nach rechts und dort einen <b>blauen</b> Block setzen. Führe die Aufgabe mehrere Male durch. Klappt deine Lösung <i>immer</i>?",
         preload: "// Nichts vorgegeben",
         world: (w: World, idx: number) => {
             w.H = 6;
@@ -375,11 +376,12 @@ export const STD_TASKS: Record<string, Task> = {
             } else {
                 w.fields[2][0].addBlock(BlockType.b, true);
             }
-        }
+        },
     },
     "sms_Wenn-Dann-Sonst_2": {
         title: "Links oder rechts? XXL",
-        description: "Nutze nun zusätzlich eine bedingte Wiederholung, um je nach Marke links oder rechts den passenden Block zu legen.",
+        description:
+            "Nutze nun zusätzlich eine bedingte Wiederholung, um je nach Marke links oder rechts den passenden Block zu legen.",
         preload: "// Nichts vorgegeben",
         world: (w: World, idx: number) => {
             w.H = 6;
@@ -399,7 +401,7 @@ export const STD_TASKS: Record<string, Task> = {
             }
 
             w.createRobot(0, 1, "E", "k1", 1);
-            for (let x = 1; x  < w.L; x++) {
+            for (let x = 1; x < w.L; x++) {
                 const left = Math.random() > 0.5;
                 w.fields[1][x].setMarker(left ? MarkerType.R : MarkerType.B);
                 if (left) {
@@ -408,11 +410,12 @@ export const STD_TASKS: Record<string, Task> = {
                     w.fields[2][x].addBlock(BlockType.b, true);
                 }
             }
-        }
+        },
     },
     "sms_Wenn-Dann-Sonst_3": {
         title: "Links, rechts oder weg?",
-        description: "Nun kommen auch noch gelbe Marken dazu: Diese sollen alle entfernt werden.",
+        description:
+            "Nun kommen auch noch gelbe Marken dazu: Diese sollen alle entfernt werden.",
         preload: "// Nichts vorgegeben",
         world: (w: World, idx: number) => {
             w.H = 6;
@@ -432,7 +435,7 @@ export const STD_TASKS: Record<string, Task> = {
             }
 
             w.createRobot(0, 1, "E", "k1", 1);
-            for (let x = 1; x  < w.L; x++) {
+            for (let x = 1; x < w.L; x++) {
                 if (Math.random() < 0.33) {
                     w.fields[1][x].setMarker(MarkerType.Y);
                     w.fields[1][x].setMarker(MarkerType.None, true);
@@ -451,8 +454,10 @@ export const STD_TASKS: Record<string, Task> = {
     },
     "sms_Wenn-Dann-Sonst_4": {
         title: "Links, rechts, weg oder Stolperstein?",
-        description: "Grüne Marker sollen hingegen mit einem grünen Block ersetzt werden.",
-        preload: "Methode umdrehen() für Roboter\n    linksDrehen()\n    linksDrehen()\nende",
+        description:
+            "Grüne Marker sollen hingegen mit einem grünen Block ersetzt werden.",
+        preload:
+            "Methode umdrehen() für Roboter\n    linksDrehen()\n    linksDrehen()\nende",
         world: (w: World, idx: number) => {
             w.H = 6;
             w.L = 10 + Math.floor(Math.random() * 10);
@@ -471,7 +476,7 @@ export const STD_TASKS: Record<string, Task> = {
             }
 
             w.createRobot(0, 1, "E", "k1", 1);
-            for (let x = 1; x  < w.L; x++) {
+            for (let x = 1; x < w.L; x++) {
                 if (Math.random() < 0.25) {
                     w.fields[1][x].setMarker(MarkerType.Y);
                     w.fields[1][x].setMarker(MarkerType.None, true);
@@ -493,12 +498,14 @@ export const STD_TASKS: Record<string, Task> = {
                     w.fields[2][x].addBlock(BlockType.b, true);
                 }
             }
-        }
+        },
     },
     "sms_Wenn-Dann-Sonst_5": {
         title: "Um die Ecke EXTREME",
-        description: "Nutze <code>siehtAbgrund()</code> um den Robotern nach Hause zu helfen. Allerdings müssen sie dabei manchmal rechts, manchmal links abbiegen.",
-        preload: "Methode umdrehen() für Roboter\n    linksDrehen()\n    linksDrehen()\nende",
+        description:
+            "Nutze <code>siehtAbgrund()</code> um den Robotern nach Hause zu helfen. Allerdings müssen sie dabei manchmal rechts, manchmal links abbiegen.",
+        preload:
+            "Methode umdrehen() für Roboter\n    linksDrehen()\n    linksDrehen()\nende",
         world: (w: World, idx: number) => {
             w.H = 6;
             w.L = 10 + Math.floor(Math.random() * 10);
@@ -519,9 +526,8 @@ export const STD_TASKS: Record<string, Task> = {
             let yTurn = 0;
             let lastTurns: number[] = [];
             for (let i = 0; i < 3; i++) {
-
                 let xTurn = w.L - 2 - i * 2;
-                
+
                 let yTurnNew = yTurn;
                 testLoop: for (let j = 0; j < 1000; j++) {
                     yTurnNew = 1 + Math.floor(Math.random() * (w.W - 2));
@@ -547,19 +553,21 @@ export const STD_TASKS: Record<string, Task> = {
                     w.fields[y][xTurn].isEditable = true;
                 }
 
-                w.createRobot(0, yTurn, "E", "k" + (i+1), i + 1);
-                w.fields[direction > 0 ? (w.W - 1) : 0][xTurn].setGoalRobotIndex(i+1);
-
+                w.createRobot(0, yTurn, "E", "k" + (i + 1), i + 1);
+                w.fields[direction > 0 ? w.W - 1 : 0][xTurn].setGoalRobotIndex(
+                    i + 1
+                );
             }
-        }
+        },
     },
     "sms_Wenn-Dann-Sonst_6": {
         title: "Wegfindung",
-        description: "Wenn der Roboter auf einen roten Block trifft, soll er den Block aufheben und nach rechts weitergehen. Bei einem blauen Block soll er nach links abbiegen, bis er sein Ziel erreicht hat.",
+        description:
+            "Wenn der Roboter auf einen roten Block trifft, soll er den Block aufheben und nach rechts weitergehen. Bei einem blauen Block soll er nach links abbiegen, bis er sein Ziel erreicht hat.",
         preload: "// Nichts vorgegeben",
         world: (w: World, idx: number) => {
             let buffer = 5;
-            
+
             w.H = 6;
             w.L = 20;
             w.W = 5 + 2 * buffer;
@@ -591,7 +599,7 @@ export const STD_TASKS: Record<string, Task> = {
                 trys += 1;
                 if (direction === 0) {
                     // moving forward
-                    let d = randomDistance(2, 5)
+                    let d = randomDistance(2, 5);
                     let xNew = Math.max(0, x - d);
 
                     for (let xTmp = x; xTmp > xNew; xTmp -= 1) {
@@ -607,10 +615,10 @@ export const STD_TASKS: Record<string, Task> = {
 
                     if (Math.random() > 0.5) {
                         w.fields[y][x].addBlock(BlockType.r);
-                        direction -= 1
+                        direction -= 1;
                     } else {
                         w.fields[y][x].addBlock(BlockType.b);
-                        direction += 1
+                        direction += 1;
                     }
                 } else {
                     // move laterally
@@ -620,7 +628,8 @@ export const STD_TASKS: Record<string, Task> = {
                         // recovery --> flip direction, replace stone
                         direction = -direction;
                         yNew = y + direction * d;
-                        w.fields[y][x].blocks[0] = direction > 0 ? BlockType.b : BlockType.r;
+                        w.fields[y][x].blocks[0] =
+                            direction > 0 ? BlockType.b : BlockType.r;
                     }
 
                     for (let yTmp = y; yTmp !== yNew; yTmp += direction) {
@@ -629,17 +638,20 @@ export const STD_TASKS: Record<string, Task> = {
                     w.fields[y][x].setMarker(MarkerType.None);
 
                     y = yNew;
-                    w.fields[y][x].addBlock(direction > 0 ? BlockType.r : BlockType.b);
-                    direction = 0
+                    w.fields[y][x].addBlock(
+                        direction > 0 ? BlockType.r : BlockType.b
+                    );
+                    direction = 0;
                 }
             }
 
             w.fields[y][0].setGoalRobotIndex(1);
-        }
+        },
     },
-    "sms_Algorithmen_1": {
+    sms_Algorithmen_1: {
         title: "Zimmer aufräumen",
-        description: "Der Roboter soll ALLE Blöcke im Raum mithilfe der Methode <code>zimmerAufräumen()</code> entfernen. Implementiere dafür einzelne Hilfsmethoden!",
+        description:
+            "Der Roboter soll ALLE Blöcke im Raum mithilfe der Methode <code>zimmerAufräumen()</code> entfernen. Implementiere dafür einzelne Hilfsmethoden!",
         preload: "// Nichts vorgegeben",
         world: (w: World, idx: number) => {
             w.H = 6;
@@ -655,8 +667,11 @@ export const STD_TASKS: Record<string, Task> = {
                     f.lastGoalStatus = f.checkGoal();
                     if (!f.lastGoalStatus) w.addGoal();
                     if (x != 0 || y != 0) {
-                        
-                        f.addMultipleBlocks(Math.floor(Math.random() * w.H / 2), BlockType.r, false);
+                        f.addMultipleBlocks(
+                            Math.floor((Math.random() * w.H) / 2),
+                            BlockType.r,
+                            false
+                        );
                         f.goalBlocks = [];
                     }
                     w.fields[y].push(f);
@@ -664,9 +679,9 @@ export const STD_TASKS: Record<string, Task> = {
             }
 
             w.createRobot(0, 0, "E", "k1", 1);
-        }
+        },
     },
-    "sms_Algorithmen_2": {
+    sms_Algorithmen_2: {
         title: "Rette den Roboter!",
         description: "Entferne die Blocks unter dem zweiten Roboter!",
         preload:
@@ -702,15 +717,16 @@ export const STD_TASKS: Record<string, Task> = {
             w.fields[0][1].setGoalRobotIndex(2);
         },
     },
-    "sms_Algorithmen_3": {
+    sms_Algorithmen_3: {
         title: "Labyrinth",
-        description: "Finde die rote Marke im Labyrinth und entferne sie! Tipp: Halte dich immer an der rechten Wand!",
+        description:
+            "Finde die rote Marke im Labyrinth und entferne sie! Tipp: Halte dich immer an der rechten Wand!",
         preload:
             "Methode gehen(Zahl n) für Roboter\n    wiederhole n mal\n        schritt()\n    ende\nende",
         world: (w: World, idx: number) => {
             let kernelW = rndi(5, 11);
             let kernelL = rndi(5, 11);
-            
+
             w.H = 2;
             w.W = 1 + 2 * kernelW;
             w.L = 1 + 2 * kernelL;
@@ -719,7 +735,7 @@ export const STD_TASKS: Record<string, Task> = {
                 w.fields.push([]);
 
                 for (let x = 0; x < w.L; x++) {
-                    let isWall: boolean = (x%2==0) || (y%2==0);
+                    let isWall: boolean = x % 2 == 0 || y % 2 == 0;
                     const f = new Field(w, false, isWall, w.H, x, y);
                     // add field to line
                     f.lastGoalStatus = f.checkGoal();
@@ -731,7 +747,7 @@ export const STD_TASKS: Record<string, Task> = {
             function getNeighbors(f: Field) {
                 let neighbors: Field[] = [];
                 let w = f.world;
-                
+
                 function pushUnvisited(nf: Field | undefined) {
                     if (nf && nf.marker === MarkerType.None) {
                         neighbors.push(nf);
@@ -774,14 +790,16 @@ export const STD_TASKS: Record<string, Task> = {
             let startX = 1 + rndi(0, kernelL) * 2;
             let startY = 1 + rndi(0, kernelW) * 2;
             let start = w.getField(startX, startY);
-            if (!start) throw new WorldError(`Konnte keinen Einstieg bei (${startX}, ${startY}) finden! Weltgröße: (${w.W}, ${w.L})`);
+            if (!start)
+                throw new WorldError(
+                    `Konnte keinen Einstieg bei (${startX}, ${startY}) finden! Weltgröße: (${w.W}, ${w.L})`
+                );
 
             let goal = generateMaze(start);
 
             for (const row of w.fields) {
                 for (const field of row) {
-                    if (field.isEditable)
-                        field.setMarker(MarkerType.None);
+                    if (field.isEditable) field.setMarker(MarkerType.None);
                 }
             }
 
@@ -810,11 +828,12 @@ Methode herumirren() für Roboter
 ende
 
 k1.herumirren()
-        `
+        `,
     },
-    "sms_Algorithmen_4": {
+    sms_Algorithmen_4: {
         title: "Sortieren",
-        description: "Bringe die Blockstapel in aufsteigend sortierte Reihenfolge!",
+        description:
+            "Bringe die Blockstapel in aufsteigend sortierte Reihenfolge!",
         preload: `// Nichts`,
         world: (w: World, idx: number) => {
             let maxValue: number = rndi(5, 10);
@@ -827,7 +846,7 @@ k1.herumirren()
 
             let sortedValues = deepCopy(randomValues).sort();
             maxValue = sortedValues.at(-1)!;
-            
+
             w.H = maxValue + 1;
             w.W = 11;
             w.L = numOfValues;
@@ -841,7 +860,11 @@ k1.herumirren()
                     const f = new Field(w, false, false, w.H, x, y);
 
                     if (y === 0) {
-                        f.addMultipleBlocks(randomValues[x], BlockType.r, false);
+                        f.addMultipleBlocks(
+                            randomValues[x],
+                            BlockType.r,
+                            false
+                        );
                         f.addMultipleBlocks(sortedValues[x], BlockType.r, true);
                     }
 
@@ -853,8 +876,100 @@ k1.herumirren()
             }
 
             // w.fields[0][w.L-1].isWall = true;
-        }
-    }
+        },
+    },
+    sms_Algorithmen_5: {
+        title: "Goldgräber",
+        description:
+            "Finde das Gold (gelbe Ziegel) im Boden und ersetze sie durch blaue Ziegel!",
+        preload: `// Nichts`,
+        world: (w: World, idx: number) => {
+            w.H = 11;
+            w.L = 9;
+            w.W = 9;
+
+            let floorHeight = 5;
+
+            w.createRobot(1, 0, "S", "k1", 1);
+
+            for (let y = 0; y < w.W; y++) {
+                w.fields.push([]);
+
+                for (let x = 0; x < w.L; x++) {
+                    const f = new Field(w, false, false, w.H, x, y);
+
+                    let goldHeight = rndi(0, 10);
+                    if (
+                        x != 0 &&
+                        y != 0 &&
+                        x != w.L-1 &&
+                        y != w.W-1 &&
+                        goldHeight < floorHeight
+                    ) {
+                        f.addMultipleBlocks(goldHeight, BlockType.r, false);
+                        f.addMultipleBlocks(1, BlockType.y, false);
+                        f.addMultipleBlocks(
+                            floorHeight - 1 - goldHeight,
+                            BlockType.r,
+                            false
+                        );
+                        // goal state
+                        f.addMultipleBlocks(goldHeight, BlockType.r, true);
+                        f.addMultipleBlocks(1, BlockType.b, true);
+                        f.addMultipleBlocks(
+                            floorHeight - 1 - goldHeight,
+                            BlockType.r,
+                            true
+                        );
+                    } else {
+                        f.addMultipleBlocks(floorHeight, BlockType.r, false);
+                        f.addMultipleBlocks(floorHeight, BlockType.r, true);
+                    }
+
+                    // add field to line
+                    f.lastGoalStatus = f.checkGoal();
+                    if (!f.lastGoalStatus) w.addGoal();
+                    w.fields[y].push(f);
+                }
+            }
+        },
+    },
+    sms_Algorithmen_6: {
+        title: "Plus und Minus",
+        description:
+            "'Addiere' die Blockstapel. Rote Ziegel stehen für negative, grüne für positive Zahlen. Zwei grüne plus drei rote Ziegel sollten also einen roten Ziegel ergeben, da <code>2 + (-3) = -1</code>",
+        preload: `// Nichts`,
+        world: (w: World, idx: number) => {
+            w.H = 10;
+            w.L = 9;
+            w.W = 3;
+
+            w.createRobot(1, 0, "S", "k1", 1);
+
+            let a = rndi(-5, 6);
+            let b = rndi(-5, 6);
+            let res = a + b;
+
+            for (let y = 0; y < w.W; y++) {
+                w.fields.push([]);
+
+                for (let x = 0; x < w.L; x++) {
+                    const f = new Field(w, false, false, w.H, x, y);
+
+                    // add field to line
+                    f.lastGoalStatus = f.checkGoal();
+                    if (!f.lastGoalStatus) w.addGoal();
+                    w.fields[y].push(f);
+                }
+            }
+
+            w.getField(1, 1)!.addMultipleBlocks(Math.abs(a), a > 0 ? BlockType.g : BlockType.r, false);
+            w.getField(3, 1)!.addMultipleBlocks(Math.abs(b), b > 0 ? BlockType.g : BlockType.r, false);
+
+            w.getField(7, 1)!.setMarker(MarkerType.Y);
+            w.getField(7, 1)!.addMultipleBlocks(Math.abs(res), res > 0 ? BlockType.g : BlockType.r, true);
+        },
+    },
 };
 
 /**
