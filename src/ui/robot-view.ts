@@ -175,6 +175,37 @@ function robotSketch(p5: p5) {
 
     const numberPlates: Record<number, p5.Graphics> = {};
 
+    const resetCamera = () => {
+        let angle = (3 * Math.PI) / 4;
+        let rotation = -Math.PI / 6;
+        let distance = 1300;
+        cam.setPosition(
+            distance * Math.sin(rotation),
+            distance * Math.cos(angle),
+            distance * Math.sin(angle) * Math.cos(rotation)
+        );
+        cam.lookAt(0, 0, 0);
+    }
+
+    const setPerspective = () => {
+        if (isOrtho) {
+            p5.ortho(
+                -p5.width / 2,
+                p5.width / 2,
+                -p5.height / 2,
+                p5.height / 2,
+                1,
+                10000
+            );
+        } else {
+            p5.perspective();
+        }
+    };
+
+    p5.doubleClicked = () => {
+        resetCamera();
+    }
+
     p5.setup = () => {
         const width = canvasDiv.offsetWidth;
         const height = canvasDiv.offsetHeight;
@@ -192,31 +223,8 @@ function robotSketch(p5: p5) {
         });
         observer.observe(canvasDiv, { box: "content-box" });
         cam = p5.createCamera();
-        let angle = (3 * Math.PI) / 4;
-        let rotation = -Math.PI / 6;
-        let distance = 1300;
-        cam.setPosition(
-            distance * Math.sin(rotation),
-            distance * Math.cos(angle),
-            distance * Math.sin(angle) * Math.cos(rotation)
-        );
-        cam.lookAt(0, 0, 0);
+        resetCamera();
         cvs.parent("robot-canvas");
-    };
-
-    const setPerspective = () => {
-        if (isOrtho) {
-            p5.ortho(
-                -p5.width / 2,
-                p5.width / 2,
-                -p5.height / 2,
-                p5.height / 2,
-                1,
-                10000
-            );
-        } else {
-            p5.perspective();
-        }
     };
 
     p5.draw = () => {
