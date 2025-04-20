@@ -1,5 +1,5 @@
 import { runtime as ENV } from "..";
-import { type Task } from "../robot/tasks";
+import { DEFAULT_TASK, type Task } from "../robot/tasks";
 import { createOption, destructureTaskKey } from "../utils";
 
 // Fill task selector
@@ -52,11 +52,14 @@ export function updateTaskSelector() {
 }
 
 // Load new task
-taskSelector.onchange = (e: Event) => {
+taskSelector.onchange = selectTask;
+
+function selectTask(evt: Event) {
     console.log();
     console.log("🤔 Lade neue Aufgabe: " + taskSelector.value);
-    ENV.loadTask(taskSelector.value);
+    ENV.loadTask(taskSelector.value).then(setHashFromTask);
 };
+
 /**
  * Get github files
  */
@@ -93,3 +96,24 @@ export async function retrieveLocalTasks() {
     let additionalTasks = JSON.parse(value) as Record<string, Task>;
     ENV.liveTasks = { ...ENV.liveTasks, ...additionalTasks};
 }
+
+export async function setTaskFromHash() {
+    let [octothorpe, taskName, ...rest] = document.location.hash.split("/");
+    if (taskName && taskName in ENV.liveTasks) {
+        console.log("");
+        console.log(`🔗 Lade Aufgabe aus URL: ${taskName}`);
+        await ENV.loadTask(taskName)
+        taskSelector.value = taskName;
+    } else {
+        console.log("");
+        console.log(`✔️ Lade Standardaufgabe: ${DEFAULT_TASK}`);
+        await ENV.loadTask(DEFAULT_TASK);
+        history.replaceState(null, "", document.location.pathname);
+    }
+}
+
+function setHashFromTask() {
+    history.pushState(null, "", document.location.pathname + "#/" + ENV.taskName);
+}
+
+window.onhashchange = setTaskFromHash;

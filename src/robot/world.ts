@@ -335,9 +335,9 @@ export class World {
 
     loadWorldLog() {
         console.log("🌍 Welt wird geladen");
-        console.log("... 🤔 Teilaufgabe", this.stageIdx + 1, "|", this.goalsRemaining, "Felder zu lösen");
-        console.log("... 🗺️ Welt:", "L", this.L, "| B", this.W, "| H", this.H);
-        console.log("... 🤖 Roboter:", this.robots.map((r) => {return r.name}).join(", "));
+        console.log("-> 🤔 Teilaufgabe", this.stageIdx + 1, "|", this.goalsRemaining, "Felder zu lösen");
+        console.log("-> 🗺️ Welt:", "L", this.L, "| B", this.W, "| H", this.H);
+        console.log("-> 🤖 Roboter:", this.robots.map((r) => {return r.name}).join(", "));
     }
 
     createRobot(x: number, y: number, dir: string, name: string, index: number) {

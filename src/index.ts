@@ -9,7 +9,7 @@ import "./ui/store-code";
 import "./ui/task-selector";
 import "./ui/save-load-files";
 import "./ui/console-log";
-import { retrieveLocalTasks, updateTaskSelector } from "./ui/task-selector";
+import { retrieveLocalTasks, setTaskFromHash, updateTaskSelector } from "./ui/task-selector";
 
 // language imports
 import Parser from "./language/frontend/parser";
@@ -694,12 +694,17 @@ screenshotRobot.onclick = () => {
     robotView.saveCanvas(rt.taskName + "_" + (new Date()).toLocaleString() + ".png");
 }
 
+/**
+ * START THE APP
+ */
 let robotView = setupRobotView(rt);
 updateSlider();
 
 const setup = [
     retrieveLocalTasks().then(updateTaskSelector), // get std tasks
-    loadTask(DEFAULT_TASK).catch(e => console.error(e)).then(updateIDE),
+    setTaskFromHash()
+    .catch(e => console.error(e))
+    .then(updateIDE),
 ];
 
 async function finishSetup() {
