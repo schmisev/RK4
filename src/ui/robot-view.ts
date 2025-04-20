@@ -297,6 +297,8 @@ function robotSketch(p5: p5) {
         // drawing the world
         drawWorld(world);
 
+        p5.pop();
+
         // draw object diagrams
         if (robotDiagramIndex >= world.robots.length) {
             hideRobotDiagram(ENV.objOverlay);
@@ -305,11 +307,6 @@ function robotSketch(p5: p5) {
         if (robotDiagramIndex >= 0) {
             updateRobotDiagram(world.robots[robotDiagramIndex], ENV.objOverlay);
         }
-
-        // draw compass
-        drawCompass(world);
-
-        p5.pop();
 
         // draw heads up display
         drawHUD();
@@ -389,6 +386,8 @@ function robotSketch(p5: p5) {
         drawWorldOutline(w);
         drawWorldFields(w);
         drawRobots(w);
+        drawCompass(w);
+        drawRobotThoughts(w);
         p5.pop();
     };
 
@@ -410,13 +409,26 @@ function robotSketch(p5: p5) {
             drawSingleRobot(r);
         }
 
+        p5.pop();
+    };
+
+    const drawRobotThoughts = (w: World) => {
+        if (!ENV.toggleThoughts.active) return;
+
+        p5.push();
+        p5.translate(
+            (1 - w.L) * 0.5 * TSZ,
+            (1 - w.W) * 0.5 * TSZ,
+            (1 - w.H) * 0.5 * BLH
+        );
+        
         for (const [i, r] of w.robots.entries()) {
             // do the post fx
-            if (ENV.toggleThoughts.active) drawSingleRobotThoughts(r);
+            drawSingleRobotThoughts(r);
         }
 
         p5.pop();
-    };
+    }
 
     const translateSingleRobot = (r: Robot) => {
         // drawing the robot!
