@@ -1,15 +1,38 @@
-import * as p5 from 'p5';
-import { WorldViewEnv } from '../app';
-import { Robot, ThoughtType } from '../robot/robot';
-import { CR, CY, CG, CB, BlockType, MarkerType, World, CBOT, CBOT2, Field } from '../robot/world';
-import { robotDiagramIndex, hideRobotDiagram, updateRobotDiagram } from './objectigrams';
-import { clamp, easeBump, easeInCubic, easeInOutQuad, easeOutCubic, easeOutQuad, lerp } from '../utils';
+import * as p5 from "p5";
+import { WorldViewEnv } from "../app";
+import { Robot, ThoughtType } from "../robot/robot";
+import {
+    CR,
+    CY,
+    CG,
+    CB,
+    BlockType,
+    MarkerType,
+    World,
+    CBOT,
+    CBOT2,
+    Field,
+} from "../robot/world";
+import {
+    robotDiagramIndex,
+    hideRobotDiagram,
+    updateRobotDiagram,
+} from "./objectigrams";
+import {
+    clamp,
+    easeBump,
+    easeInCubic,
+    easeInOutQuad,
+    easeOutCubic,
+    easeOutQuad,
+    lerp,
+} from "../utils";
 
 let ENV: WorldViewEnv;
 // Setup robot sketch
 function robotSketch(p5: p5) {
     let bg = 0; // Background color
-    const canvasDiv = document.getElementById('robot-canvas')!;
+    const canvasDiv = document.getElementById("robot-canvas")!;
     let cam: p5.Camera;
     let animStrength = 0;
     let timer = 0;
@@ -54,7 +77,11 @@ function robotSketch(p5: p5) {
         return ct;
     };
 
-    const createTextTexture = (str: string, color: string = "#FFF", border = false) => {
+    const createTextTexture = (
+        str: string,
+        color: string = "#FFF",
+        border = false
+    ) => {
         const ct = p5.createGraphics(TSZ, TSZ);
         ct.fill(color);
         ct.textAlign(p5.CENTER);
@@ -65,7 +92,7 @@ function robotSketch(p5: p5) {
             ct.strokeWeight(3);
             ct.stroke(color);
             ct.strokeJoin(p5.ROUND);
-            ct.rect(0.15 * TSZ, 0.15 * TSZ, TSZ * 0.70, TSZ * 0.70);
+            ct.rect(0.15 * TSZ, 0.15 * TSZ, TSZ * 0.7, TSZ * 0.7);
         }
         return ct;
     };
@@ -89,19 +116,19 @@ function robotSketch(p5: p5) {
     const TXVOID = createTextTexture("🕳️");
     const TXBLOCK = createTextTexture("🧱");
     const TXEYE = createTextTexture("👁️");
-    const TXPLACE = createTextTexture("🧱")
-    const TXPICK = createTextTexture("⛏️")
-    const TXMARK = createTextTexture("✏️")
-    const TXREMOVE = createTextTexture("🧽")
-    const TXYBLOCK = createTextTexture("🟨")
-    const TXRBLOCK = createTextTexture("🟥")
-    const TXGBLOCK = createTextTexture("🟩")
-    const TXBBLOCK = createTextTexture("🟦")
-    const TXYMARKER = createTextTexture("🟡")
-    const TXRMARKER = createTextTexture("🔴")
-    const TXGMARKER = createTextTexture("🟢")
-    const TXBMARKER = createTextTexture("🔵")
-    const TXROBOT = createTextTexture("🤖")
+    const TXPLACE = createTextTexture("🧱");
+    const TXPICK = createTextTexture("⛏️");
+    const TXMARK = createTextTexture("✏️");
+    const TXREMOVE = createTextTexture("🧽");
+    const TXYBLOCK = createTextTexture("🟨");
+    const TXRBLOCK = createTextTexture("🟥");
+    const TXGBLOCK = createTextTexture("🟩");
+    const TXBBLOCK = createTextTexture("🟦");
+    const TXYMARKER = createTextTexture("🟡");
+    const TXRMARKER = createTextTexture("🔴");
+    const TXGMARKER = createTextTexture("🟢");
+    const TXBMARKER = createTextTexture("🔵");
+    const TXROBOT = createTextTexture("🤖");
 
     const RGIDX = [
         createTextTexture("0", "#CCC", true),
@@ -114,7 +141,7 @@ function robotSketch(p5: p5) {
         createTextTexture("7", "#CCC", true),
         createTextTexture("8", "#CCC", true),
         createTextTexture("9", "#CCC", true),
-    ]
+    ];
 
     const BLOCK2COLOR: Record<BlockType, string> = {
         [BlockType.r]: CR,
@@ -152,42 +179,58 @@ function robotSketch(p5: p5) {
         const width = canvasDiv.offsetWidth;
         const height = canvasDiv.offsetHeight;
         const cvs = p5.createCanvas(width, height, p5.WEBGL);
-        cvs.style('border-radius:5px;')
-        let canvasW = 0, canvasH = 0;
+        cvs.style("border-radius:5px;");
+        let canvasW = 0,
+            canvasH = 0;
         const observer = new ResizeObserver((entries) => {
-            const {width, height} = entries[0].contentRect;
+            const { width, height } = entries[0].contentRect;
             if (canvasH != height || canvasW != width)
                 p5.resizeCanvas(width, height);
             canvasH = height;
             canvasW = width;
             setPerspective();
         });
-        observer.observe(canvasDiv, { box: 'content-box' });
+        observer.observe(canvasDiv, { box: "content-box" });
         cam = p5.createCamera();
-        let angle = 3*Math.PI / 4;
+        let angle = (3 * Math.PI) / 4;
         let rotation = -Math.PI / 6;
         let distance = 1300;
         cam.setPosition(
             distance * Math.sin(rotation),
             distance * Math.cos(angle),
-            distance * Math.sin(angle) * Math.cos(rotation),
+            distance * Math.sin(angle) * Math.cos(rotation)
         );
         cam.lookAt(0, 0, 0);
         cvs.parent("robot-canvas");
-
     };
 
     const setPerspective = () => {
         if (isOrtho) {
-            p5.ortho(-p5.width/2, p5.width/2, -p5.height/2, p5.height/2, 1, 10000);
+            p5.ortho(
+                -p5.width / 2,
+                p5.width / 2,
+                -p5.height / 2,
+                p5.height / 2,
+                1,
+                10000
+            );
         } else {
             p5.perspective();
         }
-    }
+    };
 
     p5.draw = () => {
         // update sum of frame lag
-        const { isRunning, queueInterrupt, world, taskCheck, manualMode, playState, dt, maxDt } = ENV;
+        const {
+            isRunning,
+            queueInterrupt,
+            world,
+            taskCheck,
+            manualMode,
+            playState,
+            dt,
+            maxDt,
+        } = ENV;
         if (isRunning && !manualMode) {
             ENV.updateLagSum(p5.deltaTime);
         } else {
@@ -201,16 +244,26 @@ function robotSketch(p5: p5) {
         }
 
         // update play state
-        playState.innerHTML = queueInterrupt ? "report" : (!isRunning ? "stop" : (manualMode ? "pause" : "play_arrow"))
+        playState.innerHTML = queueInterrupt
+            ? "report"
+            : !isRunning
+            ? "stop"
+            : manualMode
+            ? "pause"
+            : "play_arrow";
 
         // update task status (only updating if not current)
-        timer = (timer + p5.deltaTime);
+        timer = timer + p5.deltaTime;
         if (timer > taskCheckReloadTime) {
             timer = 0;
             let isGoalReached = world.isGoalReached();
-            taskCheck.style.backgroundColor = isGoalReached ? "lightgreen" : "whitesmoke";
-            let emoji = isGoalReached ? '✔️' : '❌';
-            taskCheck.innerHTML = `${emoji}<br>${world.getStageIndex() + 1} / ${world.getStageCount()}`;
+            taskCheck.style.backgroundColor = isGoalReached
+                ? "lightgreen"
+                : "whitesmoke";
+            let emoji = isGoalReached ? "✔️" : "❌";
+            taskCheck.innerHTML = `${emoji}<br>${
+                world.getStageIndex() + 1
+            } / ${world.getStageCount()}`;
         }
         // bg color ramping
         if (isRunning && bg == 0) {
@@ -229,7 +282,9 @@ function robotSketch(p5: p5) {
         p5.scale(0.8);
 
         // anim strength
-        animStrength = ENV.toggleAnimation.active ? easeOutCubic(1 - dt / maxDt) : 0;
+        animStrength = ENV.toggleAnimation.active
+            ? easeOutCubic(1 - dt / maxDt)
+            : 0;
 
         // drawing the world
         drawWorld(world);
@@ -254,8 +309,11 @@ function robotSketch(p5: p5) {
 
     const drawBillboard = (drawCall: () => void) => {
         const pan = p5.atan2(cam.eyeZ - cam.centerZ, cam.eyeX - cam.centerX);
-        const tilt = p5.atan2(cam.eyeY - cam.centerY, p5.dist(cam.centerX, cam.centerZ, cam.eyeX, cam.eyeZ));
-        
+        const tilt = p5.atan2(
+            cam.eyeY - cam.centerY,
+            p5.dist(cam.centerX, cam.centerZ, cam.eyeX, cam.eyeZ)
+        );
+
         p5.push();
         p5.rotateZ(pan);
         p5.rotateY(tilt);
@@ -268,7 +326,10 @@ function robotSketch(p5: p5) {
 
     const drawHUD = () => {
         const pan = p5.atan2(cam.eyeZ - cam.centerZ, cam.eyeX - cam.centerX);
-        const tilt = p5.atan2(cam.eyeY - cam.centerY, p5.dist(cam.centerX, cam.centerZ, cam.eyeX, cam.eyeZ));
+        const tilt = p5.atan2(
+            cam.eyeY - cam.centerY,
+            p5.dist(cam.centerX, cam.centerZ, cam.eyeX, cam.eyeZ)
+        );
 
         p5.push();
         p5.translate(cam.eyeX, cam.eyeY, cam.eyeZ);
@@ -326,14 +387,14 @@ function robotSketch(p5: p5) {
     const drawRobots = (w: World) => {
         p5.push();
         p5.translate(
-            (1 - w.L) * 0.5 * TSZ, 
-            (1 - w.W) * 0.5 * TSZ, 
+            (1 - w.L) * 0.5 * TSZ,
+            (1 - w.W) * 0.5 * TSZ,
             (1 - w.H) * 0.5 * BLH
         );
         for (const [i, r] of w.robots.entries()) {
             const f = w.getField(r.pos.x, r.pos.y)!;
-            const fieldHeight = (f.blocks.length);
-            
+            const fieldHeight = f.blocks.length;
+
             r.prepare(fieldHeight); // this passes info to the robot object
             r.animate(p5.deltaTime / ENV.dt, p5.deltaTime); // this does the timing calculation
 
@@ -351,15 +412,27 @@ function robotSketch(p5: p5) {
 
     const translateSingleRobot = (r: Robot) => {
         // drawing the robot!
-        p5.translate(0, 0, animStrength * 0.1 * BLH * p5.abs(p5.sin(r.index + p5.frameCount * 0.1))); // bobbing
+        p5.translate(
+            0,
+            0,
+            animStrength *
+                0.1 *
+                BLH *
+                p5.abs(p5.sin(r.index + p5.frameCount * 0.1))
+        ); // bobbing
         p5.translate(0, 0, animStrength * BLH * easeBump(1 - r.animHopProg)); // hop
-        p5.translate(0, 0, animStrength * 0.2 * BLH * easeBump(1 - r.animMarkerProg)); // marker hop
+        p5.translate(
+            0,
+            0,
+            animStrength * 0.2 * BLH * easeBump(1 - r.animMarkerProg)
+        ); // marker hop
         // sliding
         if (ENV.toggleAnimation.active) {
             p5.translate(
                 lerp(r.animLastPos.x, r.pos.x, r.interpHop) * TSZ,
                 lerp(r.animLastPos.y, r.pos.y, r.interpHop) * TSZ,
-                ( lerp(r.animLastHeight, r.animCurrHeight, r.interpFall) - 0.5 ) * BLH
+                (lerp(r.animLastHeight, r.animCurrHeight, r.interpFall) - 0.5) *
+                    BLH
             );
         } else {
             p5.translate(
@@ -368,24 +441,46 @@ function robotSketch(p5: p5) {
                 (r.animCurrHeight - 0.5) * BLH
             );
         }
-    }
+    };
 
     const rotateSingleRobot = (r: Robot) => {
         // facing direction
         if (ENV.toggleAnimation.active)
-            p5.rotateZ(2 * p5.PI * lerp(r.animLastRot + r.animRotRnd * animStrength, r.animCurrRot + r.animRotRnd * animStrength, r.interpRot) / 360);
-        else
-            p5.rotateZ(2 * p5.PI * r.animCurrRot / 360);
+            p5.rotateZ(
+                (2 *
+                    p5.PI *
+                    lerp(
+                        r.animLastRot + r.animRotRnd * animStrength,
+                        r.animCurrRot + r.animRotRnd * animStrength,
+                        r.interpRot
+                    )) /
+                    360
+            );
+        else p5.rotateZ((2 * p5.PI * r.animCurrRot) / 360);
         // doing the little hop
         p5.rotateX(animStrength * p5.PI * 0.05 * easeBump(1 - r.animHopProg));
         // doing the little hop on marker
-        p5.rotateX(animStrength * p5.PI * 0.05 * easeBump(1 - r.animMarkerProg));
+        p5.rotateX(
+            animStrength * p5.PI * 0.05 * easeBump(1 - r.animMarkerProg)
+        );
         // doing wait tilt
-        p5.rotateY(animStrength * r.animWaitDir * p5.PI * 0.02 * easeBump(1 - r.animWaitProg));
+        p5.rotateY(
+            animStrength *
+                r.animWaitDir *
+                p5.PI *
+                0.02 *
+                easeBump(1 - r.animWaitProg)
+        );
 
         // placing nod
-        p5.rotateX(animStrength * r.animPlaceDir * p5.PI * 0.02 * easeBump(1 - r.animPlaceProg));
-    }
+        p5.rotateX(
+            animStrength *
+                r.animPlaceDir *
+                p5.PI *
+                0.02 *
+                easeBump(1 - r.animPlaceProg)
+        );
+    };
 
     const drawSingleRobotThoughts = (r: Robot) => {
         p5.push(); // bot
@@ -402,7 +497,7 @@ function robotSketch(p5: p5) {
             p5.fill(255);
             p5.rotateY(p5.HALF_PI);
             p5.rotateZ(-p5.HALF_PI);
-            
+
             if (r.animThoughtType != ThoughtType.Nothing) {
                 // main
                 switch (r.animThoughtType) {
@@ -438,13 +533,13 @@ function robotSketch(p5: p5) {
                         break;
                     case ThoughtType.GreenMarker:
                         p5.texture(TXGMARKER);
-                        break
+                        break;
                     case ThoughtType.BlueMarker:
                         p5.texture(TXBMARKER);
-                        break
+                        break;
                     case ThoughtType.YellowMarker:
                         p5.texture(TXYMARKER);
-                        break
+                        break;
                     case ThoughtType.Mark:
                         p5.texture(TXMARK);
                         break;
@@ -459,7 +554,13 @@ function robotSketch(p5: p5) {
                 }
                 // popping
                 p5.scale(easeOutCubic(1 - r.animThoughtProg));
-                p5.translate(0, 0, animStrength * 0.7 * TSZ * easeBump(clamp((1 - r.animThoughtProg) * 2, 0, 1))
+                p5.translate(
+                    0,
+                    0,
+                    animStrength *
+                        0.7 *
+                        TSZ *
+                        easeBump(clamp((1 - r.animThoughtProg) * 2, 0, 1))
                 );
                 // main
                 p5.plane(TSZ * 1);
@@ -471,20 +572,20 @@ function robotSketch(p5: p5) {
                 }
             }
             p5.pop(); // end thought
-        })
-    
+        });
+
         p5.pop(); // end bot
-    }
+    };
 
     const drawSingleRobot = (r: Robot) => {
         p5.push(); // bot
-        
+
         translateSingleRobot(r);
 
         p5.push(); // rotations
-        
+
         rotateSingleRobot(r);
-        
+
         p5.push(); // body
         p5.translate(0, 0, RBH * 0.5);
         p5.fill(CBOT);
@@ -534,11 +635,9 @@ function robotSketch(p5: p5) {
         p5.push(); // pupil
         p5.noStroke();
         // animate eye color
-        const interp = easeOutQuad(1 - r.animWatchProg)
-        if (r.animWatchCond)
-            p5.fill(0, 255 * interp, 0); // blink green
-        else
-            p5.fill(255 * interp, 0, 0); // blink red
+        const interp = easeOutQuad(1 - r.animWatchProg);
+        if (r.animWatchCond) p5.fill(0, 255 * interp, 0); // blink green
+        else p5.fill(255 * interp, 0, 0); // blink red
 
         p5.translate(0, RBW * 0.42, 0);
         p5.sphere(RBW * 0.3);
@@ -546,12 +645,22 @@ function robotSketch(p5: p5) {
         p5.pop(); // end pupil
 
         p5.push(); // arms
-        
+
         const interpPlace = easeBump(1 - r.animPlaceProg);
-        if (r.animPlaceDir > 0) p5.translate(0, 0, animStrength * lerp(0, r.animPlaceDir * BLH * 0.7, interpPlace));
-        else p5.translate(0, 0, lerp(0, animStrength * r.animPlaceDir * BLH * 0.5, interpPlace));
-        
-        p5.translate(0, animStrength * -lerp(0, - BLH * 0.1, interpPlace), 0)
+        if (r.animPlaceDir > 0)
+            p5.translate(
+                0,
+                0,
+                animStrength * lerp(0, r.animPlaceDir * BLH * 0.7, interpPlace)
+            );
+        else
+            p5.translate(
+                0,
+                0,
+                lerp(0, animStrength * r.animPlaceDir * BLH * 0.5, interpPlace)
+            );
+
+        p5.translate(0, animStrength * -lerp(0, -BLH * 0.1, interpPlace), 0);
 
         p5.fill(CBOT2);
         p5.push(); // left arm
@@ -580,7 +689,7 @@ function robotSketch(p5: p5) {
         p5.pop(); // end backplate
 
         p5.pop(); // end body
-        
+
         p5.pop(); // end rotations
 
         // status indicators
@@ -642,7 +751,6 @@ function robotSketch(p5: p5) {
             p5.pop();
         }
 
-
         for (const [z, block] of f.blocks.entries()) {
             p5.push();
             p5.translate(0, 0, z * BLH);
@@ -658,31 +766,6 @@ function robotSketch(p5: p5) {
             p5.pop();
         }
 
-        const goalReached = f.isGoalReached();
-        
-        // goal blocks
-        if (f.goalBlocks != null && !goalReached) {
-            for (const [z, block] of f.goalBlocks.entries()) {
-                let h = f.blocks.length;
-                if (z < h) continue;
-                let dz = z-h;
-                p5.push();
-                p5.translate(0, 0, z * BLH);
-                p5.rotateZ(Math.sin(p5.frameCount * 0.06 + dz + f.x * 7 + f.y * 13) * 0.2);
-                p5.translate(
-                    0,
-                    0,
-                    p5.sin(p5.frameCount * 0.05 + dz) * BLH * 0.2
-                );
-                p5.scale(0.5);
-                p5.fill(BLOCK2COLOR[block]);
-                p5.stroke(0, 0, 0);
-                p5.scale(1 / (1 + (dz)*0.5));
-                p5.box(TSZ, TSZ, BLH);
-                p5.pop();
-            }
-        }
-
         // markers
         if (f.marker != MarkerType.None) {
             p5.push();
@@ -690,44 +773,98 @@ function robotSketch(p5: p5) {
             const h = f.blocks.length;
             p5.translate(0, 0, h * BLH);
             p5.fill(MARKER2COLOR[f.marker]);
-            if (f.goalMarker != null && f.goalMarker != f.marker) p5.texture(MARKER2XTEXTURE[f.marker]);
+            if (f.goalMarker != null && f.goalMarker != f.marker)
+                p5.texture(MARKER2XTEXTURE[f.marker]);
             p5.stroke(0);
             p5.box(MSZ, MSZ, MRH);
             p5.pop();
+        }
+
+        const goalReached = f.isGoalReached();
+
+        // goal blocks
+        if (f.goalBlocks != null && !goalReached) {
+            for (const [z, block] of f.goalBlocks.entries()) {
+                let h = f.blocks.length;
+                if (z < h) continue;
+                let dz = z - h;
+                let animH = p5.sin(p5.frameCount * 0.05 + dz) * BLH * 0.2;
+                p5.push();
+                p5.translate(0, 0, z * BLH);
+                p5.rotateZ(
+                    Math.sin(
+                        p5.frameCount * 0.06 + dz 
+                        + f.x * 7 
+                        + f.y * 13) *0.2
+                );
+
+                // shadow
+                if (dz === 0) {
+                    p5.push();
+                    p5.translate(0, 0, -0.5 * BLH + 1)
+                    if (f.marker !== MarkerType.None) {
+                        p5.translate(0, 0, 2);
+                    }
+                    p5.scale(0.5);
+                    p5.scale(1 / (1 + animH * 0.005));
+                    p5.fill(0, 100);
+                    p5.noStroke();
+                    p5.plane(TSZ, TSZ);
+                    p5.pop();
+                }
+
+                // floaty bits
+                p5.push();
+                p5.translate(
+                    0,
+                    0,
+                    animH
+                );
+                p5.scale(0.5);
+                p5.fill(BLOCK2COLOR[block]);
+                p5.stroke(0, 0, 0);
+                p5.scale(1 / (1 + dz * 0.5));
+                p5.box(TSZ, TSZ, BLH);
+                p5.pop();
+
+                p5.pop();
+            }
         }
 
         // goal markers
         if (f.goalMarker !== null && !goalReached) {
             if (f.goalMarker != MarkerType.None && f.goalMarker !== f.marker) {
                 const groundH = f.blocks.length;
-                const h = Math.max(groundH, f.goalBlocks ? f.goalBlocks.length : 0);
+                const h = Math.max(
+                    groundH,
+                    f.goalBlocks ? f.goalBlocks.length : 0
+                );
                 const animH = p5.sin(p5.frameCount * 0.05) * BLH * 0.4 + BLH * 0.5;
-                // "shadow"
+                
                 p5.push();
                 p5.translate(0, 0, (-BLH + MRH) * 0.5);
-                p5.translate(0, 0, groundH * BLH);
-                p5.scale(0.5);
                 p5.rotateZ(p5.frameCount * 0.02 + h);
+
+                // "shadow"
+                p5.push();
+                p5.translate(0, 0, groundH * BLH);
                 p5.fill(0, 100); // should be fine, since its always drawn on top
                 p5.noStroke();
+                p5.scale(0.5);
                 p5.scale(1 / (1 + animH * 0.005));
                 p5.plane(MSZ, MSZ);
                 p5.pop();
-                
+
                 // "floaty bit"
                 p5.push();
-                p5.translate(0, 0, (-BLH + MRH) * 0.5);
                 p5.translate(0, 0, h * BLH);
-                p5.scale(0.5);
-                p5.rotateZ(p5.frameCount * 0.02 + h);
-                p5.translate(
-                    0,
-                    0,
-                    animH
-                );
+                p5.translate(0, 0, animH);
                 p5.fill(MARKER2COLOR[f.goalMarker]);
                 p5.stroke(0);
+                p5.scale(0.5);
                 p5.box(MSZ, MSZ, MRH);
+                p5.pop();
+
                 p5.pop();
             }
         }
@@ -736,7 +873,7 @@ function robotSketch(p5: p5) {
         if (f.goalRobotIdx != null) {
             if (f.goalRobotIdx >= 0 && f.goalRobotIdx < 10) {
                 p5.push();
-                p5.translate(0, 0, - BLH / 2 + 1);
+                p5.translate(0, 0, -BLH / 2 + 1);
                 p5.noStroke();
                 p5.texture(RGIDX[f.goalRobotIdx]);
                 p5.plane();
@@ -763,7 +900,7 @@ function robotSketch(p5: p5) {
     const drawGoalStatus = (f: Field) => {
         if (f.isEmpty) return;
         p5.push();
-        p5.translate(0, 0, (-FLH));
+        p5.translate(0, 0, -FLH);
         p5.translate(0, 0, -2 * FLH);
         p5.rotateX(p5.PI * 0.5);
         p5.noStroke();
@@ -776,7 +913,6 @@ function robotSketch(p5: p5) {
         p5.box(TSZ * 0.4, FLH, TSZ * 0.4);
         p5.pop();
     };
-
 }
 
 export function setup(env: typeof ENV) {
