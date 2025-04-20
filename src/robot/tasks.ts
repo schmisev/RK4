@@ -5,6 +5,9 @@ import { WorldError } from "../errors";
 export type WorldGen = (w: World, idx: number) => void;
 export type WorldSource = string | WorldGen;
 
+/**
+ * Task generators
+ */
 function generateHomogeneousWorld(
     l: number,
     w: number,
@@ -22,6 +25,44 @@ function generateHomogeneousWorld(
     return result;
 }
 
+function generateAdditionWorld(min: number, max: number): WorldGen {
+    return (w: World, idx: number) => {
+        if (min > max) throw new WorldError("min muss kleiner als max sein!")
+        w.H = Math.max(-min, max) * 2;
+        w.L = 9;
+        w.W = 3;
+
+        w.createRobot(1, 0, "S", "k1", 1);
+
+        let a = rndi(min, max);
+        let b = rndi(min, max);
+        let res = a + b;
+
+        for (let y = 0; y < w.W; y++) {
+            w.fields.push([]);
+
+            for (let x = 0; x < w.L; x++) {
+                const f = new Field(w, false, false, w.H, x, y);
+
+                // add field to line
+                f.lastGoalStatus = f.checkGoal();
+                if (!f.lastGoalStatus) w.addGoal();
+                w.fields[y].push(f);
+            }
+        }
+
+        w.getField(1, 1)!.addMultipleBlocks(Math.abs(a), a > 0 ? BlockType.g : BlockType.r, false);
+        w.getField(3, 1)!.addMultipleBlocks(Math.abs(b), b > 0 ? BlockType.g : BlockType.r, false);
+
+        w.getField(7, 1)!.setMarker(MarkerType.Y);
+        w.getField(7, 1)!.addMultipleBlocks(Math.abs(res), res > 0 ? BlockType.g : BlockType.r, true);
+    };
+}
+
+
+/**
+ * Tasks
+ */
 export interface Task {
     title: string;
     description: string;
@@ -41,133 +82,35 @@ export const STD_PRELOAD = "// Nichts vordefiniert\n";
 export const STD_CODE = ``;
 
 export const STD_TASKS: Record<string, Task> = {
-    Leer_4x4: {
+    std_Leer_4x4: {
         title: "Kleine leere Welt",
         description: "Eine leere Welt.",
         world: generateHomogeneousWorld(4, 4, 10),
         preload: STD_PRELOAD,
     },
-    Leer_8x6: {
+    std_Leer_8x8: {
         title: "Mittlere leere Welt",
         description: "Eine leere Welt.",
-        world: generateHomogeneousWorld(8, 6, 10),
+        world: generateHomogeneousWorld(8, 8, 10),
         preload: STD_PRELOAD,
     },
-    Leer_16x8: {
+    std_Leer_16x8: {
         title: "Große leere Welt",
         description: "Eine leere Welt.",
         world: generateHomogeneousWorld(16, 8, 10),
         preload: STD_PRELOAD,
     },
-    Leer_Hoch: {
-        title: "Sehr hohe Welt",
-        description: "Eine leere Welt.",
-        world: generateHomogeneousWorld(2, 2, 30),
-        preload: STD_PRELOAD,
-    },
-    Zufall_4x4: {
+    std_Zufall_4x4: {
         title: "Klein und verrümpelt",
         description: "Eine vollgerümpelte Welt.",
         world: generateHomogeneousWorld(4, 4, 6, "...:_"),
         preload: STD_PRELOAD,
     },
-    Zufall_8x6: {
+    std_Zufall_8x6: {
         title: "Mittel und verrümpelt",
         description: "Eine vollgerümpelte Welt.",
         world: generateHomogeneousWorld(8, 6, 6, "...:_"),
         preload: STD_PRELOAD,
-    },
-    Zufall_16x8: {
-        title: "Groß und verrümpelt",
-        description: "Eine vollgerümpelte Welt.",
-        world: generateHomogeneousWorld(16, 8, 6, "...:_"),
-        preload: STD_PRELOAD,
-    },
-    Zufall_1x4: {
-        title: "Alles versucht?",
-        description:
-            "Lege die Blöcke an die richtigen Stellen - aber Achtung! Wo sie liegen sollen wird jedes Mal ausgewürfelt. Nutze dafür welt.fertig()!",
-        preload:
-            "Methode gehen(Zahl n) für Roboter\n    wiederhole n mal\n        schritt()\n    ende\nende",
-        world: "x;5;1;5;\nE;_:_.;_:_.;_:_.;_:_.",
-    },
-    Test_Fallen: {
-        title: "Fallen",
-        description: "Nichts zu sehen!",
-        preload: "",
-        world: "x;5;1;5;\nrrrrS;W;_:2;",
-    },
-    Generiert_1: {
-        title: "Block auf Marke!",
-        description: "Lege einen Block an die Stelle, wo die Marke liegt!",
-        preload:
-            "Methode gehen(Zahl n) für Roboter\n    wiederhole n mal\n        schritt()\n    ende\nende",
-        world: (w: World, idx: number) => {
-            w.H = 10;
-            w.W = 5 + Math.floor(Math.random() * 10);
-            w.L = 5 + Math.floor(Math.random() * 10);
-
-            for (let y = 0; y < w.W; y++) {
-                w.fields.push([]);
-
-                for (let x = 0; x < w.L; x++) {
-                    const f = new Field(w, false, false, w.H, x, y);
-                    // add field to line
-                    f.lastGoalStatus = f.checkGoal();
-                    if (!f.lastGoalStatus) w.addGoal();
-                    w.fields[y].push(f);
-                }
-            }
-
-            const rX = Math.floor(Math.random() * w.L);
-            const rY = Math.floor(Math.random() * w.W);
-            w.createRobot(rX, rY, "S", "k0", 0);
-
-            const mX = Math.floor(Math.random() * w.L);
-            const mY = Math.floor(Math.random() * w.W);
-            const mF = w.fields[mY][mX];
-            mF.addBlock(BlockType.r, true);
-            mF.setMarker(MarkerType.Y, false);
-            mF.setMarker(MarkerType.None, true);
-            mF.lastGoalStatus = mF.checkGoal();
-            w.addGoal();
-        },
-    },
-    Generiert_2: {
-        title: "Rette den Roboter!",
-        description: "Entferne die Blocks unter dem zweiten Roboter!",
-        preload:
-            "Methode gehen(Zahl n) für Roboter\n    wiederhole n mal\n        schritt()\n    ende\nende",
-        world: (w: World, idx: number) => {
-            w.H = 10;
-            w.W = 5;
-            w.L = 5 + Math.floor(Math.random() * 10);
-
-            for (let y = 0; y < w.W; y++) {
-                w.fields.push([]);
-
-                for (let x = 0; x < w.L; x++) {
-                    const f = new Field(w, false, false, w.H, x, y);
-                    // add field to line
-                    f.lastGoalStatus = f.checkGoal();
-                    if (!f.lastGoalStatus) w.addGoal();
-                    w.fields[y].push(f);
-                }
-            }
-
-            w.createRobot(0, 0, "S", "k1", 1);
-            const rX = 1 + Math.floor(Math.random() * (w.L - 2));
-            const rY = 1 + Math.floor(Math.random() * (w.W - 2));
-            w.createRobot(rX, rY, "S", "k2", 2);
-            const mF = w.fields[rY][rX];
-            for (let i = 0; i < Math.random() * 8 + 2; i++) {
-                mF.addBlock(BlockType.b);
-            }
-            mF.goalBlocks = Array<BlockType>();
-
-            w.fields[0][0].setGoalRobotIndex(1);
-            w.fields[0][1].setGoalRobotIndex(2);
-        },
     },
     sms_Basics_1: {
         title: "Start",
@@ -935,27 +878,34 @@ k1.herumirren()
         },
     },
     sms_Algorithmen_6: {
+        title: "Plusrechnen",
+        description:
+            "'Addiere' die Blockstapel. Die grünen Ziegelstapel stehen dabei für zwei positive Zahlen.",
+        preload: `// Nichts`,
+        world: generateAdditionWorld(0, 6),
+    },
+    sms_Algorithmen_7: {
         title: "Plus und Minus",
         description:
             "'Addiere' die Blockstapel. Rote Ziegel stehen für negative, grüne für positive Zahlen. Zwei grüne plus drei rote Ziegel sollten also einen roten Ziegel ergeben, da <code>2 + (-3) = -1</code>",
         preload: `// Nichts`,
+        world: generateAdditionWorld(-5, 6),
+    },
+    sms_Algorithmen_8: {
+        title: "Block auf Marke!",
+        description: "Lege einen Block an die Stelle, wo die Marke liegt!",
+        preload:
+            "Methode gehen(Zahl n) für Roboter\n    wiederhole n mal\n        schritt()\n    ende\nende",
         world: (w: World, idx: number) => {
             w.H = 10;
-            w.L = 9;
-            w.W = 3;
-
-            w.createRobot(1, 0, "S", "k1", 1);
-
-            let a = rndi(-5, 6);
-            let b = rndi(-5, 6);
-            let res = a + b;
+            w.W = 5 + Math.floor(Math.random() * 10);
+            w.L = 5 + Math.floor(Math.random() * 10);
 
             for (let y = 0; y < w.W; y++) {
                 w.fields.push([]);
 
                 for (let x = 0; x < w.L; x++) {
                     const f = new Field(w, false, false, w.H, x, y);
-
                     // add field to line
                     f.lastGoalStatus = f.checkGoal();
                     if (!f.lastGoalStatus) w.addGoal();
@@ -963,11 +913,18 @@ k1.herumirren()
                 }
             }
 
-            w.getField(1, 1)!.addMultipleBlocks(Math.abs(a), a > 0 ? BlockType.g : BlockType.r, false);
-            w.getField(3, 1)!.addMultipleBlocks(Math.abs(b), b > 0 ? BlockType.g : BlockType.r, false);
+            const rX = Math.floor(Math.random() * w.L);
+            const rY = Math.floor(Math.random() * w.W);
+            w.createRobot(rX, rY, "S", "k0", 0);
 
-            w.getField(7, 1)!.setMarker(MarkerType.Y);
-            w.getField(7, 1)!.addMultipleBlocks(Math.abs(res), res > 0 ? BlockType.g : BlockType.r, true);
+            const mX = Math.floor(Math.random() * w.L);
+            const mY = Math.floor(Math.random() * w.W);
+            const mF = w.fields[mY][mX];
+            mF.addBlock(BlockType.r, true);
+            mF.setMarker(MarkerType.Y, false);
+            mF.setMarker(MarkerType.None, true);
+            mF.lastGoalStatus = mF.checkGoal();
+            w.addGoal();
         },
     },
 };
@@ -975,4 +932,5 @@ k1.herumirren()
 /**
  * Default task loaded on startup
  */
-export const DEFAULT_TASK: keyof typeof STD_TASKS = "Leer_4x4";
+export const DEFAULT_TASK: keyof typeof STD_TASKS = Object.keys(STD_TASKS)[0];
+
