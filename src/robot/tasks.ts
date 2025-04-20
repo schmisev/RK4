@@ -927,6 +927,12 @@ k1.herumirren()
             w.addGoal();
         },
     },
+    dev_Test_1: {
+        "description": "Verschiedene Zielzustände.",
+        "preload": "// kein vorgegebener Code",
+        "world": "x;9;9;5;\nS_;_;_;_;_;_;_;_;_\n_;rr:rr;_;rrr:rr;_;rr:Grr;_;rrr:Grr;_\n_;_;_;_;_;_;_;_;_\n_;r:rr;_;_;_;r:Grr;_;_:G;_\n_;_;_;_;_;_;_;_;_\n_;rrG:rr;_;rrrG:rr;_;rrG:rrG;_;rrrG:Grr;_\n_;_;_;_;_;_;_;_;_\n_;rG:rr;_;G:_;_;rG:rrG;_;G:G;_\n_;_;_;_;_;_;_;_;_",
+        "title": "Zielzustände"
+    }
 };
 
 /**

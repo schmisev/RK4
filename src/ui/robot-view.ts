@@ -699,16 +699,31 @@ function robotSketch(p5: p5) {
         // goal markers
         if (f.goalMarker !== null && !goalReached) {
             if (f.goalMarker != MarkerType.None && f.goalMarker !== f.marker) {
+                const groundH = f.blocks.length;
+                const h = Math.max(groundH, f.goalBlocks ? f.goalBlocks.length : 0);
+                const animH = p5.sin(p5.frameCount * 0.05) * BLH * 0.4 + BLH * 0.5;
+                // "shadow"
                 p5.push();
                 p5.translate(0, 0, (-BLH + MRH) * 0.5);
-                const h = f.blocks.length;
+                p5.translate(0, 0, groundH * BLH);
+                p5.scale(0.5);
+                p5.rotateZ(p5.frameCount * 0.02 + h);
+                p5.fill(0, 100); // should be fine, since its always drawn on top
+                p5.noStroke();
+                p5.scale(1 / (1 + animH * 0.005));
+                p5.plane(MSZ, MSZ);
+                p5.pop();
+                
+                // "floaty bit"
+                p5.push();
+                p5.translate(0, 0, (-BLH + MRH) * 0.5);
                 p5.translate(0, 0, h * BLH);
                 p5.scale(0.5);
                 p5.rotateZ(p5.frameCount * 0.02 + h);
                 p5.translate(
                     0,
                     0,
-                    p5.sin(p5.frameCount * 0.05) * BLH * 0.4 + BLH * 0.5
+                    animH
                 );
                 p5.fill(MARKER2COLOR[f.goalMarker]);
                 p5.stroke(0);
