@@ -176,6 +176,11 @@ input[type="checkbox"] {
     border-radius: 5px;
 }
 
+.robot-canvas {
+    border-radius: 5px;
+    background-color: black;
+}
+
 .emoji-button {
     font-family: "Cascadia Code", "Consolas" !important;
     font-weight: bold;

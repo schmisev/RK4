@@ -279,7 +279,7 @@ function robotSketch(p5: p5) {
         }
         if (bg > 0) bg = p5.lerp(0, bg, 0.9);
         if (!isRunning || queueInterrupt) bg = 0;
-        p5.background(bg);
+        p5.background(bg, 0);
 
         p5.orbitControl();
 
