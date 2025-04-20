@@ -663,17 +663,21 @@ function robotSketch(p5: p5) {
         // goal blocks
         if (f.goalBlocks != null && !goalReached) {
             for (const [z, block] of f.goalBlocks.entries()) {
+                let h = f.blocks.length;
+                if (z < h) continue;
+                let dz = z-h;
                 p5.push();
                 p5.translate(0, 0, z * BLH);
-                p5.rotateZ(p5.frameCount * 0.02 + z);
+                p5.rotateZ(Math.sin(p5.frameCount * 0.06 + dz + f.x * 7 + f.y * 13) * 0.2);
                 p5.translate(
                     0,
                     0,
-                    p5.sin(p5.frameCount * 0.05 + z) * BLH * 0.2
+                    p5.sin(p5.frameCount * 0.05 + dz) * BLH * 0.2
                 );
                 p5.scale(0.5);
                 p5.fill(BLOCK2COLOR[block]);
                 p5.stroke(0, 0, 0);
+                p5.scale(1 / (1 + (dz)*0.5));
                 p5.box(TSZ, TSZ, BLH);
                 p5.pop();
             }
