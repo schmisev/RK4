@@ -10,6 +10,10 @@ export class Vec2 {
     this.y = y;
   }
 
+  get xy(): [number, number] {
+    return [this.x, this.y];
+  }
+
   add(v: Vec2): Vec2 {
     return new Vec2(this.x + v.x, this.y + v.y);
   }

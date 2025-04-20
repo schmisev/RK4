@@ -164,7 +164,16 @@ function robotSketch(p5: p5) {
         });
         observer.observe(canvasDiv, { box: 'content-box' });
         cam = p5.createCamera();
+        let angle = 3*Math.PI / 4;
+        let distance = 1000;
+        cam.setPosition(
+            0,
+            distance * Math.cos(angle),
+            distance * Math.sin(angle),
+        );
+        cam.lookAt(0, 0, 0);
         cvs.parent("robot-canvas");
+
     };
 
     const setPerspective = () => {
@@ -215,7 +224,6 @@ function robotSketch(p5: p5) {
         p5.push();
 
         // tilt and zoom out
-        //cam.tilt(p5.PI * 0.4);
         p5.rotateX(p5.PI * 0.5);
         p5.scale(0.8);
 
