@@ -165,11 +165,12 @@ function robotSketch(p5: p5) {
         observer.observe(canvasDiv, { box: 'content-box' });
         cam = p5.createCamera();
         let angle = 3*Math.PI / 4;
-        let distance = 1000;
+        let rotation = -Math.PI / 6;
+        let distance = 1300;
         cam.setPosition(
-            0,
+            distance * Math.sin(rotation),
             distance * Math.cos(angle),
-            distance * Math.sin(angle),
+            distance * Math.sin(angle) * Math.cos(rotation),
         );
         cam.lookAt(0, 0, 0);
         cvs.parent("robot-canvas");
