@@ -433,7 +433,7 @@ function robotSketch(p5: p5) {
     }
 
     const translateSingleRobot = (r: Robot) => {
-        // drawing the robot!
+        p5.translate(0, 0, -0.5 * BLH);
         p5.translate(
             0,
             0,
@@ -453,14 +453,14 @@ function robotSketch(p5: p5) {
             p5.translate(
                 lerp(r.animLastPos.x, r.pos.x, r.interpHop) * TSZ,
                 lerp(r.animLastPos.y, r.pos.y, r.interpHop) * TSZ,
-                (lerp(r.animLastHeight, r.animCurrHeight, r.interpFall) - 0.5) *
+                (lerp(r.animLastHeight, r.animCurrHeight, r.interpFall)) *
                     BLH
             );
         } else {
             p5.translate(
                 r.pos.x * TSZ,
                 r.pos.y * TSZ,
-                (r.animCurrHeight - 0.5) * BLH
+                (r.animCurrHeight) * BLH
             );
         }
     };
@@ -825,7 +825,7 @@ function robotSketch(p5: p5) {
                     p5.push();
                     p5.translate(0, 0, -0.5 * BLH + 1)
                     if (f.marker !== MarkerType.None) {
-                        p5.translate(0, 0, 2);
+                        p5.translate(0, 0, 1);
                     }
                     p5.scale(0.5);
                     p5.scale(1 / (1 + animH * 0.005));
@@ -862,7 +862,7 @@ function robotSketch(p5: p5) {
                     f.goalBlocks ? f.goalBlocks.length : 0
                 );
                 const animH = p5.sin(p5.frameCount * 0.05) * BLH * 0.4 + BLH * 0.5;
-                
+
                 p5.push();
                 p5.translate(0, 0, (-BLH + MRH) * 0.5);
                 p5.rotateZ(p5.frameCount * 0.02 + h);
@@ -870,6 +870,9 @@ function robotSketch(p5: p5) {
                 // "shadow"
                 p5.push();
                 p5.translate(0, 0, groundH * BLH);
+                if (f.marker !== MarkerType.None) {
+                    p5.translate(0, 0, 1);
+                }
                 p5.fill(0, 100); // should be fine, since its always drawn on top
                 p5.noStroke();
                 p5.scale(0.5);
