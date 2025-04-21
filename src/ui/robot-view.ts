@@ -202,17 +202,14 @@ function robotSketch(p5: p5) {
         }
     };
 
-    p5.doubleClicked = () => {
-        resetCamera();
-    }
-
     p5.setup = () => {
         const width = canvasDiv.offsetWidth;
         const height = canvasDiv.offsetHeight;
         const cvs = p5.createCanvas(width, height, p5.WEBGL);
-        cvs.style("border-radius:5px;");
-        let canvasW = 0,
-            canvasH = 0;
+        cvs.style("border-radius:5px;"); // probably not necessary
+        let canvasW = 0, canvasH = 0;
+
+        // setup resizing
         const observer = new ResizeObserver((entries) => {
             const { width, height } = entries[0].contentRect;
             if (canvasH != height || canvasW != width)
@@ -222,8 +219,13 @@ function robotSketch(p5: p5) {
             setPerspective();
         });
         observer.observe(canvasDiv, { box: "content-box" });
+
+        // setup camera
         cam = p5.createCamera();
         resetCamera();
+        canvasDiv.ondblclick = resetCamera;
+
+        // attach p5 to canvas div
         cvs.parent("robot-canvas");
     };
 
