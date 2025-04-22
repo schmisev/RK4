@@ -589,3 +589,19 @@ code {
         scale: 100%;
     }
 }
+
+.positive {
+    background-color: lightgreen;
+}
+
+.negative {
+    background-color: lightcoral;
+}
+
+.special {
+    background-color: lightblue;
+}
+
+.special-2 {
+    background-color: #cf9fff;
+}

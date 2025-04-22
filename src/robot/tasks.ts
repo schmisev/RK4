@@ -112,6 +112,12 @@ export const STD_TASKS: Record<string, Task> = {
         world: generateHomogeneousWorld(8, 6, 6, "...:_"),
         preload: STD_PRELOAD,
     },
+    std_Mehrere_3x: {
+        title: "Drei Roboter in einer Welt!",
+        description: "Lege einen Ziegel an die markierte Stelle!",
+        world: "x;5;5;6;\nS:_;_:_;S:_;_:_;S:_\n_:_;_:_;_:_;_:_;_:_\n_:_;_:_;_:_;_:_;_:_\n_:_;_:_;_:_;_:_;_:_\n_:_;_:_;_:_;_:_;_:_\n_:_;_:_;_:_;_:_;_:_",
+        preload: "// Nichts vorgegeben",
+    },
     sms_Basics_1: {
         title: "Start",
         description:

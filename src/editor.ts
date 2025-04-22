@@ -184,6 +184,35 @@ document.getElementById("robot-screenshot")!.onclick = () => {
     robotView.saveCanvas(generateFileName() + "_" + (new Date()).toLocaleString() + ".png");
 }
 
+document.getElementById("quick-robot")!.onclick = () => {
+    editEnv.paintInput.value = "S_:_";
+}
+
+document.getElementById("quick-wall")!.onclick = () => {
+    editEnv.paintInput.value = "#";
+}
+
+document.getElementById("quick-empty")!.onclick = () => {
+    editEnv.paintInput.value = "_:_";
+}
+
+document.getElementById("quick-block")!.onclick = () => {
+    editEnv.paintInput.value = "_:r";
+}
+
+document.getElementById("quick-marker")!.onclick = () => {
+    editEnv.paintInput.value = "_:Y";
+}
+
+document.getElementById("link-to-editor")!.onclick = () => {
+    let url = ".";
+    let value = (document.getElementById("store-data") as HTMLSelectElement).value;
+    if (value) {
+        url += "#/" + value;
+    }
+    window.location.href = url;
+}
+
 editEnv.description.on("change", reloadMetaInfo);
 editEnv.author.onchange = reloadMetaInfo;
 editEnv.category.onchange = reloadMetaInfo;
@@ -323,6 +352,23 @@ function renderWorldEdit(id: string) {
             };
             editBar.appendChild(upButton);
         }
+
+        // flood fill
+        let fillButton = document.createElement("button") as HTMLButtonElement;
+        fillButton.innerHTML = "🪣";
+        fillButton.classList.add("toggle-button");
+        fillButton.classList.add("special");
+        fillButton.title = "Fülle alle Zellen mit 🖌️-Wert!";
+        fillButton.onclick = () => {
+            for (let row of worldProxy.fields) {
+                for (let i = 0; i < row.length; i++) {
+                    row[i] = editEnv.paintInput.value;
+                }
+            }
+            editEnv.reloadEditor();
+            editEnv.reloadWorld(proxyIndex);
+        };
+        editBar.appendChild(fillButton);
 
         let w = worldProxy.fields;
 

@@ -185,7 +185,7 @@ function robotSketch(p5: p5) {
             distance * Math.sin(angle) * Math.cos(rotation)
         );
         cam.lookAt(0, 0, 0);
-    }
+    };
 
     const setPerspective = () => {
         if (isOrtho) {
@@ -207,7 +207,8 @@ function robotSketch(p5: p5) {
         const height = canvasDiv.offsetHeight;
         const cvs = p5.createCanvas(width, height, p5.WEBGL);
         cvs.style("border-radius:5px;"); // probably not necessary
-        let canvasW = 0, canvasH = 0;
+        let canvasW = 0,
+            canvasH = 0;
 
         // setup resizing
         const observer = new ResizeObserver((entries) => {
@@ -423,14 +424,14 @@ function robotSketch(p5: p5) {
             (1 - w.W) * 0.5 * TSZ,
             (1 - w.H) * 0.5 * BLH
         );
-        
+
         for (const [i, r] of w.robots.entries()) {
             // do the post fx
             drawSingleRobotThoughts(r);
         }
 
         p5.pop();
-    }
+    };
 
     const translateSingleRobot = (r: Robot) => {
         p5.translate(0, 0, -0.5 * BLH);
@@ -453,15 +454,10 @@ function robotSketch(p5: p5) {
             p5.translate(
                 lerp(r.animLastPos.x, r.pos.x, r.interpHop) * TSZ,
                 lerp(r.animLastPos.y, r.pos.y, r.interpHop) * TSZ,
-                (lerp(r.animLastHeight, r.animCurrHeight, r.interpFall)) *
-                    BLH
+                lerp(r.animLastHeight, r.animCurrHeight, r.interpFall) * BLH
             );
         } else {
-            p5.translate(
-                r.pos.x * TSZ,
-                r.pos.y * TSZ,
-                (r.animCurrHeight) * BLH
-            );
+            p5.translate(r.pos.x * TSZ, r.pos.y * TSZ, r.animCurrHeight * BLH);
         }
     };
 
@@ -814,16 +810,14 @@ function robotSketch(p5: p5) {
                 p5.push();
                 p5.translate(0, 0, z * BLH);
                 p5.rotateZ(
-                    Math.sin(
-                        p5.frameCount * 0.06 + dz 
-                        + f.x * 7 
-                        + f.y * 13) *0.2
+                    Math.sin(p5.frameCount * 0.06 + dz + f.x * 7 + f.y * 13) *
+                        0.2
                 );
 
                 // shadow
                 if (dz === 0) {
                     p5.push();
-                    p5.translate(0, 0, -0.5 * BLH + 1)
+                    p5.translate(0, 0, -0.5 * BLH + 1);
                     if (f.marker !== MarkerType.None) {
                         p5.translate(0, 0, 1);
                     }
@@ -837,11 +831,7 @@ function robotSketch(p5: p5) {
 
                 // floaty bits
                 p5.push();
-                p5.translate(
-                    0,
-                    0,
-                    animH
-                );
+                p5.translate(0, 0, animH);
                 p5.scale(0.5);
                 p5.fill(BLOCK2COLOR[block]);
                 p5.stroke(0, 0, 0);
@@ -861,7 +851,8 @@ function robotSketch(p5: p5) {
                     groundH,
                     f.goalBlocks ? f.goalBlocks.length : 0
                 );
-                const animH = p5.sin(p5.frameCount * 0.05) * BLH * 0.4 + BLH * 0.5;
+                const animH =
+                    p5.sin(p5.frameCount * 0.05) * BLH * 0.4 + BLH * 0.5;
 
                 p5.push();
                 p5.translate(0, 0, (-BLH + MRH) * 0.5);

@@ -48,14 +48,13 @@ function storeTask() {
 
 function deleteTask() {
     let key = storeSelector.value
-    if (key == "(neu)") return;
     if (key in taskStore) {
         delete taskStore[key];
         for (var i=0; i<storeSelector.length; i++) {
             if (storeSelector.options[i].value == key)
                 storeSelector.remove(i);
         }
-        storeSelector.value = "(neu)";
+        storeSelector.selectedIndex = 0;
     }
     updateLocalBackup();
     console.log("📝🗑️ Aufgabe gelöscht: " + key);
