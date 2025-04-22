@@ -39,9 +39,7 @@
     <body class="roboto">
         <div id="grid-container">
             <div class="lc30 wsr text" id="title-bar">
-                🤖 RK4&nbsp;&nbsp;<div class="version-label">BETA</div>&nbsp;&nbsp;|&nbsp;Welteditor&nbsp;|&nbsp;<a href="."
-                    >zurück zum Editor</a
-                >
+                🤖 RK4&nbsp;&nbsp;<div class="version-label">BETA</div>&nbsp;&nbsp;|&nbsp;Welteditor&nbsp;|&nbsp;<a id="link-to-editor" style="cursor: pointer;">zurück zum Editor</a>
             </div>
             <!-- Code editor UI -->
             <div class="lc30 wsr text" id="code-title">🗺️ Welteditor</div>
@@ -51,7 +49,7 @@
                 id="store-data"
                 list="store-data"
             >
-                <option disabled selected>Gespeicherte Welten</option>
+                <option disabled selected value="">Gespeicherte Welten</option>
             </select>
             <div id="store-container" class="capsule">
                 <button
@@ -111,6 +109,11 @@
                     class="paint-edit"
                     value="_:_"
                 />
+                <button title="Roboter" id="quick-robot" class="toggle-button">🤖</button>
+                <button title="Wand" id="quick-wall" class="toggle-button">🚧</button>
+                <button title="Leer halten!" id="quick-empty" class="toggle-button">⚪</button>
+                <button title="Block setzen!" id="quick-block" class="toggle-button">🧱</button>
+                <button title="Marke setzen!" id="quick-marker" class="toggle-button">🏷️</button>
             </div>
             <div class="lc30 text" id="world-helper">
                 <span class="hover-helper"
