@@ -2,6 +2,10 @@
 
 ## Planned features
 
+### Look & feel
+
+- [ ] Outline shader
+
 ### Robots & World
 
 - [x] Robot skins/hats, accessible via method `anziehen(Text outfit)`

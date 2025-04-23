@@ -608,11 +608,21 @@ function robotSketch(p5: p5) {
                 let brimHeight = 2;
                 let brimRadius = RBW / 3 + 1;
                 let hatRadius = RBW / 5 + 1;
-                let hatHeight = hatRadius * 2;
+                let hatHeight = hatRadius * 2 - 2;
                 let hatColor = "#6F4E37";
                 let hatColor2 = "#8f674c";
+                let hatColor3 = "black";
                 // position on the head
-                p5.translate(-RBW / 3 + 2, -RBW / 3, 0);
+                let x = lerp(r.animLastPos.x, r.pos.x, r.interpHop);
+                let y = lerp(r.animLastPos.y, r.pos.y, r.interpHop);
+                // random-ish poistion on the head
+                p5.translate(
+                    p5.sin(x + y) * RBW * 0.25,
+                    p5.sin(x - y) * RBW * 0.25,
+                    0
+                );
+                p5.rotateZ(x + y); // random-ish rotation
+                p5.scale(1 - r.animOutfitProg); // popping up
                 // animation
                 p5.translate(0, 0, easeInOutQuad(r.animHopProg) * 5);
                 let hatBounce = animStrength * (p5.sin(r.index + p5.frameCount * 0.1 + 0.2));
@@ -630,6 +640,9 @@ function robotSketch(p5: p5) {
                 p5.rotateY(0.1);
                 p5.fill(hatColor2);
                 p5.cylinder(hatRadius, hatHeight);
+                p5.translate(0, -hatHeight * 0.25, 0);
+                p5.fill(hatColor3);
+                p5.cylinder(hatRadius + 1, hatHeight * 0.2);
                 break;
             case OutfitType.BaseballCap:
                 break;

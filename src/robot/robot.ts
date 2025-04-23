@@ -283,9 +283,9 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
             if (args[0].type !== ValueAlias.String)
                 throw new RuntimeError(`Erwarte einen Text als Parameter!`);
             
-            let val = args[0].value as OutfitType;
-            if (Object.values(OutfitType).includes(val)) {
-                r.outfit = val;
+            let outfitType = args[0].value as OutfitType;
+            if (Object.values(OutfitType).includes(outfitType)) {
+                r.setOutfit(outfitType);
                 return MK_BOOL(true);
             }
             return MK_BOOL(false);
@@ -597,6 +597,13 @@ export class Robot {
         return check;
     }
 
+    setOutfit(outfit: OutfitType) {
+        // logic
+        this.outfit = outfit;
+        // animation
+        this.triggerOutfitAnim();
+    }
+
     // utils
     targetPos() {
         const dirVec = this.dir2Vec();
@@ -702,6 +709,7 @@ export class Robot {
     animMarkerCond: boolean = false; // false is "remove"
     animWaitProg: number = 0.0;
     animWaitDir: number = 1.0; // left/right
+    animOutfitProg: number = 0.0;
 
     interpHop: number = 0;
     interpFall: number = 0;
@@ -725,7 +733,6 @@ export class Robot {
     }
 
     animate(deltaProg: number, delta: number): void {
-        // console.log(deltaProg, delta);
         // update progress variables
         this.animWatchProg = toZero(this.animWatchProg, deltaProg);
         this.animHopProg = toZero(this.animHopProg, deltaProg);
@@ -734,6 +741,7 @@ export class Robot {
         this.animPlaceProg = toZero(this.animPlaceProg, deltaProg);
         this.animMarkerProg = toZero(this.animMarkerProg, deltaProg);
         this.animWaitProg = toZero(this.animWaitProg, deltaProg);
+        this.animOutfitProg = toZero(this.animOutfitProg, deltaProg);
         // real time
         this.animThoughtProg = toZero(this.animThoughtProg, deltaProg * 0.5);
         this.animBlinkProg = toZero(this.animBlinkProg, 0.005 * delta);
@@ -795,5 +803,9 @@ export class Robot {
     triggerWaitAnim() {
         this.animWaitProg = 1.0;
         this.animWaitDir = Math.random() > 0.5 ? 1 : -1;
+    }
+
+    triggerOutfitAnim() {
+        this.animOutfitProg = 1.0;
     }
 }
