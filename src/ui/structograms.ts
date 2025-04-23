@@ -52,6 +52,7 @@ const ROBOT_PSEUDO_CLASS =
         ${makeTooltip(ENV.robot.mth.SEES_ROBOT, `Gibt <span class="struct-literal">wahr</span> zurück, wenn der Roboter vor einem anderen Roboter steht, sonst <span class="struct-literal">falsch</span>.`) + `()<br>`}
         ${makeTooltip(ENV.robot.mth.CAN_MOVE_HERE, `Gibt <span class="struct-literal">wahr</span> zurück, wenn der Roboter einen Schritt nach vorne machen kann, sonst <span class="struct-literal">falsch</span>.`) + `()<br>`}
         <div class="struct-dot"></div>
+        ${makeTooltip(ENV.robot.mth.DON, `Zieht dem Roboter ein bestimmtes Outfit an, das durch einen Text wie <span class="struct-string">"Zylinder"</span> vorgegeben wird. Standard ist <span class="struct-string">"Nichts"</span>.` ) + `()<br>`}
     </div>
 </div>`
 
@@ -184,8 +185,10 @@ function structure(astNode: Program | AnyStmt): string {
         case StmtKind.DocComment:
             return makeDiv(makeDiv(`${astNode.content.replace(/\n/g, "<br>")}`, "struct-doc-comment"), "struct-doc-wrapper");
         case StmtKind.EmptyLine:
-        default:
             return `<span>&lt${astNode.kind}&gt</span>`
+        default:
+            const _UNREACHABLE: never = astNode;
+            return `<span>&lt$Sollte nicht passieren.&gt</span>`
     }
 }
 

@@ -4,11 +4,12 @@
 
 ### Robots & World
 
-- [ ] Robot skins/hats, accessible via method `anziehen(Text outfit)`
-  - [ ] Top hat; `"Zylinder"`
+- [x] Robot skins/hats, accessible via method `anziehen(Text outfit)`
+  - [x] Top hat; `"Zylinder"`
   - [ ] Baseball cap; `"Kappe"`
 - [ ] Add speech bubbles, accessible via method `sprechen(Text aussage)`
 - [ ] More complex success conditions in tasks
+- [ ] Trigger fields that call a method when the robot touches them
 
 ### Language features
 

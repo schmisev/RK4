@@ -25,6 +25,12 @@ export enum ThoughtType {
     Robot,
 }
 
+export enum OutfitType {
+    None = "Nichts",
+    TopHat = "Zylinder",
+    BaseballCap = "Kappe",
+}
+
 export const DIR2GER: Record<string, string> = {
     "N": "Nord",
     "E": "Ost",
@@ -269,6 +275,23 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
         }
     )
 
+    mkRobotMethod(
+        ENV.robot.mth.DON,
+        (r, args) => {
+            if (args.length > 1)
+                throw new RuntimeError(ENV.robot.mth.DON + `() erwartet genau einen Parameter!`);
+            if (args[0].type !== ValueAlias.String)
+                throw new RuntimeError(`Erwarte einen Text als Parameter!`);
+            
+            let val = args[0].value as OutfitType;
+            if (Object.values(OutfitType).includes(val)) {
+                r.outfit = val;
+                return MK_BOOL(true);
+            }
+            return MK_BOOL(false);
+        }
+    )
+
     return robotCls;
 }
 
@@ -292,8 +315,9 @@ export class Robot {
     name: string;
     index: number;
     world: World;
+    outfit: OutfitType;
 
-    constructor(x: number, y: number, dir: string, name = "Karol", index: number, w: World) {
+    constructor(x: number, y: number, dir: string, name: string, index: number, w: World) {
         this.pos = new Vec2(x, y);
         this.moveH = 0.0;
         if (!["N", "E", "S", "W"].includes(dir))
@@ -302,6 +326,7 @@ export class Robot {
         this.name = name;
         this.index = index;
         this.world = w;
+        this.outfit = OutfitType.None;
 
         // animation state
         this.animLastPos = new Vec2(x, y);
