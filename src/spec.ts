@@ -42,6 +42,7 @@ export const ENV = {
             SEES_ROBOT: "siehtRoboter",
             CAN_MOVE_HERE: "schrittMöglich",
             WAIT: "warten",
+            DON: "anziehen",
         }
     },
     "world": {

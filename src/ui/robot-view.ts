@@ -1,6 +1,6 @@
 import * as p5 from "p5";
 import { WorldViewEnv } from "../app";
-import { Robot, ThoughtType } from "../robot/robot";
+import { OutfitType, Robot, ThoughtType } from "../robot/robot";
 import {
     CR,
     CY,
@@ -595,6 +595,50 @@ function robotSketch(p5: p5) {
         p5.pop(); // end bot
     };
 
+    const drawRobotOutfit = (r: Robot) => {
+        p5.push();
+        // on top of head
+        p5.translate(0, 0, RBH);
+
+        switch (r.outfit) {
+            case OutfitType.None:
+                // no outfit
+                break;
+            case OutfitType.TopHat:
+                let brimHeight = 2;
+                let brimRadius = RBW / 3 + 1;
+                let hatRadius = RBW / 5 + 1;
+                let hatHeight = hatRadius * 2;
+                let hatColor = "#6F4E37";
+                let hatColor2 = "#8f674c";
+                // position on the head
+                p5.translate(-RBW / 3 + 2, -RBW / 3, 0);
+                // animation
+                p5.translate(0, 0, easeInOutQuad(r.animHopProg) * 5);
+                let hatBounce = animStrength * (p5.sin(r.index + p5.frameCount * 0.1 + 0.2));
+                let hatBounce2 = animStrength * (p5.sin(r.index + p5.frameCount * 0.1 + 0.7));
+                p5.rotateX((hatBounce + 1) * 0.05);
+                p5.rotateY(-(hatBounce2 + 1) * 0.05);
+                // drawing the hat
+                p5.noStroke();
+                p5.rotateX(Math.PI / 2);
+                p5.translate(0, brimHeight / 2 + 1, 0);
+                p5.fill(hatColor);
+                p5.cylinder(brimRadius, brimHeight);
+                p5.translate(0, -brimHeight / 2 + hatHeight / 2, 0);
+                p5.rotateX(0.1);
+                p5.rotateY(0.1);
+                p5.fill(hatColor2);
+                p5.cylinder(hatRadius, hatHeight);
+                break;
+            case OutfitType.BaseballCap:
+                break;
+            default:
+                const _UNREACHABLE: never = r.outfit;
+        }
+        p5.pop();
+    }
+
     const drawSingleRobot = (r: Robot) => {
         p5.push(); // bot
 
@@ -707,6 +751,8 @@ function robotSketch(p5: p5) {
         p5.pop(); // end backplate
 
         p5.pop(); // end body
+
+        drawRobotOutfit(r);
 
         p5.pop(); // end rotations
 
