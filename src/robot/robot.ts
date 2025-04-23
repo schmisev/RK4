@@ -23,6 +23,9 @@ export enum ThoughtType {
     Mark,
     Remove,
     Robot,
+    Yes,
+    No,
+    Sees
 }
 
 export enum OutfitType {

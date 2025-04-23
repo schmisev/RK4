@@ -8,7 +8,7 @@
 - [ ] Increase drawing performance
   - [x] Culling occluded blocks, i.e. blocks that are surrounded on 5 sides
   - [x] Using p5.Framebuffers instead of p5.Graphics to draw blocks
-  - [ ] Using p5.Framebuffers generally
+  - [x] Using p5.Framebuffers for all graphics, like thoughts and labels
 
 ### Robots & World
 

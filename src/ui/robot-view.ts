@@ -38,7 +38,7 @@ function robotSketch(p5: p5) {
     let timer = 0;
     let taskCheckReloadTime = 200;
     let isOrtho = false;
-    let firstDraw = true;
+    let loadStage = 0;
 
     const CPS = 100; // Compass size
     const TSZ = 50; // Tilesize
@@ -53,25 +53,21 @@ function robotSketch(p5: p5) {
     const HUDF: number = 100; // HUD-factor
     const SQHUDF: number = p5.sqrt(HUDF);
 
+    const createFramebuffer = (graphic: p5.Graphics) => {
+        const xt = p5.createFramebuffer();
+        xt.resize(graphic.width, graphic.height);
+        xt.begin();
+        p5.image(graphic, -graphic.width/2, -graphic.height/2);
+        xt.end();
+        return xt;
+    };
+
     const createXTexture = (col: string) => {
         const xt = p5.createGraphics(TSZ, TSZ);
         xt.background(col);
         xt.strokeWeight(3);
         xt.line(TSZ * 0.25, TSZ * 0.25, TSZ * 0.75, TSZ * 0.75);
         xt.line(TSZ * 0.75, TSZ * 0.25, TSZ * 0.25, TSZ * 0.75);
-        return xt;
-    };
-
-    const createXTextureBuffer = (col: string) => {
-        const xt = p5.createFramebuffer();
-        xt.resize(TSZ, TSZ);
-        xt.begin();
-        p5.translate(-TSZ /2, -TSZ /2);
-        p5.background(col);
-        p5.strokeWeight(3);
-        p5.line(TSZ * 0.25, TSZ * 0.25, TSZ * 0.75, TSZ * 0.75);
-        p5.line(TSZ * 0.75, TSZ * 0.25, TSZ * 0.25, TSZ * 0.75);
-        xt.end();
         return xt;
     };
 
@@ -119,32 +115,36 @@ function robotSketch(p5: p5) {
 
     const CMP = createCompassTexture();
 
-    const NT = createTextTexture("N");
-    const WT = createTextTexture("W");
-    const ET = createTextTexture("O");
-    const ST = createTextTexture("S");
+    let NT: p5.Graphics | p5.Framebuffer = createTextTexture("N");
+    let WT: p5.Graphics | p5.Framebuffer = createTextTexture("W");
+    let ET: p5.Graphics | p5.Framebuffer = createTextTexture("O");
+    let ST: p5.Graphics | p5.Framebuffer = createTextTexture("S");
 
-    const TXYES = createTextTexture("✔️");
-    const TXNO = createTextTexture("❌");
-    const TXWALL = createTextTexture("🚧");
-    const TXVOID = createTextTexture("🕳️");
-    const TXBLOCK = createTextTexture("🧱");
-    const TXEYE = createTextTexture("👁️");
-    const TXPLACE = createTextTexture("🧱");
-    const TXPICK = createTextTexture("⛏️");
-    const TXMARK = createTextTexture("✏️");
-    const TXREMOVE = createTextTexture("🧽");
-    const TXYBLOCK = createTextTexture("🟨");
-    const TXRBLOCK = createTextTexture("🟥");
-    const TXGBLOCK = createTextTexture("🟩");
-    const TXBBLOCK = createTextTexture("🟦");
-    const TXYMARKER = createTextTexture("🟡");
-    const TXRMARKER = createTextTexture("🔴");
-    const TXGMARKER = createTextTexture("🟢");
-    const TXBMARKER = createTextTexture("🔵");
-    const TXROBOT = createTextTexture("🤖");
+    const THOUGHT2TEXTURE: Record<ThoughtType, p5.Graphics | p5.Framebuffer> = {
+        [ThoughtType.Wall]: createTextTexture("🚧"),
+        [ThoughtType.Void]: createTextTexture("🕳️"),
+        [ThoughtType.Block]: createTextTexture("🧱"),
+        [ThoughtType.Place]: createTextTexture("🧱"),
+        [ThoughtType.Pickup]: createTextTexture("⛏️"),
+        [ThoughtType.Mark]: createTextTexture("✏️"),
+        [ThoughtType.Remove]: createTextTexture("🧽"),
+        [ThoughtType.YellowBlock]: createTextTexture("🟨"),
+        [ThoughtType.RedBlock]: createTextTexture("🟥"),
+        [ThoughtType.GreenBlock]: createTextTexture("🟩"),
+        [ThoughtType.BlueBlock]: createTextTexture("🟦"),
+        [ThoughtType.YellowMarker]: createTextTexture("🟡"),
+        [ThoughtType.RedMarker]: createTextTexture("🔴"),
+        [ThoughtType.GreenMarker]: createTextTexture("🟢"),
+        [ThoughtType.BlueMarker]: createTextTexture("🔵"),
+        [ThoughtType.Robot]: createTextTexture("🤖"),
+        [ThoughtType.Sees]: createTextTexture("👁️"),
+        [ThoughtType.Yes]: createTextTexture("✔️"),
+        [ThoughtType.No]: createTextTexture("❌"),
+        [ThoughtType.Nothing]: createTextTexture(""),
+    }
+    
 
-    const RGIDX = [
+    const RGIDX: (p5.Graphics | p5.Framebuffer)[] = [
         createTextTexture("0", "#CCC", true),
         createTextTexture("1", "#CCC", true),
         createTextTexture("2", "#CCC", true),
@@ -187,7 +187,7 @@ function robotSketch(p5: p5) {
         [MarkerType.Y]: XY,
     };
 
-    const numberPlates: Record<number, p5.Graphics> = {};
+    const numberPlates: Record<number, p5.Graphics | p5.Framebuffer> = {};
 
     const resetCamera = () => {
         let angle = (3 * Math.PI) / 4;
@@ -245,13 +245,42 @@ function robotSketch(p5: p5) {
     };
     
     p5.draw = () => {
-        if (firstDraw) {
-            BLOCK2XTEXTURE[BlockType.r] = createXTextureBuffer(CR);
-            BLOCK2XTEXTURE[BlockType.g] = createXTextureBuffer(CG);
-            BLOCK2XTEXTURE[BlockType.b] = createXTextureBuffer(CB);
-            BLOCK2XTEXTURE[BlockType.y] = createXTextureBuffer(CY);
+        if (loadStage >= 0) {
+            // create framebuffers
+            if (loadStage === 0)
+                for (let [key, img] of Object.entries(BLOCK2XTEXTURE)) {
+                    BLOCK2XTEXTURE[key as BlockType] = createFramebuffer(img as p5.Graphics);
+                }
+            
+            if (loadStage === 1)
+                for (let [key, img] of Object.entries(MARKER2XTEXTURE)) {
+                    MARKER2XTEXTURE[key as BlockType] = createFramebuffer(img as p5.Graphics);
+                }
+            
+            if (loadStage === 3)
+                for (let [key, img] of Object.entries(MARKER2XTEXTURE)) {
+                    MARKER2XTEXTURE[key as BlockType] = createFramebuffer(img as p5.Graphics);
+                }
+            
+            if (loadStage === 4)
+                for (let [key, img] of RGIDX.entries()) {
+                    RGIDX[key] = createFramebuffer(img as p5.Graphics);
+                }
 
-            firstDraw = false;
+            if (loadStage === 5) {
+                NT = createFramebuffer(NT as p5.Graphics);
+                WT = createFramebuffer(WT as p5.Graphics);
+                ST = createFramebuffer(ST as p5.Graphics);
+                ET = createFramebuffer(ET as p5.Graphics);
+            }
+
+            if (loadStage === 6)
+                for (let [key, img] of Object.entries(THOUGHT2TEXTURE)) {
+                    THOUGHT2TEXTURE[parseInt(key) as ThoughtType] = createFramebuffer(img as p5.Graphics);
+                }
+            
+            if (loadStage < 6) loadStage += 1;
+            else loadStage = -1;
         }
 
         // update sum of frame lag
@@ -541,58 +570,8 @@ function robotSketch(p5: p5) {
 
             if (r.animThoughtType != ThoughtType.Nothing) {
                 // main
-                switch (r.animThoughtType) {
-                    case ThoughtType.Block:
-                        p5.texture(TXBLOCK);
-                        break;
-                    case ThoughtType.Wall:
-                        p5.texture(TXWALL);
-                        break;
-                    case ThoughtType.Void:
-                        p5.texture(TXVOID);
-                        break;
-                    case ThoughtType.Place:
-                        p5.texture(TXPLACE);
-                        break;
-                    case ThoughtType.Pickup:
-                        p5.texture(TXPICK);
-                        break;
-                    case ThoughtType.RedBlock:
-                        p5.texture(TXRBLOCK);
-                        break;
-                    case ThoughtType.GreenBlock:
-                        p5.texture(TXGBLOCK);
-                        break;
-                    case ThoughtType.BlueBlock:
-                        p5.texture(TXBBLOCK);
-                        break;
-                    case ThoughtType.YellowBlock:
-                        p5.texture(TXYBLOCK);
-                        break;
-                    case ThoughtType.RedMarker:
-                        p5.texture(TXRMARKER);
-                        break;
-                    case ThoughtType.GreenMarker:
-                        p5.texture(TXGMARKER);
-                        break;
-                    case ThoughtType.BlueMarker:
-                        p5.texture(TXBMARKER);
-                        break;
-                    case ThoughtType.YellowMarker:
-                        p5.texture(TXYMARKER);
-                        break;
-                    case ThoughtType.Mark:
-                        p5.texture(TXMARK);
-                        break;
-                    case ThoughtType.Remove:
-                        p5.texture(TXREMOVE);
-                        break;
-                    case ThoughtType.Robot:
-                        p5.texture(TXROBOT);
-                        break;
-                    default:
-                        const _UNREACHABLE: never = r.animThoughtType;
-                }
+                p5.texture(THOUGHT2TEXTURE[r.animThoughtType]);
+                
                 // popping
                 p5.scale(easeOutCubic(1 - r.animThoughtProg));
                 p5.translate(
@@ -608,7 +587,7 @@ function robotSketch(p5: p5) {
                 // cond
                 p5.translate(0, 0, 0.2);
                 if (!r.animThoughtCond) {
-                    p5.texture(TXNO);
+                    p5.texture(THOUGHT2TEXTURE[ThoughtType.No]);
                     p5.plane(TSZ * 1);
                 }
             }
@@ -697,7 +676,7 @@ function robotSketch(p5: p5) {
             numberPlate.textSize(20);
             numberPlate.textAlign(p5.CENTER, p5.CENTER);
             numberPlate.text(r.index.toString(), 0, 0, RBW, RBH);
-            numberPlates[r.index] = numberPlate;
+            numberPlates[r.index] = createFramebuffer(numberPlate);
         }
 
         p5.noStroke();
