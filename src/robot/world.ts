@@ -537,4 +537,22 @@ export class Field {
         // fallback
         return true;
     }
+
+    canCullBlock(h: number): boolean {
+        // no block on top
+        if (h >= this.blocks.length-1) return false
+        // on border
+        if (this.x === this.world.L-1 || this.x === 0) return false;
+        if (this.y === this.world.W-1 || this.y === 0) return false;
+        // adjacent have no blocks
+        const testField = (field: Field) => {
+            if (field.isEmpty || field.isWall || h > field.blocks.length-1) return false;
+            return true;
+        }
+        if (!testField(this.world.getField(this.x + 1, this.y)!)) return false;
+        if (!testField(this.world.getField(this.x - 1, this.y)!)) return false;
+        if (!testField(this.world.getField(this.x, this.y + 1)!)) return false;
+        if (!testField(this.world.getField(this.x, this.y - 1)!)) return false;
+        return true;
+    }
 }

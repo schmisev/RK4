@@ -38,6 +38,7 @@ function robotSketch(p5: p5) {
     let timer = 0;
     let taskCheckReloadTime = 200;
     let isOrtho = false;
+    let firstDraw = true;
 
     const CPS = 100; // Compass size
     const TSZ = 50; // Tilesize
@@ -58,6 +59,19 @@ function robotSketch(p5: p5) {
         xt.strokeWeight(3);
         xt.line(TSZ * 0.25, TSZ * 0.25, TSZ * 0.75, TSZ * 0.75);
         xt.line(TSZ * 0.75, TSZ * 0.25, TSZ * 0.25, TSZ * 0.75);
+        return xt;
+    };
+
+    const createXTextureBuffer = (col: string) => {
+        const xt = p5.createFramebuffer();
+        xt.resize(TSZ, TSZ);
+        xt.begin();
+        p5.translate(-TSZ /2, -TSZ /2);
+        p5.background(col);
+        p5.strokeWeight(3);
+        p5.line(TSZ * 0.25, TSZ * 0.25, TSZ * 0.75, TSZ * 0.75);
+        p5.line(TSZ * 0.75, TSZ * 0.25, TSZ * 0.25, TSZ * 0.75);
+        xt.end();
         return xt;
     };
 
@@ -150,7 +164,7 @@ function robotSketch(p5: p5) {
         [BlockType.y]: CY,
     };
 
-    const BLOCK2XTEXTURE: Record<BlockType, p5.Graphics> = {
+    const BLOCK2XTEXTURE: Record<BlockType, p5.Graphics | p5.Framebuffer> = {
         [BlockType.r]: XR,
         [BlockType.g]: XG,
         [BlockType.b]: XB,
@@ -165,7 +179,7 @@ function robotSketch(p5: p5) {
         [MarkerType.Y]: CY,
     };
 
-    const MARKER2XTEXTURE: Record<MarkerType, p5.Graphics> = {
+    const MARKER2XTEXTURE: Record<MarkerType, p5.Graphics | p5.Framebuffer> = {
         [MarkerType.None]: XNone,
         [MarkerType.R]: XR,
         [MarkerType.G]: XG,
@@ -229,8 +243,17 @@ function robotSketch(p5: p5) {
         // attach p5 to canvas div
         cvs.parent("robot-canvas");
     };
-
+    
     p5.draw = () => {
+        if (firstDraw) {
+            BLOCK2XTEXTURE[BlockType.r] = createXTextureBuffer(CR);
+            BLOCK2XTEXTURE[BlockType.g] = createXTextureBuffer(CG);
+            BLOCK2XTEXTURE[BlockType.b] = createXTextureBuffer(CB);
+            BLOCK2XTEXTURE[BlockType.y] = createXTextureBuffer(CY);
+
+            firstDraw = false;
+        }
+
         // update sum of frame lag
         const {
             isRunning,
@@ -829,6 +852,7 @@ function robotSketch(p5: p5) {
         }
 
         for (const [z, block] of f.blocks.entries()) {
+            if (f.canCullBlock(z)) continue; // don't draw box if fully covered
             p5.push();
             p5.translate(0, 0, z * BLH);
             p5.fill(BLOCK2COLOR[block]);
@@ -839,6 +863,7 @@ function robotSketch(p5: p5) {
                     p5.texture(BLOCK2XTEXTURE[block]);
                 }
             }
+            // p5.scale(0.9); // for debug
             p5.box(TSZ, TSZ, BLH);
             p5.pop();
         }

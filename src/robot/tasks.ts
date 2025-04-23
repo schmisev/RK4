@@ -938,7 +938,19 @@ k1.herumirren()
         "preload": "// kein vorgegebener Code",
         "world": "x;9;9;5;\nS_;_;_;_;_;_;_;_;_\n_;rr:rr;_;rrr:rr;_;rr:Grr;_;rrr:Grr;_\n_;_;_;_;_;_;_;_;_\n_;r:rr;_;_;_;r:Grr;_;_:G;_\n_;_;_;_;_;_;_;_;_\n_;rrG:rr;_;rrrG:rr;_;rrG:rrG;_;rrrG:Grr;_\n_;_;_;_;_;_;_;_;_\n_;rG:rr;_;G:_;_;rG:rrG;_;G:G;_\n_;_;_;_;_;_;_;_;_",
         "title": "Zielzustände"
-    }
+    },
+    dev_Test_2: {
+        title: "Culling-Stresstest",
+        description: "Eine vollgerümpelte Welt.",
+        world: generateHomogeneousWorld(10, 10, 10, ".....:_"),
+        preload: STD_PRELOAD,
+    },
+    dev_Test_3: {
+        title: "Culling-Stresstest EXTREM",
+        description: "Eine vollgerümpelte Welt.",
+        world: generateHomogeneousWorld(20, 20, 10, ".....:_"),
+        preload: STD_PRELOAD,
+    },
 };
 
 /**
