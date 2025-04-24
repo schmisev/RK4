@@ -28,13 +28,22 @@ document.getElementById("code-editor")!.onkeydown = (e) => {
         e.preventDefault();
         storeCode();
     }
+    if (e.ctrlKey && e.key === 'Enter') {
+        ENV.startCode();
+    }
 }
 
-document.getElementById("store-code")!.onclick = storeCode
+document.getElementById("store-code")!.onclick = () => {
+    storeCode();
+    setQueryFromCode();
+}
 document.getElementById("delete-from-store")!.onclick = deleteCode
 
 const storeSelector = document.getElementById("store-data")! as HTMLSelectElement;
-storeSelector.onchange = loadFromStore;
+storeSelector.onchange = () => {
+    loadFromStore();
+    setQueryFromCode();
+}
 
 function storeRawCode(key: string, code: string, select: boolean) {
     if (!(key in codeStore))
@@ -90,6 +99,24 @@ function loadFromStore() {
     ENV.editor.moveCursorTo(0, 0);
     console.log("📝📂 Code geladen: " + key);
     ENV.stopCode(); // stop execution
+}
+
+export async function setCodeFromQuery() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const codeName = urlParams.get('load');
+    if (codeName && codeName in codeStore) {
+        storeSelector.value = codeName;
+        loadFromStore();
+    } else {
+        urlParams.delete('load');
+        history.replaceState(null, "", document.location.pathname + "?" + urlParams.toString());
+    }
+}
+
+export async function setQueryFromCode() {
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('load', storeSelector.value);
+    history.pushState(null, "", document.location.pathname + "?" + urlParams.toString());
 }
 
 // insert some Demo Code

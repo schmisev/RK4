@@ -28,6 +28,7 @@ export interface InterpreterEnv {
   program: Program;
   env: GlobalEnvironment;
   stopCode(): Promise<void>;
+  startCode(): Promise<void>;
 }
 
 export interface EditorEnv {

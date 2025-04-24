@@ -98,7 +98,8 @@ export async function retrieveLocalTasks() {
 }
 
 export async function setTaskFromHash() {
-    let [octothorpe, taskName, ...rest] = document.location.hash.split("/");
+    let urlParams = new URLSearchParams(document.location.search);
+    let taskName = urlParams.get('task');
     if (taskName && taskName in ENV.liveTasks) {
         console.log("");
         console.log(`🔗 Lade Aufgabe aus URL: ${taskName}`);
@@ -108,12 +109,13 @@ export async function setTaskFromHash() {
         console.log("");
         console.log(`✔️ Lade Standardaufgabe: ${DEFAULT_TASK}`);
         await ENV.loadTask(DEFAULT_TASK);
-        history.replaceState(null, "", document.location.pathname);
+        urlParams.delete('task');
+        history.replaceState(null, "", document.location.pathname + '?' + urlParams.toString());
     }
 }
 
 function setHashFromTask() {
-    history.pushState(null, "", document.location.pathname + "#/" + ENV.taskName);
+    let urlParams = new URLSearchParams(document.location.search);
+    urlParams.set('task', ENV.taskName);
+    history.pushState(null, "", document.location.pathname + '?' + urlParams.toString());
 }
-
-window.onhashchange = setTaskFromHash;

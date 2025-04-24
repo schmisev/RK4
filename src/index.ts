@@ -10,6 +10,7 @@ import "./ui/task-selector";
 import "./ui/save-load-files";
 import "./ui/console-log";
 import { retrieveLocalTasks, setTaskFromHash, updateTaskSelector } from "./ui/task-selector";
+import { setCodeFromQuery } from "./ui/store-code";
 
 // language imports
 import Parser from "./language/frontend/parser";
@@ -38,6 +39,8 @@ import { DebugError, LexerError, ParserError, RuntimeError } from './errors';
 import { setFlowchartVisibility, showFlowchart, unloadFlowchart } from "./ui/flowcharts";
 import { connectDebugToggle, connectSimpleToggle, Toggle } from "./ui/toggle-buttons";
 import { CodePosition, ILLEGAL_CODE_POS, KEYWORDS } from "./language/frontend/lexer";
+
+// General stuff
 import { ENV } from "./spec";
 import { AppRuntime } from "./app";
 
@@ -668,6 +671,7 @@ rt = {
 
     program: parser.produceAST("", false, false),
     stopCode,
+    startCode,
 
     editor,
     taskName: DEFAULT_TASK,
@@ -694,6 +698,8 @@ screenshotRobot.onclick = () => {
     robotView.saveCanvas(rt.taskName + "_" + (new Date()).toLocaleString() + ".png");
 }
 
+window.onhashchange = setTaskFromHash;
+
 /**
  * START THE APP
  */
@@ -705,6 +711,7 @@ const setup = [
     setTaskFromHash()
     .catch(e => console.error(e))
     .then(updateIDE),
+    setCodeFromQuery().then(updateIDE)
 ];
 
 async function finishSetup() {
