@@ -136,7 +136,7 @@ export function* eval_obj_declaration(
     }
 
     for (const attr of cl.attributes) {
-        if (attr.type == ValueAlias.Object) {
+        if (attr.kind == StmtKind.ObjDeclaration) {
             yield* eval_obj_declaration(attr, constructorEnv, obj.ownMembers);
         } else {
             yield* eval_var_declaration(attr, constructorEnv, obj.ownMembers);

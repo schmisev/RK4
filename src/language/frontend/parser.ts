@@ -178,10 +178,8 @@ export default class Parser {
             case TokenType.DeclNumber:
             case TokenType.DeclString:
             case TokenType.DeclList:
-                statement = this.parse_var_declaration();
-                break;
             case TokenType.DeclObject:
-                statement = this.parse_obj_declaration();
+                statement = this.parse_any_declaration();
                 break;
             case TokenType.FunctionDef:
                 statement = this.parse_fn_definition();
@@ -662,22 +660,6 @@ export default class Parser {
     }
 
     parse_any_declaration(): VarDeclaration | ObjDeclaration {
-        switch (this.at().type) {
-            case TokenType.DeclNumber:
-            case TokenType.DeclString:
-            case TokenType.DeclBoolean:
-            case TokenType.DeclList:
-                return this.parse_var_declaration();
-            case TokenType.DeclObject:
-                return this.parse_obj_declaration();
-        }
-        throw new ParserError(
-            `Erwartete Deklaration, erhielt aber '${this.at().value}...'`,
-            this.at().codePos
-        );
-    }
-
-    parse_var_declaration(): VarDeclaration {
         let codePos = this.at().codePos;
 
         let type: VarDeclaration["type"] = ValueAlias.Null;
@@ -689,13 +671,36 @@ export default class Parser {
             type = ValueAlias.String;
         } else if (this.at().type == TokenType.DeclList) {
             type = ValueAlias.List;
+        } else if (this.at().type == TokenType.DeclObject) {
+            type = ValueAlias.Object;
         }
 
         this.eat();
+
         const ident = this.expect(
             TokenType.Identifier,
             "Erwarte Variablennamen nach 'Zahl', 'Text', 'Wahrheitswert', 'Liste' oder 'Objekt'!"
         ).value;
+
+        let decl: VarDeclaration | ObjDeclaration;
+        if (this.at().type === TokenType.Instance) {
+            decl = this.parse_obj_declaration(type, ident);
+        } else if (this.at().type === TokenType.Assign) {
+            decl = this.parse_var_declaration(type, ident);
+        } else {
+            throw new ParserError(
+                `Erwartete Deklaration, erhielt aber '${this.at().value}...'`,
+                this.at().codePos
+            );
+        }
+
+        decl.codePos = mergeCodePos(codePos, this.lastEaten.codePos);
+        return decl;
+    }
+
+    parse_var_declaration(type: VarDeclaration["type"], ident: string): VarDeclaration {
+        let codePos = this.at().codePos;
+
         this.expect(TokenType.Assign, "Erwarte 'ist' nach Variablennamen!");
         const value = this.parse_expr();
 
@@ -705,6 +710,44 @@ export default class Parser {
             type,
             value,
             codePos: mergeCodePos(codePos, this.lastEaten.codePos),
+        };
+    }
+
+    parse_obj_declaration(type: VarDeclaration["type"], ident: string): ObjDeclaration {
+        let codePos = this.at().codePos;
+
+        this.expect(TokenType.Instance, "Erwarte 'als' nach Objektnamen!");
+        const classname = this.expect(
+            TokenType.Identifier,
+            "Erwarte Klassenname nach 'als'!"
+        ).value;
+
+        const args: Expr[] = [];
+        if (this.at().type == TokenType.OpenParen) {
+            this.eat();
+            while (this.at().type != TokenType.CloseParen) {
+                const arg = this.parse_expr();
+                args.push(arg);
+                if (this.at().type == TokenType.CloseParen) break;
+                this.expect(
+                    TokenType.Comma,
+                    "Erwarte Kommas zwischen Parametern!"
+                );
+            }
+            this.expect(
+                TokenType.CloseParen,
+                "Erwarte schließende Klammer nach Parametern!"
+            ); // eat close paren
+        }
+
+        codePos = mergeCodePos(codePos, this.lastEaten.codePos);
+        return {
+            kind: StmtKind.ObjDeclaration,
+            ident,
+            type: ValueAlias.Object,
+            classname,
+            args,
+            codePos,
         };
     }
 
@@ -721,6 +764,7 @@ export default class Parser {
         } else if (this.at().type == TokenType.DeclObject) {
             type = ValueAlias.Object;
         }
+
         this.eat();
         const ident = this.expect(
             TokenType.Identifier,
@@ -819,49 +863,6 @@ export default class Parser {
             params,
             body,
             classname,
-            codePos,
-        };
-    }
-
-    parse_obj_declaration(): ObjDeclaration {
-        let codePos = this.at().codePos;
-
-        this.eat();
-        const ident = this.expect(
-            TokenType.Identifier,
-            "Erwarte Objektname nach 'Objekt'"
-        ).value;
-        this.expect(TokenType.Instance, "Erwarte 'als' nach Objektnamen!");
-        const classname = this.expect(
-            TokenType.Identifier,
-            "Erwarte Klassenname nach 'als'!"
-        ).value;
-
-        const args: Expr[] = [];
-        if (this.at().type == TokenType.OpenParen) {
-            this.eat();
-            while (this.at().type != TokenType.CloseParen) {
-                const arg = this.parse_expr();
-                args.push(arg);
-                if (this.at().type == TokenType.CloseParen) break;
-                this.expect(
-                    TokenType.Comma,
-                    "Erwarte Kommas zwischen Parametern!"
-                );
-            }
-            this.expect(
-                TokenType.CloseParen,
-                "Erwarte schließende Klammer nach Parametern!"
-            ); // eat close paren
-        }
-
-        codePos = mergeCodePos(codePos, this.lastEaten.codePos);
-        return {
-            kind: StmtKind.ObjDeclaration,
-            ident,
-            type: ValueAlias.Object,
-            classname,
-            args,
             codePos,
         };
     }

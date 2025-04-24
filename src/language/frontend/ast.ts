@@ -89,7 +89,7 @@ export interface VarDeclaration {
     kind: StmtKind.VarDeclaration;
     codePos: CodePosition;
     ident: string;
-    type: ValueAlias.Null | ValueAlias.Boolean | ValueAlias.Number | ValueAlias.String | ValueAlias.List;
+    type: ValueAlias.Null | ValueAlias.Boolean | ValueAlias.Number | ValueAlias.String | ValueAlias.List | ValueAlias.Object;
     value: Expr;
 }
 

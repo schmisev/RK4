@@ -410,7 +410,7 @@ function structureClass(node: ClassDefinition): string {
         
         <div class="struct-attributes">
             ${node.attributes.map((attr) => {
-                if (attr.type == ValueAlias.Object)
+                if (attr.kind == StmtKind.ObjDeclaration)
                     return `<span class="struct-type">${attr.classname}</span> ${attr.ident}`
                 else
                     return `<span class="struct-type">${attr.type}</span> ${attr.ident}`

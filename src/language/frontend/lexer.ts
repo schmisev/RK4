@@ -229,7 +229,14 @@ export function tokenize(sourceCode: string, trackPos: boolean): Token[] {
             tokens.push(token(src.shift(), TokenType.Mod, getPos()));
             nextPos();
         } else if (src[0] == '='){
-            tokens.push(token(src.shift(), TokenType.Equal, getPos()));
+            let str = src.shift()!;
+            if (src.length > 0 && src.at(0) == "=") {
+                str += src.shift()!;
+                widenPos();
+                tokens.push(token(str, TokenType.Equal, getPos()));
+            } else {
+                tokens.push(token(str, TokenType.Assign, getPos()));
+            }
             nextPos();
         } else if (src[0] == '>'){
             let str = src.shift()!;
