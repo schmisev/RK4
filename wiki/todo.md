@@ -44,4 +44,4 @@
 
 ### Quality of life
 
-- [ ] Store current code snippet in URL
+- [x] Store current code snippet in URL
