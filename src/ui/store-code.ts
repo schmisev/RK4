@@ -157,7 +157,7 @@ ende
 
 // k1 dreht sich solange, bis er nach Norden schaut
 // Mehr zu = und anderen Vergleichsoperatoren später
-wiederhole solange nicht (k1.richtung() = "N")
+wiederhole solange nicht (k1.richtung() == "N")
     k1.linksDrehen()
 ende
 
@@ -201,7 +201,7 @@ zeig nicht falsch           // >> wahr
 zeig nicht k1.siehtWand()   // >> falsch, wenn k1 die Wand sieht
 zeig 7 > 8                  // >> falsch
 zeig 7 < 100                // >> wahr
-zeig 17 = 17                // >> wahr
+zeig 17 == 17               // >> wahr
 `, false);
 
 storeRawCode("Tutorial: Variablen und Funktionen", `// Variablen
