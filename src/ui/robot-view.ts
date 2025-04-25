@@ -278,7 +278,7 @@ function robotSketch(p5: p5) {
                 for (let [key, img] of Object.entries(THOUGHT2TEXTURE)) {
                     THOUGHT2TEXTURE[parseInt(key) as ThoughtType] = createFramebuffer(img as p5.Graphics);
                 }
-            
+
             if (loadStage < 6) loadStage += 1;
             else loadStage = -1;
         }
@@ -329,13 +329,12 @@ function robotSketch(p5: p5) {
             } / ${world.getStageCount()}`;
         }
         // bg color ramping
-        if (isRunning && bg == 0) {
-            bg = 255;
-        }
-        if (bg > 0) bg = p5.lerp(0, bg, 0.9);
-        if (!isRunning || queueInterrupt) bg = 0;
+        // if (isRunning && bg == 0) {
+        //     bg = 255;
+        // }
+        // if (bg > 0) bg = p5.lerp(0, bg, 0.9);
+        // if (!isRunning || queueInterrupt) bg = 0;
         p5.background(bg, 0);
-
         p5.orbitControl();
 
         p5.push();

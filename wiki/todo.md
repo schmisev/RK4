@@ -34,7 +34,7 @@
   - [ ] Typing: `Kommazahl + Zahl = Kommazahl`, `Kommazahl + Bruch = Kommazahl`, `Bruch + Zahl = Bruch`
 - [x] Allow `=` instead of `ist` and `sei`
 - [x] Allow object declarations with assignment
-- [ ] Allow `==`, `>=`, `<=`, `!=` and `<>`
+- [x] Allow `==`, `>=`, `<=`, `!=`
 - [ ] MAYBE: allow `+=` and `-=`, (EXTRA MAYBE: `*=` and `:=`)
 - [ ] MAYBE: allow increments & decrements `++` and `--`
 - [ ] MAYBE: try-catch blocks like `versuche ... sonst ... ende` or `versuche ... ende`
