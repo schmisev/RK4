@@ -39,6 +39,7 @@ function robotSketch(p5: p5) {
     let taskCheckReloadTime = 200;
     let isOrtho = false;
     let loadStage = 0;
+    let telemetryOverlay: p5.Element;
 
     const CPS = 100; // Compass size
     const TSZ = 50; // Tilesize
@@ -245,8 +246,8 @@ function robotSketch(p5: p5) {
     };
     
     p5.draw = () => {
+        // replacing graphics w/ framebuffers
         if (loadStage >= 0) {
-            // create framebuffers
             if (loadStage === 0)
                 for (let [key, img] of Object.entries(BLOCK2XTEXTURE)) {
                     BLOCK2XTEXTURE[key as BlockType] = createFramebuffer(img as p5.Graphics);
@@ -306,15 +307,6 @@ function robotSketch(p5: p5) {
             setPerspective();
         }
 
-        // update play state
-        playState.innerHTML = queueInterrupt
-            ? "report"
-            : !isRunning
-            ? "stop"
-            : manualMode
-            ? "pause"
-            : "play_arrow";
-
         // update task status (only updating if not current)
         timer = timer + p5.deltaTime;
         if (timer > taskCheckReloadTime) {
@@ -327,6 +319,14 @@ function robotSketch(p5: p5) {
             taskCheck.innerHTML = `${emoji}<br>${
                 world.getStageIndex() + 1
             } / ${world.getStageCount()}`;
+
+            playState.innerHTML = queueInterrupt
+            ? "report"
+            : !isRunning
+            ? "stop"
+            : manualMode
+            ? "pause"
+            : "play_arrow";
         }
         // bg color ramping
         // if (isRunning && bg == 0) {

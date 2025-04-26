@@ -191,6 +191,7 @@ export class World {
         this.L = srcTokens[0].length
         */
         let registeredRobots: number[] = [0]; // 0 is blocked
+        let optionalRobotFields: Field[] = [];
 
         this.fields = [];
         for (let y = 0; y < this.W; y++) {
@@ -209,6 +210,10 @@ export class World {
                 let robotCreated = false;
                 for (const c of expr) {
                     switch (c) {
+                        case "@":
+                            if (goalMode) break;
+                            optionalRobotFields.push(f); // we _might_ place a robot here
+                            break;
                         case "0":
                         case "1":
                         case "2":
@@ -302,7 +307,7 @@ export class World {
                         case "Y":
                             f.setMarker(CHAR2MARKER[c], goalMode);
                             break;
-                        case "X":
+                        case "/":
                             // explicitly set NO marker
                             f.setMarker(MarkerType.None, goalMode);
                             break;
@@ -310,6 +315,12 @@ export class World {
                             // set random marker
                             let type = markerList[rndi(0, markerList.length)];
                             f.setMarker(type, goalMode);
+                            break;
+                        }
+                        case "~": {
+                            if (goalMode) {
+                                f.goalBlocks = Array<BlockType>();
+                            }
                             break;
                         }
                         case "_":
@@ -330,6 +341,16 @@ export class World {
                 if (!f.lastGoalStatus) this.addGoal();
                 this.fields[y].push(f);
             }
+        }
+
+        // place random robot
+        let chosenRobotField = optionalRobotFields.at(rndi(0, optionalRobotFields.length));
+        if (chosenRobotField && !this.getRobotAt(chosenRobotField.x, chosenRobotField.y)) {
+            let i = 0;
+            for (const v of registeredRobots) {
+                if (i === v) i += 1;
+            }
+            this.createRobot(chosenRobotField.x, chosenRobotField.y, "S", "k" + i, i);
         }
     }
 

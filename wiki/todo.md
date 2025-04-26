@@ -20,6 +20,10 @@
 - [ ] More complex success conditions in tasks
 - [ ] Trigger fields that call a method when the robot touches them
 
+### Tasks
+
+- [ ] Option to randomly place one robot with `@`
+
 ### Language features
 
 - [ ] Implement more Pythonic object instantiation like so `Klasse obj sei Klasse()`
