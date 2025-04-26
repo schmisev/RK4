@@ -285,6 +285,7 @@ export class World {
                         case "E":
                         case "S":
                         case "W":
+                        case "X":
                             if (robotCreated) throw new WorldError("WELT: Kann nicht zwei Roboter auf dasselbe Feld stellen!");
                             if (goalMode) break;
                             let i = 0;
@@ -292,7 +293,7 @@ export class World {
                                 if (i === v) i += 1;
                             }
                             registeredRobots.push(i); // register robot
-                            this.createRobot(x, y, c, "k" + i, i);
+                            this.createRobot(x, y, c === "X" ? ["N", "W", "S", "E"][rndi(0, 4)] : c, "k" + i, i);
                             robotCreated = true;
                             break;
                         case "r":
