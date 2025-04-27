@@ -4,6 +4,7 @@ import {
     MK_BOOL,
     MK_NULL,
     RuntimeVal,
+    MK_FLOAT,
 } from "./values";
 import {
     AbruptStmtKind,
@@ -64,6 +65,8 @@ export function* evaluate<A extends AbruptStmtKind>(
     switch (astNode.kind) {
         case StmtKind.NumericLiteral:
             return MK_NUMBER(astNode.value);
+        case StmtKind.FloatLiteral:
+            return MK_FLOAT(astNode.value);
         case StmtKind.StringLiteral:
             return MK_STRING(astNode.value);
         case StmtKind.BooleanLiteral:

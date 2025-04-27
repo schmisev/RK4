@@ -131,6 +131,10 @@ export function formatValue(value: RuntimeVal): string {
     // side effect
     if (value.type == ValueAlias.Number) {
         return value.value.toString();
+    } else if (value.type == ValueAlias.Float) {
+        let str = value.value.toString();
+        if (str.includes(".")) return str;
+        return str + ".0"
     } else if (value.type == ValueAlias.Boolean) {
         const boolVal = value.value;
         if (boolVal) {
@@ -192,3 +196,5 @@ export function destructureTaskKey(key: string, containsTitle = false) {
         sortStr: author + category + name + title,
     };
 }
+
+export function mod(l: number, r: number) { return ((l % r) + r) % r };

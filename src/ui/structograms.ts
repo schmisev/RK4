@@ -140,6 +140,8 @@ function structure(astNode: Program | AnyStmt): string {
             return structureForIn(astNode);
         case StmtKind.NumericLiteral:
             return makeSpan(astNode.value.toString(), "struct-literal");
+        case StmtKind.FloatLiteral:
+            return makeSpan(astNode.value.toString(), "struct-literal");
         case StmtKind.StringLiteral:
             return makeSpan('"' + astNode.value + '"', "struct-string");
         case StmtKind.BooleanLiteral:

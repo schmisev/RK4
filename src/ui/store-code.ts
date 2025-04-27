@@ -313,5 +313,26 @@ ende
 k1.umdrehen() // Funktioniert!
 `, false);
 
+storeRawCode("Tutorial: Kommazahlen", `// Kommazahlen
+zeig "Ganze Zahl:"
+Zahl N sei zufallszahl(-100, 100)
+zeig "* N =", N
+zeig "* als Kommazahl", zuKommazahl(N)
+zeig "* |N| =", betrag(N)
+
+zeig ""
+zeig "Kommazahl:"
+Kommazahl z sei zufallsbereich(-100, 100)
+zeig "* z =", z
+zeig "* als ganze Zahl", zuZahl(z)
+zeig "* gestutzt", stutzen(z)
+zeig "* aufgerundet", aufrunden(z)
+zeig "* abgerundet", abrunden(z)
+zeig "* sin(z) =", sin(z)
+zeig "* cos(z) =", cos(z)
+zeig "* tan(z) =", tan(z)
+zeig "* |z| =", betrag(z)
+`, false);
+
 // retrieve backup, if there is one
 retrieveLocalBackup();
