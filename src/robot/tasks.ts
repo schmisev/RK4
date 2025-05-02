@@ -237,7 +237,7 @@ export const STD_TASKS: Record<string, Task> = {
         description:
             "Baue einen Turm, indem du immer wieder die Methode <code>k1.dreierreihe()</code>, die du selbst geschrieben hast, aufrufst!",
         preload: "// Nichts vorgegeben",
-        world: "x;7;7;6;\nS:rrrrrr;_:rrrrrr;_:rrrrrr;_:rrrrrr;_:_;_:_;_:_\n_:rrrrrr;_:_;_:_;_:rrrrrr;_:_;_:_;_:_\n_:rrrrrr;_:_;_:_;_:rrrrrr;_:_;_:_;_:_\n_:rrrrrr;_:rrrrrr;_:rrrrrr;_:rrrrrr;_:_;_:_;_:_\n_:_;_:_;_:_;_:_;_:_;_:_;_:_\n_:_;_:_;_:_;_:_;_:_;_:_;_:_\n_:_;_:_;_:_;_:_;_:_;_:_;_:_\n",
+        world: "x;6;6;12;\nS_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_\n_:_;_:_rrrrrrrr;_:_rrrrrrrr;_:_rrrrrrrr;_:_rrrrrrrr;_:_;_:_;_:_\n_:_;_:_rrrrrrrr;_:_;_:_;_:_rrrrrrrr;_:_;_:_;_:_\n_:_;_:_rrrrrrrr;_:_;_:_;_:_rrrrrrrr;_:_;_:_;_:_\n_:_;_:_rrrrrrrr;_:_rrrrrrrr;_:_rrrrrrrr;_:_rrrrrrrr;_:_;_:_;_:_\n_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_\n_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_\n_:_;_:_;_:_;_:_;_:_;_:_;_:_;_:_",
     },
     sms_Methoden_4: {
         title: "Meine Burg",
