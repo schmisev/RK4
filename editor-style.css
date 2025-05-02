@@ -228,7 +228,7 @@
     display: flex;
     flex-flow: row nowrap;
     overflow: hidden;
-    justify-content: left;
+    justify-content: center;
     align-items: center;
     width: 100%;
     gap: 5px;

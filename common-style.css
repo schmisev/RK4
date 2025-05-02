@@ -88,10 +88,6 @@ input[type="checkbox"] {
     box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, 0.2);
 }
 
-.text-shadow {
-    text-shadow: rgba(0, 0, 0, 0.2) 1px 1px 3px;
-}
-
 .wsr {
     background-color: whitesmoke;
     border-radius: 5px;
@@ -178,11 +174,6 @@ input[type="checkbox"] {
     margin: 0;
     position: relative;
     border-radius: 5px;
-}
-
-.robot-canvas {
-    border-radius: 5px;
-    background-color: black;
 }
 
 .emoji-button {
@@ -592,20 +583,4 @@ code {
     100% {
         scale: 100%;
     }
-}
-
-.positive {
-    background-color: lightgreen;
-}
-
-.negative {
-    background-color: lightcoral;
-}
-
-.special {
-    background-color: lightblue;
-}
-
-.special-2 {
-    background-color: #cf9fff;
 }
