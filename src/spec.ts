@@ -11,9 +11,20 @@ export const ENV = {
         },
         "fn": {
             RANDOM_NUMBER: "zufallszahl",
+            RANDOM_FLOAT: "zufallsbereich",
             LENGTH: "länge",
             TO_TEXT: "zuText",
+            TO_INT: "zuZahl",
+            TO_FLOAT: "zuKommazahl",
             JOIN: "verketten",
+            FLOOR: "abrunden",
+            CEIL: "aufrunden",
+            ROUND: "runden",
+            TRUNC: "stutzen",
+            SIN: "sin",
+            COS: "cos",
+            TAN: "tan",
+            ABS: "betrag",
         }
     },
     "robot": {

@@ -176,6 +176,7 @@ export default class Parser {
                 break;
             case TokenType.DeclBoolean:
             case TokenType.DeclNumber:
+            case TokenType.DeclFloat:
             case TokenType.DeclString:
             case TokenType.DeclList:
             case TokenType.DeclObject:
@@ -667,7 +668,9 @@ export default class Parser {
             type = ValueAlias.Boolean;
         } else if (this.at().type == TokenType.DeclNumber) {
             type = ValueAlias.Number;
-        } else if (this.at().type == TokenType.DeclString) {
+        } else if (this.at().type == TokenType.DeclFloat) {
+            type = ValueAlias.Float;
+        }else if (this.at().type == TokenType.DeclString) {
             type = ValueAlias.String;
         } else if (this.at().type == TokenType.DeclList) {
             type = ValueAlias.List;
@@ -679,7 +682,7 @@ export default class Parser {
 
         const ident = this.expect(
             TokenType.Identifier,
-            "Erwarte Variablennamen nach 'Zahl', 'Text', 'Wahrheitswert', 'Liste' oder 'Objekt'!"
+            "Erwarte Variablennamen nach 'Zahl', 'Kommazahl', 'Text', 'Wahrheitswert', 'Liste' oder 'Objekt'!"
         ).value;
 
         let decl: VarDeclaration | ObjDeclaration;
@@ -759,6 +762,8 @@ export default class Parser {
             type = ValueAlias.Boolean;
         } else if (this.at().type == TokenType.DeclNumber) {
             type = ValueAlias.Number;
+        } else if (this.at().type == TokenType.DeclFloat) {
+            type = ValueAlias.Float;
         } else if (this.at().type == TokenType.DeclString) {
             type = ValueAlias.String;
         } else if (this.at().type == TokenType.DeclObject) {
@@ -1121,6 +1126,13 @@ export default class Parser {
                     codePos,
                     inParen: false,
                 };
+            case TokenType.Float:
+                return {
+                    kind: StmtKind.FloatLiteral,
+                    value: parseFloat(this.eat().value),
+                    codePos,
+                    inParen: false,
+                }
             case TokenType.String:
                 return {
                     kind: StmtKind.StringLiteral,

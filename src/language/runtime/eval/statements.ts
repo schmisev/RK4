@@ -76,7 +76,7 @@ export function* eval_var_declaration(
     const value = yield* evaluate(decl.value, evalEnv);
     if (value.type != decl.type) {
         throw new RuntimeError(
-            `Datentypen '${value.type}' und '${decl.type}' passen nicht zusammen!`,
+            `Datentypen '${decl.type}' und '${value.type}' passen nicht zusammen!`,
             decl.codePos
         );
     }
@@ -368,7 +368,7 @@ export function* eval_for_block<A extends AbruptStmtKind>(
     const counter = yield* evaluate(block.counter, env);
     if (counter.type != ValueAlias.Number)
         throw new RuntimeError("Zähler muss eine Zahl sein!", block.codePos);
-    let max = counter.value;
+    let max = Math.floor(counter.value); // 3.2 should lead to 3 repetitions
     if (max < 0)
         throw new RuntimeError(
             "Zähler muss größer oder gleich 0 sein!",

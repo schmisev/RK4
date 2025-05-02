@@ -16,6 +16,8 @@ import {
     ValueAlias,
     ListVal,
     MK_LIST,
+    FloatVal,
+    MK_FLOAT,
 } from "../values";
 import { eval_bare_statements } from "./statements";
 
@@ -127,7 +129,7 @@ export function eval_pure_binary_expr(
     codePos: CodePosition,
 ): RuntimeVal {
     try {
-        if (lhs.type == ValueAlias.Number && rhs.type == ValueAlias.Number) {
+        if ((lhs.type == ValueAlias.Number || lhs.type == ValueAlias.Float) && (rhs.type == ValueAlias.Number || rhs.type == ValueAlias.Float)) {
             return eval_numeric_binary_expr(
                 lhs,
                 rhs,
@@ -169,25 +171,13 @@ export function eval_pure_binary_expr(
 }
 
 export function eval_numeric_binary_expr(
-    lhs: NumberVal,
-    rhs: NumberVal,
+    lhs: NumberVal | FloatVal,
+    rhs: NumberVal | FloatVal,
     operator: Token,
     codePos: CodePosition
 ): RuntimeVal {
-    // stays numeric
-    if (operator.type == TokenType.Plus) {
-        return MK_NUMBER(lhs.value + rhs.value);
-    } else if (operator.type == TokenType.Minus) {
-        return MK_NUMBER(lhs.value - rhs.value);
-    } else if (operator.type == TokenType.Multiply) {
-        return MK_NUMBER(lhs.value * rhs.value);
-    } else if (operator.type == TokenType.Divide) {
-        return MK_NUMBER(Math.trunc(lhs.value / rhs.value));
-    } else if (operator.type == TokenType.Mod) {
-        return MK_NUMBER(lhs.value % rhs.value);
-    }
     // boolean values
-    else if (operator.type == TokenType.Equal) {
+    if (operator.type == TokenType.Equal) {
         return MK_BOOL(lhs.value == rhs.value);
     } else if (operator.type == TokenType.Greater) {
         return MK_BOOL(lhs.value > rhs.value);
@@ -199,6 +189,32 @@ export function eval_numeric_binary_expr(
         return MK_BOOL(lhs.value <= rhs.value);
     } else if (operator.type == TokenType.NEQ) {
         return MK_BOOL(lhs.value != rhs.value);
+    } else if (lhs.type !== rhs.type) {
+        // cast to float
+        if (operator.type == TokenType.Plus) {
+            return MK_FLOAT(lhs.value + rhs.value);
+        } else if (operator.type == TokenType.Minus) {
+            return MK_FLOAT(lhs.value - rhs.value);
+        } else if (operator.type == TokenType.Multiply) {
+            return MK_FLOAT(lhs.value * rhs.value);
+        } else if (operator.type == TokenType.Divide) {
+            return MK_FLOAT(lhs.value / rhs.value);
+        } else if (operator.type == TokenType.Mod) {
+            return MK_FLOAT(((lhs.value % rhs.value) + rhs.value) % rhs.value);
+        }
+    } else {
+        // stays as integer
+        if (operator.type == TokenType.Plus) {
+            return MK_NUMBER(lhs.value + rhs.value);
+        } else if (operator.type == TokenType.Minus) {
+            return MK_NUMBER(lhs.value - rhs.value);
+        } else if (operator.type == TokenType.Multiply) {
+            return MK_NUMBER(lhs.value * rhs.value);
+        } else if (operator.type == TokenType.Divide) {
+            return MK_NUMBER(Math.trunc(lhs.value / rhs.value));
+        } else if (operator.type == TokenType.Mod) {
+            return MK_NUMBER(((lhs.value % rhs.value) + rhs.value) % rhs.value);
+        }
     }
 
     // nothing worked
@@ -260,7 +276,7 @@ export function* eval_unary_expr(
     try {
         if (rhs.type == ValueAlias.Boolean) {
             return eval_logical_unary_expr(rhs, unop.operator, unop.codePos);
-        } else if (rhs.type == ValueAlias.Number) {
+        } else if (rhs.type == ValueAlias.Number || rhs.type == ValueAlias.Float) {
             return eval_numeric_unary_expr(rhs, unop.operator, unop.codePos);
         } else if (rhs.type == ValueAlias.String) {
             return eval_string_unary_expr(rhs, unop.operator, unop.codePos);
@@ -283,14 +299,17 @@ export function eval_logical_unary_expr(
 }
 
 export function eval_numeric_unary_expr(
-    rhs: NumberVal,
+    rhs: NumberVal | FloatVal,
     operator: Token,
     codePos: CodePosition
 ): RuntimeVal {
     if (operator.type == TokenType.Not) {
         return MK_BOOL(rhs.value == 0);
     } else if (operator.type == TokenType.Minus) {
-        return MK_NUMBER(-rhs.value);
+        if (rhs.type === ValueAlias.Number)
+            return MK_NUMBER(-rhs.value);
+        else if (rhs.type === ValueAlias.Float)
+            return MK_FLOAT(-rhs.value);
     } else if (operator.type == TokenType.Plus) {
         return rhs;
     }

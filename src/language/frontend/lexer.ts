@@ -7,6 +7,7 @@ export enum TokenType {
 
     // Literals
     Number,
+    Float,
     Identifier,
     String,
     DocComment,
@@ -14,7 +15,7 @@ export enum TokenType {
     // Keywords
     Show,
     Assign, Instance,
-    DeclNumber, DeclBoolean, DeclString, DeclList,
+    DeclNumber, DeclFloat, DeclBoolean, DeclString, DeclList,
     DeclObject, Self, DotOp,
     If, Then, IfElse, Else,
     Return,
@@ -56,6 +57,7 @@ export enum TokenType {
 
 export const KEYWORDS: Record<string, TokenType> = {
     Zahl: TokenType.DeclNumber,
+    Kommazahl: TokenType.DeclFloat,
     Wahrheitswert: TokenType.DeclBoolean,
     Text: TokenType.DeclString,
     Liste: TokenType.DeclList,
@@ -396,13 +398,15 @@ export function tokenize(sourceCode: string, trackPos: boolean): Token[] {
             }
             */
             else if (isint(src[0])) {
+                let isFloat = false;
                 let num = "";
-                while(src.length > 0 && isint(src[0])) {
+                while(src.length > 0 && (isint(src[0]) || (src[0] === "." && !isFloat))) {
+                    if (src[0] === ".") isFloat = true;
                     num += src.shift();
                     widenPos();
                 }
                 narrowPos();
-                tokens.push(token(num, TokenType.Number, getPos()));
+                tokens.push(token(num, isFloat ? TokenType.Float : TokenType.Number, getPos()));
                 nextPos();
             }
             else if (isalpha(src[0]) || src[0] == "_") {

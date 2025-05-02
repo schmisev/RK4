@@ -24,6 +24,7 @@ export const enum StmtKind {
     UnaryExpr = "UnärerAusdruck",
     Identifier = "Bezeichner",
     NumericLiteral = "NumerischerLiteral",
+    FloatLiteral = "KommazahlLiteral",
     NullLiteral = "NixLiteral",
     BooleanLiteral = "WahrheitswertLiteral",
     StringLiteral = "TextLiteral",
@@ -89,7 +90,7 @@ export interface VarDeclaration {
     kind: StmtKind.VarDeclaration;
     codePos: CodePosition;
     ident: string;
-    type: ValueAlias.Null | ValueAlias.Boolean | ValueAlias.Number | ValueAlias.String | ValueAlias.List | ValueAlias.Object;
+    type: ValueAlias.Null | ValueAlias.Boolean | ValueAlias.Number | ValueAlias.Float | ValueAlias.String | ValueAlias.List | ValueAlias.Object;
     value: Expr;
 }
 
@@ -198,7 +199,7 @@ export interface ReturnCommand {
     value: Expr;
 }
 
-export type Expr = AssignmentExpr | BinaryExpr | UnaryExpr | Identifier | NumericLiteral | NullLiteral | BooleanLiteral | StringLiteral  | ListLiteral | MemberExpr | ComputedMemberExpr | CallExpr;
+export type Expr = AssignmentExpr | BinaryExpr | UnaryExpr | Identifier | NumericLiteral | FloatLiteral | NullLiteral | BooleanLiteral | StringLiteral  | ListLiteral | MemberExpr | ComputedMemberExpr | CallExpr;
 
 export interface AssignmentExpr {
     kind: StmtKind.AssignmentExpr;
@@ -234,6 +235,13 @@ export interface Identifier {
 
 export interface NumericLiteral {
     kind: StmtKind.NumericLiteral;
+    codePos: CodePosition;
+    value: number;
+    inParen: boolean;
+}
+
+export interface FloatLiteral {
+    kind: StmtKind.FloatLiteral;
     codePos: CodePosition;
     value: number;
     inParen: boolean;
