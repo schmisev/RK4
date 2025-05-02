@@ -32,7 +32,7 @@ export let viewEnv: WorldViewEnv = {
     playState,
     queueInterrupt: false,
     taskCheck,
-    world: new World(dummyTask.world, 0),
+    world: new World(0, dummyTask.world, 0),
     updateLagSum(dt: number) {},
     resetLagSum() {},
     toggleAnimation: makeToggle(true),
@@ -477,7 +477,7 @@ function reloadWorld(idx?: number): void {
         editEnv.codeError.classList.toggle("world", false);
         editEnv.codeError.innerHTML = `✔️ Kein Fehler bei der Welterzeugung`;
 
-        let genWorld = new World(genStr, editEnv.idx);
+        let genWorld = new World(viewEnv.world.session + 1, genStr, editEnv.idx);
         viewEnv.world = genWorld;
     } catch (e) {
         editEnv.codeError.classList.toggle("world", true);

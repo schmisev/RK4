@@ -39,7 +39,8 @@ function robotSketch(p5: p5) {
     let taskCheckReloadTime = 200;
     let isOrtho = false;
     let loadStage = 0;
-    let telemetryOverlay: p5.Element;
+    let wasRunning = false;
+    let lastSession = -1;
 
     const CPS = 100; // Compass size
     const TSZ = 50; // Tilesize
@@ -192,8 +193,8 @@ function robotSketch(p5: p5) {
 
     const resetCamera = () => {
         let angle = (3 * Math.PI) / 4;
-        let rotation = -Math.PI / 6;
-        let distance = 1300;
+        let rotation = Math.PI / 10;
+        let distance = Math.sqrt(ENV.world.W ** 2 + ENV.world.H ** 2 + ENV.world.L ** 2) * 60; // try to show it all
         cam.setPosition(
             distance * Math.sin(rotation),
             distance * Math.cos(angle),
@@ -328,13 +329,22 @@ function robotSketch(p5: p5) {
             ? "pause"
             : "play_arrow";
         }
-        // bg color ramping
-        // if (isRunning && bg == 0) {
-        //     bg = 255;
-        // }
-        // if (bg > 0) bg = p5.lerp(0, bg, 0.9);
-        // if (!isRunning || queueInterrupt) bg = 0;
-        p5.background(bg, 0);
+        
+        // do stuff when execution starts/ends
+        if (isRunning && !wasRunning) {
+            wasRunning = true;
+        }
+        if (!isRunning || queueInterrupt) {
+            wasRunning = false;
+        }
+
+        // do stuff on world load
+        if (lastSession !== world.session) {
+            lastSession = world.session;
+            resetCamera();
+        }
+
+        p5.background(0, 0);
         p5.orbitControl();
 
         p5.push();

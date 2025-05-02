@@ -17,7 +17,7 @@ import Parser from "./language/frontend/parser";
 import { Program } from './language/frontend/ast';
 import { GlobalEnvironment, declareGlobalEnv } from "./language/runtime/environment";
 import { evaluate } from "./language/runtime/interpreter";
-import { easeInQuint, getKeys, getVals, lerp, sleep } from "./utils";
+import { easeInQuint, getKeys, getVals, lerp, rndi, sleep } from "./utils";
 
 // Robot imports
 import { declareWorld, World } from "./robot/world";
@@ -408,7 +408,7 @@ function loadRawTask(key: string, task: Task, ignoreTitleInKey = false) {
     preloadEditor.setValue(preloadCode, 0);
     preloadEditor.moveCursorTo(0, 0);
 
-    resetEnv();
+    resetEnv(0, rt.world.session + 1);
     rt.world.loadWorldLog();
 }
 
@@ -427,10 +427,10 @@ async function loadTask(key: string) {
 }
 
 // Resetting the environment
-async function resetEnv(stage = 0) {
+async function resetEnv(stage: number, session?: number) {
     const env = rt.env = declareGlobalEnv();
     // create new world and register it in the global environment
-    const world = rt.world = new World(worldSpec, stage);
+    const world = rt.world = new World(session ? session : rt.world.session, worldSpec, stage);
     declareWorld(world, "welt", env);
     world.declareAllRobots(env);
     addRobotButtons(objBar, objOverlay, world);
@@ -545,7 +545,7 @@ export async function stopCode() {
     exitManualMode();
     resetErrorMarkers();
     await interrupt();
-    await resetEnv();
+    await resetEnv(0);
 }
 
 // Run ANY code
@@ -663,7 +663,7 @@ rt = {
     maxDt,
     playState,
     env: declareGlobalEnv(),
-    world: new World(dummyTask.world, 0),
+    world: new World(0, dummyTask.world, 0),
 
     taskCheck,
     objOverlay,

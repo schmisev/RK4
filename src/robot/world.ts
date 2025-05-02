@@ -121,6 +121,7 @@ export function declareWorld(w: World, varname: string, env: GlobalEnvironment):
 }
 
 export class World {
+    session: number;
     robots: Array<Robot> = [];
     fields: Array<Field[]> = [];
     L: number = 0;
@@ -130,7 +131,8 @@ export class World {
     stageIdx: number = -1;
     goalsRemaining: number = 0;
 
-    constructor(src: WorldSource, stage: number) {
+    constructor(session: number, src: WorldSource, stage: number) {
+        this.session = session;
         this.resetWorld();
         this.stages = [];
         if (typeof src === "string")
