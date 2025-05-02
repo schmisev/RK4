@@ -193,8 +193,9 @@ function robotSketch(p5: p5) {
 
     const resetCamera = () => {
         let angle = (3 * Math.PI) / 4;
-        let rotation = Math.PI / 10;
-        let distance = Math.sqrt(ENV.world.W ** 2 + ENV.world.H ** 2 + ENV.world.L ** 2) * 60; // try to show it all
+        let rotation = Math.PI * 0.15;
+        let diagonal = Math.sqrt(ENV.world.W ** 2 + ENV.world.H ** 2 + ENV.world.L ** 2);
+        let distance = Math.sqrt(diagonal) * 230; // try to show it all
         cam.setPosition(
             distance * Math.sin(rotation),
             distance * Math.cos(angle),
