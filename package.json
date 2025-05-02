@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack serve --open",
+    "dev": "webpack serve --open",
     "build": "webpack --mode=production",
     "deploy": "gh-pages -d dist",
     "cleanup": "del-cli dist/chunk/ dist/*.bundle.js dist/*.bundle.js.LICENSE.txt",
