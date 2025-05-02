@@ -1,9 +1,12 @@
+import { RuntimeError } from "../../errors";
+import { mod } from "../../utils";
 import { ObjDeclaration, ParamDeclaration, Stmt, StmtKind, VarDeclaration } from "../frontend/ast";
 import { ClassPrototype, StaticScope, VarHolder } from "./environment";
 
 export const enum ValueAlias {
     Null = "Nix",
     Number = "Zahl",
+    Float = "Kommazahl",
     Boolean = "Wahrheitswert",
     String = "Text",
     List = "Liste",
@@ -21,7 +24,14 @@ export const enum AbruptAlias {
     Return = "return",
 }
 
-export type RuntimeVal = NullVal | NumberVal | BooleanVal | StringVal | ListVal | NativeFunctionVal | FunctionVal | ClassVal | ObjectVal;
+export type NumberLikeVal = NumberVal | FloatVal;
+export type NumberLikeType = NumberLikeVal["type"];
+
+export function isLikeNumber(val: RuntimeVal): val is NumberLikeVal {
+    return val.type === ValueAlias.Number || val.type === ValueAlias.Float;
+}
+
+export type RuntimeVal = NullVal | NumberLikeVal | BooleanVal | StringVal | ListVal | NativeFunctionVal | FunctionVal | ClassVal | ObjectVal;
 export type ValueType = RuntimeVal["type"];
 
 export interface NullVal {
@@ -31,6 +41,11 @@ export interface NullVal {
 
 export interface NumberVal {
     type: ValueAlias.Number;
+    value: number;
+}
+
+export interface FloatVal {
+    type: ValueAlias.Float;
     value: number;
 }
 
@@ -133,7 +148,12 @@ export function MK_NATIVE_METHOD(name: string, call: MethodCall) {
 }
 
 export function MK_NUMBER(n = 0) {
+    if (mod(n, 1) !== 0) throw new RuntimeError("Kann keine ganze Zahl mit Nachkommastellen erzeugen!");
     return { type: ValueAlias.Number, value: n } satisfies NumberVal;
+}
+
+export function MK_FLOAT(n = 0) {
+    return { type: ValueAlias.Float, value: n } satisfies FloatVal;
 }
 
 export function MK_LIST(elements: RuntimeVal[]) {

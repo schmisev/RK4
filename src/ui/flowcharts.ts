@@ -329,6 +329,7 @@ function chartSimpleStmt(stmt: AnyStmt): ChartNode | undefined {
         case StmtKind.UnaryExpr:
         case StmtKind.Identifier:
         case StmtKind.NumericLiteral:
+        case StmtKind.FloatLiteral:
         case StmtKind.NullLiteral:
         case StmtKind.BooleanLiteral:
         case StmtKind.StringLiteral:
@@ -358,6 +359,8 @@ function chartExpr(expr: Expr): { str: string, type: Type } {
         case StmtKind.Identifier:
             return {str: expr.symbol, type: Type.Unwrapped};
         case StmtKind.NumericLiteral:
+            return {str: `${expr.value}`, type: Type.Unwrapped};
+        case StmtKind.FloatLiteral:
             return {str: `${expr.value}`, type: Type.Unwrapped};
         case StmtKind.NullLiteral:
             return {str: `nix`, type: Type.Unwrapped};
