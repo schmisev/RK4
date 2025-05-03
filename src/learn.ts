@@ -16,7 +16,7 @@ const wikiPages: Record<string, string> = {
   methods,
 }
 
-const START_PAGE: string = "todo";
+const START_PAGE: string = "beginning";
 
 async function setPageFromQuery() {
   const urlParams = new URLSearchParams(window.location.search);
