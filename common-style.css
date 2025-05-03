@@ -144,6 +144,7 @@ input[type="checkbox"] {
     padding: 0;
     cursor: ew-resize;
     flex: 0 0 auto;
+    touch-action: none;
 }
 
 .handler::before {
@@ -154,6 +155,7 @@ input[type="checkbox"] {
     background: gray;
     border-radius: 2px;
     margin: 0 auto;
+    touch-action: none;
 }
 
 .tab-button {
