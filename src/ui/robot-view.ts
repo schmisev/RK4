@@ -41,8 +41,9 @@ function robotSketch(p5: p5) {
     let loadStage = 0;
     let wasRunning = false;
     let lastSession = -1;
-    let allowOrbitControl = false;
+    let allowOrbitControl = true;
     let orbitControlTimeout = -1;
+    let activePointers: number[] = [];
 
     const CPS = 100; // Compass size
     const TSZ = 50; // Tilesize
@@ -197,7 +198,7 @@ function robotSketch(p5: p5) {
         let angle = (3 * Math.PI) / 4;
         let rotation = Math.PI * 0.15;
         let diagonal = Math.sqrt(ENV.world.W ** 2 + ENV.world.H ** 2 + ENV.world.L ** 2);
-        let distance = Math.sqrt(diagonal) * 230; // try to show it all
+        let distance = Math.sqrt(diagonal) * 260; // try to show it all
         cam.setPosition(
             distance * Math.sin(rotation),
             distance * Math.cos(angle),
@@ -251,14 +252,24 @@ function robotSketch(p5: p5) {
                 (e.target as Element).setPointerCapture(e.pointerId);
                 allowOrbitControl = true;
                 window.clearTimeout(orbitControlTimeout);
+                activePointers.push(e.pointerId);
             }
         }
 
         const endOrbit = (e: PointerEvent) => {
-            orbitControlTimeout = window.setTimeout(() => { allowOrbitControl = false }, 500);
+            for (let i = 0; i < activePointers.length; i++) {
+                if (activePointers[i] === e.pointerId) {
+                    activePointers.splice(i, 1);
+                    break;
+                }
+            }
+
+            if (activePointers.length === 0)
+                orbitControlTimeout = window.setTimeout(() => { allowOrbitControl = false }, 500);
             // 500ms delay to let the dampening happen
         }
 
+        canvasDiv.style.touchAction = "none";
         canvasDiv.onpointerdown = startOrbit;
         canvasDiv.onpointerup = endOrbit;
         canvasDiv.onpointercancel = endOrbit;

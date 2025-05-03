@@ -13,7 +13,6 @@ function startDrag(e: PointerEvent) {
   if (e.target) {
     (e.target as Element).setPointerCapture(e.pointerId);
     isHandlerDragging = true;
-    // window.addEventListener('selectstart', disableSelect);
   }
 }
 
@@ -58,6 +57,7 @@ foldDebugPanel.onclick = () => {
 handler.onpointerdown = startDrag;
 handler.onpointermove = dragMove;
 handler.onpointerup = stopDrag;
+// handler.onpointerleave = stopDrag;
 handler.onpointercancel = startDrag;
 // document.addEventListener('mousedown', startDrag);
 // document.addEventListener('touchstart', startDrag);
