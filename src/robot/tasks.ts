@@ -952,7 +952,7 @@ k1.herumirren()
         preload: STD_PRELOAD,
     },
     wiki_Methoden_1: {
-        "description": "Führe die Methoden aus, wie es im <a href='/learn.html?load=methods'>Artikel</a> beschrieben ist.",
+        "description": "Führe die Methoden aus, wie es im <a href='./learn.html?load=methods'>Artikel</a> beschrieben ist.",
         "preload": "// kein vorgegebener Code",
         "world": "x;3;3;5;\nS_;_;_\n_;_:r;_\n_;_;_",
         "title": "Methoden ausprobieren"
