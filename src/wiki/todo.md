@@ -22,7 +22,7 @@
 
 ### Tasks
 
-- [ ] Option to randomly place one robot with `@`
+- [x] Option to randomly place one robot with `@`
 
 ### Language features
 
@@ -30,12 +30,10 @@
   - [ ] Implement type checking objects
     - [ ] As function arguments
     - [ ] In assignments
-- [ ] Floating point numbers like `Kommazahl x sei 1.52`
+- [x] Floating point numbers like `Kommazahl x sei 1.52`
 - [ ] More mathematical operations like exponents `^`, degrees `°` (calculates radians), etc.
   - [ ] Allow post-fix unary operators
-- [ ] MAYBE: More built-in functions, like `sin`, `cos`, `tan`, `abs`, ...
-- [ ] MAYBE: 2-integer based rational numbers like `Bruch x sei 2_1/3`
-  - [ ] Typing: `Kommazahl + Zahl = Kommazahl`, `Kommazahl + Bruch = Kommazahl`, `Bruch + Zahl = Bruch`
+- [ ] MAYBE: More built-in functions, like `sin`, `cos`, `tan`, `abs`, ...Kommazahl`, `Bruch + Zahl = Bruch`
 - [x] Allow `=` instead of `ist` and `sei`
 - [x] Allow object declarations with assignment
 - [x] Allow `==`, `>=`, `<=`, `!=`

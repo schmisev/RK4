@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1"
+            charset="UTF-8"
+        />
+        <link rel="icon" type="image/x-icon" href="favicon.ico" />
+
+        <link rel="stylesheet" type="text/css" href="common-style.css" />
+        <link rel="stylesheet" type="text/css" href="learn-style.css" />
+        <link rel="stylesheet" type="text/css" href="struct-style.css" />
+        <link rel="stylesheet" type="text/css" href="flow-style.css" />
+        <link rel="stylesheet" type="text/css" href="obj-style.css" />
+        <link rel="stylesheet" type="text/css" href="robot-view-style.css" />
+        <link rel="stylesheet" type="text/css" href="markdown.css" />
+
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Itim&display=swap"
+            rel="stylesheet"
+        />
+
+        <link
+            href="https://fonts.cdnfonts.com/css/cascadia-code"
+            rel="stylesheet"
+        />
+        <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=pause,play_arrow,play_pause,report,resume,skip_next,skip_previous,stop"
+        />
+
+        <title>RK4 Wiki (beta)</title>
+    </head>
+    <body class="roboto">
+        <div id="grid-container">
+            <div class="lc30 wsr text" id="title-bar">
+                🤖 RK4&nbsp;&nbsp;<div class="version-label">BETA</div>&nbsp;&nbsp;|&nbsp;Wiki&nbsp;|&nbsp;<a id="link-to-editor" style="cursor: pointer;" href="./">zurück zum Editor</a>
+            </div>
+            <div class="lc30 wsr text" id="map-title">🗺️ Lernkarte</div>
+            <div id="map-diagram-canvas" class="wsr">
+                <div class="mermaid" id="map-flowchart"></div>
+            </div>
+            <div class="lc30 wsr text" id="doc-title">📃 Wiki</div>
+            <div id="doc-page" class="markdown"></div>
+            <!-- credits -->
+            <div class="wsr lc30 text" id="credits-bar">
+                Mitwirkende:
+                <a href="https://github.com/schmisev">schmisev</a> ●
+                <a href="https://github.com/WorldsEnder">WorldsEnder</a> |
+                3D-Ansicht: <a href="https://p5js.org/">p5.js</a> (<a
+                    href="https://raw.githubusercontent.com/processing/p5.js/main/license.txt"
+                    >Lizenz</a
+                >) ● Editor: <a href="https://ace.c9.io/">Ace Editor</a> (<a
+                    href="https://raw.githubusercontent.com/ajaxorg/ace/a6ead2fcf2860c8b890f6adbd2e56f2ddc7f6d62/LICENSE"
+                    >Lizenz</a
+                >)
+            </div>
+        </div>
+        <input
+            id="load-file"
+            type="file"
+            accept=".json,"
+            style="visibility: hidden"
+        />
+        <div id="loading-overlay" class="loading">
+            <div>
+                <h1 style="text-align: center">🤖<br />RK4</h1>
+            </div>
+            <p>🔌 Lädt... Warte einen Moment! ⚡</p>
+        </div>
+        <div id="too-small-overlay">
+            "Hast du diese Seite auf 'nem GameBoy Color aufgemacht?"
+        </div>
+
+        <script src="learn.bundle.js"></script>
+    </body>
+</html>

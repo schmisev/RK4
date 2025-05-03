@@ -1,0 +1,71 @@
+.markdown {
+  padding: 0px 1rem;
+  text-align: justify;
+}
+
+.markdown img[alt$=">"] {
+  float: right;
+}
+
+.markdown img[alt$="<"] {
+  float: left;
+}
+
+.markdown img[alt$="><"] {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: auto;
+  float: none!important;
+}
+
+.markdown img {
+  -webkit-filter: drop-shadow(1px 1px 5px rgba(0, 0, 0, 0.2));
+  filter: drop-shadow(1px 1px 5px rgba(0, 0, 0, 0.2));
+}
+
+.markdown .img-center {
+  text-align: center;
+}
+
+.markdown .img-left {
+  float: left;
+}
+
+.markdown .img-right {
+  float: right;
+}
+
+.markdown-alert {
+  background-color: whitesmoke;
+  border-radius: 5px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  padding: 0px 10px;
+  box-shadow: rgba(0, 0, 0, 0.2) 2px 2px 5px;
+}
+
+.markdown-alert p {
+  margin: 0.5rem 0;
+}
+
+.markdown-alert-title {
+  text-align: center;
+  text-shadow: rgba(0, 0, 0, 0.2) 2px 2px 5px;;
+}
+
+.markdown-alert-important {
+  background-color: #fada5e; /**/
+  border: 2px #b19b42 solid;
+}
+
+.markdown-alert-warning {
+  background-color: lightcoral; /**/
+  border: 2px rgba(0, 0, 0, 0.2) solid;
+}
+
+.markdown code.language-RKBasic {
+  display: block;
+  padding: 10px;
+  font-weight: unset;
+  box-shadow: rgba(0, 0, 0, 0.2) 2px 2px 5px;
+}
