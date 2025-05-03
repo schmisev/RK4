@@ -1,0 +1,66 @@
+#grid-container {
+  display: grid;
+  gap: 5px;
+  grid-template-columns: repeat(13, minmax(0, 1fr));
+  grid-template-rows: 30px 30px 1fr 30px;
+  height: 100%;
+}
+
+#title-bar {
+  grid-column: 1 / 14;
+  grid-row: 1;
+  overflow: hidden;
+  font-weight: bolder;
+}
+
+#credits-bar {
+  grid-column: 1 / 14;
+  grid-row: 4;
+}
+
+#map-title {
+  grid-column: 1 / 6;
+  grid-row: 2;
+}
+
+#doc-title {
+  grid-column: 6 / 14;
+  grid-row: 2;
+}
+
+#doc-page {
+  grid-column: 6 / 14;
+  grid-row: 3;
+  overflow-y: scroll;
+}
+
+#map-diagram-canvas {
+  grid-column: 1 / 6;
+  grid-row: 3;
+  overflow-y: scroll;
+}
+
+/* more visual interactions */
+.clickable > rect {
+  transition: scale 0.2s;
+}
+
+.clickable:hover > rect {
+  scale: 105%;
+}
+
+.clickable:active > rect {
+  scale: 95%;
+}
+
+.clickable > polygon {
+  transition: scale 0.2s;
+}
+
+.clickable:hover > polygon {
+  scale: 105%;
+}
+
+.clickable:active > polygon {
+  scale: 95%;
+}
