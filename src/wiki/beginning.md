@@ -4,7 +4,7 @@
 
 # Auf gehts!
 
-Bei RK4 ist es deine Aufgabe, kleinen Robotern dabei zu helfen, schwierige (und nicht so schwierige) Aufgaben zu lösen. Leider sprechen die Roboter kein Deutsch, sondern eine Programmiersprache namens __RKBasic__ (die heißt so, weil es so ähnlich aussieht wie [BASIC](https://de.wikipedia.org/wiki/BASIC)). 
+Bei RK4 ist es deine Aufgabe, kleinen Robotern dabei zu helfen, schwierige (und nicht so schwierige) Aufgaben zu lösen. Leider sprechen die Roboter kein Deutsch, sondern eine Programmiersprache namens __RKBasic__ (die heißt so, weil sie so ähnlich aussieht wie [BASIC](https://de.wikipedia.org/wiki/BASIC)). 
 </p>
 
 > [!IMPORTANT]
