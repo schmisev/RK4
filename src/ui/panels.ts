@@ -9,21 +9,15 @@ const panel = document.getElementById("left-panel")!;
 const debugPanel = document.getElementById("right-panel")!;
 let isHandlerDragging = false;
 
-function disableSelect(event: Event) {
-    event.preventDefault();
-}
-function startDrag(e: Event) {
-  // If mousedown event is fired from .handler, toggle flag to true
-  if (e.target === handler) {
+function startDrag(e: PointerEvent) {
+  if (e.target) {
+    (e.target as Element).setPointerCapture(e.pointerId);
     isHandlerDragging = true;
-    window.addEventListener('selectstart', disableSelect);
+    // window.addEventListener('selectstart', disableSelect);
   }
 }
 
-document.addEventListener('mousedown', startDrag);
-document.addEventListener('touchstart', startDrag);
-
-function dragMove(e: MouseEvent | TouchEvent) {
+function dragMove(e: PointerEvent) {
   // Don't do anything if dragging flag is false
   if (!isHandlerDragging) {
     return false;
@@ -33,7 +27,7 @@ function dragMove(e: MouseEvent | TouchEvent) {
   const containerOffsetLeft = wrapper.getBoundingClientRect().left;
 
   // Get x-coordinate of pointer relative to container
-  const posX = 'clientX' in e ? e.clientX : e.touches[0].clientX;
+  const posX = e.clientX;
   const pointerRelativeXpos = posX - containerOffsetLeft;
   
   // Arbitrary minimum width set on box A, otherwise its inner content will collapse to width of 0
@@ -45,16 +39,11 @@ function dragMove(e: MouseEvent | TouchEvent) {
   panel.style.width = (Math.max(boxAminWidth, pointerRelativeXpos - 8)) + 'px';
   panel.style.flexGrow = "0";
 }
-document.addEventListener('mousemove', dragMove);
-document.addEventListener('touchmove', dragMove);
 
 function stopDrag() {
   // Turn off dragging flag when user mouse is up
   isHandlerDragging = false;
-  window.removeEventListener('selectstart', disableSelect);
 }
-document.addEventListener('mouseup', stopDrag);
-document.addEventListener('touchend', stopDrag);
 
 const foldDebugPanel = document.getElementById("fold-debug")!;
 foldDebugPanel.onclick = () => {
@@ -65,3 +54,14 @@ foldDebugPanel.onclick = () => {
   }
   panel.style.flexGrow = "0";
 }
+
+handler.onpointerdown = startDrag;
+handler.onpointermove = dragMove;
+handler.onpointerup = stopDrag;
+handler.onpointercancel = startDrag;
+// document.addEventListener('mousedown', startDrag);
+// document.addEventListener('touchstart', startDrag);
+// document.addEventListener('mousemove', dragMove);
+// document.addEventListener('touchmove', dragMove);
+// document.addEventListener('mouseup', stopDrag);
+// document.addEventListener('touchend', stopDrag);

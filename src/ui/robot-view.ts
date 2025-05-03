@@ -41,6 +41,8 @@ function robotSketch(p5: p5) {
     let loadStage = 0;
     let wasRunning = false;
     let lastSession = -1;
+    let allowOrbitControl = false;
+    let orbitControlTimeout = -1;
 
     const CPS = 100; // Compass size
     const TSZ = 50; // Tilesize
@@ -243,6 +245,24 @@ function robotSketch(p5: p5) {
         resetCamera();
         canvasDiv.ondblclick = resetCamera;
 
+        // orbit control to work around weird p5.orbitControl behavior
+        const startOrbit = (e: PointerEvent) => {
+            if (e.target) {
+                (e.target as Element).setPointerCapture(e.pointerId);
+                allowOrbitControl = true;
+                window.clearTimeout(orbitControlTimeout);
+            }
+        }
+
+        const endOrbit = (e: PointerEvent) => {
+            orbitControlTimeout = window.setTimeout(() => { allowOrbitControl = false }, 500);
+            // 500ms delay to let the dampening happen
+        }
+
+        canvasDiv.onpointerdown = startOrbit;
+        canvasDiv.onpointerup = endOrbit;
+        canvasDiv.onpointercancel = endOrbit;
+
         // attach p5 to canvas div
         cvs.parent("robot-canvas");
     };
@@ -346,7 +366,7 @@ function robotSketch(p5: p5) {
         }
 
         p5.background(0, 0);
-        p5.orbitControl();
+        if (allowOrbitControl) p5.orbitControl();
 
         p5.push();
 
