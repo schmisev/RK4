@@ -23,7 +23,7 @@ k1.hinlegen()
 
 Kurz und knackig.
 
-Probiere den Code doch mal in dieser kleinen Welt aus: <a href="/?task=wiki_Methoden_1" target="_blank">Kleine Welt</a>. Aber pass auf, denn Programmiersprachen funktionieren ein bisschen anders als Deutsch oder Englisch:
+Probiere den Code doch mal in dieser kleinen Welt aus: <a href="./?task=wiki_Methoden_1" target="_blank">Kleine Welt</a>. Aber pass auf, denn Programmiersprachen funktionieren ein bisschen anders als Deutsch oder Englisch:
 
 > [!WARNING]
 > Computer akzeptieren keine Tippfehler und können auch nicht erraten, "was du gemeint hast".
