@@ -53,7 +53,7 @@ async function loadPage(pageName: string) {
 function declareMapNode(name: string, content: string, triggerLoad: boolean, connectTo: string[] = [], lb = "(", rb = ")", cls?: string) {
   let emoji = triggerLoad ? !(name in wikiPages) ? "#nbsp;fa:fa-triangle-exclamation" : "#nbsp;fa:fa-arrow-pointer" : "";
 
-  let str = `${name}${lb}` + '"`#nbsp;#nbsp;' + `${content} ${emoji}` + '#nbsp;#nbsp;`"' + `${rb}`;
+  let str = `${name}${lb}` + '"`#nbsp;' + `${content} ${emoji}` + '#nbsp;`"' + `${rb}`;
   if (cls) str += ":::" + cls;
   for (let conn of connectTo) {
     str += `\n${name} --> ${conn}`;
@@ -74,7 +74,7 @@ const declMapCall = (name: string, content: string, triggerLoad: boolean, connec
 const declMapCon = (name: string, content: string, triggerLoad: boolean, connectTo: string[] = []) => 
   declareMapNode(name, content, triggerLoad, connectTo, "((", "))", "flow-con");
 const declMapProc = (name: string, content: string, triggerLoad: boolean, connectTo: string[] = []) => 
-  declareMapNode(name, content, triggerLoad, connectTo, "[", "]", "flow-proc");
+  declareMapNode(name, content, triggerLoad, connectTo, "(", ")", "flow-proc");
 const declMapDec = (name: string, content: string, triggerLoad: boolean, connectTo: string[] = []) => 
   declareMapNode(name, content, triggerLoad, connectTo, "{{", "}}", "flow-dec");
 const declMapCtrl = (name: string, content: string, triggerLoad: boolean, connectTo: string[] = []) => 
@@ -86,14 +86,22 @@ mermaid.initialize({ startOnLoad: true, securityLevel: 'loose' });
 export function showMap() {
   const flowchartView = document.getElementById("map-flowchart")!;
   flowchartView.innerHTML = `flowchart TD
-  ${declMapTerm("beginning", "Auf gehts!", true, ["robots", "world"])}
+  ${declMapTerm("beginning", "Auf gehts!", true, ["robots"])}
 
   ${declMapDec("robots", "Der Roboter", false, ["methods"])}
   ${declMapCall("methods", "Fähigkeiten", true, ["attributes"])}
   ${declMapCall("attributes", "Eigenschaften", true, ["conditions"])}
-  ${declMapCall("conditions", "Sinne", true, [])}
+  ${declMapCall("conditions", "Sinne", true, ["world", "control"])}
 
-  ${declMapDec("world", "Die Welt", true, [])}
+  ${declMapDec("control", "Kontrollstrukturen", false, ["for", "ifelse"])}
+  ${declMapCall("for", "Wiederholung mit fester Anzahl", true, ["while"])}
+  ${declMapCall("while", "Bedingte Wiederholungen", true, ["repeats"])}
+  ${declMapCall("repeats", "Mehr Wiederholungen", true, [])}
+
+  ${declMapCall("ifelse", "Wenn, dann, sonst", true, ["switch"])}
+  ${declMapCall("switch", "Fallunterschiedung", true, [])}
+
+  ${declMapTerm("world", "Die Welt", true, [])}
   `;
   flowchartView.removeAttribute("data-processed")
   mermaid.contentLoaded();
