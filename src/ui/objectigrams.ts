@@ -20,7 +20,7 @@ export function addRobotButtons(div: HTMLElement, overlay: HTMLElement, world: W
             }
         };
 
-        el.innerHTML = `🤖 ${r.name}`;
+        el.innerHTML = `<i class="fa-solid fa-robot"></i>&nbsp;${r.name}`;
         div.appendChild(el);
     }
 }

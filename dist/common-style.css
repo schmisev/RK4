@@ -11,6 +11,14 @@
     font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
 }
 
+.fa-solid {
+    padding: 0 2px;
+}
+
+.fa-regular {
+    padding: 0 2px;
+}
+
 /* general */
 html {
     margin: 0;
@@ -117,6 +125,17 @@ input[type="checkbox"] {
 .slr {
     background-color: salmon;
     border-radius: 5px;
+}
+
+.bar {
+    display: inline-flex;
+    flex-flow: row nowrap;
+    align-items: center;
+}
+
+.little-icon {
+    vertical-align: middle;
+    width: 25px;
 }
 
 .text {
@@ -278,6 +297,18 @@ input[type="checkbox"] {
 
 .turning:hover {
     transform: rotate(90deg);
+}
+
+.bumping {
+    transform: translateY(0px);
+    transition: transform 0.2s;
+    pointer-events: all;
+    position: relative;
+    display: inline-block;
+}
+
+.bumping:hover {
+    transform: translateY(4px);
 }
 
 /*helper on hover*/
@@ -534,6 +565,7 @@ code {
 }
 
 .object-button {
+    height: 28px;
     position: relative;
     overflow: visible;
     margin-top: 5px;
@@ -610,4 +642,8 @@ code {
 
 .special-2 {
     background-color: #cf9fff;
+}
+
+.yellow {
+    background-color: #fada5e;
 }

@@ -36,6 +36,12 @@
   float: right;
 }
 
+.markdown .img-black {
+  background-color: black;
+  margin: 10px;
+  border-radius: 5px;
+}
+
 .markdown-alert {
   background-color: whitesmoke;
   border-radius: 5px;

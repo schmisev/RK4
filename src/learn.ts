@@ -1,8 +1,10 @@
 // importing wiki docs
-import roadmap from "./wiki/roadmap.md";
-import todo from "./wiki/todo.md";
-import beginning from "./wiki/beginning.md";
-import methods from "./wiki/methods.md";
+import docRoadmap from "./wiki/roadmap.md";
+import docTodo from "./wiki/todo.md";
+import docBeginning from "./wiki/beginning.md";
+import docMethods from "./wiki/methods.md";
+import docError404 from "./wiki/404.md";
+import docWorld from "./wiki/world.md";
 
 // regular imports
 import { marked } from "marked";
@@ -10,10 +12,12 @@ import mermaid from "mermaid"
 import markedAlert, {Options as MarkedAlertOptions} from "marked-alert";
 
 const wikiPages: Record<string, string> = {
-  roadmap,
-  todo,
-  beginning,
-  methods,
+  roadmap: docRoadmap,
+  todo: docTodo,
+  beginning: docBeginning,
+  methods: docMethods,
+  error404: docError404,
+  world: docWorld
 }
 
 const START_PAGE: string = "beginning";
@@ -31,14 +35,50 @@ async function setPageFromQuery() {
 }
 
 async function loadPage(pageName: string) {
-  await showPage(wikiPages[pageName]);
   const urlParams = new URLSearchParams(window.location.search);
-  urlParams.set('load', pageName);
+
+  if (pageName in wikiPages) {
+    await showPage(wikiPages[pageName]);
+    urlParams.set('load', pageName);
+  }
+  else {
+    await showPage(wikiPages["error404"]);
+    urlParams.set('load', "error404");
+  }
+
   history.pushState(null, "", document.location.pathname + "?" + urlParams.toString());
 }
 
-// window manipulation
-(window as any).loadPage = loadPage;
+// nodes
+function declareMapNode(name: string, content: string, triggerLoad: boolean, connectTo: string[] = [], lb = "(", rb = ")", cls?: string) {
+  let emoji = triggerLoad ? !(name in wikiPages) ? "#nbsp;fa:fa-triangle-exclamation" : "#nbsp;fa:fa-arrow-pointer" : "";
+
+  let str = `${name}${lb}` + '"`#nbsp;#nbsp;' + `${content} ${emoji}` + '#nbsp;#nbsp;`"' + `${rb}`;
+  if (cls) str += ":::" + cls;
+  for (let conn of connectTo) {
+    str += `\n${name} --> ${conn}`;
+  }
+  if (triggerLoad) {
+    str += `\nclick ${name} call loadPage("${name}")`
+  }
+  str += "\n";
+  return str;
+}
+
+const declMapTerm = (name: string, content: string, triggerLoad: boolean, connectTo: string[] = []) => 
+  declareMapNode(name, content, triggerLoad, connectTo, "([", "])", "flow-term");
+const declMapIO = (name: string, content: string, triggerLoad: boolean, connectTo: string[] = []) => 
+  declareMapNode(name, content, triggerLoad, connectTo, "[/", "/]", "flow-io");
+const declMapCall = (name: string, content: string, triggerLoad: boolean, connectTo: string[] = []) => 
+  declareMapNode(name, content, triggerLoad, connectTo, "[[", "]]", "flow-call");
+const declMapCon = (name: string, content: string, triggerLoad: boolean, connectTo: string[] = []) => 
+  declareMapNode(name, content, triggerLoad, connectTo, "((", "))", "flow-con");
+const declMapProc = (name: string, content: string, triggerLoad: boolean, connectTo: string[] = []) => 
+  declareMapNode(name, content, triggerLoad, connectTo, "[", "]", "flow-proc");
+const declMapDec = (name: string, content: string, triggerLoad: boolean, connectTo: string[] = []) => 
+  declareMapNode(name, content, triggerLoad, connectTo, "{{", "}}", "flow-dec");
+const declMapCtrl = (name: string, content: string, triggerLoad: boolean, connectTo: string[] = []) => 
+  declareMapNode(name, content, triggerLoad, connectTo, "(", ")", "flow-ctrl");
 
 // functionality
 mermaid.initialize({ startOnLoad: true, securityLevel: 'loose' });
@@ -46,13 +86,14 @@ mermaid.initialize({ startOnLoad: true, securityLevel: 'loose' });
 export function showMap() {
   const flowchartView = document.getElementById("map-flowchart")!;
   flowchartView.innerHTML = `flowchart TD
-  beginning([Auf gehts!]):::flow-term
-  click beginning call loadPage("beginning")
-  beginning --> _robots{{Die Roboter}}:::flow-dec
-  _robots --> methods(Methoden )
-  click methods call loadPage("methods")
-  _under_construction[Das Wiki ist noch im Aufbau!]
-  _under_construction ~~~ beginning
+  ${declMapTerm("beginning", "Auf gehts!", true, ["robots", "world"])}
+
+  ${declMapDec("robots", "Der Roboter", false, ["methods"])}
+  ${declMapCall("methods", "Fähigkeiten", true, ["attributes"])}
+  ${declMapCall("attributes", "Eigenschaften", true, ["conditions"])}
+  ${declMapCall("conditions", "Sinne", true, [])}
+
+  ${declMapDec("world", "Die Welt", true, [])}
   `;
   flowchartView.removeAttribute("data-processed")
   mermaid.contentLoaded();

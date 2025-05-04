@@ -9,10 +9,19 @@ const panel = document.getElementById("left-panel")!;
 const debugPanel = document.getElementById("right-panel")!;
 let isHandlerDragging = false;
 
+
 function startDrag(e: PointerEvent) {
   if (e.target) {
     (e.target as Element).setPointerCapture(e.pointerId);
     isHandlerDragging = true;
+
+    if (window.getSelection) {
+      if (window.getSelection()?.empty) {  // Chrome
+        window.getSelection()?.empty();
+      } else if (window.getSelection()?.removeAllRanges) {  // Firefox
+        window.getSelection()?.removeAllRanges();
+      }
+    }
   }
 }
 
