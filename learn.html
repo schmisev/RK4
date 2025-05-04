@@ -16,6 +16,8 @@
         <link rel="stylesheet" type="text/css" href="robot-view-style.css" />
         <link rel="stylesheet" type="text/css" href="markdown.css" />
 
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
+
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
@@ -41,13 +43,13 @@
     <body class="roboto">
         <div id="grid-container">
             <div class="lc30 wsr text" id="title-bar">
-                🤖 RK4&nbsp;&nbsp;<div class="version-label">BETA</div>&nbsp;&nbsp;|&nbsp;Wiki&nbsp;|&nbsp;<a id="link-to-editor" style="cursor: pointer;" href="./">zurück zum Editor</a>
+                <img class="little-icon" src="images/p1_outline.png">&nbsp;RK4&nbsp;&nbsp;<div class="version-label">BETA</div>&nbsp;&nbsp;|&nbsp;Wiki&nbsp;|&nbsp;<a id="link-to-editor" style="cursor: pointer;" href="./">zurück zum Editor</a>
             </div>
-            <div class="lc30 wsr text" id="map-title">🗺️ Lernkarte</div>
+            <div class="lc30 wsr text" id="map-title"><i class="fa-solid fa-map-pin"></i> Lernkarte</div>
             <div id="map-diagram-canvas" class="wsr">
                 <div class="mermaid" id="map-flowchart"></div>
             </div>
-            <div class="lc30 wsr text" id="doc-title">📃 Wiki</div>
+            <div class="lc30 wsr text" id="doc-title"><i class="fa-solid fa-paperclip"></i> Wiki</div>
             <div id="doc-page" class="markdown"></div>
             <!-- credits -->
             <div class="wsr lc30 text" id="credits-bar">

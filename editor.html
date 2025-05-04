@@ -14,6 +14,8 @@
         <link rel="stylesheet" type="text/css" href="obj-style.css" />
         <link rel="stylesheet" type="text/css" href="robot-view-style.css" />
 
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
+
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
@@ -39,10 +41,10 @@
     <body class="roboto">
         <div id="grid-container">
             <div class="lc30 wsr text" id="title-bar">
-                🤖 RK4&nbsp;&nbsp;<div class="version-label">BETA</div>&nbsp;&nbsp;|&nbsp;Welteditor&nbsp;|&nbsp;<a id="link-to-editor" style="cursor: pointer;">zurück zum Editor</a>
+                <img class="little-icon" src="images/p1_outline.png"> RK4&nbsp;&nbsp;<div class="version-label">BETA</div>&nbsp;&nbsp;|&nbsp;Welteditor&nbsp;|&nbsp;<a id="link-to-editor" style="cursor: pointer;">zurück zum Editor</a>
             </div>
             <!-- Code editor UI -->
-            <div class="lc30 wsr text" id="code-title">🗺️ Welteditor</div>
+            <div class="lc30 wsr text" id="code-title"><i class="fa-solid fa-map-location-dot"></i> Welteditor</div>
             <select
                 title="Welten müssen mit einem sinnvollen Namen gespeichert werden, siehe rechts."
                 class="text"
@@ -56,20 +58,22 @@
                     title="Lösche Welt aus dem Speicher"
                     id="delete-from-store"
                 >
-                    🗑️
+                    <i class="fa-solid fa-trash-can"></i>
                 </button>
                 <button
                     title="Lege die Welt in den Speicher oder überschreibe aktuellen Speicherstand."
                     id="store-task"
                 >
-                    💾
+                    <i class="fa-solid fa-floppy-disk"></i>
                 </button>
             </div>
             <div id="index-container" class="capsule">
                 <button title="Vorherige Teilaufgabe." id="prev-index">
-                    ⬅️
+                    <i class="fa-solid fa-arrow-left"></i>
                 </button>
-                <button title="Nächste Teilaufgabe." id="next-index">➡️</button>
+                <button title="Nächste Teilaufgabe." id="next-index">
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
             </div>
             <div id="reload-container" class="capsule">
                 <button
@@ -80,7 +84,7 @@
                     0
                 </button>
                 <button title="Lade die Welt erneut." id="reload-button">
-                    🔄️
+                    <i class="fa-solid fa-rotate"></i>
                 </button>
             </div>
             <!-- Save / load UI -->
@@ -89,10 +93,10 @@
                     title="Speicher aktuelle Welt in einer .json-Datei und lade sie herunter."
                     id="save-world"
                 >
-                    ⬇️
+                    <i class="fa-solid fa-download"></i>
                 </button>
                 <button title="Lade eine Welt (.json) vom PC." id="load-world">
-                    📂
+                    <i class="fa-regular fa-folder-open"></i>
                 </button>
             </div>
             <div id="task-title" class="lc30 wsr text">Aufgabentitel</div>
@@ -101,7 +105,7 @@
             </button>
             <!-- World editor -->
             <div id="world-edit-bar" class="wsr lc30 text edit-bar">
-                🖌️
+                <i class="fa-solid fa-paintbrush"></i>
                 <input
                     title="Rechts-klicke Felder, um diesen Text hineinzukopieren."
                     placeholder=""
@@ -109,22 +113,22 @@
                     class="paint-edit"
                     value="_:_"
                 />
-                <button title="Roboter" id="quick-robot" class="toggle-button">🤖</button>
-                <button title="Wand" id="quick-wall" class="toggle-button">🚧</button>
-                <button title="Leer halten!" id="quick-empty" class="toggle-button">⚪</button>
-                <button title="Block setzen!" id="quick-block" class="toggle-button">🧱</button>
-                <button title="Marke setzen!" id="quick-marker" class="toggle-button">🏷️</button>
+                <button title="Roboter" id="quick-robot" class="toggle-button"><i class="fa-solid fa-robot"></i></button>
+                <button title="Wand" id="quick-wall" class="toggle-button"><i class="fa-solid fa-cube"></i></button>
+                <button title="Leer halten!" id="quick-empty" class="toggle-button"><i class="fa-regular fa-square-minus"></i></button>
+                <button title="Block setzen!" id="quick-block" class="toggle-button"><i class="fa-solid fa-cubes"></i></button>
+                <button title="Marke setzen!" id="quick-marker" class="toggle-button"><i class="fa-solid fa-layer-group"></i></button>
             </div>
             <div class="lc30 text" id="world-helper">
                 <span class="hover-helper"
-                    ><span class="turning">*️⃣</span>
+                    ><span class="bumping"><i class="fa-solid fa-circle-info"></i></span>
                     <div class="tooltip" style="text-align: right">
                         <div style="display: flex; flex-flow: row nowrap; gap: 15px;">
                             <div style="text-align: left;" >
                                 Roboter einfügen (Richtung): <code>NSEW</code><br />
                                 Roboter einfügen (Nummer): <code>1-9</code><br />
-                                <span class="text-shadow">🎲</span> Roboter in zufälliger Richtung einfügen: <code>X</code><br />
-                                <span class="text-shadow">🎲</span> Roboter an zufälliger Stelle einfügen: <code>@</code><br />
+                                <span class="text-shadow"><i class="fa-solid fa-dice"></i></span> Roboter in zufälliger Richtung einfügen: <code>X</code><br />
+                                <span class="text-shadow"><i class="fa-solid fa-dice"></i></span> Roboter an zufälliger Stelle einfügen: <code>@</code><br />
                                 <div class="struct-dot"></div>
                                 Leeres Feld initialisieren: <code>_</code><br />
                                 Ziel festlegen: <span><code>:</code></span
@@ -137,23 +141,23 @@
                                 <span class="keystroke">▸</span>
                                 <span class="keystroke">▾</span>
                                 <div class="struct-dot"></div>
-                                Rechts-Klick Kopiert den <span class="text-shadow">🖌️</span>-Wert.
+                                Rechts-Klick Kopiert den <span class="text-shadow"><i class="fa-solid fa-paintbrush"></i></span>-Wert.
                             </div>
                             <div style="text-align: left" >
                                 Ziegel einfügen (Farbe): <code>rgby</code><br />
-                                <span class="text-shadow">🎲</span> Ein Ziegel zufälliger Farbe: <code>c</code><br />
-                                <span class="text-shadow">🎲</span> 1 oder 0 rote Ziegel: <code>.</code><br />
-                                <span class="text-shadow">🎲</span> 0 oder mehr rote Ziegel: <code>*</code><br />
-                                <span class="text-shadow">🎲</span> 1 oder mehr rote Ziegel: <code>+</code><br />
-                                <span class="text-shadow">🎲</span> Einen zufälligen Ziegel entfernen: <code>-</code><br />
-                                <span class="text-shadow">✳️</span> Mit roten Ziegeln füllen: <code>f</code><br />
-                                <span class="text-shadow">✳️</span> Explizit KEINEN Ziegel einfügen: <code>~</code><br />
+                                <span class="text-shadow"><i class="fa-solid fa-dice"></i></span> Ein Ziegel zufälliger Farbe: <code>c</code><br />
+                                <span class="text-shadow"><i class="fa-solid fa-dice"></i></span> 1 oder 0 rote Ziegel: <code>.</code><br />
+                                <span class="text-shadow"><i class="fa-solid fa-dice"></i></span> 0 oder mehr rote Ziegel: <code>*</code><br />
+                                <span class="text-shadow"><i class="fa-solid fa-dice"></i></span> 1 oder mehr rote Ziegel: <code>+</code><br />
+                                <span class="text-shadow"><i class="fa-solid fa-dice"></i></span> Einen zufälligen Ziegel entfernen: <code>-</code><br />
+                                <span class="text-shadow"><i class="fa-solid fa-wand-magic-sparkles"></i></span> Mit roten Ziegeln füllen: <code>f</code><br />
+                                <span class="text-shadow"><i class="fa-solid fa-wand-magic-sparkles"></i></span> Explizit KEINEN Ziegel einfügen: <code>~</code><br />
                                 <div class="struct-dot"></div>
                                 Marke einfügen (Farbe): <code>RGBY</code><br />
-                                <span class="text-shadow">🎲</span> Setze Marke zufälliger Farbe: <code>C</code><br />
-                                <span class="text-shadow">🎲</span> 1 oder keine gelbe Marke: <code>?</code><br />
-                                <span class="text-shadow">✳️</span> Gegenteil der aktuellen Marke: <code>!</code><br />
-                                <span class="text-shadow">✳️</span> Explizit KEINE Marke einfügen: <code>/</code><br />
+                                <span class="text-shadow"><i class="fa-solid fa-dice"></i></span> Setze Marke zufälliger Farbe: <code>C</code><br />
+                                <span class="text-shadow"><i class="fa-solid fa-dice"></i></span> 1 oder keine gelbe Marke: <code>?</code><br />
+                                <span class="text-shadow"><i class="fa-solid fa-wand-magic-sparkles"></i></span> Gegenteil der aktuellen Marke: <code>!</code><br />
+                                <span class="text-shadow"><i class="fa-solid fa-wand-magic-sparkles"></i></span> Explizit KEINE Marke einfügen: <code>/</code><br />
                             </div>
                         </div>
                     </div>
