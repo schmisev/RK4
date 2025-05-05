@@ -19,7 +19,7 @@ module.exports = {
             },
             {
                 test: /\.md$/i,
-                use: 'raw-loader',
+                type: 'asset/source',
             }
         ],
     },

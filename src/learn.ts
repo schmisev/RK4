@@ -1,24 +1,17 @@
 // importing wiki docs
-import docRoadmap from "./wiki/roadmap.md";
-import docTodo from "./wiki/todo.md";
-import docBeginning from "./wiki/beginning.md";
-import docMethods from "./wiki/methods.md";
-import docError404 from "./wiki/404.md";
-import docWorld from "./wiki/world.md";
+const wikiPages: Record<string, string> = {}
+const rawFiles = require.context('./wiki', false, /\.md$/);
+
+for (const fileName of rawFiles.keys()) {
+  let pureFileName = fileName.slice(2, fileName.length - 3);
+  wikiPages[pureFileName] = rawFiles(fileName);
+}
+
 
 // regular imports
 import { marked } from "marked";
 import mermaid from "mermaid"
 import markedAlert, {Options as MarkedAlertOptions} from "marked-alert";
-
-const wikiPages: Record<string, string> = {
-  roadmap: docRoadmap,
-  todo: docTodo,
-  beginning: docBeginning,
-  methods: docMethods,
-  error404: docError404,
-  world: docWorld
-}
 
 const START_PAGE: string = "beginning";
 
@@ -42,8 +35,8 @@ async function loadPage(pageName: string) {
     urlParams.set('load', pageName);
   }
   else {
-    await showPage(wikiPages["error404"]);
-    urlParams.set('load', "error404");
+    await showPage(wikiPages["404"]);
+    urlParams.set('load', "404");
   }
 
   history.pushState(null, "", document.location.pathname + "?" + urlParams.toString());
