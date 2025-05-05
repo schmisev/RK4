@@ -56,9 +56,9 @@ export const ENV = {
     "world": {
         "cls": "Welt",
         "attr": {
-            LENGTH: "L",
-            HEIGHT: "H",
-            WIDTH: "B",
+            LENGTH: "l",
+            HEIGHT: "h",
+            WIDTH: "b",
         },
         "mth": {
             IS_GOAL_REACHED : "fertig",
