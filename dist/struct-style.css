@@ -46,6 +46,8 @@
     min-width: 250px;
     box-shadow: 3px 3px 5px 1px rgba(100, 100, 100, .2);
     transition: background-color 0.2s;
+
+    margin-bottom: 10px;
 }
 
 .struct-program.method:hover {
@@ -67,6 +69,7 @@
     outline: 2px black solid;
     outline-offset: -1px;
     width: max-content;
+    margin-bottom: 10px;
 }
 
 .struct-box {
