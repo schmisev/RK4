@@ -10,6 +10,7 @@ import {
     MK_FLOAT,
     MK_STRING,
     MethodVal,
+    NativeGetterVal,
     NativeMethodVal,
     NumberLikeVal,
     ObjectVal,
@@ -390,9 +391,9 @@ export class BoundDynamicScope implements StaticScope {
 }
 
 export class ClassPrototype {
-    private _methods: Map<string, MethodVal | NativeMethodVal> = new Map();
+    private _methods: Map<string, MethodVal | NativeMethodVal | NativeGetterVal> = new Map();
 
-    public declareMethod(name: string, method: MethodVal | NativeMethodVal) {
+    public declareMethod(name: string, method: MethodVal | NativeMethodVal | NativeGetterVal) {
         if (this._methods.has(name))
             throw new RuntimeError(`Die Methode '${name}' existiert schon!`);
         this._methods.set(name, method);
@@ -443,16 +444,14 @@ export class ClassPrototype {
                                 receiver
                             ),
                         };
+                    else if (method.type === ValueAlias.NativeGetter)
+                        return method.call.bind(receiver)(); // return underlying value
                     else if (method.type === ValueAlias.NativeMethod)
-                        if (method.isGetter) {
-                            return method.call.bind(receiver)([]); // immediatly execute
-                        } else {
-                            return {
-                                type: ValueAlias.NativeFunction,
-                                name: method.name,
-                                call: method.call.bind(receiver),
-                            };
-                        }
+                        return {
+                            type: ValueAlias.NativeFunction,
+                            name: method.name,
+                            call: method.call.bind(receiver),
+                        };
                     // unreachable!
                     return method satisfies never;
                 },

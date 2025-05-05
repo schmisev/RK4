@@ -12,6 +12,7 @@ export const enum ValueAlias {
     List = "Liste",
     NativeFunction = "NativeFunktion",
     NativeMethod = "NativeMethode",
+    NativeGetter = "NativeZugriffsmethode",
     Function = "Funktion",
     Method = "Methode",
     Class = "Klasse",
@@ -73,12 +74,18 @@ export interface NativeFunctionVal {
 }
 
 export type MethodCall = (this: ObjectVal, args: RuntimeVal[]) => RuntimeVal;
+export type GetterCall = (this: ObjectVal) => RuntimeVal;
 
 export interface NativeMethodVal {
     type: ValueAlias.NativeMethod;
     name: string;
     call: MethodCall;
-    isGetter: boolean;
+}
+
+export interface NativeGetterVal {
+    type: ValueAlias.NativeGetter;
+    name: string;
+    call: GetterCall;
 }
 
 export interface FunctionVal {
@@ -144,8 +151,12 @@ export function MK_NATIVE_FN(name: string, call: FunctionCall) {
     return { type: ValueAlias.NativeFunction, name, call } satisfies NativeFunctionVal;
 }
 
-export function MK_NATIVE_METHOD(name: string, call: MethodCall, isGetter: boolean) {
-    return { type: ValueAlias.NativeMethod, name, call, isGetter } satisfies NativeMethodVal;
+export function MK_NATIVE_METHOD(name: string, call: MethodCall) {
+    return { type: ValueAlias.NativeMethod, name, call } satisfies NativeMethodVal;
+}
+
+export function MK_NATIVE_GETTER(name: string, call: GetterCall) {
+    return { type: ValueAlias.NativeGetter, name, call } satisfies NativeGetterVal;
 }
 
 export function MK_NUMBER(n = 0) {
