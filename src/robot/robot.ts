@@ -69,10 +69,16 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
         prototype.declareMethod(name, MK_NATIVE_METHOD(name, function (args) {
             downcastRoboter(this);
             return m(this.r, args);
-        }))
+        }, false))
+    }
+    function mkRobotAttribute(name: string, m: (r: Robot, args: RuntimeVal[]) => RuntimeVal) {
+        prototype.declareMethod(name, MK_NATIVE_METHOD(name, function (args) {
+            downcastRoboter(this);
+            return m(this.r, args);
+        }, true /* THIS IS A GETTER! */))
     }
 
-    mkRobotMethod(
+    mkRobotAttribute(
         ENV.robot.mth.GET_X,
         (r, args) => {
             if (args.length != 0)
@@ -81,7 +87,7 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
         }
     );
 
-    mkRobotMethod(
+    mkRobotAttribute(
         ENV.robot.mth.GET_Y,
         (r, args) => {
             if (args.length != 0)
@@ -90,7 +96,7 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
         }
     );
 
-    mkRobotMethod(
+    mkRobotAttribute(
         ENV.robot.mth.GET_DIR,
         (r, args) => {
             if (args.length != 0)

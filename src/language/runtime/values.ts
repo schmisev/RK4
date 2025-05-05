@@ -78,6 +78,7 @@ export interface NativeMethodVal {
     type: ValueAlias.NativeMethod;
     name: string;
     call: MethodCall;
+    isGetter: boolean;
 }
 
 export interface FunctionVal {
@@ -143,8 +144,8 @@ export function MK_NATIVE_FN(name: string, call: FunctionCall) {
     return { type: ValueAlias.NativeFunction, name, call } satisfies NativeFunctionVal;
 }
 
-export function MK_NATIVE_METHOD(name: string, call: MethodCall) {
-    return { type: ValueAlias.NativeMethod, name, call } satisfies NativeMethodVal;
+export function MK_NATIVE_METHOD(name: string, call: MethodCall, isGetter: boolean) {
+    return { type: ValueAlias.NativeMethod, name, call, isGetter } satisfies NativeMethodVal;
 }
 
 export function MK_NUMBER(n = 0) {

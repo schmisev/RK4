@@ -444,11 +444,15 @@ export class ClassPrototype {
                             ),
                         };
                     else if (method.type === ValueAlias.NativeMethod)
-                        return {
-                            type: ValueAlias.NativeFunction,
-                            name: method.name,
-                            call: method.call.bind(receiver),
-                        };
+                        if (method.isGetter) {
+                            return method.call.bind(receiver)([]); // immediatly execute
+                        } else {
+                            return {
+                                type: ValueAlias.NativeFunction,
+                                name: method.name,
+                                call: method.call.bind(receiver),
+                            };
+                        }
                     // unreachable!
                     return method satisfies never;
                 },

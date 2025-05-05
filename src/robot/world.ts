@@ -83,7 +83,7 @@ export function declareWorldClass(env: GlobalEnvironment): BuiltinClassVal {
         prototype.declareMethod(name, MK_NATIVE_METHOD(name, function (args) {
             downcastWorld(this);
             return m(this.w, args);
-        }))
+        }, false))
     }
 
     mkWorldMethod(
