@@ -7,7 +7,8 @@ module.exports = {
     mode: "development",
     entry: {
         main: './src/index.ts',
-        editor: '/src/editor.ts'
+        editor: '/src/editor.ts',
+        learn: '/src/learn.ts'
     },
     module: {
         rules: [
@@ -16,6 +17,10 @@ module.exports = {
                 use: 'ts-loader',
                 exclude: /node_modules/,
             },
+            {
+                test: /\.md$/i,
+                type: 'asset/source',
+            }
         ],
     },
     resolve: {

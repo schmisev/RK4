@@ -270,9 +270,11 @@ function robotSketch(p5: p5) {
         }
 
         canvasDiv.style.touchAction = "none";
-        canvasDiv.onpointerdown = startOrbit;
-        canvasDiv.onpointerup = endOrbit;
-        canvasDiv.onpointercancel = endOrbit;
+        // canvasDiv.onpointerdown = startOrbit;
+        // canvasDiv.onpointerup = endOrbit;
+        // canvasDiv.onpointercancel = endOrbit;
+        // canvasDiv.onscroll = startOrbit;
+        // canvasDiv.onscrollend = endOrbit;
 
         // attach p5 to canvas div
         cvs.parent("robot-canvas");

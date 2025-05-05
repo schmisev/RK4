@@ -11,6 +11,8 @@
     <link rel="stylesheet" type="text/css" href="flow-style.css">
     <link rel="stylesheet" type="text/css" href="robot-view-style.css">
 
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
@@ -26,19 +28,25 @@
         <div id="left-panel">
             <div id="grid-container-left">
                 <div class="lc30 wsr text" id="title-bar">
-                    🤖 RK4&nbsp;&nbsp;<div class="version-label">BETA</div>&nbsp;&nbsp;| <a href="https://github.com/schmisev/RK4">RKBasic</a>, <a href="./#/std_Mehrere_3x">mehrere Roboter</a> und <a href="./editor.html">Welteditor</a> |
+                    <img class="little-icon" src="images/p1_outline.png">&nbsp;<span>RK4&nbsp;&nbsp;<div class="version-label">BETA</div>&nbsp;&nbsp;| <a href="https://github.com/schmisev/RK4">RKBasic</a>, <a href="./?task=std_Mehrere_3x">mehrere Roboter</a> und <a href="./editor.html">Welteditor</a> |
                     <button id="fold-debug" class="toggle-button" title="Zeig/verberge Debug-Bereich">&lt;-&gt;</button>
-                    | <button id="thought-toggle" class="emoji-button xcheck" title="Aktiviere/deaktiviere Roboter-Gedanken">💭</button>
-                    <button id="animation-toggle" class="emoji-button xcheck" title="Aktiviere/deaktiviere Roboter-Animationen">🏃‍♂️</button>
-                    <button id="ortho-toggle" class="emoji-button xcheck" title="Aktiviere/deaktiviere Ortho-Modus!">📐</button>
+                    | <button id="thought-toggle" class="emoji-button xcheck" title="Aktiviere/deaktiviere Roboter-Gedanken">
+                        <i class="fa-solid fa-cloud"></i>
+                    </button>
+                    <button id="animation-toggle" class="emoji-button xcheck" title="Aktiviere/deaktiviere Roboter-Animationen">
+                        <i class="fa-solid fa-person-running"></i>
+                    </button>
+                    <button id="ortho-toggle" class="emoji-button xcheck" title="Aktiviere/deaktiviere Ortho-Modus!">
+                        <i class="fa-solid fa-video"></i>
+                    </button>
                     <span class="roboto" style="float: right;">
                         Zieh mich! ▸
                     </span>
                 </div>
                 <!-- Code editor UI -->
-                <div class="lc30 wsr text" id="code-title">💻 Code-Editor</div>
+                <div class="lc30 wsr text" id="code-title"><i class="fa-solid fa-laptop-code"></i> Code-Editor</div>
                 <div class="lc30 text" id="code-helper">
-                    <span class="hover-helper"><span class="turning">*️⃣</span>
+                    <span class="hover-helper"><span class="bumping"><i class="fa-solid fa-circle-info"></i></span>
                         <div class="tooltip" style="text-align: right;">
                         Speichern:&nbsp;&nbsp;<span class="keystroke">Strg</span> + <span class="keystroke">S</span><br>
                         Rückgängig:&nbsp;&nbsp;<span class="keystroke">Strg</span> + <span class="keystroke">Z</span><br>
@@ -65,10 +73,10 @@
                 </div>
                 <div id="run-container" class="capsule">
                     <button title="Lade die Welt neu und starte die Ausführung!" class="roboto" id="code-start">
-                        <span class="material-symbols-outlined">play_arrow</span>
+                        <i class="fa-solid fa-play"></i>
                     </button>
                     <button title="Beende die Ausführung und lade die Welt neu!" class="roboto" id="code-stop">
-                        <span class="material-symbols-outlined">stop</span>
+                        <i class="fa-solid fa-stop"></i>
                     </button>
                 </div>
                 <div class="editor cascadia" id="code-editor">Code</div>
@@ -77,25 +85,25 @@
                     <option>(neu)</option>
                 </select>
                 <div id="zoom-container" class="capsule">
-                    <button id="zoom-editor-decrease" title="Verkleinere die Schriftgröße im Editor">➖</button>
-                    <button id="zoom-editor" title="Vergrößere die Schriftgröße im Editor">➕</button>
+                    <button id="zoom-editor-decrease" title="Verkleinere die Schriftgröße im Editor"><i class="fa-solid fa-minus"></i></button>
+                    <button id="zoom-editor" title="Vergrößere die Schriftgröße im Editor"><i class="fa-solid fa-plus"></i></button>
                 </div>
                 <div id="store-container" class="capsule">
-                    <button title="Lösche Code aus dem Speicher" id="delete-from-store">🗑️</button>
-                    <button title="Lege Code in den Speicher oder überschreibe aktuellen Speicherstand." id="store-code">💾</button>
+                    <button title="Lösche Code aus dem Speicher" id="delete-from-store"><i class="fa-solid fa-trash-can"></i></button>
+                    <button title="Lege Code in den Speicher oder überschreibe aktuellen Speicherstand." id="store-code"><i class="fa-solid fa-floppy-disk"></i></button>
                 </div>
                 <!-- Preload / library UI -->
                 <button class="tab-button" id="preload-title">📖 Bibliothek</button>
                 <div class="editor cascadia" id="preload-editor" style="visibility: hidden;">Preload</div>
                 <!-- Save / load UI -->
                 <div id="save-container" class="capsule">
-                    <button title="Speicher aktuellen Code in einer .rk-Datei und lade sie herunter." id="save-code">⬇️</button>
-                    <button title="Lade Code (.rk), Welt (.csv) oder Aufgabe (.json) vom PC." id="load-code">📂</button>
+                    <button title="Speicher aktuellen Code in einer .rk-Datei und lade sie herunter." id="save-code"><i class="fa-solid fa-download"></i></button>
+                    <button title="Lade Code (.rk), Welt (.csv) oder Aufgabe (.json) vom PC." id="load-code"><i class="fa-regular fa-folder-open"></i></button>
                 </div>
                 <select title="Wähle eine Aufgabe" class="text" id="load-task">
                     <option selected disabled>Wähle eine Aufgabe</option>
                 </select>
-                <button id="robot-screenshot" title="Screenshot der Roboteransicht">🖼️</button>
+                <button id="robot-screenshot" title="Screenshot der Roboteransicht"><i class="fa-solid fa-camera"></i></button>
                 <!-- 3D Robot view & associated UI -->
                 <div id="robot-canvas" class="robot-canvas"></div>
                 <div id="object-bar"></div>
@@ -136,10 +144,10 @@
         </div>
         <div class="handler" id="panel-handler"></div>
         <div id="right-panel">
-            <div class="wsr lc30 text" id="debug-title">🐞 Debug 
+            <div class="wsr lc30 text" id="debug-title"><i class="fa-solid fa-bug"></i> Debug 
                 <span id="debug-timer">😶‍🌫️</span>
                 <span class="lc30 text" id="debug-helper">
-                    <span class="hover-helper"><span class="turning">*️⃣</span>
+                    <span class="hover-helper"><span class="bumping"><i class="fa-solid fa-circle-info"></i></span>
                         <div class="tooltip" style="text-align: right;">
                             <div style="display: block; text-align: center;">Legende</div>
                             <div class="struct-dot"></div>
@@ -160,19 +168,19 @@
                 <!-- Class view -->
                 <div class="shadow dgr lc30 text diagram-title" id="class-diagram-title">
                     🗃️ Klassen
-                    <button id="classes-screenshot" class="emoji-button" title="Screenshot der Klassenkarten">🖼️</button>
+                    <button id="classes-screenshot" class="emoji-button" title="Screenshot der Klassenkarten"><i class="fa-solid fa-camera"></i></button>
                 </div>
                 <div id="class-diagram-canvas"></div>
                 <!-- Structogram view -->
                 <div class="shadow dgr lc30 text diagram-title" id="structogram-diagram-title">
                     📐 Struktogramm
-                    <button id="structogram-screenshot" class="emoji-button" title="Screenshot der Struktogramme">🖼️</button>
+                    <button id="structogram-screenshot" class="emoji-button" title="Screenshot der Struktogramme"><i class="fa-solid fa-camera"></i></button>
                 </div>
                 <div id="structogram-diagram-canvas"></div>
                 <!-- Flowchart view -->
                 <div class="shadow dgr lc30 text diagram-title" id="flowchart-diagram-title" style="visibility: hidden;">
                     🌊 Flussdiagramm
-                    <button id="flowchart-screenshot" class="emoji-button" title="Screenshot des Flussdiagramms">🖼️</button>
+                    <button id="flowchart-screenshot" class="emoji-button" title="Screenshot des Flussdiagramms"><i class="fa-solid fa-camera"></i></button>
                 </div>
                 <div id="flowchart-diagram-canvas" style="visibility: hidden;">
                     <pre class="mermaid" id="code-flowchart">

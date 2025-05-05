@@ -185,7 +185,7 @@ document.getElementById("robot-screenshot")!.onclick = () => {
 }
 
 document.getElementById("quick-robot")!.onclick = () => {
-    editEnv.paintInput.value = "S_:_";
+    editEnv.paintInput.value = "S_";
 }
 
 document.getElementById("quick-wall")!.onclick = () => {
@@ -197,7 +197,7 @@ document.getElementById("quick-empty")!.onclick = () => {
 }
 
 document.getElementById("quick-block")!.onclick = () => {
-    editEnv.paintInput.value = "_:r";
+    editEnv.paintInput.value = "_:rrr";
 }
 
 document.getElementById("quick-marker")!.onclick = () => {
@@ -290,8 +290,8 @@ function renderWorldEdit(id: string) {
             let removeButton = document.createElement(
                 "button"
             ) as HTMLButtonElement;
-            removeButton.innerHTML = "❌";
-            removeButton.classList.add("toggle-button");
+            removeButton.innerHTML = `<i class="fa-solid fa-xmark"></i>`;
+            removeButton.classList.add("toggle-button", "negative");
             removeButton.onclick = () => {
                 if (editEnv.proxies.length <= 1) return;
                 if (proxyIndex < editEnv.idx) editEnv.idx -= 1;
@@ -304,8 +304,8 @@ function renderWorldEdit(id: string) {
 
         // add world below
         let addButton = document.createElement("button") as HTMLButtonElement;
-        addButton.innerHTML = "➕";
-        addButton.classList.add("toggle-button");
+        addButton.innerHTML = `<i class="fa-solid fa-plus"></i>`;
+        addButton.classList.add("toggle-button", "positive");
         addButton.onclick = () => {
             editEnv.proxies.splice(proxyIndex + 1, 0, deepCopy(stdWorldProxy));
             editEnv.reloadEditor();
@@ -318,7 +318,7 @@ function renderWorldEdit(id: string) {
             let downButton = document.createElement(
                 "button"
             ) as HTMLButtonElement;
-            downButton.innerHTML = "⬇️";
+            downButton.innerHTML = `<i class="fa-solid fa-arrow-down"></i>`;
             downButton.classList.add("toggle-button");
             downButton.onclick = () => {
                 if (proxyIndex >= editEnv.proxies.length - 1) return;
@@ -338,7 +338,7 @@ function renderWorldEdit(id: string) {
             let upButton = document.createElement(
                 "button"
             ) as HTMLButtonElement;
-            upButton.innerHTML = "⬆️";
+            upButton.innerHTML = `<i class="fa-solid fa-arrow-up"></i>`;
             upButton.classList.add("toggle-button");
             upButton.onclick = () => {
                 if (proxyIndex === 0) return;
@@ -355,10 +355,9 @@ function renderWorldEdit(id: string) {
 
         // flood fill
         let fillButton = document.createElement("button") as HTMLButtonElement;
-        fillButton.innerHTML = "🪣";
-        fillButton.classList.add("toggle-button");
-        fillButton.classList.add("special");
-        fillButton.title = "Fülle alle Zellen mit 🖌️-Wert!";
+        fillButton.innerHTML = `<i class="fa-solid fa-fill-drip"></i>`;
+        fillButton.classList.add("toggle-button", "special");
+        fillButton.title = `Fülle alle Zellen mit 🖌️-Wert!`;
         fillButton.onclick = () => {
             for (let row of worldProxy.fields) {
                 for (let i = 0; i < row.length; i++) {

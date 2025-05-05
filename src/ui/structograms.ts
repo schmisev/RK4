@@ -93,14 +93,13 @@ export function showStructogram(program: Program) {
     sections.push(structure(program));
 
     structogramView.innerHTML = ""; // reset view
-    structogramView.innerHTML = sections.join("<br>") + "<br>";
+    structogramView.innerHTML = sections.join("\n");
 
     // classView.innerHTML = WORLD_PSEUDO_CLASS + "<br>" + ROBOT_PSEUDO_CLASS + "<br>"; // reset view
     // classView.innerHTML += Object.values(classes).map((e)).join("<br>") + "<br>";
     classView.innerHTML = "";
     for (const el of Object.values(classes)) {
         classView.innerHTML += el.outerHTML;
-        classView.innerHTML += "<br>";
     }
 }
 

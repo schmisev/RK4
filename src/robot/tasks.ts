@@ -951,6 +951,46 @@ k1.herumirren()
         world: generateHomogeneousWorld(20, 20, 10, ".....:_"),
         preload: STD_PRELOAD,
     },
+    wiki_Methoden_1: {
+        "description": "Führe die Methoden aus, wie es im <a href='./learn.html?load=methods'>Artikel</a> beschrieben ist.",
+        "preload": "// kein vorgegebener Code",
+        "world": "x;3;3;5;\nS_;_;_\n_;_:r;_\n_;_;_",
+        "title": "Methoden ausprobieren"
+    },
+    wiki_Welt_1: {
+        title: "Solange die Blöcke reichen",
+        description: "Lege Blöcke in einer Reihe. Finde mit <code>welt.fertig()</code> heraus, ob du genug Blöcke gelegt hast.",
+        preload:
+            "Methode gehen(Zahl n) für Roboter\n    wiederhole n mal\n        schritt()\n    ende\nende",
+        world: (w: World, idx: number) => {
+            w.H = 4;
+            w.W = 1;
+            w.L = 15;
+
+            let l = rndi(2, w.L);
+
+            for (let y = 0; y < w.W; y++) {
+                w.fields.push([]);
+
+                for (let x = 0; x < w.L; x++) {
+                    const f = new Field(w, false, false, w.H, x, y);
+                    if (x < l && x > 0) f.addBlock(BlockType.r, true);
+                    // add field to line
+                    f.lastGoalStatus = f.checkGoal();
+                    if (!f.lastGoalStatus) w.addGoal();
+                    w.fields[y].push(f);
+                }
+            }
+
+            w.createRobot(0, 0, "E", "k1", 1);
+        },
+    },
+    wiki_Welt_2: {
+        "description": "Setze in der ersten Teilaufgabe einen roten Ziegel, in er zweiten einen grünen und in der dritten einen blauen. Nutze dafür <code>welt.teilaufgabe()</code>",
+        "preload": "// kein vorgegebener Code",
+        "world": "x;2;1;5;\nE_;_:r;_\n_;_;_\n_;_;_x;2;1;5;\nE_;_:g;_\n_;_;_\n_;_;_x;2;1;5;\nE_;_:b;_\n_;_;_\n_;_;_",
+        "title": "RGB"
+    }
 };
 
 /**
