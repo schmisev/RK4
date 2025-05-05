@@ -79,21 +79,21 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
     }
 
     mkRobotAttribute(
-        ENV.robot.mth.GET_X,
+        ENV.robot.attr.X,
         (r) => {
             return MK_NUMBER(r.pos.x);
         }
     );
 
     mkRobotAttribute(
-        ENV.robot.mth.GET_Y,
+        ENV.robot.attr.Y,
         (r) => {
             return MK_NUMBER(r.pos.y);
         }
     );
 
     mkRobotAttribute(
-        ENV.robot.mth.GET_DIR,
+        ENV.robot.attr.DIR,
         (r) => {
             return MK_STRING(DIR2SHORTGER[r.dir]);
         }

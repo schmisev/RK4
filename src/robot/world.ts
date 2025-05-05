@@ -1,6 +1,6 @@
 import { RuntimeError, WorldError } from "../errors";
 import { ClassPrototype, GlobalEnvironment, VarHolder } from "../language/runtime/environment";
-import { BuiltinClassVal, MK_BOOL, MK_NATIVE_METHOD, MK_NUMBER, ObjectVal, RuntimeVal, ValueAlias } from "../language/runtime/values";
+import { BuiltinClassVal, MK_BOOL, MK_NATIVE_GETTER, MK_NATIVE_METHOD, MK_NUMBER, ObjectVal, RuntimeVal, ValueAlias } from "../language/runtime/values";
 import { ENV } from "../spec";
 import { rndi } from "../utils";
 import { declareRobot, Robot } from "./robot";
@@ -85,6 +85,33 @@ export function declareWorldClass(env: GlobalEnvironment): BuiltinClassVal {
             return m(this.w, args);
         }))
     }
+    function mkWorldAttribute(name: string, m: (r: World) => RuntimeVal) {
+        prototype.declareMethod(name, MK_NATIVE_GETTER(name, function () {
+            downcastWorld(this);
+            return m(this.w);
+        }))
+    }
+
+    mkWorldAttribute(
+        ENV.world.attr.LENGTH,
+        (w) => {
+            return MK_NUMBER(w.L);
+        }
+    );
+
+    mkWorldAttribute(
+        ENV.world.attr.WIDTH,
+        (w) => {
+            return MK_NUMBER(w.W);
+        }
+    );
+
+    mkWorldAttribute(
+        ENV.world.attr.HEIGHT,
+        (w) => {
+            return MK_NUMBER(w.H);
+        }
+    );
 
     mkWorldMethod(
         ENV.world.mth.IS_GOAL_REACHED,

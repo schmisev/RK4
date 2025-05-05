@@ -35,9 +35,6 @@ export const ENV = {
             DIR: "richtung"
         },
         "mth": {
-            GET_X : "x",
-            GET_Y : "y",
-            GET_DIR : "richtung",
             GET_HEIGHT: "höhe",
             STEP : "schritt",
             TURN_LEFT : "linksDrehen",
@@ -58,6 +55,11 @@ export const ENV = {
     },
     "world": {
         "cls": "Welt",
+        "attr": {
+            LENGTH: "L",
+            HEIGHT: "H",
+            WIDTH: "B",
+        },
         "mth": {
             IS_GOAL_REACHED : "fertig",
             GET_STAGE_INDEX : "teilaufgabe",
