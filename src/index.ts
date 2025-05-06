@@ -165,8 +165,8 @@ const keyWordCompleter = createCompleter(getKeys(KEYWORDS), "Schlüsselwort");
 const globalConstCompleter = createCompleter(getVals(ENV.global.const), "Globale Konstante")
 const globalFnCompleter = createCompleter(getVals(ENV.global.fn), "Globale Funktion")
 const stdClassCompleter = createCompleter([ENV.robot.cls, ENV.world.cls], "Klassen");
-const robotCompleter = createCompleter(Object.values(ENV.robot.mth), "Roboter.__");
-const worldCompleter = createCompleter(Object.values(ENV.world.mth), "Welt.__")
+const robotCompleter = createCompleter(Object.values(ENV.robot.mth).concat(Object.values(ENV.robot.attr)), "Roboter.__");
+const worldCompleter = createCompleter(Object.values(ENV.world.mth).concat(Object.values(ENV.world.attr)), "Welt.__")
 
 const allCompleters = [
     robotCompleter, 

@@ -10,6 +10,7 @@ import {
     MK_FLOAT,
     MK_STRING,
     MethodVal,
+    NativeGetterVal,
     NativeMethodVal,
     NumberLikeVal,
     ObjectVal,
@@ -390,9 +391,9 @@ export class BoundDynamicScope implements StaticScope {
 }
 
 export class ClassPrototype {
-    private _methods: Map<string, MethodVal | NativeMethodVal> = new Map();
+    private _methods: Map<string, MethodVal | NativeMethodVal | NativeGetterVal> = new Map();
 
-    public declareMethod(name: string, method: MethodVal | NativeMethodVal) {
+    public declareMethod(name: string, method: MethodVal | NativeMethodVal | NativeGetterVal) {
         if (this._methods.has(name))
             throw new RuntimeError(`Die Methode '${name}' existiert schon!`);
         this._methods.set(name, method);
@@ -443,6 +444,8 @@ export class ClassPrototype {
                                 receiver
                             ),
                         };
+                    else if (method.type === ValueAlias.NativeGetter)
+                        return method.call.bind(receiver)(); // return underlying value
                     else if (method.type === ValueAlias.NativeMethod)
                         return {
                             type: ValueAlias.NativeFunction,
@@ -453,6 +456,10 @@ export class ClassPrototype {
                     return method satisfies never;
                 },
                 set: (_newVal) => {
+                    if (method.type === ValueAlias.Method || method.type === ValueAlias.NativeMethod)
+                        throw new RuntimeError(`Kann die Methode '${varname}' nicht überschreiben.`);
+                    else if (method.type === ValueAlias.NativeGetter)
+                        throw new RuntimeError(`Kann das Attribut '${varname}' nicht abändern.`);
                     throw new RuntimeError(
                         `Kann die Konstante '${varname}' nicht verändern!`
                     );

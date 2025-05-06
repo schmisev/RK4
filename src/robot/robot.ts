@@ -1,6 +1,6 @@
 import { RuntimeError } from "../errors";
 import { ClassPrototype, GlobalEnvironment, VarHolder } from "../language/runtime/environment";
-import { MK_BOOL, MK_STRING, MK_NUMBER, RuntimeVal, BuiltinClassVal, ObjectVal, MK_NATIVE_METHOD, ValueAlias, MK_NULL } from "../language/runtime/values";
+import { MK_BOOL, MK_STRING, MK_NUMBER, RuntimeVal, BuiltinClassVal, ObjectVal, MK_NATIVE_METHOD, ValueAlias, MK_NULL, MK_NATIVE_GETTER } from "../language/runtime/values";
 import { ENV } from "../spec";
 import { easeInOutQuad, toZero, Vec2 } from "../utils";
 import { BlockType, CHAR2BLOCK, CHAR2MARKER, Field, MarkerType, World } from "./world";
@@ -71,30 +71,30 @@ export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
             return m(this.r, args);
         }))
     }
+    function mkRobotAttribute(name: string, m: (r: Robot) => RuntimeVal) {
+        prototype.declareMethod(name, MK_NATIVE_GETTER(name, function () {
+            downcastRoboter(this);
+            return m(this.r);
+        }))
+    }
 
-    mkRobotMethod(
-        ENV.robot.mth.GET_X,
-        (r, args) => {
-            if (args.length != 0)
-                throw new RuntimeError(ENV.robot.mth.GET_X + `() erwartet keine Parameter!`);
+    mkRobotAttribute(
+        ENV.robot.attr.X,
+        (r) => {
             return MK_NUMBER(r.pos.x);
         }
     );
 
-    mkRobotMethod(
-        ENV.robot.mth.GET_Y,
-        (r, args) => {
-            if (args.length != 0)
-                throw new RuntimeError(ENV.robot.mth.GET_Y + `() erwartet keine Parameter!`);
+    mkRobotAttribute(
+        ENV.robot.attr.Y,
+        (r) => {
             return MK_NUMBER(r.pos.y);
         }
     );
 
-    mkRobotMethod(
-        ENV.robot.mth.GET_DIR,
-        (r, args) => {
-            if (args.length != 0)
-                throw new RuntimeError(ENV.robot.mth.GET_DIR + `() erwartet keine Parameter!`);
+    mkRobotAttribute(
+        ENV.robot.attr.DIR,
+        (r) => {
             return MK_STRING(DIR2SHORTGER[r.dir]);
         }
     );

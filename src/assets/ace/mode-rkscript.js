@@ -50,7 +50,7 @@ ace.define(
                     },
                     {
                         token: "entity.other.attribute-name",
-                        regex: "(?<=\\.)([_\\p{L}][_\\p{L}0-9]+)",
+                        regex: "(?<=\\.)([_\\p{L}][_\\p{L}0-9]*)",
                     },
                     {
                         token: "constant.numeric", // int

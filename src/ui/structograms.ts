@@ -17,7 +17,6 @@ import {
     AnyFromToBlock,
     AnyForInBlock,
 } from "../language/frontend/ast";
-import { ValueAlias } from "../language/runtime/values";
 import { screenshotDiv, translateOperator } from "../utils";
 import { ENV } from "../spec";
 
@@ -27,15 +26,12 @@ const ROBOT_PSEUDO_CLASS =
     <div class="struct-classname">${ENV.robot.cls}</div>
     
     <div class="struct-attributes">
-        <span class="struct-type">Zahl</span> ${makeTooltip(ENV.robot.attr.X, `Du kannst auf das Attribut <span class="struct-ident">${ENV.robot.attr.X}</span> nicht direkt zugreifen.`) + "🔒<br>"}
-        <span class="struct-type">Zahl</span> ${makeTooltip(ENV.robot.attr.Y, `Du kannst auf das Attribut <span class="struct-ident">${ENV.robot.attr.Y}</span> nicht direkt zugreifen.`) + "🔒<br>"}
-        <span class="struct-type">Text</span> ${makeTooltip(ENV.robot.attr.DIR, `Du kannst auf das Attribut <span class="struct-ident">${ENV.robot.attr.DIR}</span> nicht direkt zugreifen.`) + "🔒<br>"}
+        <span class="struct-type">Zahl</span> ${makeTooltip(ENV.robot.attr.X, `Gibt die x-Koordinate des Roboters an.`) + "🔒<br>"}
+        <span class="struct-type">Zahl</span> ${makeTooltip(ENV.robot.attr.Y, `Gibt die y-Koordinate des Roboters an.`) + "🔒<br>"}
+        <span class="struct-type">Text</span> ${makeTooltip(ENV.robot.attr.DIR,  `Gibt die Richtung an, in die der Roboter guckt, also entweder <span class="struct-string">"N"</span>, <span class="struct-string">"S"</span>, <span class="struct-string">"W"</span> oder <span class="struct-string">"O"</span>.`) + "🔒<br>"}
     </div>
     
     <div class="struct-methods">
-        ${makeTooltip(ENV.robot.mth.GET_X , `Gibt die aktuelle x-Koordinate des Roboters zurück!`) + "()<br>"}
-        ${makeTooltip(ENV.robot.mth.GET_Y, `Gibt die aktuelle y-Koordinate des Roboters zurück!`) + "()<br>"}
-        ${makeTooltip(ENV.robot.mth.GET_DIR, `Gibt die aktuelle Richtung des Roboters als Text zurück: <span class="struct-string">"N"</span>, <span class="struct-string">"S"</span>, <span class="struct-string">"W"</span> oder <span class="struct-string">"O"</span>!`) + "()<br>"}
         ${makeTooltip(ENV.robot.mth.GET_HEIGHT, `Gibt die aktuelle Höhe des Roboters als Zahl zurück. <span class="struct-literal">0</span> ist am Weltboden.`) + "()<br>"}
         <div class="struct-dot"></div>
         ${makeTooltip(ENV.robot.mth.STEP, `Der Roboter geht ein Feld nach vorne - wenn das möglich ist.`) + "()<br>"}
@@ -61,8 +57,10 @@ const WORLD_PSEUDO_CLASS =
 `<div class="struct-class">
     <div class="struct-classname">${ENV.world.cls}</div>
     
-    <div class="struct-attributes" style="text-align: center">
-        ${makeTooltip("❓", "Du musst die Attribute der Welt-Klasse nicht kennen oder benutzen.")}
+    <div class="struct-attributes">
+        <span class="struct-type">Zahl</span> ${makeTooltip(ENV.world.attr.LENGTH, `Gibt die Länge (Westen nach Osten) der Welt an.`) + "🔒<br>"}
+        <span class="struct-type">Zahl</span> ${makeTooltip(ENV.world.attr.WIDTH, `Gibt die Breite (Norden nach Süden) der Welt an.`) + "🔒<br>"}
+        <span class="struct-type">Zahl</span> ${makeTooltip(ENV.world.attr.HEIGHT, `Gibt die Höhe (Boden bis Decke) in Ziegeln an.`) + "🔒<br>"}
     </div>
     
     <div class="struct-methods">
