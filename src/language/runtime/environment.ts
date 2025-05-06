@@ -456,6 +456,10 @@ export class ClassPrototype {
                     return method satisfies never;
                 },
                 set: (_newVal) => {
+                    if (method.type === ValueAlias.Method || method.type === ValueAlias.NativeMethod)
+                        throw new RuntimeError(`Kann die Methode '${varname}' nicht überschreiben.`);
+                    else if (method.type === ValueAlias.NativeGetter)
+                        throw new RuntimeError(`Kann das Attribut '${varname}' nicht abändern.`);
                     throw new RuntimeError(
                         `Kann die Konstante '${varname}' nicht verändern!`
                     );

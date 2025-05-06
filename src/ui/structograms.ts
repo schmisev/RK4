@@ -28,7 +28,7 @@ const ROBOT_PSEUDO_CLASS =
     <div class="struct-attributes">
         <span class="struct-type">Zahl</span> ${makeTooltip(ENV.robot.attr.X, `Gibt die x-Koordinate des Roboters an.`) + "🔒<br>"}
         <span class="struct-type">Zahl</span> ${makeTooltip(ENV.robot.attr.Y, `Gibt die y-Koordinate des Roboters an.`) + "🔒<br>"}
-        <span class="struct-type">Text</span> ${makeTooltip(ENV.robot.attr.DIR,  `Gibt die Richtung an, in die der Roboter guckt, also entweder <span class="struct-string">"N"</span>, <span class="struct-string">"S"</span>, <span class="struct-string">"W"</span> oder <span class="struct-string">"N"</span>.`) + "🔒<br>"}
+        <span class="struct-type">Text</span> ${makeTooltip(ENV.robot.attr.DIR,  `Gibt die Richtung an, in die der Roboter guckt, also entweder <span class="struct-string">"N"</span>, <span class="struct-string">"S"</span>, <span class="struct-string">"W"</span> oder <span class="struct-string">"O"</span>.`) + "🔒<br>"}
     </div>
     
     <div class="struct-methods">
