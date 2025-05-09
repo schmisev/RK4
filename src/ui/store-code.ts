@@ -266,11 +266,11 @@ Klasse Vektor
     ende
 ende
 
-Objekt v1 als Vektor
+Objekt v1 sei neuer Vektor
 v1.x ist 4
 v1.y ist 6
 
-Objekt v2 als Vektor
+Objekt v2 sei neuer Vektor
 v2.setzeXY(3, -9)
 
 v1.plus(v2)
@@ -283,7 +283,7 @@ Klasse Foo(Zahl n)
     Zahl zweiBar ist 2 * n
 ende
 
-Objekt f als Foo(4)
+Objekt f sei neues Foo(4)
 zeig f.bar // >> 4
 zeig f.zweiBar // >> 8
 `, false);

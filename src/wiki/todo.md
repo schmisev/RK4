@@ -26,7 +26,8 @@
 
 ### Language features
 
-- [ ] Implement more Pythonic object instantiation like so `Klasse obj sei Klasse()`
+- [ ] Add Typing to functionr returns
+- [x] Implement more Java-like object instantiation like so `Klasse obj sei neue Klasse()`
   - [ ] Implement type checking objects
     - [ ] As function arguments
     - [ ] In assignments

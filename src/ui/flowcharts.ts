@@ -290,8 +290,6 @@ function chartSimpleStmt(stmt: AnyStmt): ChartNode | undefined {
     switch (stmt.kind) {
         case StmtKind.VarDeclaration:
             return declProc(stmt.ident + " := " + chartExpr(stmt.value).str);
-        case StmtKind.ObjDeclaration:
-            return declProc(stmt.ident + " := " + stmt.classname + "(" + stmt.args.map(chartExpr).map((a) => a.str).join(", ") + ")");
         case StmtKind.EmptyLine:
             return mkIgnore();
         case StmtKind.DocComment:
@@ -325,6 +323,7 @@ function chartSimpleStmt(stmt: AnyStmt): ChartNode | undefined {
                 chartExtMethod(stmt);
             return mkIgnore();
         case StmtKind.AssignmentExpr:
+        case StmtKind.InstanceExpr:
         case StmtKind.BinaryExpr:
         case StmtKind.UnaryExpr:
         case StmtKind.Identifier:
@@ -347,9 +346,13 @@ function chartSimpleStmt(stmt: AnyStmt): ChartNode | undefined {
 
 function chartExpr(expr: Expr): { str: string, type: Type } {
     switch (expr.kind) {
-        case StmtKind.AssignmentExpr:
+        case StmtKind.AssignmentExpr: {
             const val = chartExpr(expr.value);
             return {str: chartExpr(expr.assigne).str + " := " + val.str, type: val.type};
+        }
+        case StmtKind.InstanceExpr: {
+            return {str: expr.classname + "(" + expr.args.map(chartExpr).map((a) => a.str).join(", ") + ")", type: Type.Call};
+        }
         case StmtKind.BinaryExpr:
             const binExprStr = chartExpr(expr.left).str + " " + translateOperator(expr.operator.value) + " " + chartExpr(expr.right).str;
             return {str: expr.inParen ? "(" + binExprStr + ")" : binExprStr, type: Type.Unwrapped};
