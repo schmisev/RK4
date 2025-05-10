@@ -1,4 +1,5 @@
 import { RuntimeError } from "../../../errors";
+import { formatValue } from "../../../utils";
 import { Identifier, BinaryExpr, UnaryExpr, AssignmentExpr, CallExpr, MemberExpr, StmtKind, ListLiteral, ComputedMemberExpr, InstanceExpr } from "../../frontend/ast";
 import { CodePosition, Token, TokenType } from "../../frontend/lexer";
 import { Environment, VarHolder } from "../environment";
@@ -417,13 +418,17 @@ export function* eval_call_expr(
         }
 
         const result = yield* eval_bare_statements(fn.body, scope);
+        let ret: RuntimeVal;
         if (result.type === AbruptAlias.Return) {
-            return result.value;
+            ret = result.value;
+        } else {
+            ret = result;
         }
-        return result;
-    }
 
-    throw new RuntimeError(`Du versuchst hier ${JSON.stringify(fn)} als Funktion auszuführen!`, call.codePos);
+        return ret;
+    }  
+
+    throw new RuntimeError(`Du versuchst hier ${formatValue(fn)} als Funktion auszuführen!`, call.codePos);
 }
 
 export function* eval_member_expr(

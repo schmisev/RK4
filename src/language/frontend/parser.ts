@@ -99,6 +99,37 @@ export default class Parser {
         return prev;
     }
 
+    private expectType(err: string) {
+        const prev = this.tokens.shift();
+        if (!prev) {
+            throw new ParserError(
+                "PARSER: " + err + " - nichts erhalten",
+                ILLEGAL_CODE_POS()
+            );
+        }
+
+        if (prev.type == TokenType.DeclBoolean) {
+            return ValueAlias.Boolean;
+        } else if (prev.type == TokenType.DeclNumber) {
+            return ValueAlias.Number;
+        } else if (prev.type == TokenType.DeclFloat) {
+            return ValueAlias.Float;
+        } else if (prev.type == TokenType.DeclString) {
+            return ValueAlias.String;
+        } else if (prev.type == TokenType.DeclList) {
+            return ValueAlias.List;
+        } else if (prev.type == TokenType.DeclObject) {
+            return ValueAlias.Object;
+        }
+
+        const codePos = prev.codePos;
+
+        throw new ParserError(
+            "PARSER: " + err + " - erhalten: " + JSON.stringify(prev.value),
+            codePos
+        );
+    }
+
     public produceAST(sourceCode: string, trackPos: boolean, resetCollected: boolean): Program {
         if (resetCollected) {
             // remove old idents
@@ -663,22 +694,7 @@ export default class Parser {
     parse_any_declaration(): VarDeclaration {
         let codePos = this.at().codePos;
 
-        let type: VarDeclaration["type"] = ValueAlias.Null;
-        if (this.at().type == TokenType.DeclBoolean) {
-            type = ValueAlias.Boolean;
-        } else if (this.at().type == TokenType.DeclNumber) {
-            type = ValueAlias.Number;
-        } else if (this.at().type == TokenType.DeclFloat) {
-            type = ValueAlias.Float;
-        }else if (this.at().type == TokenType.DeclString) {
-            type = ValueAlias.String;
-        } else if (this.at().type == TokenType.DeclList) {
-            type = ValueAlias.List;
-        } else if (this.at().type == TokenType.DeclObject) {
-            type = ValueAlias.Object;
-        }
-
-        this.eat();
+        let type: VarDeclaration["type"] = this.expectType("Erwarte Datentyp!");
 
         const ident = this.expect(
             TokenType.Identifier,
@@ -717,20 +733,8 @@ export default class Parser {
     parse_param_declaration(): ParamDeclaration {
         let codePos = this.at().codePos;
 
-        let type = ValueAlias.Null;
-        if (this.at().type == TokenType.DeclBoolean) {
-            type = ValueAlias.Boolean;
-        } else if (this.at().type == TokenType.DeclNumber) {
-            type = ValueAlias.Number;
-        } else if (this.at().type == TokenType.DeclFloat) {
-            type = ValueAlias.Float;
-        } else if (this.at().type == TokenType.DeclString) {
-            type = ValueAlias.String;
-        } else if (this.at().type == TokenType.DeclObject) {
-            type = ValueAlias.Object;
-        }
+        let type = this.expectType("Erwartete einen Datentyp!");
 
-        this.eat();
         const ident = this.expect(
             TokenType.Identifier,
             "Erwarte Variablennamen nach 'Zahl', 'Wahrheitswert', 'Text' oder 'Objekt'!"
@@ -758,6 +762,13 @@ export default class Parser {
             this.expect(TokenType.Comma, "Erwarte Komma nach Paramtern!");
         }
         this.eat();
+
+        let returnType: ValueAlias = ValueAlias.Null;
+        if (this.at().type == TokenType.Yield) {
+            this.eat();
+            returnType = this.expectType(`Erwarte Datentyp nach 'zu'!`);
+        }
+
         this.expect(
             TokenType.EndLine,
             "Erwarte neue Zeile vor Funktionskörper!"
@@ -776,6 +787,7 @@ export default class Parser {
             name,
             params,
             body,
+            returnType,
             codePos,
         };
     }
@@ -798,6 +810,12 @@ export default class Parser {
             this.expect(TokenType.Comma, "Erwarte Komma nach Paramtern!");
         }
         this.eat();
+
+        let returnType: ValueAlias = ValueAlias.Null;
+        if (this.at().type == TokenType.Yield) {
+            this.eat();
+            returnType = this.expectType(`Erwarte Datentyp nach 'zu'!`);
+        }
 
         this.expect(
             TokenType.For,
@@ -827,6 +845,7 @@ export default class Parser {
             name,
             params,
             body,
+            returnType,
             classname,
             codePos,
         };

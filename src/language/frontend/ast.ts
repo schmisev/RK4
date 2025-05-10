@@ -320,6 +320,7 @@ export interface FunctionDefinition {
     params: ParamDeclaration[];
     name: string;
     body: Stmt<StmtKind.ReturnCommand>[];
+    returnType: ValueAlias;
 }
 
 export interface ExtMethodDefinition {
@@ -329,4 +330,5 @@ export interface ExtMethodDefinition {
     name: string;
     classname: string;
     body: Stmt<StmtKind.ReturnCommand>[];
+    returnType: ValueAlias;
 }
