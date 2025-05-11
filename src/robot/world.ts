@@ -3,6 +3,7 @@ import { ClassPrototype, GlobalEnvironment, VarHolder } from "../language/runtim
 import { BuiltinClassVal, MK_BOOL, MK_NATIVE_GETTER, MK_NATIVE_METHOD, MK_NUMBER, ObjectVal, RuntimeVal, ValueAlias } from "../language/runtime/values";
 import { ENV } from "../spec";
 import { rndi } from "../utils";
+import { type Body } from "./addons/bodies";
 import { declareRobot, Robot } from "./robot";
 import { WorldGen, WorldSource } from "./tasks";
 
@@ -157,6 +158,8 @@ export class World {
     stages: string[];
     stageIdx: number = -1;
     goalsRemaining: number = 0;
+
+    decorations: Body[] = [];
 
     constructor(session: number, src: WorldSource, stage: number) {
         this.session = session;

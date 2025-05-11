@@ -483,11 +483,20 @@ function robotSketch(p5: p5) {
         p5.push();
         drawWorldOutline(w);
         drawWorldFields(w);
+        drawDecorations(w);
         drawRobots(w);
         drawCompass(w);
         drawRobotThoughts(w);
         p5.pop();
     };
+
+    const drawDecorations = (w: World) => {
+        p5.push();
+        for (const deco of w.decorations) {
+            deco.draw(p5);
+        }
+        p5.pop();
+    }
 
     const drawRobots = (w: World) => {
         p5.push();
