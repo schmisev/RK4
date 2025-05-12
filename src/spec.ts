@@ -63,6 +63,7 @@ export const ENV = {
         "mth": {
             IS_GOAL_REACHED : "fertig",
             GET_STAGE_INDEX : "teilaufgabe",
+            CREATE_SPHERE : "erzeugeKugel"
         }
     }
 }

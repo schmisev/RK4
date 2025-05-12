@@ -1,6 +1,7 @@
 import type * as p5 from "p5";
-import { BuiltinClassVal, ObjectVal, ValueAlias } from "../../language/runtime/values";
-import { ClassPrototype, GlobalEnvironment } from "../../language/runtime/environment";
+import { declareGeneralClass, GlobalEnvironment } from "../../language/runtime/environment";
+import { MK_FLOAT, MK_NULL, ValueAlias } from "../../language/runtime/values";
+import { RuntimeError } from "../../errors";
 
 export class Body {
   x: number;
@@ -12,27 +13,13 @@ export class Body {
   zRot: number;
 
   constructor(x: number, y: number, color: string, strokeColor: string) {
-    this.x = x;
-    this.y = y;
+    this.x = 0;
+    this.y = 0;
     this.color = color;
     this.strokeColor = strokeColor;
     this.xRot = 0;
     this.yRot = 0;
     this.zRot = 0;
-  }
-
-  setColor(color: string) {
-    this.color = color;
-  }
-
-  setPosition(x: number, y: number) {
-    this.x = x;
-    this.y = y;
-  }
-
-  move(dx: number, dy: number) {
-    this.x += dx;
-    this.y += dy;
   }
 
   draw(p5: p5) {
@@ -44,23 +31,19 @@ export class Body {
   }
 }
 
+/**
+ * Box
+ */
 export class Box extends Body {
   length: number;
   width: number;
   height: number;
-
 
   constructor(x: number, y:number, color: string, strokeColor: string, length: number, width: number, height: number) {
     super(x, y, color, strokeColor);
     this.length = length;
     this.width = width;
     this.height = height;
-  }
-
-  setSize(length: number, width: number, height: number) {
-    this.length = length;
-    this.height = height;
-    this.width = width;
   }
 
   draw(p5: p5): void {
@@ -71,15 +54,14 @@ export class Box extends Body {
   }
 }
 
+/**
+ * Sphere
+ */
 export class Sphere extends Body {
   radius: number;
 
   constructor(x: number, y: number, color: string, strokeColor: string, radius: number) {
     super(x, y, color, strokeColor);
-    this.radius = radius;
-  }
-
-  setRadius(radius: number) {
     this.radius = radius;
   }
 
@@ -89,4 +71,24 @@ export class Sphere extends Body {
     p5.sphere(this.radius);
     p5.pop();
   }
+}
+
+export function declareSphereClass(env: GlobalEnvironment) {
+  return declareGeneralClass<Sphere>(
+    "Kugel",
+    {
+      radiusSetzen: (o, args) => {
+        if (args.length !== 1) throw new RuntimeError(`Unpassende Parameteranzahl!`);
+        if (args[0].type !== ValueAlias.Number || args[0].type !== ValueAlias.Number) throw new RuntimeError(`Erwartete eine (Komma-)Zahl!`);
+        o.radius = args[0].value;
+        return MK_NULL();
+      }
+    },
+    {
+      radius: (o) => {
+        return MK_FLOAT(o.radius);
+      }
+    },
+    env
+  )
 }

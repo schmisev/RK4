@@ -1,4 +1,5 @@
 import { RuntimeError } from "../../errors";
+import { declareSphereClass } from "../../robot/addons/bodies";
 import { declareRobotClass } from "../../robot/robot";
 import { declareWorldClass } from "../../robot/world";
 import { ENV } from "../../spec";
@@ -8,16 +9,15 @@ import {
     BuiltinClassVal,
     ClassVal,
     MK_FLOAT,
+    MK_NATIVE_GETTER,
+    MK_NATIVE_METHOD,
     MK_STRING,
     MethodVal,
     NativeGetterVal,
     NativeMethodVal,
-    NumberLikeVal,
     ObjectVal,
     ValueAlias,
     isLikeNumber,
-} from "./values";
-import {
     MK_BOOL,
     MK_NATIVE_FN,
     MK_NULL,
@@ -29,17 +29,23 @@ export interface GlobalEnvironment extends Environment {
     // global env holds some special values that we don't want to lookup by name
     readonly robotClass: ClassVal;
     readonly worldClass: ClassVal;
+    readonly sphereClass: ClassVal;
 }
 
 export function declareGlobalEnv(): GlobalEnvironment {
     class GlobalEnvironment extends Environment {
         private _robotClass: BuiltinClassVal = declareRobotClass(this);
         private _worldClass: BuiltinClassVal = declareWorldClass(this);
+        public _sphereClass: BuiltinClassVal = declareSphereClass(this);
+
         get robotClass() {
             return this._robotClass;
         }
         get worldClass() {
             return this._worldClass;
+        }
+        get sphereClass() {
+            return this._sphereClass;
         }
     }
     const env = new GlobalEnvironment();
@@ -152,7 +158,15 @@ export function declareGlobalEnv(): GlobalEnvironment {
     env.declareVar(
         ENV.global.fn.TO_INT,
         MK_NATIVE_FN(ENV.global.fn.TO_INT, (args) => {
-            if ((args.length === 0 || args.length > 1) || (args[0].type != ValueAlias.Number && args[0].type != ValueAlias.Float)) throw new RuntimeError("Erwarte eine (Komma-)zahl als Eingabe!");
+            if (
+                args.length === 0 ||
+                args.length > 1 ||
+                (args[0].type != ValueAlias.Number &&
+                    args[0].type != ValueAlias.Float)
+            )
+                throw new RuntimeError(
+                    "Erwarte eine (Komma-)zahl als Eingabe!"
+                );
             return MK_NUMBER(Math.trunc(args[0].value));
         })
     );
@@ -160,7 +174,15 @@ export function declareGlobalEnv(): GlobalEnvironment {
     env.declareVar(
         ENV.global.fn.TO_FLOAT,
         MK_NATIVE_FN(ENV.global.fn.TO_FLOAT, (args) => {
-            if ((args.length === 0 || args.length > 1) || (args[0].type != ValueAlias.Number && args[0].type != ValueAlias.Float)) throw new RuntimeError("Erwarte eine (Komma-)zahl als Eingabe!");
+            if (
+                args.length === 0 ||
+                args.length > 1 ||
+                (args[0].type != ValueAlias.Number &&
+                    args[0].type != ValueAlias.Float)
+            )
+                throw new RuntimeError(
+                    "Erwarte eine (Komma-)zahl als Eingabe!"
+                );
             return MK_FLOAT(args[0].value);
         })
     );
@@ -168,8 +190,13 @@ export function declareGlobalEnv(): GlobalEnvironment {
     env.declareVar(
         ENV.global.fn.TRUNC,
         MK_NATIVE_FN(ENV.global.fn.TRUNC, (args) => {
-            if ((args.length === 0 || args.length > 1) || args[0].type != ValueAlias.Float) throw new RuntimeError("Erwarte eine Kommazahl als Eingabe!");
-            let {value, type} = args[0];
+            if (
+                args.length === 0 ||
+                args.length > 1 ||
+                args[0].type != ValueAlias.Float
+            )
+                throw new RuntimeError("Erwarte eine Kommazahl als Eingabe!");
+            let { value, type } = args[0];
             value = Math.trunc(value);
             return MK_FLOAT(value);
         })
@@ -178,8 +205,13 @@ export function declareGlobalEnv(): GlobalEnvironment {
     env.declareVar(
         ENV.global.fn.CEIL,
         MK_NATIVE_FN(ENV.global.fn.CEIL, (args) => {
-            if ((args.length === 0 || args.length > 1) || args[0].type != ValueAlias.Float) throw new RuntimeError("Erwarte eine Kommazahl als Eingabe!");
-            let {value, type} = args[0];
+            if (
+                args.length === 0 ||
+                args.length > 1 ||
+                args[0].type != ValueAlias.Float
+            )
+                throw new RuntimeError("Erwarte eine Kommazahl als Eingabe!");
+            let { value, type } = args[0];
             value = Math.ceil(value);
             return MK_FLOAT(value);
         })
@@ -188,8 +220,13 @@ export function declareGlobalEnv(): GlobalEnvironment {
     env.declareVar(
         ENV.global.fn.FLOOR,
         MK_NATIVE_FN(ENV.global.fn.FLOOR, (args) => {
-            if ((args.length === 0 || args.length > 1) || args[0].type != ValueAlias.Float) throw new RuntimeError("Erwarte eine Kommazahl als Eingabe!");
-            let {value, type} = args[0];
+            if (
+                args.length === 0 ||
+                args.length > 1 ||
+                args[0].type != ValueAlias.Float
+            )
+                throw new RuntimeError("Erwarte eine Kommazahl als Eingabe!");
+            let { value, type } = args[0];
             value = Math.floor(value);
             return MK_FLOAT(value);
         })
@@ -198,8 +235,13 @@ export function declareGlobalEnv(): GlobalEnvironment {
     env.declareVar(
         ENV.global.fn.ROUND,
         MK_NATIVE_FN(ENV.global.fn.ROUND, (args) => {
-            if ((args.length === 0 || args.length > 1) || args[0].type != ValueAlias.Float) throw new RuntimeError("Erwarte eine Kommazahl als Eingabe!");
-            let {value, type} = args[0];
+            if (
+                args.length === 0 ||
+                args.length > 1 ||
+                args[0].type != ValueAlias.Float
+            )
+                throw new RuntimeError("Erwarte eine Kommazahl als Eingabe!");
+            let { value, type } = args[0];
             value = Math.round(value);
             return MK_FLOAT(value);
         })
@@ -208,8 +250,11 @@ export function declareGlobalEnv(): GlobalEnvironment {
     env.declareVar(
         ENV.global.fn.SIN,
         MK_NATIVE_FN(ENV.global.fn.SIN, (args) => {
-            if ((args.length === 0 || args.length > 1) || !isLikeNumber(args[0])) throw new RuntimeError("Erwarte eine (Komma-)zahl als Eingabe!");
-            let {value, type} = args[0];
+            if (args.length === 0 || args.length > 1 || !isLikeNumber(args[0]))
+                throw new RuntimeError(
+                    "Erwarte eine (Komma-)zahl als Eingabe!"
+                );
+            let { value, type } = args[0];
             value = Math.sin(value);
             return MK_FLOAT(value);
         })
@@ -218,8 +263,11 @@ export function declareGlobalEnv(): GlobalEnvironment {
     env.declareVar(
         ENV.global.fn.COS,
         MK_NATIVE_FN(ENV.global.fn.COS, (args) => {
-            if ((args.length === 0 || args.length > 1) || !isLikeNumber(args[0])) throw new RuntimeError("Erwarte eine (Komma-)zahl als Eingabe!");
-            let {value, type} = args[0];
+            if (args.length === 0 || args.length > 1 || !isLikeNumber(args[0]))
+                throw new RuntimeError(
+                    "Erwarte eine (Komma-)zahl als Eingabe!"
+                );
+            let { value, type } = args[0];
             value = Math.cos(value);
             return MK_FLOAT(value);
         })
@@ -228,8 +276,11 @@ export function declareGlobalEnv(): GlobalEnvironment {
     env.declareVar(
         ENV.global.fn.TAN,
         MK_NATIVE_FN(ENV.global.fn.TAN, (args) => {
-            if ((args.length === 0 || args.length > 1) || !isLikeNumber(args[0])) throw new RuntimeError("Erwarte eine (Komma-)zahl als Eingabe!");
-            let {value, type} = args[0];
+            if (args.length === 0 || args.length > 1 || !isLikeNumber(args[0]))
+                throw new RuntimeError(
+                    "Erwarte eine (Komma-)zahl als Eingabe!"
+                );
+            let { value, type } = args[0];
             value = Math.tan(value);
             return MK_FLOAT(value);
         })
@@ -238,11 +289,19 @@ export function declareGlobalEnv(): GlobalEnvironment {
     env.declareVar(
         ENV.global.fn.ABS,
         MK_NATIVE_FN(ENV.global.fn.ABS, (args) => {
-            if ((args.length === 0 || args.length > 1)) throw new RuntimeError("Erwarte eine (Komma-)zahl als Eingabe!");
+            if (args.length === 0 || args.length > 1)
+                throw new RuntimeError(
+                    "Erwarte eine (Komma-)zahl als Eingabe!"
+                );
             let val = args[0];
-            if (val.type === ValueAlias.Number) return MK_NUMBER(Math.abs(val.value));
-            else if (val.type === ValueAlias.Float) return MK_FLOAT(Math.abs(val.value));
-            else throw new RuntimeError("Erwarte eine (Komma-)zahl als Eingabe!");
+            if (val.type === ValueAlias.Number)
+                return MK_NUMBER(Math.abs(val.value));
+            else if (val.type === ValueAlias.Float)
+                return MK_FLOAT(Math.abs(val.value));
+            else
+                throw new RuntimeError(
+                    "Erwarte eine (Komma-)zahl als Eingabe!"
+                );
         })
     );
 
@@ -391,9 +450,15 @@ export class BoundDynamicScope implements StaticScope {
 }
 
 export class ClassPrototype {
-    private _methods: Map<string, MethodVal | NativeMethodVal | NativeGetterVal> = new Map();
+    private _methods: Map<
+        string,
+        MethodVal | NativeMethodVal | NativeGetterVal
+    > = new Map();
 
-    public declareMethod(name: string, method: MethodVal | NativeMethodVal | NativeGetterVal) {
+    public declareMethod(
+        name: string,
+        method: MethodVal | NativeMethodVal | NativeGetterVal
+    ) {
         if (this._methods.has(name))
             throw new RuntimeError(`Die Methode '${name}' existiert schon!`);
         this._methods.set(name, method);
@@ -445,7 +510,9 @@ export class ClassPrototype {
                             ),
                         };
                     else if (method.type === ValueAlias.NativeGetter)
-                        return method.call.bind(receiver)(); // return underlying value
+                        return method.call.bind(
+                            receiver
+                        )(); // return underlying value
                     else if (method.type === ValueAlias.NativeMethod)
                         return {
                             type: ValueAlias.NativeFunction,
@@ -456,10 +523,17 @@ export class ClassPrototype {
                     return method satisfies never;
                 },
                 set: (_newVal) => {
-                    if (method.type === ValueAlias.Method || method.type === ValueAlias.NativeMethod)
-                        throw new RuntimeError(`Kann die Methode '${varname}' nicht überschreiben.`);
+                    if (
+                        method.type === ValueAlias.Method ||
+                        method.type === ValueAlias.NativeMethod
+                    )
+                        throw new RuntimeError(
+                            `Kann die Methode '${varname}' nicht überschreiben.`
+                        );
                     else if (method.type === ValueAlias.NativeGetter)
-                        throw new RuntimeError(`Kann das Attribut '${varname}' nicht abändern.`);
+                        throw new RuntimeError(
+                            `Kann das Attribut '${varname}' nicht abändern.`
+                        );
                     throw new RuntimeError(
                         `Kann die Konstante '${varname}' nicht verändern!`
                     );
@@ -468,4 +542,85 @@ export class ClassPrototype {
         }
         return land(undefined);
     }
+}
+
+
+// API helper
+export interface ProxyObjectVal<C> extends ObjectVal {
+    o: C;
+}
+
+export function declareGeneralClass<C>(
+    clsName: string,
+    clsMethods: Record<string, (o: C, args: RuntimeVal[]) => RuntimeVal>,
+    clsAttributes: Record<string, (o: C) => RuntimeVal>,
+    env: GlobalEnvironment
+) {
+    const prototype = new ClassPrototype();
+    const cls: BuiltinClassVal = {
+        type: ValueAlias.Class,
+        name: clsName,
+        internal: true,
+        prototype,
+    };
+
+    function downcastClass(self: ObjectVal): asserts self is ProxyObjectVal<C> {
+        if (!Object.is(self.cls, cls))
+            throw new RuntimeError(
+                `Diese Methode kann nur auf '${cls.name}' ausgeführt werden.`
+            );
+    }
+
+    function mkClassMethod(
+        name: string,
+        m: (o: C, args: RuntimeVal[]) => RuntimeVal
+    ) {
+        prototype.declareMethod(
+            name,
+            MK_NATIVE_METHOD(name, function (args) {
+                downcastClass(this);
+                return m(this.o, args);
+            })
+        );
+    }
+
+    function mkClassAttribute(name: string, m: (o: C) => RuntimeVal) {
+        prototype.declareMethod(
+            name,
+            MK_NATIVE_GETTER(name, function () {
+                downcastClass(this);
+                return m(this.o);
+            })
+        );
+    }
+
+    // insert method into class
+    for (const methodName in clsMethods) {
+        mkClassMethod(methodName, clsMethods[methodName]);
+    }
+
+    // insert attributes (getters) into class
+    for (const attributeName in clsAttributes) {
+        mkClassAttribute(attributeName, clsAttributes[attributeName]);
+    }
+
+    return cls;
+}
+
+export function createGeneralObjectOfClass<C>(o: C, cls: ClassVal): ProxyObjectVal<C> {
+    const env = new VarHolder();
+    const obj: ProxyObjectVal<C> = {
+        type: ValueAlias.Object,
+        cls,
+        ownMembers: env,
+        o,
+    };
+
+    return obj;
+}
+
+export function declareGeneralObject<C>(o: C, cls: ClassVal, varname: string, env: GlobalEnvironment): C {
+    // add object to environment
+    env.declareVar(varname, createGeneralObjectOfClass(o, cls), true);
+    return o;
 }
