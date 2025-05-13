@@ -1,5 +1,5 @@
 import type * as p5 from "p5";
-import { declareGeneralClass, GlobalEnvironment } from "../../language/runtime/environment";
+import { declareInternalClass, GlobalEnvironment, wrapProxyObject, ProxyObjectVal } from "../../language/runtime/environment";
 import { MK_FLOAT, MK_NULL, ValueAlias } from "../../language/runtime/values";
 import { RuntimeError } from "../../errors";
 
@@ -74,15 +74,15 @@ export class Sphere extends Body {
 }
 
 export function declareSphereClass(env: GlobalEnvironment) {
-  return declareGeneralClass<Sphere>(
+  return declareInternalClass<Sphere>(
     "Kugel",
     {
-      radiusSetzen: (o, args) => {
+      setzeRadius: (o, args) => {
         if (args.length !== 1) throw new RuntimeError(`Unpassende Parameteranzahl!`);
-        if (args[0].type !== ValueAlias.Number || args[0].type !== ValueAlias.Number) throw new RuntimeError(`Erwartete eine (Komma-)Zahl!`);
+        if (args[0].type !== ValueAlias.Number && args[0].type !== ValueAlias.Float) throw new RuntimeError(`Erwartete eine (Komma-)Zahl!`);
         o.radius = args[0].value;
         return MK_NULL();
-      }
+      },
     },
     {
       radius: (o) => {
@@ -91,4 +91,8 @@ export function declareSphereClass(env: GlobalEnvironment) {
     },
     env
   )
+}
+
+export function instanceSphereObject(o: Sphere, env: GlobalEnvironment): ProxyObjectVal<Sphere> {
+  return wrapProxyObject(o, "Kugel", env);
 }

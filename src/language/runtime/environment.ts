@@ -29,23 +29,23 @@ export interface GlobalEnvironment extends Environment {
     // global env holds some special values that we don't want to lookup by name
     readonly robotClass: ClassVal;
     readonly worldClass: ClassVal;
-    readonly sphereClass: ClassVal;
 }
 
 export function declareGlobalEnv(): GlobalEnvironment {
     class GlobalEnvironment extends Environment {
         private _robotClass: BuiltinClassVal = declareRobotClass(this);
         private _worldClass: BuiltinClassVal = declareWorldClass(this);
-        public _sphereClass: BuiltinClassVal = declareSphereClass(this);
+
+        constructor() {
+            super();
+            declareSphereClass(this);
+        }
 
         get robotClass() {
             return this._robotClass;
         }
         get worldClass() {
             return this._worldClass;
-        }
-        get sphereClass() {
-            return this._sphereClass;
         }
     }
     const env = new GlobalEnvironment();
@@ -545,12 +545,12 @@ export class ClassPrototype {
 }
 
 
-// API helper
+// General internal class declarations
 export interface ProxyObjectVal<C> extends ObjectVal {
     o: C;
 }
 
-export function declareGeneralClass<C>(
+export function declareInternalClass<C>(
     clsName: string,
     clsMethods: Record<string, (o: C, args: RuntimeVal[]) => RuntimeVal>,
     clsAttributes: Record<string, (o: C) => RuntimeVal>,
@@ -594,7 +594,7 @@ export function declareGeneralClass<C>(
         );
     }
 
-    // insert method into class
+    // insert methods into class
     for (const methodName in clsMethods) {
         mkClassMethod(methodName, clsMethods[methodName]);
     }
@@ -604,23 +604,26 @@ export function declareGeneralClass<C>(
         mkClassAttribute(attributeName, clsAttributes[attributeName]);
     }
 
+    env.declareVar(clsName, cls, true);
     return cls;
 }
 
-export function createGeneralObjectOfClass<C>(o: C, cls: ClassVal): ProxyObjectVal<C> {
-    const env = new VarHolder();
+export function wrapProxyObject<C>(o: C, clsName: string, env: Environment): ProxyObjectVal<C> {
+    let cls = env.lookupVar(clsName);
+    if (cls.type !== ValueAlias.Class) throw `'${clsName}' ist kein Klassenname!`;
+    
+    const ownMembers = new VarHolder();
     const obj: ProxyObjectVal<C> = {
         type: ValueAlias.Object,
         cls,
-        ownMembers: env,
+        ownMembers,
         o,
     };
-
     return obj;
 }
 
-export function declareGeneralObject<C>(o: C, cls: ClassVal, varname: string, env: GlobalEnvironment): C {
+export function declareProxyObject<C>(o: C, varname: string, clsName: string, env: Environment): C {
     // add object to environment
-    env.declareVar(varname, createGeneralObjectOfClass(o, cls), true);
+    env.declareVar(varname, wrapProxyObject(o, clsName, env), true);
     return o;
 }
