@@ -417,7 +417,7 @@ export class Environment implements StaticScope {
 
     public declareInternalClass<C>(
         clsName: string,
-        clsContructor: (args: RuntimeVal[]) => C,
+        clsContructor: ((args: RuntimeVal[]) => C) | null,
         clsMethods: Record<string, (o: C, args: RuntimeVal[]) => RuntimeVal>,
         clsAttributes: Record<string, (o: C) => RuntimeVal>,
     ) {
