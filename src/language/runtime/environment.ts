@@ -1,7 +1,7 @@
 import { RuntimeError } from "../../errors";
 import { declareSphereClass } from "../../robot/addons/bodies";
-import { declareRobotClass } from "../../robot/robot";
-import { declareWorldClass } from "../../robot/world";
+import { declareRobotClass, Robot } from "../../robot/robot";
+import { declareWorldClass, World } from "../../robot/world";
 import { ENV } from "../../spec";
 import { formatValue } from "../../utils";
 import { Trampoline, jump, jumpAround, jumpBind, land } from "./trampoline";
@@ -33,8 +33,8 @@ export interface GlobalEnvironment extends Environment {
 
 export function declareGlobalEnv(): GlobalEnvironment {
     class GlobalEnvironment extends Environment {
-        private _robotClass: BuiltinClassVal = declareRobotClass(this);
-        private _worldClass: BuiltinClassVal = declareWorldClass(this);
+        private _robotClass: BuiltinClassVal<Robot> = declareRobotClass(this);
+        private _worldClass: BuiltinClassVal<World> = declareWorldClass(this);
 
         constructor() {
             super();
@@ -414,6 +414,100 @@ export class Environment implements StaticScope {
         if (!this._parent) return land(undefined);
         return jump(() => this._parent!.resolveVarImpl(varname));
     }
+
+    public declareInternalClass<C>(
+        clsName: string,
+        clsContructor: (args: RuntimeVal[]) => C,
+        clsMethods: Record<string, (o: C, args: RuntimeVal[]) => RuntimeVal>,
+        clsAttributes: Record<string, (o: C) => RuntimeVal>,
+    ) {
+        const prototype = new ClassPrototype();
+        const cls: BuiltinClassVal<C> = {
+            type: ValueAlias.Class,
+            name: clsName,
+            internal: true,
+            prototype,
+            internalConstructor: clsContructor,
+        };
+
+        function downcastClass(self: ObjectVal): asserts self is ProxyObjectVal<C> {
+            if (!Object.is(self.cls, cls))
+                throw new RuntimeError(
+                    `Diese Methode kann nur auf '${cls.name}' ausgeführt werden.`
+                );
+        }
+
+        function mkClassMethod(
+            name: string,
+            m: (o: C, args: RuntimeVal[]) => RuntimeVal
+        ) {
+            prototype.declareMethod(
+                name,
+                MK_NATIVE_METHOD(name, function (args) {
+                    downcastClass(this);
+                    return m(this.o, args);
+                })
+            );
+        }
+
+        function mkClassAttribute(name: string, m: (o: C) => RuntimeVal) {
+            prototype.declareMethod(
+                name,
+                MK_NATIVE_GETTER(name, function () {
+                    downcastClass(this);
+                    return m(this.o);
+                })
+            );
+        }
+
+        // insert methods into class
+        for (const methodName in clsMethods) {
+            mkClassMethod(methodName, clsMethods[methodName]);
+        }
+
+        // insert attributes (getters) into class
+        for (const attributeName in clsAttributes) {
+            mkClassAttribute(attributeName, clsAttributes[attributeName]);
+        }
+
+        this.declareVar(clsName, cls, true);
+        return cls;
+    }
+
+    public  wrapProxyObject<C>(o: C, clsName: string): ProxyObjectVal<C> {
+        let cls = this.lookupVar(clsName);
+        if (cls.type !== ValueAlias.Class) throw `'${clsName}' ist kein Klassenname!`;
+        
+        const ownMembers = new VarHolder();
+        const obj: ProxyObjectVal<C> = {
+            type: ValueAlias.Object,
+            cls,
+            ownMembers,
+            o,
+        };
+        return obj;
+    }
+
+    public instanceProxyObject<C>(clsName: string, args: RuntimeVal[]): ProxyObjectVal<C> {
+        let cls = this.lookupVar(clsName);
+        if (cls.type !== ValueAlias.Class) throw `'${clsName}' ist kein Klassenname!`;
+        if (!cls.internal || !cls.internalConstructor) throw `Die Klasse '${clsName}' ist nicht instanziierbar!`;
+
+        const ownMembers = new VarHolder();
+        const obj: ProxyObjectVal<C> = {
+            type: ValueAlias.Object,
+            cls,
+            ownMembers,
+            o: cls.internalConstructor(args),
+        };
+        return obj;
+    }
+
+    public declareProxyObject<C>(o: C, varname: string, clsName: string, env: Environment): C {
+        // add object to environment
+        env.declareVar(varname, this.wrapProxyObject(o, clsName), true);
+        return o;
+    }
 }
 
 function resolveDynamicVar(
@@ -550,80 +644,3 @@ export interface ProxyObjectVal<C> extends ObjectVal {
     o: C;
 }
 
-export function declareInternalClass<C>(
-    clsName: string,
-    clsMethods: Record<string, (o: C, args: RuntimeVal[]) => RuntimeVal>,
-    clsAttributes: Record<string, (o: C) => RuntimeVal>,
-    env: GlobalEnvironment
-) {
-    const prototype = new ClassPrototype();
-    const cls: BuiltinClassVal = {
-        type: ValueAlias.Class,
-        name: clsName,
-        internal: true,
-        prototype,
-    };
-
-    function downcastClass(self: ObjectVal): asserts self is ProxyObjectVal<C> {
-        if (!Object.is(self.cls, cls))
-            throw new RuntimeError(
-                `Diese Methode kann nur auf '${cls.name}' ausgeführt werden.`
-            );
-    }
-
-    function mkClassMethod(
-        name: string,
-        m: (o: C, args: RuntimeVal[]) => RuntimeVal
-    ) {
-        prototype.declareMethod(
-            name,
-            MK_NATIVE_METHOD(name, function (args) {
-                downcastClass(this);
-                return m(this.o, args);
-            })
-        );
-    }
-
-    function mkClassAttribute(name: string, m: (o: C) => RuntimeVal) {
-        prototype.declareMethod(
-            name,
-            MK_NATIVE_GETTER(name, function () {
-                downcastClass(this);
-                return m(this.o);
-            })
-        );
-    }
-
-    // insert methods into class
-    for (const methodName in clsMethods) {
-        mkClassMethod(methodName, clsMethods[methodName]);
-    }
-
-    // insert attributes (getters) into class
-    for (const attributeName in clsAttributes) {
-        mkClassAttribute(attributeName, clsAttributes[attributeName]);
-    }
-
-    env.declareVar(clsName, cls, true);
-    return cls;
-}
-
-export function wrapProxyObject<C>(o: C, clsName: string, env: Environment): ProxyObjectVal<C> {
-    let cls = env.lookupVar(clsName);
-    if (cls.type !== ValueAlias.Class) throw `'${clsName}' ist kein Klassenname!`;
-    
-    const ownMembers = new VarHolder();
-    const obj: ProxyObjectVal<C> = {
-        type: ValueAlias.Object,
-        cls,
-        ownMembers,
-        o,
-    };
-    return obj;
-}
-
-export function declareProxyObject<C>(o: C, varname: string, clsName: string, env: Environment): C {
-    // add object to environment
-    env.declareVar(varname, wrapProxyObject(o, clsName, env), true);
-    return o;
-}

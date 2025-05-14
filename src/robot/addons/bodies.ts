@@ -1,6 +1,6 @@
 import type * as p5 from "p5";
-import { declareInternalClass, GlobalEnvironment, wrapProxyObject, ProxyObjectVal } from "../../language/runtime/environment";
-import { MK_FLOAT, MK_NULL, ValueAlias } from "../../language/runtime/values";
+import { GlobalEnvironment, ProxyObjectVal } from "../../language/runtime/environment";
+import { MK_FLOAT, MK_NULL, RuntimeVal, ValueAlias } from "../../language/runtime/values";
 import { RuntimeError } from "../../errors";
 
 export class Body {
@@ -74,8 +74,12 @@ export class Sphere extends Body {
 }
 
 export function declareSphereClass(env: GlobalEnvironment) {
-  return declareInternalClass<Sphere>(
+  env.declareInternalClass<Sphere>(
     "Kugel",
+    (args) => {
+      if (args.length !== 0) throw new RuntimeError(`Konstruktor von 'Kugel' erwartet 0 Parameter!`);
+      return new Sphere(0, 0, "white", "black", 50);
+    },
     {
       setzeRadius: (o, args) => {
         if (args.length !== 1) throw new RuntimeError(`Unpassende Parameteranzahl!`);
@@ -88,11 +92,14 @@ export function declareSphereClass(env: GlobalEnvironment) {
       radius: (o) => {
         return MK_FLOAT(o.radius);
       }
-    },
-    env
+    }
   )
 }
 
-export function instanceSphereObject(o: Sphere, env: GlobalEnvironment): ProxyObjectVal<Sphere> {
-  return wrapProxyObject(o, "Kugel", env);
+export function wrapSphereObject(o: Sphere, env: GlobalEnvironment): ProxyObjectVal<Sphere> {
+  return env.wrapProxyObject(o, "Kugel");
+}
+
+export function instanceSphereObject(args: RuntimeVal[], env: GlobalEnvironment): ProxyObjectVal<Sphere> {
+  return env.instanceProxyObject("Kugel", args);
 }

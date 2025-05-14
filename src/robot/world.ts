@@ -1,9 +1,9 @@
 import { RuntimeError, WorldError } from "../errors";
-import { ClassPrototype, wrapProxyObject, declareProxyObject, GlobalEnvironment, VarHolder } from "../language/runtime/environment";
+import { ClassPrototype, GlobalEnvironment, VarHolder } from "../language/runtime/environment";
 import { BuiltinClassVal, MK_BOOL, MK_NATIVE_GETTER, MK_NATIVE_METHOD, MK_NUMBER, ObjectVal, RuntimeVal, ValueAlias } from "../language/runtime/values";
 import { ENV } from "../spec";
 import { rndi } from "../utils";
-import { instanceSphereObject, Sphere, type Body } from "./addons/bodies";
+import { wrapSphereObject, Sphere, type Body, instanceSphereObject } from "./addons/bodies";
 import { declareRobot, Robot } from "./robot";
 import { WorldGen, WorldSource } from "./tasks";
 
@@ -67,13 +67,15 @@ interface WorldObjVal extends ObjectVal {
     w: World,
 }
 
-export function declareWorldClass(env: GlobalEnvironment): BuiltinClassVal {
+// this function should be replaced by declareInternalClass
+export function declareWorldClass(env: GlobalEnvironment): BuiltinClassVal<World> {
     const prototype = new ClassPrototype();
-    const worldClass: BuiltinClassVal = {
+    const worldClass: BuiltinClassVal<World> = {
         type: ValueAlias.Class,
         name: "Welt",
         internal: true,
         prototype,
+        internalConstructor: null,
     };
 
     function downcastWorld(self: ObjectVal): asserts self is WorldObjVal {
@@ -132,14 +134,21 @@ export function declareWorldClass(env: GlobalEnvironment): BuiltinClassVal {
         }
     );
 
+/** Example:
+Objekt kugel = welt.erzeugeKugel()
+
+wiederhole für i von 1 bis 100
+    kugel.setzeRadius(kugel.radius + i)
+ende
+*/
+
     mkWorldMethod(
         ENV.world.mth.CREATE_SPHERE,
         (w, args) => {
             if (args.length != 0)
                 throw new RuntimeError(ENV.world.mth.CREATE_SPHERE + `() erwartet keine Parameter!`);
-            let obj = new Sphere(0, 0, "red", "white", 50);
-            let ret = instanceSphereObject(obj, env);
-            w.decorations.push(obj);
+            let ret = instanceSphereObject([], env);
+            w.decorations.push(ret.o);
             return ret;
         }
     );

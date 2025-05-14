@@ -189,7 +189,7 @@ export function eval_numeric_binary_expr(
         return MK_BOOL(lhs.value <= rhs.value);
     } else if (operator.type == TokenType.NEQ) {
         return MK_BOOL(lhs.value != rhs.value);
-    } else if (lhs.type !== rhs.type) {
+    } else if (lhs.type === ValueAlias.Float || rhs.type === ValueAlias.Float) {
         // cast to float
         if (operator.type == TokenType.Plus) {
             return MK_FLOAT(lhs.value + rhs.value);

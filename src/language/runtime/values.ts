@@ -105,11 +105,12 @@ export interface MethodVal {
     body: Stmt<StmtKind.ReturnCommand>[];
 }
 
-export interface BuiltinClassVal {
+export interface BuiltinClassVal<C> {
     type: ValueAlias.Class;
     name: string;
     internal: true;
     prototype: ClassPrototype;
+    internalConstructor: ((args: RuntimeVal[]) => C) | null;
 }
 
 export interface UserClassVal {
@@ -121,7 +122,7 @@ export interface UserClassVal {
     params: ParamDeclaration[]; // for constructor
 }
 
-export type ClassVal = BuiltinClassVal | UserClassVal;
+export type ClassVal = BuiltinClassVal<any> | UserClassVal;
 
 export interface ObjectVal {
     type: ValueAlias.Object;

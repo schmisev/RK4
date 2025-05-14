@@ -52,13 +52,15 @@ interface RobotObjVal extends ObjectVal {
     r: Robot,
 }
 
-export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
+// this function should be replaced by declareInternalClass
+export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal<Robot> {
     const prototype = new ClassPrototype();
-    const robotCls: BuiltinClassVal = {
+    const robotCls: BuiltinClassVal<Robot> = {
         type: ValueAlias.Class,
         name: "Roboter",
         internal: true,
         prototype,
+        internalConstructor: null,
     };
 
     function downcastRoboter(self: ObjectVal): asserts self is RobotObjVal {
