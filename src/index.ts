@@ -15,7 +15,7 @@ import { setCodeFromQuery } from "./ui/store-code";
 // language imports
 import Parser from "./language/frontend/parser";
 import { Program } from './language/frontend/ast';
-import { GlobalEnvironment, declareGlobalEnv } from "./language/runtime/environment";
+import { GlobalEnvironment, declareGlobalEnv } from "./language/runtime/global-environment";
 import { evaluate } from "./language/runtime/interpreter";
 import { easeInQuint, getKeys, getVals, lerp, rndi, sleep } from "./utils";
 

@@ -164,9 +164,9 @@ zeig k1.siehtZiegel(gelb) // Gibt wahr zurück, wenn der oberste Ziegel im Stape
 zeig k1.istAufMarke(rot) // Gibt wahr zurück, wenn die Marke unter k1 rot ist.
 // Auch hier ist der Parameter optional.
 
-zeig k1.x() // Gibt die x-Koordinate von k1 zurück.
-zeig k1.y() // Gibt die y-Koordinate zurück.
-zeig k1.richtung() // Gibt die Richtung als Text zurück: "N", "S", "W" oder "O".
+zeig k1.x // Gibt die x-Koordinate von k1 zurück.
+zeig k1.y // Gibt die y-Koordinate zurück.
+zeig k1.richtung // Gibt die Richtung als Text zurück: "N", "S", "W" oder "O".
 
 // im Debugbereich können weitere Robotermethoden eingesehen werden
 `, false);
@@ -184,7 +184,7 @@ ende
 
 // k1 dreht sich solange, bis er nach Norden schaut
 // Mehr zu = und anderen Vergleichsoperatoren später
-wiederhole solange nicht (k1.richtung() == "N")
+wiederhole solange nicht (k1.richtung == "N")
     k1.linksDrehen()
 ende
 

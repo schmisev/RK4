@@ -26,7 +26,9 @@ import {
     ForInBlock,
 } from "../../frontend/ast";
 import { CodePosition, ILLEGAL_CODE_POS, TokenType } from "../../frontend/lexer";
-import { ClassPrototype, Environment, VarHolder } from "../environment";
+import { Environment } from "../environment";
+import { VarHolder } from "../environment";
+import { ClassPrototype } from "../environment";
 import { SteppedEval, evaluate, evaluate_expr } from "../interpreter";
 import {
     RuntimeVal,

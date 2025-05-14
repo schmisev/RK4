@@ -1,7 +1,7 @@
 import { RuntimeError } from "../../errors";
 import { mod } from "../../utils";
 import { ObjDeclaration, ParamDeclaration, Stmt, StmtKind, VarDeclaration } from "../frontend/ast";
-import { ClassPrototype, StaticScope, VarHolder } from "./environment";
+import { VarHolder, StaticScope, ClassPrototype } from "./environment";
 
 export const enum ValueAlias {
     Null = "Nix",
@@ -110,7 +110,7 @@ export interface BuiltinClassVal<C> {
     name: string;
     internal: true;
     prototype: ClassPrototype;
-    internalConstructor: ((args: RuntimeVal[]) => C) | null;
+    internalConstructor?: ((args: RuntimeVal[]) => C);
 }
 
 export interface UserClassVal {
