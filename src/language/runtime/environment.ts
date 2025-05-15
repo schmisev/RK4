@@ -127,7 +127,8 @@ export class Environment implements StaticScope {
         if (!cls.internal)
             throw `'${clsName}' ist keine interne Klasse und sollte nicht auf diesem Weg instaziiert werden.`;
 
-        return instanceNativeObjectFromClass(cls, args);
+        // this is a bit of a cheat.
+        return instanceNativeObjectFromClass<C>(cls as BuiltinClassVal<C>, args);
     }
 
     public wrapNativeObject<C>(

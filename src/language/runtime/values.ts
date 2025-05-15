@@ -122,7 +122,7 @@ export interface UserClassVal {
     params: ParamDeclaration[]; // for constructor
 }
 
-export type ClassVal = BuiltinClassVal<any> | UserClassVal;
+export type ClassVal = BuiltinClassVal<unknown> | UserClassVal;
 
 export interface ObjectVal {
     type: ValueAlias.Object;
