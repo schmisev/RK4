@@ -118,24 +118,24 @@ export class Environment implements StaticScope {
     }
 
     // no type checking yet, you are on your own
-    public instanceNativeObject(
+    public instanceNativeObject<C>(
         clsName: string,
         args: RuntimeVal[]
-    ): NativeObjectVal<unknown> {
+    ): NativeObjectVal<C> {
         let cls = this.lookupVar(clsName);
         if (cls.type !== ValueAlias.Class)
             throw `'${clsName}' ist kein Klassenname!`;
         if (!cls.internal)
             throw `'${clsName}' ist keine interne Klasse und sollte nicht auf diesem Weg instaziiert werden.`;
 
-        return instanceNativeObjectFromClass(cls, args);
+        return instanceNativeObjectFromClass(cls as BuiltinClassVal<C>, args);
     }
 
     // no type checking yet, you are on your own
-    public wrapNativeObject(
+    public wrapNativeObject<C>(
         clsName: string,
-        obj: unknown,
-    ): NativeObjectVal<unknown> {
+        obj: C,
+    ): NativeObjectVal<C> {
         let cls = this.lookupVar(clsName);
         if (cls.type !== ValueAlias.Class)
             throw `'${clsName}' ist kein Klassenname!`;
@@ -143,7 +143,7 @@ export class Environment implements StaticScope {
             throw `'${clsName}' ist keine interne Klasse und sollte nicht auf diesem Weg instaziiert werden.`;
         
         const ownMembers = new VarHolder();
-        const nativeObj: NativeObjectVal<unknown> = {
+        const nativeObj: NativeObjectVal<C> = {
             type: ValueAlias.Object,
             cls,
             ownMembers,
