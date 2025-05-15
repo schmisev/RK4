@@ -1,6 +1,6 @@
 import { RuntimeError } from "../../errors";
 import { mod } from "../../utils";
-import { ObjDeclaration, ParamDeclaration, Stmt, StmtKind, VarDeclaration } from "../frontend/ast";
+import { ParamDeclaration, Stmt, StmtKind, VarDeclaration } from "../frontend/ast";
 import { VarHolder, StaticScope, ClassPrototype } from "./environment";
 
 export const enum ValueAlias {
@@ -117,7 +117,7 @@ export interface UserClassVal {
     type: ValueAlias.Class;
     name: string;
     internal?: false;
-    attributes: (VarDeclaration | ObjDeclaration)[];
+    attributes: VarDeclaration[];
     prototype: ClassPrototype;
     params: ParamDeclaration[]; // for constructor
 }

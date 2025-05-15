@@ -156,7 +156,9 @@ function structure(astNode: Program | AnyStmt): string {
         case StmtKind.UnaryExpr:
             return structureUnaryExpr(astNode);
         case StmtKind.AssignmentExpr:
-            return `${structure(astNode.assigne)} ist ${structure(astNode.value)}`
+            return `${structure(astNode.assigne)} ${astNode.operator.value} ${structure(astNode.value)}`
+        case StmtKind.InstanceExpr:
+            return `${astNode.operator.value} ${astNode.classname}(${astNode.args.map(structure).join(", ")})`
         case StmtKind.CallExpr:
             return `${structure(astNode.ident)}(${astNode.args.map(structure).join(", ")})`
         case StmtKind.MemberExpr:
@@ -165,8 +167,6 @@ function structure(astNode: Program | AnyStmt): string {
             return `${structure(astNode.container)}&lsqb;${structure(astNode.accessor)}&rsqb;`
         case StmtKind.VarDeclaration:
             return `${makeSpan(astNode.type, "struct-type")}</span> <span class="struct-ident">${astNode.ident}</span> ist ${structure(astNode.value)}`
-        case StmtKind.ObjDeclaration:
-            return `${makeSpan("Objekt", "struct-type")} <span class="struct-ident">${astNode.ident}</span> als <span class="struct-classtype">${astNode.classname}</span>`
         case StmtKind.ShowCommand:
             return `${makeSpan("zeig", "struct-cmd")} ${astNode.values.map(structure).join(", ")}`
         case StmtKind.FunctionDefinition:
@@ -409,10 +409,7 @@ function structureClass(node: ClassDefinition): string {
         
         <div class="struct-attributes">
             ${node.attributes.map((attr) => {
-                if (attr.kind == StmtKind.ObjDeclaration)
-                    return `<span class="struct-type">${attr.classname}</span> ${attr.ident}`
-                else
-                    return `<span class="struct-type">${attr.type}</span> ${attr.ident}`
+                return `<span class="struct-type">${attr.type}</span> ${attr.ident}`
             }).join("<br>")}
         </div>
         
