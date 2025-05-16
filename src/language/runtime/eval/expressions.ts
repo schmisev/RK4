@@ -2,7 +2,7 @@ import { RuntimeError } from "../../../errors";
 import { formatValue } from "../../../utils";
 import { Identifier, BinaryExpr, UnaryExpr, AssignmentExpr, CallExpr, MemberExpr, StmtKind, ListLiteral, ComputedMemberExpr, InstanceExpr } from "../../frontend/ast";
 import { CodePosition, Token, TokenType } from "../../frontend/lexer";
-import { Environment, VarHolder } from "../environment";
+import { Environment, instanceNativeObjectFromClass, VarHolder } from "../environment";
 import { SteppedEval, evaluate_expr } from "../interpreter";
 import {
     RuntimeVal,
@@ -124,17 +124,6 @@ export function* eval_instance_expr(
             `'${decl.classname}' ist kein Klassenname!`,
             decl.codePos
         );
-    if (cl.internal)
-        throw new RuntimeError(
-            `Kann kein neues Objekt der Klasse '${decl.classname}' erzeugen.`,
-            decl.codePos
-        );
-
-    const obj: ObjectVal = {
-        type: ValueAlias.Object,
-        cls: cl,
-        ownMembers: new VarHolder(),
-    };
 
     // calculate arguments of constructor
     const args: RuntimeVal[] = [];
@@ -142,6 +131,17 @@ export function* eval_instance_expr(
         const result = yield* evaluate_expr(expr, evalEnv);
         args.push(result);
     }
+
+    if (cl.internal) {
+        return instanceNativeObjectFromClass(cl, args);
+    }
+
+    // standard instantiation
+    const obj: ObjectVal = {
+        type: ValueAlias.Object,
+        cls: cl,
+        ownMembers: new VarHolder(),
+    };
 
     const constructorEnv = new Environment(evalEnv);
 

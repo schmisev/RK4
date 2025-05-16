@@ -1,5 +1,6 @@
 import { toPng } from "html-to-image";
-import { RuntimeVal, ValueAlias } from "./language/runtime/values";
+import { NumberLikeVal, RuntimeVal, ValueAlias } from "./language/runtime/values";
+import { RuntimeError } from "./errors";
 
 export class Vec2 {
   x: number = 0;
@@ -198,3 +199,25 @@ export function destructureTaskKey(key: string, containsTitle = false) {
 }
 
 export function mod(l: number, r: number) { return ((l % r) + r) % r };
+
+export function tooFewArgs(expected: ValueAlias): never {
+    throw new RuntimeError(`Zu wenige Parameter! Erwartete '${expected}'`);
+}
+
+export function tooManyArgs(args: RuntimeVal[], expected: number = 0): void {
+    if (args.length > expected) throw new RuntimeError(`Zu viele Parameter! Erwartete ${expected}, erhielt ${args.length}.`);
+}
+
+export function numberLikeArg(given: RuntimeVal | undefined): NumberLikeVal {
+    if (!given) tooFewArgs(ValueAlias.Number);
+    if (given.type !== ValueAlias.Number && given.type !== ValueAlias.Float)
+        throw new RuntimeError(`Erwartete '${ValueAlias.Number}' oder '${ValueAlias.Float}'`);
+    return given;
+}
+
+export function checkAnyArg<R extends RuntimeVal>(given: RuntimeVal | undefined, expected: R["type"]): R {
+    if (!given) tooFewArgs(expected);
+    if (given.type !== expected) 
+        throw new RuntimeError(`Erwartete '${expected}', erhielt '${given.type}'`);
+    return given as R;
+}

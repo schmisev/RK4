@@ -26,7 +26,7 @@
 
 ### Language features
 
-- [ ] Add Typing to functionr returns
+- [x] Add Typing to function returns, no checking yet
 - [x] Implement more Java-like object instantiation like so `Klasse obj sei neue Klasse()`
   - [ ] Implement type checking objects
     - [ ] As function arguments

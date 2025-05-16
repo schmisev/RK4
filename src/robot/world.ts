@@ -18,7 +18,7 @@ import {
     ValueAlias,
 } from "../language/runtime/values";
 import { ENV } from "../spec";
-import { rndi } from "../utils";
+import { formatValue, rndi } from "../utils";
 import { instanceSphereObject, Sphere, type Body } from "./addons/bodies";
 import { declareRobot, Robot } from "./robot";
 import { WorldGen, WorldSource } from "./tasks";
@@ -112,17 +112,6 @@ export function createWorldClass(env: Environment) {
                             `() erwartet keine Parameter!`
                     );
                 return MK_NUMBER(w.getStageIndex() + 1);
-            },
-
-            [ENV.world.mth.CREATE_SPHERE]: (w, args) => {
-                if (args.length != 0)
-                    throw new RuntimeError(
-                        ENV.world.mth.CREATE_SPHERE +
-                            `() erwartet keine Parameter!`
-                    );
-                let ret = instanceSphereObject(args, env);
-                w.decorations.push(ret.nativeRepr);
-                return ret;
             },
         },
     });

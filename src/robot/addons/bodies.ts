@@ -3,25 +3,32 @@ import { Environment, instanceNativeObjectFromClass } from "../../language/runti
 import { createInternalClass } from "../../language/runtime/environment";
 import { NativeObjectVal } from "../../language/runtime/environment";
 import {
+    BooleanVal,
+    isLikeNumber,
     MK_FLOAT,
     MK_NULL,
+    NumberLikeVal,
+    NumberVal,
     RuntimeVal,
     ValueAlias,
 } from "../../language/runtime/values";
 import { RuntimeError } from "../../errors";
+import { numberLikeArg, tooManyArgs } from "../../utils";
 
 export class Body {
     x: number;
     y: number;
+    z: number;
     color: string;
     strokeColor: string;
     xRot: number;
     yRot: number;
     zRot: number;
 
-    constructor(x: number, y: number, color: string, strokeColor: string) {
+    constructor(x: number, y: number, z: number, color: string, strokeColor: string) {
         this.x = 0;
         this.y = 0;
+        this.z = 0;
         this.color = color;
         this.strokeColor = strokeColor;
         this.xRot = 0;
@@ -30,7 +37,7 @@ export class Body {
     }
 
     draw(p5: p5) {
-        p5.translate(this.x, this.y);
+        p5.translate(this.x, this.y, this.z);
         p5.rotateX(this.xRot);
         p5.rotateY(this.yRot);
         p5.rotateZ(this.zRot);
@@ -49,13 +56,14 @@ export class Box extends Body {
     constructor(
         x: number,
         y: number,
+        z: number,
         color: string,
         strokeColor: string,
         length: number,
         width: number,
         height: number
     ) {
-        super(x, y, color, strokeColor);
+        super(x, y, z, color, strokeColor);
         this.length = length;
         this.width = width;
         this.height = height;
@@ -78,11 +86,12 @@ export class Sphere extends Body {
     constructor(
         x: number,
         y: number,
+        z: number,
         color: string,
         strokeColor: string,
         radius: number
     ) {
-        super(x, y, color, strokeColor);
+        super(x, y, z, color, strokeColor);
         this.radius = radius;
     }
 
@@ -98,11 +107,12 @@ export function createSphereClass() {
     return createInternalClass<Sphere>({
         clsName: "Kugel",
         clsConstructor: (args) => {
-            if (args.length !== 0)
-                throw new RuntimeError(
-                    `Konstruktor von 'Kugel' erwartet 0 Parameter!`
-                );
-            return new Sphere(0, 0, "white", "black", 50);
+            tooManyArgs(args, 4);
+            let x = numberLikeArg(args[0]);
+            let y = numberLikeArg(args[1]);
+            let z = numberLikeArg(args[2]);
+            let r = numberLikeArg(args[3]);
+            return new Sphere(x.value, y.value, z.value, "white", "black", r.value);
         },
         clsMethods: {
             setzeRadius: (o, args) => {
