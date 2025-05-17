@@ -43,6 +43,7 @@ import { CodePosition, ILLEGAL_CODE_POS, KEYWORDS } from "./language/frontend/le
 // General stuff
 import { ENV } from "./spec";
 import { AppRuntime } from "./app";
+import { CodeGenerator, VM } from "./language/backend/code-generation";
 
 // Global variables
 let maxDt = 250;
@@ -93,6 +94,8 @@ const errorMarkers: number[] = [];
 
 // Parser and environment
 const parser = new Parser();
+const compiler = new CodeGenerator();
+const vm = new VM();
 
 // HTML elements
 // Fetch task check
@@ -347,6 +350,9 @@ export async function updateIDE() {
     try {
         parser.produceAST(preloadCode, false, true);
         const program = rt.program = parser.produceAST(code, true, false);
+        compiler.compile_ast(program);
+        compiler.print_instructions();
+        vm.run_instructions(compiler.instructions);
         
         methodCompleter.updateMap(parser.collectedFields);
         classCompleter.updateList(parser.collectedClasses);
