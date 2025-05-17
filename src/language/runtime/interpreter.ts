@@ -24,6 +24,7 @@ import {
     eval_member_expr,
     eval_list_literal,
     eval_computed_member_expr,
+    eval_instance_expr,
 } from "./eval/expressions";
 import {
     eval_fn_definition,
@@ -35,7 +36,6 @@ import {
     eval_var_declaration,
     eval_while_block,
     eval_class_definition,
-    eval_obj_declaration,
     eval_return_command,
     eval_ext_method_definition,
     eval_always_block,
@@ -84,6 +84,9 @@ export function* evaluate<A extends AbruptStmtKind>(
         case StmtKind.AssignmentExpr:
             yield astNode.codePos;
             return yield* eval_assignment_expr(astNode, env);
+        case StmtKind.InstanceExpr:
+            yield astNode.codePos;
+            return yield* eval_instance_expr(astNode, env);
         case StmtKind.CallExpr:
             yield astNode.codePos;
             return yield* eval_call_expr(astNode, env);
@@ -109,8 +112,6 @@ export function* evaluate<A extends AbruptStmtKind>(
             return yield* eval_switch_block(astNode, env);
         case StmtKind.VarDeclaration:
             return yield* eval_var_declaration(astNode, env);
-        case StmtKind.ObjDeclaration:
-            return yield* eval_obj_declaration(astNode, env);
         case StmtKind.FunctionDefinition:
             return yield* eval_fn_definition(astNode, env);
         case StmtKind.ExtMethodDefinition:

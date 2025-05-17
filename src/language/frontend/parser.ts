@@ -3,7 +3,6 @@ import {
     Program,
     Expr,
     VarDeclaration,
-    ObjDeclaration,
     FunctionDefinition,
     ShowCommand,
     BreakCommand,
@@ -24,6 +23,7 @@ import {
     FromToBlock,
     ListLiteral,
     ForInBlock,
+    InstanceExpr,
 } from "./ast";
 import {
     tokenize,
@@ -97,6 +97,37 @@ export default class Parser {
         if (prev.type == TokenType.Identifier) this.collectedIdents.add(prev.value);
         this.lastEaten = prev; // store previous token
         return prev;
+    }
+
+    private expectType(err: string) {
+        const prev = this.tokens.shift();
+        if (!prev) {
+            throw new ParserError(
+                "PARSER: " + err + " - nichts erhalten",
+                ILLEGAL_CODE_POS()
+            );
+        }
+
+        if (prev.type == TokenType.DeclBoolean) {
+            return ValueAlias.Boolean;
+        } else if (prev.type == TokenType.DeclNumber) {
+            return ValueAlias.Number;
+        } else if (prev.type == TokenType.DeclFloat) {
+            return ValueAlias.Float;
+        } else if (prev.type == TokenType.DeclString) {
+            return ValueAlias.String;
+        } else if (prev.type == TokenType.DeclList) {
+            return ValueAlias.List;
+        } else if (prev.type == TokenType.DeclObject) {
+            return ValueAlias.Object;
+        }
+
+        const codePos = prev.codePos;
+
+        throw new ParserError(
+            "PARSER: " + err + " - erhalten: " + JSON.stringify(prev.value),
+            codePos
+        );
     }
 
     public produceAST(sourceCode: string, trackPos: boolean, resetCollected: boolean): Program {
@@ -300,7 +331,7 @@ export default class Parser {
             TokenType.EndLine,
             "Nach dem Klassenkopf sollte eine neue Zeile beginnen!"
         );
-        const attributes: (VarDeclaration | ObjDeclaration)[] = [];
+        const attributes: VarDeclaration[] = [];
         const methods: FunctionDefinition[] = [];
         while (
             this.at().type != TokenType.EndBlock &&
@@ -660,35 +691,18 @@ export default class Parser {
         return body;
     }
 
-    parse_any_declaration(): VarDeclaration | ObjDeclaration {
+    parse_any_declaration(): VarDeclaration {
         let codePos = this.at().codePos;
 
-        let type: VarDeclaration["type"] = ValueAlias.Null;
-        if (this.at().type == TokenType.DeclBoolean) {
-            type = ValueAlias.Boolean;
-        } else if (this.at().type == TokenType.DeclNumber) {
-            type = ValueAlias.Number;
-        } else if (this.at().type == TokenType.DeclFloat) {
-            type = ValueAlias.Float;
-        }else if (this.at().type == TokenType.DeclString) {
-            type = ValueAlias.String;
-        } else if (this.at().type == TokenType.DeclList) {
-            type = ValueAlias.List;
-        } else if (this.at().type == TokenType.DeclObject) {
-            type = ValueAlias.Object;
-        }
-
-        this.eat();
+        let type: VarDeclaration["type"] = this.expectType("Erwarte Datentyp!");
 
         const ident = this.expect(
             TokenType.Identifier,
             "Erwarte Variablennamen nach 'Zahl', 'Kommazahl', 'Text', 'Wahrheitswert', 'Liste' oder 'Objekt'!"
         ).value;
 
-        let decl: VarDeclaration | ObjDeclaration;
-        if (this.at().type === TokenType.Instance) {
-            decl = this.parse_obj_declaration(type, ident);
-        } else if (this.at().type === TokenType.Assign) {
+        let decl: VarDeclaration;
+        if (this.at().type === TokenType.Assign) {
             decl = this.parse_var_declaration(type, ident);
         } else {
             throw new ParserError(
@@ -716,61 +730,11 @@ export default class Parser {
         };
     }
 
-    parse_obj_declaration(type: VarDeclaration["type"], ident: string): ObjDeclaration {
-        let codePos = this.at().codePos;
-
-        this.expect(TokenType.Instance, "Erwarte 'als' nach Objektnamen!");
-        const classname = this.expect(
-            TokenType.Identifier,
-            "Erwarte Klassenname nach 'als'!"
-        ).value;
-
-        const args: Expr[] = [];
-        if (this.at().type == TokenType.OpenParen) {
-            this.eat();
-            while (this.at().type != TokenType.CloseParen) {
-                const arg = this.parse_expr();
-                args.push(arg);
-                if (this.at().type == TokenType.CloseParen) break;
-                this.expect(
-                    TokenType.Comma,
-                    "Erwarte Kommas zwischen Parametern!"
-                );
-            }
-            this.expect(
-                TokenType.CloseParen,
-                "Erwarte schließende Klammer nach Parametern!"
-            ); // eat close paren
-        }
-
-        codePos = mergeCodePos(codePos, this.lastEaten.codePos);
-        return {
-            kind: StmtKind.ObjDeclaration,
-            ident,
-            type: ValueAlias.Object,
-            classname,
-            args,
-            codePos,
-        };
-    }
-
     parse_param_declaration(): ParamDeclaration {
         let codePos = this.at().codePos;
 
-        let type = ValueAlias.Null;
-        if (this.at().type == TokenType.DeclBoolean) {
-            type = ValueAlias.Boolean;
-        } else if (this.at().type == TokenType.DeclNumber) {
-            type = ValueAlias.Number;
-        } else if (this.at().type == TokenType.DeclFloat) {
-            type = ValueAlias.Float;
-        } else if (this.at().type == TokenType.DeclString) {
-            type = ValueAlias.String;
-        } else if (this.at().type == TokenType.DeclObject) {
-            type = ValueAlias.Object;
-        }
+        let type = this.expectType("Erwartete einen Datentyp!");
 
-        this.eat();
         const ident = this.expect(
             TokenType.Identifier,
             "Erwarte Variablennamen nach 'Zahl', 'Wahrheitswert', 'Text' oder 'Objekt'!"
@@ -798,6 +762,13 @@ export default class Parser {
             this.expect(TokenType.Comma, "Erwarte Komma nach Paramtern!");
         }
         this.eat();
+
+        let returnType: ValueAlias = ValueAlias.Null;
+        if (this.at().type == TokenType.Yield) {
+            this.eat();
+            returnType = this.expectType(`Erwarte Datentyp nach 'zu'!`);
+        }
+
         this.expect(
             TokenType.EndLine,
             "Erwarte neue Zeile vor Funktionskörper!"
@@ -816,6 +787,7 @@ export default class Parser {
             name,
             params,
             body,
+            returnType,
             codePos,
         };
     }
@@ -838,6 +810,12 @@ export default class Parser {
             this.expect(TokenType.Comma, "Erwarte Komma nach Paramtern!");
         }
         this.eat();
+
+        let returnType: ValueAlias = ValueAlias.Null;
+        if (this.at().type == TokenType.Yield) {
+            this.eat();
+            returnType = this.expectType(`Erwarte Datentyp nach 'zu'!`);
+        }
 
         this.expect(
             TokenType.For,
@@ -867,6 +845,7 @@ export default class Parser {
             name,
             params,
             body,
+            returnType,
             classname,
             codePos,
         };
@@ -892,7 +871,7 @@ export default class Parser {
 
         const left = this.parse_logical_expr();
         if (this.at().type == TokenType.Assign) {
-            this.eat();
+            let operator = this.eat();
             const value = this.parse_assignment_expr();
 
             codePos = mergeCodePos(this.lastEaten.codePos, codePos);
@@ -900,6 +879,7 @@ export default class Parser {
                 kind: StmtKind.AssignmentExpr,
                 value,
                 assigne: left,
+                operator,
                 codePos,
                 inParen: false,
             };
@@ -1142,6 +1122,8 @@ export default class Parser {
                 };
             case TokenType.OpenBracket:
                 return this.parse_list_expr();
+            case TokenType.Instance:
+                return this.parse_instance_expr();
             case TokenType.OpenParen: {
                 this.eat(); // eat opening paren
                 const value = this.parse_expr();
@@ -1180,6 +1162,44 @@ export default class Parser {
             kind: StmtKind.ListLiteral,
             elements,
             codePos,
+            inParen: false,
+        };
+    }
+
+    parse_instance_expr(): InstanceExpr {
+        let codePos = this.at().codePos;
+
+        let newString = this.eat(); // eat "neu"
+        const classname = this.expect(
+            TokenType.Identifier,
+            "Erwarte Klassenname nach 'neu'!"
+        ).value;
+
+        const args: Expr[] = [];
+        if (this.at().type == TokenType.OpenParen) {
+            this.eat();
+            while (this.at().type != TokenType.CloseParen) {
+                const arg = this.parse_expr();
+                args.push(arg);
+                if (this.at().type == TokenType.CloseParen) break;
+                this.expect(
+                    TokenType.Comma,
+                    "Erwarte Kommas zwischen Parametern!"
+                );
+            }
+            this.expect(
+                TokenType.CloseParen,
+                "Erwarte schließende Klammer nach Parametern!"
+            ); // eat close paren
+        }
+
+        codePos = mergeCodePos(codePos, this.lastEaten.codePos);
+        return {
+            kind: StmtKind.InstanceExpr,
+            classname,
+            args,
+            codePos,
+            operator: newString,
             inParen: false,
         };
     }

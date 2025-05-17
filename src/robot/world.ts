@@ -1,147 +1,131 @@
 import { RuntimeError, WorldError } from "../errors";
-import { ClassPrototype, GlobalEnvironment, VarHolder } from "../language/runtime/environment";
-import { BuiltinClassVal, MK_BOOL, MK_NATIVE_GETTER, MK_NATIVE_METHOD, MK_NUMBER, ObjectVal, RuntimeVal, ValueAlias } from "../language/runtime/values";
+import { GlobalEnvironment } from "../language/runtime/global-environment";
+import {
+    createInternalClass,
+    Environment,
+    NativeObjectVal,
+    VarHolder,
+} from "../language/runtime/environment";
+import { ClassPrototype } from "../language/runtime/environment";
+import {
+    BuiltinClassVal,
+    MK_BOOL,
+    MK_NATIVE_GETTER,
+    MK_NATIVE_METHOD,
+    MK_NUMBER,
+    ObjectVal,
+    RuntimeVal,
+    ValueAlias,
+} from "../language/runtime/values";
 import { ENV } from "../spec";
-import { rndi } from "../utils";
+import { formatValue, rndi } from "../utils";
+import { instanceSphereObject, Sphere, type Body } from "./addons/bodies";
 import { declareRobot, Robot } from "./robot";
 import { WorldGen, WorldSource } from "./tasks";
 
 export enum BlockType {
-    r = "R", 
-    g = "G", 
-    b = "B", 
-    y = "Y"
+    r = "R",
+    g = "G",
+    b = "B",
+    y = "Y",
 }
 
 export const blockList = Object.values(BlockType);
 
 export enum MarkerType {
-    None = "", 
-    R = "R", 
-    G = "G", 
-    B = "B", 
-    Y = "Y"
+    None = "",
+    R = "R",
+    G = "G",
+    B = "B",
+    Y = "Y",
 }
 
-export const markerList = Object.values(MarkerType).filter((m) => (m !== MarkerType.None));
+export const markerList = Object.values(MarkerType).filter(
+    (m) => m !== MarkerType.None
+);
 
 export const CBOT = "#b1b1bb";
-export const CBOT2 = "#8a8a93"
+export const CBOT2 = "#8a8a93";
 export const CR = "#ED553B";
 export const CY = "#F6D55C";
 export const CG = "#3CAEA3";
 export const CB = "#20639B";
 
 export const CHAR2BLOCK: Record<string, BlockType> = {
-    "R": BlockType.r,
-    "G": BlockType.g,
-    "B": BlockType.b,
-    "Y": BlockType.y,
-    "r": BlockType.r,
-    "g": BlockType.g,
-    "b": BlockType.b,
-    "y": BlockType.y,
-    "rot": BlockType.r,
-    "grün": BlockType.g,
-    "blau": BlockType.b,
-    "gelb": BlockType.y,
-}
+    R: BlockType.r,
+    G: BlockType.g,
+    B: BlockType.b,
+    Y: BlockType.y,
+    r: BlockType.r,
+    g: BlockType.g,
+    b: BlockType.b,
+    y: BlockType.y,
+    rot: BlockType.r,
+    grün: BlockType.g,
+    blau: BlockType.b,
+    gelb: BlockType.y,
+};
 
 export const CHAR2MARKER: Record<string, MarkerType> = {
-    "R": MarkerType.R,
-    "G": MarkerType.G,
-    "B": MarkerType.B,
-    "Y": MarkerType.Y,
-    "r": MarkerType.R,
-    "g": MarkerType.G,
-    "b": MarkerType.B,
-    "y": MarkerType.Y,
-    "rot": MarkerType.R,
-    "grün": MarkerType.G,
-    "blau": MarkerType.B,
-    "gelb": MarkerType.Y,
+    R: MarkerType.R,
+    G: MarkerType.G,
+    B: MarkerType.B,
+    Y: MarkerType.Y,
+    r: MarkerType.R,
+    g: MarkerType.G,
+    b: MarkerType.B,
+    y: MarkerType.Y,
+    rot: MarkerType.R,
+    grün: MarkerType.G,
+    blau: MarkerType.B,
+    gelb: MarkerType.Y,
+};
+
+export function createWorldClass(env: Environment) {
+    return createInternalClass<World>({
+        clsName: ENV.world.cls,
+        clsAttributes: {
+            [ENV.world.attr.LENGTH]: (w) => {
+                return MK_NUMBER(w.L);
+            },
+            [ENV.world.attr.WIDTH]: (w) => {
+                return MK_NUMBER(w.W);
+            },
+            [ENV.world.attr.HEIGHT]: (w) => {
+                return MK_NUMBER(w.H);
+            },
+        },
+        clsMethods: {
+            [ENV.world.mth.IS_GOAL_REACHED]: (w, args) => {
+                if (args.length != 0)
+                    throw new RuntimeError(
+                        ENV.world.mth.IS_GOAL_REACHED +
+                            `() erwartet keine Parameter!`
+                    );
+                return MK_BOOL(w.isGoalReached());
+            },
+
+            [ENV.world.mth.GET_STAGE_INDEX]: (w, args) => {
+                if (args.length != 0)
+                    throw new RuntimeError(
+                        ENV.world.mth.GET_STAGE_INDEX +
+                            `() erwartet keine Parameter!`
+                    );
+                return MK_NUMBER(w.getStageIndex() + 1);
+            },
+        },
+    });
 }
 
-interface WorldObjVal extends ObjectVal {
+export function declareWorld(
     w: World,
-}
-
-export function declareWorldClass(env: GlobalEnvironment): BuiltinClassVal {
-    const prototype = new ClassPrototype();
-    const worldClass: BuiltinClassVal = {
-        type: ValueAlias.Class,
-        name: "Welt",
-        internal: true,
-        prototype,
-    };
-
-    function downcastWorld(self: ObjectVal): asserts self is WorldObjVal {
-        if (!Object.is(self.cls, worldClass))
-            throw new RuntimeError(`Diese Methode kann nur auf einer Welt ausgeführt werden.`);
-    }
-    function mkWorldMethod(name: string, m: (r: World, args: RuntimeVal[]) => RuntimeVal) {
-        prototype.declareMethod(name, MK_NATIVE_METHOD(name, function (args) {
-            downcastWorld(this);
-            return m(this.w, args);
-        }))
-    }
-    function mkWorldAttribute(name: string, m: (r: World) => RuntimeVal) {
-        prototype.declareMethod(name, MK_NATIVE_GETTER(name, function () {
-            downcastWorld(this);
-            return m(this.w);
-        }))
-    }
-
-    mkWorldAttribute(
-        ENV.world.attr.LENGTH,
-        (w) => {
-            return MK_NUMBER(w.L);
-        }
+    varname: string,
+    env: GlobalEnvironment
+): void {
+    const world: NativeObjectVal<World> = env.wrapNativeObject(
+        ENV.world.cls,
+        w
     );
-
-    mkWorldAttribute(
-        ENV.world.attr.WIDTH,
-        (w) => {
-            return MK_NUMBER(w.W);
-        }
-    );
-
-    mkWorldAttribute(
-        ENV.world.attr.HEIGHT,
-        (w) => {
-            return MK_NUMBER(w.H);
-        }
-    );
-
-    mkWorldMethod(
-        ENV.world.mth.IS_GOAL_REACHED,
-        (w, args) => {
-            if (args.length != 0)
-                throw new RuntimeError(ENV.world.mth.IS_GOAL_REACHED + `() erwartet keine Parameter!`);
-            return MK_BOOL(w.isGoalReached());
-        }
-    );
-
-    mkWorldMethod(
-        ENV.world.mth.GET_STAGE_INDEX,
-        (w, args) => {
-            if (args.length != 0)
-                throw new RuntimeError(ENV.world.mth.GET_STAGE_INDEX + `() erwartet keine Parameter!`);
-            return MK_NUMBER(w.getStageIndex() + 1);
-        }
-    );
-
-    return worldClass;
-}
-
-export function declareWorld(w: World, varname: string, env: GlobalEnvironment): void {
-    const world_env = new VarHolder();
-    const world: WorldObjVal = {
-        type: ValueAlias.Object,
-        cls: env.worldClass,
-        ownMembers: world_env,
-        w,
-    };
 
     // add world to environment
     env.declareVar(varname, world, true);
@@ -158,14 +142,14 @@ export class World {
     stageIdx: number = -1;
     goalsRemaining: number = 0;
 
+    decorations: Body[] = [];
+
     constructor(session: number, src: WorldSource, stage: number) {
         this.session = session;
         this.resetWorld();
         this.stages = [];
-        if (typeof src === "string")
-            this.loadWorldFromString(src, stage);
-        else
-            this.generateWorld(src, stage);
+        if (typeof src === "string") this.loadWorldFromString(src, stage);
+        else this.generateWorld(src, stage);
     }
 
     getStageCount() {
@@ -201,7 +185,9 @@ export class World {
         const src = this.stages[idx];
         const srcLines = src.split("\n");
         //srcLines.pop();
-        const srcTokens = srcLines.map((l) => {return l.split(";")});
+        const srcTokens = srcLines.map((l) => {
+            return l.split(";");
+        });
         if (!srcLines[0]) {
             throw new WorldError("WELT: Leere Welt-Datei!");
         }
@@ -210,8 +196,8 @@ export class World {
             this.L = parseInt(srcFirstLineTokens[0]);
             this.W = parseInt(srcFirstLineTokens[1]);
             this.H = parseInt(srcFirstLineTokens[2]);
-        }
-        else throw new WorldError("WELT: Format der Welt-Datei ist ungültig!");
+        } else
+            throw new WorldError("WELT: Format der Welt-Datei ist ungültig!");
 
         /*
         if (srcTokens.length == 0) throw new WorldError("Die Welt hat eine Breite von 0!");
@@ -225,17 +211,23 @@ export class World {
         this.fields = [];
         for (let y = 0; y < this.W; y++) {
             // add new line
-            this.fields.push( [] );
+            this.fields.push([]);
             for (let x = 0; x < this.L; x++) {
                 let goalMode = false;
-                
+
                 let expr = "";
                 if (y < srcTokens.length && x < srcTokens[y].length)
                     expr = srcTokens[y][x];
-                    
-                
+
                 // create new field
-                const f = new Field(this, expr == "", expr == "#", this.H, x, y);
+                const f = new Field(
+                    this,
+                    expr == "",
+                    expr == "#",
+                    this.H,
+                    x,
+                    y
+                );
                 let robotCreated = false;
                 for (const c of expr) {
                     switch (c) {
@@ -256,23 +248,47 @@ export class World {
                             if (goalMode) {
                                 f.setGoalRobotIndex(robotIndex);
                             } else {
-                                if (registeredRobots.includes(robotIndex)) throw new WorldError(`WELT: k${robotIndex} existiert bereits.`);
-                                if (robotCreated) throw new WorldError("WELT: Kann nicht zwei Roboter auf dasselbe Feld stellen!");
+                                if (registeredRobots.includes(robotIndex))
+                                    throw new WorldError(
+                                        `WELT: k${robotIndex} existiert bereits.`
+                                    );
+                                if (robotCreated)
+                                    throw new WorldError(
+                                        "WELT: Kann nicht zwei Roboter auf dasselbe Feld stellen!"
+                                    );
                                 registeredRobots.push(robotIndex);
-                                this.createRobot(x, y, "S", `k${robotIndex}` , robotIndex);
+                                this.createRobot(
+                                    x,
+                                    y,
+                                    "S",
+                                    `k${robotIndex}`,
+                                    robotIndex
+                                );
                                 robotCreated = true;
                             }
                             break;
                         case ".":
-                            f.addMultipleBlocks(rndi(0, 2), BlockType.r, goalMode);
+                            f.addMultipleBlocks(
+                                rndi(0, 2),
+                                BlockType.r,
+                                goalMode
+                            );
                             break;
                         case "*":
                             // put down 0 or more blocks
-                            f.addMultipleBlocks(rndi(0, this.H - f.getBlockHeight(goalMode)), BlockType.r, goalMode);
+                            f.addMultipleBlocks(
+                                rndi(0, this.H - f.getBlockHeight(goalMode)),
+                                BlockType.r,
+                                goalMode
+                            );
                             break;
                         case "+":
                             // put down 1 or more blocks
-                            f.addMultipleBlocks(rndi(1, this.H - f.getBlockHeight(goalMode)), BlockType.r, goalMode);
+                            f.addMultipleBlocks(
+                                rndi(1, this.H - f.getBlockHeight(goalMode)),
+                                BlockType.r,
+                                goalMode
+                            );
                             break;
                         case "-": {
                             // remove random block from block list
@@ -293,19 +309,22 @@ export class World {
                         }
                         case "f":
                             // fill with blocks to top
-                            f.addMultipleBlocks(this.H - f.getBlockHeight(goalMode), BlockType.r, goalMode);
+                            f.addMultipleBlocks(
+                                this.H - f.getBlockHeight(goalMode),
+                                BlockType.r,
+                                goalMode
+                            );
                             break;
                         case "?":
                             // put down 0 or 1 marker
-                            if (rndi(0, 2))
-                                f.setMarker(MarkerType.Y, goalMode);
+                            if (rndi(0, 2)) f.setMarker(MarkerType.Y, goalMode);
                             break;
                         case "!":
                             // put down inverse of current marker state (only makes sense when part of goal state)
                             if (f.marker == MarkerType.None)
-                                f.setMarker(MarkerType.Y, goalMode)
+                                f.setMarker(MarkerType.Y, goalMode);
                             else if (f.marker)
-                                f.setMarker(MarkerType.None, goalMode)
+                                f.setMarker(MarkerType.None, goalMode);
                             break;
                         case ":":
                             goalMode = true;
@@ -315,14 +334,25 @@ export class World {
                         case "S":
                         case "W":
                         case "X":
-                            if (robotCreated) throw new WorldError("WELT: Kann nicht zwei Roboter auf dasselbe Feld stellen!");
+                            if (robotCreated)
+                                throw new WorldError(
+                                    "WELT: Kann nicht zwei Roboter auf dasselbe Feld stellen!"
+                                );
                             if (goalMode) break;
                             let i = 0;
                             for (const v of registeredRobots) {
                                 if (i === v) i += 1;
                             }
                             registeredRobots.push(i); // register robot
-                            this.createRobot(x, y, c === "X" ? ["N", "W", "S", "E"][rndi(0, 4)] : c, "k" + i, i);
+                            this.createRobot(
+                                x,
+                                y,
+                                c === "X"
+                                    ? ["N", "W", "S", "E"][rndi(0, 4)]
+                                    : c,
+                                "k" + i,
+                                i
+                            );
                             robotCreated = true;
                             break;
                         case "r":
@@ -362,10 +392,12 @@ export class World {
                         case "#":
                             break;
                         default:
-                            throw new WorldError(`Welt-Datei enthält unbekannten Buchstaben: '${c}'`);
+                            throw new WorldError(
+                                `Welt-Datei enthält unbekannten Buchstaben: '${c}'`
+                            );
                     }
                 }
-                
+
                 // add field to line
                 f.lastGoalStatus = f.checkGoal();
                 if (!f.lastGoalStatus) this.addGoal();
@@ -374,24 +406,54 @@ export class World {
         }
 
         // place random robot
-        let chosenRobotField = optionalRobotFields.at(rndi(0, optionalRobotFields.length));
-        if (chosenRobotField && !this.getRobotAt(chosenRobotField.x, chosenRobotField.y)) {
+        let chosenRobotField = optionalRobotFields.at(
+            rndi(0, optionalRobotFields.length)
+        );
+        if (
+            chosenRobotField &&
+            !this.getRobotAt(chosenRobotField.x, chosenRobotField.y)
+        ) {
             let i = 0;
             for (const v of registeredRobots) {
                 if (i === v) i += 1;
             }
-            this.createRobot(chosenRobotField.x, chosenRobotField.y, "S", "k" + i, i);
+            this.createRobot(
+                chosenRobotField.x,
+                chosenRobotField.y,
+                "S",
+                "k" + i,
+                i
+            );
         }
     }
 
     loadWorldLog() {
         console.log("🌍 Welt wird geladen");
-        console.log("-> 🤔 Teilaufgabe", this.stageIdx + 1, "|", this.goalsRemaining, "Felder zu lösen");
+        console.log(
+            "-> 🤔 Teilaufgabe",
+            this.stageIdx + 1,
+            "|",
+            this.goalsRemaining,
+            "Felder zu lösen"
+        );
         console.log("-> 🗺️ Welt:", "L", this.L, "| B", this.W, "| H", this.H);
-        console.log("-> 🤖 Roboter:", this.robots.map((r) => {return r.name}).join(", "));
+        console.log(
+            "-> 🤖 Roboter:",
+            this.robots
+                .map((r) => {
+                    return r.name;
+                })
+                .join(", ")
+        );
     }
 
-    createRobot(x: number, y: number, dir: string, name: string, index: number) {
+    createRobot(
+        x: number,
+        y: number,
+        dir: string,
+        name: string,
+        index: number
+    ) {
         const bot = new Robot(x, y, dir, name, index, this);
         this.robots.push(bot);
     }
@@ -403,15 +465,14 @@ export class World {
     }
 
     getField(x: number, y: number): Field | undefined {
-        if (x < 0 || x >= this.L) return undefined
-        if (y < 0 || y >= this.W) return undefined
+        if (x < 0 || x >= this.L) return undefined;
+        if (y < 0 || y >= this.W) return undefined;
         return this.fields[y][x];
     }
 
     getRobotAt(x: number, y: number): Robot | undefined {
         for (const r of this.robots) {
-            if (r.pos.x == x && r.pos.y == y)
-                return r;
+            if (r.pos.x == x && r.pos.y == y) return r;
         }
         return undefined;
     }
@@ -427,7 +488,8 @@ export class World {
     }
 
     isGoalReached() {
-        if (this.goalsRemaining < 0) throw new RuntimeError("Mit der Welt ist etwas falsch!");
+        if (this.goalsRemaining < 0)
+            throw new RuntimeError("Mit der Welt ist etwas falsch!");
         if (this.goalsRemaining > 0) return false;
         // when goalsRemaining is exactly 0
         return true;
@@ -455,7 +517,14 @@ export class Field {
     lastGoalStatus: boolean;
     wasChanged: boolean;
 
-    constructor(world: World, isEmpty: boolean, isWall: boolean, H: number, x: number, y: number) {
+    constructor(
+        world: World,
+        isEmpty: boolean,
+        isWall: boolean,
+        H: number,
+        x: number,
+        y: number
+    ) {
         this.world = world;
         this.isEmpty = isEmpty;
         this.isWall = isWall;
@@ -533,11 +602,12 @@ export class Field {
     setGoalRobotIndex(robotIdx: number) {
         if (!this.isEditable)
             throw new RuntimeError(`Kann hier kein Roboterziel setzen!`);
-        if (robotIdx >= 0 && robotIdx < 10)
-            this.goalRobotIdx = robotIdx;
+        if (robotIdx >= 0 && robotIdx < 10) this.goalRobotIdx = robotIdx;
         else
-            throw new RuntimeError(`Als Roboterziel sind nur Zahlen zwischen 0 und einschließlich 9 zulässig.`)
-        this.wasChanged = true
+            throw new RuntimeError(
+                `Als Roboterziel sind nur Zahlen zwischen 0 und einschließlich 9 zulässig.`
+            );
+        this.wasChanged = true;
     }
 
     isGoalReached() {
@@ -547,7 +617,7 @@ export class Field {
 
         const tmpGoalStatus = this.lastGoalStatus;
         this.lastGoalStatus = this.checkGoal();
-        
+
         if (tmpGoalStatus && !this.lastGoalStatus) this.world.addGoal();
         if (!tmpGoalStatus && this.lastGoalStatus) this.world.solveGoal();
 
@@ -562,11 +632,13 @@ export class Field {
         }
 
         // this is inexpensive
-        if (this.goalRobotIdx != null /* && this.goalRobotIdx < this.world.robots.length */) {
+        if (
+            this.goalRobotIdx !=
+            null /* && this.goalRobotIdx < this.world.robots.length */
+        ) {
             for (const r of this.world.robots) {
                 if (r.index !== this.goalRobotIdx) continue; // not the right robot
-                if (r.pos.x !== this.x || r.pos.y !== this.y)
-                    return false;
+                if (r.pos.x !== this.x || r.pos.y !== this.y) return false;
             }
             // right now, unoccupyable goals are ignored... TODO?
         }
@@ -591,15 +663,16 @@ export class Field {
 
     canCullBlock(h: number): boolean {
         // no block on top
-        if (h >= this.blocks.length-1) return false
+        if (h >= this.blocks.length - 1) return false;
         // on border
-        if (this.x === this.world.L-1 || this.x === 0) return false;
-        if (this.y === this.world.W-1 || this.y === 0) return false;
+        if (this.x === this.world.L - 1 || this.x === 0) return false;
+        if (this.y === this.world.W - 1 || this.y === 0) return false;
         // adjacent have no blocks
         const testField = (field: Field) => {
-            if (field.isEmpty || field.isWall || h > field.blocks.length-1) return false;
+            if (field.isEmpty || field.isWall || h > field.blocks.length - 1)
+                return false;
             return true;
-        }
+        };
         if (!testField(this.world.getField(this.x + 1, this.y)!)) return false;
         if (!testField(this.world.getField(this.x - 1, this.y)!)) return false;
         if (!testField(this.world.getField(this.x, this.y + 1)!)) return false;

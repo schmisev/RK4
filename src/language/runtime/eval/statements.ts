@@ -10,7 +10,6 @@ import {
     ForBlock,
     FunctionDefinition,
     IfElseBlock,
-    ObjDeclaration,
     Program,
     ReturnCommand,
     ShowCommand,
@@ -26,7 +25,9 @@ import {
     ForInBlock,
 } from "../../frontend/ast";
 import { CodePosition, ILLEGAL_CODE_POS, TokenType } from "../../frontend/lexer";
-import { ClassPrototype, Environment, VarHolder } from "../environment";
+import { Environment } from "../environment";
+import { VarHolder } from "../environment";
+import { ClassPrototype } from "../environment";
 import { SteppedEval, evaluate, evaluate_expr } from "../interpreter";
 import {
     RuntimeVal,
@@ -82,69 +83,6 @@ export function* eval_var_declaration(
     }
     declEnv.declareVar(decl.ident, value);
     return value;
-}
-
-export function* eval_obj_declaration(
-    decl: ObjDeclaration,
-    evalEnv: Environment,
-    declEnv: Environment | VarHolder = evalEnv
-): SteppedEval<RuntimeVal> {
-    const cl = evalEnv.lookupVar(decl.classname);
-    if (cl.type != ValueAlias.Class)
-        throw new RuntimeError(
-            `'${decl.classname}' ist kein Klassenname!`,
-            decl.codePos
-        );
-    if (cl.internal)
-        throw new RuntimeError(
-            `Kann kein neues Objekt der Klasse '${decl.classname}' erzeugen.`,
-            decl.codePos
-        );
-
-    const obj: ObjectVal = {
-        type: ValueAlias.Object,
-        cls: cl,
-        ownMembers: new VarHolder(),
-    };
-
-    // calculate arguments of constructor
-    const args: RuntimeVal[] = [];
-    for (const expr of decl.args) {
-        const result = yield* evaluate_expr(expr, evalEnv);
-        args.push(result);
-    }
-
-    const constructorEnv = new Environment(evalEnv);
-
-    // create variables
-    if (args.length != cl.params.length)
-        throw new RuntimeError(
-            `Erwarte ${cl.params.length} Parameter, habe aber ${args.length} erhalten!`,
-            decl.codePos
-        );
-    for (let i = 0; i < cl.params.length; i++) {
-        const param = cl.params[i];
-        const varname = param.ident;
-        const arg = args[i];
-
-        if (param.type != arg.type)
-            throw new RuntimeError(
-                `'${varname}' sollte '${param.type}' sein, ist aber '${arg.type}'`,
-                decl.codePos
-            );
-        constructorEnv.declareVar(varname, args[i]);
-    }
-
-    for (const attr of cl.attributes) {
-        if (attr.kind == StmtKind.ObjDeclaration) {
-            yield* eval_obj_declaration(attr, constructorEnv, obj.ownMembers);
-        } else {
-            yield* eval_var_declaration(attr, constructorEnv, obj.ownMembers);
-        }
-    }
-
-    declEnv.declareVar(decl.ident, obj, false);
-    return obj;
 }
 
 export function* eval_fn_definition(

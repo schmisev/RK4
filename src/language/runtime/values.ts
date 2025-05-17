@@ -1,7 +1,7 @@
 import { RuntimeError } from "../../errors";
 import { mod } from "../../utils";
-import { ObjDeclaration, ParamDeclaration, Stmt, StmtKind, VarDeclaration } from "../frontend/ast";
-import { ClassPrototype, StaticScope, VarHolder } from "./environment";
+import { ParamDeclaration, Stmt, StmtKind, VarDeclaration } from "../frontend/ast";
+import { VarHolder, StaticScope, ClassPrototype } from "./environment";
 
 export const enum ValueAlias {
     Null = "Nix",
@@ -105,23 +105,24 @@ export interface MethodVal {
     body: Stmt<StmtKind.ReturnCommand>[];
 }
 
-export interface BuiltinClassVal {
+export interface BuiltinClassVal<C> {
     type: ValueAlias.Class;
     name: string;
     internal: true;
     prototype: ClassPrototype;
+    internalConstructor?: ((args: RuntimeVal[]) => C);
 }
 
 export interface UserClassVal {
     type: ValueAlias.Class;
     name: string;
     internal?: false;
-    attributes: (VarDeclaration | ObjDeclaration)[];
+    attributes: VarDeclaration[];
     prototype: ClassPrototype;
     params: ParamDeclaration[]; // for constructor
 }
 
-export type ClassVal = BuiltinClassVal | UserClassVal;
+export type ClassVal = BuiltinClassVal<unknown> | UserClassVal;
 
 export interface ObjectVal {
     type: ValueAlias.Object;

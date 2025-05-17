@@ -4,7 +4,6 @@ import { CodePosition, Token } from "./lexer";
 export const enum StmtKind {
     Program = "Programm",
     VarDeclaration = "VarDeklaration",
-    ObjDeclaration = "ObjDeklaration",
     EmptyLine = "LeereZeile",
     DocComment = "DokuKommentar",
     IfElseBlock = "WennDannBlock",
@@ -20,6 +19,7 @@ export const enum StmtKind {
     ContinueCommand = "WeiterAnweisung",
     ReturnCommand = "ZurückAnweisung",
     AssignmentExpr = "ZuweisungsAusdruck",
+    InstanceExpr = "InstanziierungsAusdruck",
     BinaryExpr = "BinärerAusdruck",
     UnaryExpr = "UnärerAusdruck",
     Identifier = "Bezeichner",
@@ -47,7 +47,6 @@ type AbruptStmt<Ctrl> = Ctrl extends AbruptStmtKind ? AbruptToStmt[Ctrl] : never
 export type Stmt<Ctrl> =
     | DocComment
     | VarDeclaration
-    | ObjDeclaration
     | IfElseBlock<Ctrl>
     | SwitchBlock<Ctrl>
     | ForBlock<Ctrl>
@@ -92,15 +91,6 @@ export interface VarDeclaration {
     ident: string;
     type: ValueAlias.Null | ValueAlias.Boolean | ValueAlias.Number | ValueAlias.Float | ValueAlias.String | ValueAlias.List | ValueAlias.Object;
     value: Expr;
-}
-
-export interface ObjDeclaration {
-    kind: StmtKind.ObjDeclaration;
-    codePos: CodePosition;
-    ident: string;
-    type: ValueAlias.Object;
-    classname: string;
-    args: Expr[];
 }
 
 export interface EmptyLine {
@@ -199,13 +189,23 @@ export interface ReturnCommand {
     value: Expr;
 }
 
-export type Expr = AssignmentExpr | BinaryExpr | UnaryExpr | Identifier | NumericLiteral | FloatLiteral | NullLiteral | BooleanLiteral | StringLiteral  | ListLiteral | MemberExpr | ComputedMemberExpr | CallExpr;
+export type Expr = AssignmentExpr | InstanceExpr | BinaryExpr | UnaryExpr | Identifier | NumericLiteral | FloatLiteral | NullLiteral | BooleanLiteral | StringLiteral  | ListLiteral | MemberExpr | ComputedMemberExpr | CallExpr;
 
 export interface AssignmentExpr {
     kind: StmtKind.AssignmentExpr;
     codePos: CodePosition;
     assigne: Expr;
     value: Expr;
+    operator: Token;
+    inParen: boolean;
+}
+
+export interface InstanceExpr {
+    kind: StmtKind.InstanceExpr;
+    codePos: CodePosition;
+    classname: string;
+    args: Expr[];
+    operator: Token;
     inParen: boolean;
 }
 
@@ -304,7 +304,7 @@ export interface ClassDefinition {
     codePos: CodePosition;
     ident: string;
     params: ParamDeclaration[];
-    attributes: (VarDeclaration | ObjDeclaration)[];
+    attributes: VarDeclaration[];
     methods: FunctionDefinition[];
 }
 
@@ -320,6 +320,7 @@ export interface FunctionDefinition {
     params: ParamDeclaration[];
     name: string;
     body: Stmt<StmtKind.ReturnCommand>[];
+    returnType: ValueAlias;
 }
 
 export interface ExtMethodDefinition {
@@ -329,4 +330,5 @@ export interface ExtMethodDefinition {
     name: string;
     classname: string;
     body: Stmt<StmtKind.ReturnCommand>[];
+    returnType: ValueAlias;
 }

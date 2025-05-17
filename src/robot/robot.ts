@@ -1,9 +1,34 @@
 import { RuntimeError } from "../errors";
-import { ClassPrototype, GlobalEnvironment, VarHolder } from "../language/runtime/environment";
-import { MK_BOOL, MK_STRING, MK_NUMBER, RuntimeVal, BuiltinClassVal, ObjectVal, MK_NATIVE_METHOD, ValueAlias, MK_NULL, MK_NATIVE_GETTER } from "../language/runtime/values";
+import { GlobalEnvironment } from "../language/runtime/global-environment";
+import {
+    createInternalClass,
+    Environment,
+    NativeObjectVal,
+    VarHolder,
+} from "../language/runtime/environment";
+import { ClassPrototype } from "../language/runtime/environment";
+import {
+    MK_BOOL,
+    MK_STRING,
+    MK_NUMBER,
+    RuntimeVal,
+    BuiltinClassVal,
+    ObjectVal,
+    MK_NATIVE_METHOD,
+    ValueAlias,
+    MK_NULL,
+    MK_NATIVE_GETTER,
+} from "../language/runtime/values";
 import { ENV } from "../spec";
 import { easeInOutQuad, toZero, Vec2 } from "../utils";
-import { BlockType, CHAR2BLOCK, CHAR2MARKER, Field, MarkerType, World } from "./world";
+import {
+    BlockType,
+    CHAR2BLOCK,
+    CHAR2MARKER,
+    Field,
+    MarkerType,
+    World,
+} from "./world";
 
 export enum ThoughtType {
     Nothing,
@@ -25,7 +50,7 @@ export enum ThoughtType {
     Robot,
     Yes,
     No,
-    Sees
+    Sees,
 }
 
 export enum OutfitType {
@@ -35,277 +60,234 @@ export enum OutfitType {
 }
 
 export const DIR2GER: Record<string, string> = {
-    "N": "Nord",
-    "E": "Ost",
-    "S": "Süden",
-    "W": "Westen"
-}
+    N: "Nord",
+    E: "Ost",
+    S: "Süden",
+    W: "Westen",
+};
 
 export const DIR2SHORTGER: Record<string, string> = {
-    "N": "N",
-    "E": "O",
-    "S": "S",
-    "W": "W"
-}
+    N: "N",
+    E: "O",
+    S: "S",
+    W: "W",
+};
 
-interface RobotObjVal extends ObjectVal {
-    r: Robot,
-}
+export function createRobotClass(env: Environment) {
+    return createInternalClass<Robot>({
+        clsName: ENV.robot.cls,
+        clsAttributes: {
+            [ENV.robot.attr.X]: (r) => {
+                return MK_NUMBER(r.pos.x);
+            },
+            [ENV.robot.attr.Y]: (r) => {
+                return MK_NUMBER(r.pos.y);
+            },
+            [ENV.robot.attr.DIR]: (r) => {
+                return MK_STRING(DIR2SHORTGER[r.dir]);
+            },
+        },
+        clsMethods: {
+            [ENV.robot.mth.GET_HEIGHT]: (r, args) => {
+                if (args.length != 0)
+                    throw new RuntimeError(
+                        ENV.robot.mth.GET_HEIGHT +
+                            `() erwartet keine Parameter!`
+                    );
+                const field = r.world.getField(r.pos.x, r.pos.y)!;
+                return MK_NUMBER(field.blocks.length);
+            },
+            [ENV.robot.mth.STEP]: (r, args) => {
+                if (args.length != 0)
+                    throw new RuntimeError(
+                        ENV.robot.mth.STEP + `() erwartet keine Parameter!`
+                    );
+                r.step();
+                return MK_STRING(`( ${r.pos.x} | ${r.pos.y} )`);
+            },
+            [ENV.robot.mth.TURN_LEFT]: (r, args) => {
+                if (args.length != 0)
+                    throw new RuntimeError(
+                        ENV.robot.mth.TURN_LEFT + `() erwartet keine Parameter!`
+                    );
+                r.turnLeft();
+                return MK_STRING(DIR2GER[r.dir]);
+            },
+            [ENV.robot.mth.TURN_RIGHT]: (r, args) => {
+                if (args.length != 0)
+                    throw new RuntimeError(
+                        ENV.robot.mth.TURN_RIGHT +
+                            `() erwartet keine Parameter!`
+                    );
+                r.turnRight();
+                return MK_STRING(DIR2GER[r.dir]);
+            },
+            [ENV.robot.mth.PLACE_BLOCK]: (r, args) => {
+                if (args.length > 1)
+                    throw new RuntimeError(
+                        ENV.robot.mth.PLACE_BLOCK +
+                            `() erwartet einen oder keine Parameter!`
+                    );
+                let col = "R";
+                if (args.length == 1) {
+                    if (args[0].type != ValueAlias.String)
+                        throw new RuntimeError(
+                            "Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!"
+                        );
+                    col = args[0].value;
+                }
+                r.placeBlock(CHAR2BLOCK[col.toLowerCase()]);
+                return MK_STRING(`( ${r.targetPos().x} | ${r.targetPos().y} )`);
+            },
+            [ENV.robot.mth.PICKUP_BLOCK]: (r, args) => {
+                if (args.length != 0)
+                    throw new RuntimeError(
+                        ENV.robot.mth.PICKUP_BLOCK +
+                            `() erwartet keine Parameter!`
+                    );
+                const pickedBlock = r.pickUpBlock();
+                if (pickedBlock == undefined)
+                    throw new RuntimeError("Irgendetwas ist schiefgegangen...");
+                return MK_STRING(pickedBlock);
+            },
+            [ENV.robot.mth.SET_MARKER]: (r, args) => {
+                if (args.length > 1)
+                    throw new RuntimeError(
+                        ENV.robot.mth.SET_MARKER +
+                            `() erwartet einen oder keine Parameter, z.B. markSetzen(blau)!`
+                    );
+                let col = "Y";
+                if (args.length == 1) {
+                    if (args[0].type != ValueAlias.String)
+                        throw new RuntimeError(
+                            "Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!"
+                        );
+                    col = args[0].value;
+                }
+                r.setMarker(CHAR2MARKER[col]);
+                return MK_STRING(`( ${r.targetPos().x} | ${r.targetPos().y} )`);
+            },
+            [ENV.robot.mth.REMOVE_MARKER]: (r, args) => {
+                if (args.length != 0)
+                    throw new RuntimeError(
+                        ENV.robot.mth.REMOVE_MARKER +
+                            `() erwartet keine Parameter!`
+                    );
+                const removedMarker = r.removeMarker();
+                if (removedMarker == undefined)
+                    throw new RuntimeError("Irgendetwas ist schiefgegangen...");
+                return MK_STRING(removedMarker);
+            },
+            [ENV.robot.mth.IS_ON_MARKER]: (r, args) => {
+                if (args.length > 1)
+                    throw new RuntimeError(
+                        ENV.robot.mth.IS_ON_MARKER +
+                            `() erwartet einen oder keine Parameter, z.B. istAufMarke(blau)!`
+                    );
+                if (args.length == 1) {
+                    if (args[0].type != ValueAlias.String)
+                        throw new RuntimeError(
+                            "Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!"
+                        );
+                    const col = args[0].value;
+                    return MK_BOOL(r.isOnMarker(CHAR2MARKER[col]));
+                } else {
+                    return MK_BOOL(r.isOnMarker());
+                }
+            },
+            [ENV.robot.mth.SEES_BLOCK]: (r, args) => {
+                if (args.length > 1)
+                    throw new RuntimeError(
+                        ENV.robot.mth.SEES_BLOCK +
+                            `() erwartet einen oder keine Parameter, z.B. siehtZiegel(blau)!`
+                    );
+                if (args.length == 1) {
+                    if (args[0].type != ValueAlias.String)
+                        throw new RuntimeError(
+                            "Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!"
+                        );
+                    const col = args[0].value;
+                    return MK_BOOL(r.seesBlock(CHAR2BLOCK[col.toLowerCase()]));
+                } else {
+                    return MK_BOOL(r.seesBlock());
+                }
+            },
+            [ENV.robot.mth.SEES_WALL]: (r, args) => {
+                if (args.length != 0)
+                    throw new RuntimeError(
+                        ENV.robot.mth.SEES_WALL + `() erwartet keine Parameter!`
+                    );
+                return MK_BOOL(r.seesWall());
+            },
+            [ENV.robot.mth.SEES_VOID]: (r, args) => {
+                if (args.length != 0)
+                    throw new RuntimeError(
+                        ENV.robot.mth.SEES_VOID + `() erwartet keine Parameter!`
+                    );
+                return MK_BOOL(r.seesVoid());
+            },
+            [ENV.robot.mth.SEES_ROBOT]: (r, args) => {
+                if (args.length > 1)
+                    throw new RuntimeError(
+                        ENV.robot.mth.SEES_ROBOT +
+                            `() erwartet einen oder keinen Parameter!`
+                    );
+                if (args.length == 1) {
+                    if (args[0].type != ValueAlias.Number)
+                        throw new RuntimeError(
+                            `Erwarte eine Zahl als Parameter!`
+                        );
+                    return MK_BOOL(r.seesRobot(args[0].value));
+                } else return MK_BOOL(r.seesRobot(null));
+            },
+            [ENV.robot.mth.CAN_MOVE_HERE]: (r, args) => {
+                if (args.length > 0)
+                    throw new RuntimeError(
+                        ENV.robot.mth.CAN_MOVE_HERE +
+                            `() erwartet keine Parameter!`
+                    );
+                try {
+                    r.canMoveTo(r.targetPos());
+                    return MK_BOOL(true);
+                } catch {
+                    return MK_BOOL(false);
+                }
+            },
+            [ENV.robot.mth.WAIT]: (r, args) => {
+                if (args.length > 0)
+                    throw new RuntimeError(
+                        ENV.robot.mth.WAIT + `() erwartet keine Parameter!`
+                    );
+                r.wait();
+                return MK_NULL();
+            },
+            [ENV.robot.mth.DON]: (r, args) => {
+                if (args.length > 1)
+                    throw new RuntimeError(
+                        ENV.robot.mth.DON + `() erwartet genau einen Parameter!`
+                    );
+                if (args[0].type !== ValueAlias.String)
+                    throw new RuntimeError(`Erwarte einen Text als Parameter!`);
 
-export function declareRobotClass(env: GlobalEnvironment): BuiltinClassVal {
-    const prototype = new ClassPrototype();
-    const robotCls: BuiltinClassVal = {
-        type: ValueAlias.Class,
-        name: "Roboter",
-        internal: true,
-        prototype,
-    };
-
-    function downcastRoboter(self: ObjectVal): asserts self is RobotObjVal {
-        if (!Object.is(self.cls, robotCls))
-            throw new RuntimeError(`Diese Methode kann nur auf Robotern ausgeführt werden.`);
-    }
-    function mkRobotMethod(name: string, m: (r: Robot, args: RuntimeVal[]) => RuntimeVal) {
-        prototype.declareMethod(name, MK_NATIVE_METHOD(name, function (args) {
-            downcastRoboter(this);
-            return m(this.r, args);
-        }))
-    }
-    function mkRobotAttribute(name: string, m: (r: Robot) => RuntimeVal) {
-        prototype.declareMethod(name, MK_NATIVE_GETTER(name, function () {
-            downcastRoboter(this);
-            return m(this.r);
-        }))
-    }
-
-    mkRobotAttribute(
-        ENV.robot.attr.X,
-        (r) => {
-            return MK_NUMBER(r.pos.x);
-        }
-    );
-
-    mkRobotAttribute(
-        ENV.robot.attr.Y,
-        (r) => {
-            return MK_NUMBER(r.pos.y);
-        }
-    );
-
-    mkRobotAttribute(
-        ENV.robot.attr.DIR,
-        (r) => {
-            return MK_STRING(DIR2SHORTGER[r.dir]);
-        }
-    );
-
-    mkRobotMethod(
-        ENV.robot.mth.GET_HEIGHT,
-        (r, args) => {
-            if (args.length != 0)
-                throw new RuntimeError(ENV.robot.mth.GET_HEIGHT + `() erwartet keine Parameter!`);
-            const field = r.world.getField(r.pos.x, r.pos.y)!;
-            return MK_NUMBER(field.blocks.length);
-        }
-    );
-    
-    mkRobotMethod(
-        ENV.robot.mth.STEP,
-        (r, args) => {
-            if (args.length != 0)
-                throw new RuntimeError(ENV.robot.mth.STEP + `() erwartet keine Parameter!`);
-            r.step();
-            return MK_STRING(`( ${r.pos.x} | ${r.pos.y} )`);
-        }
-    );
-
-    mkRobotMethod(
-        ENV.robot.mth.TURN_LEFT,
-        (r, args) => {
-            if (args.length != 0)
-                throw new RuntimeError(ENV.robot.mth.TURN_LEFT + `() erwartet keine Parameter!`);
-            r.turnLeft();
-            return MK_STRING(DIR2GER[r.dir]);
-        }
-    );
-
-    mkRobotMethod(
-        ENV.robot.mth.TURN_RIGHT,
-        (r, args) => {
-            if (args.length != 0)
-                throw new RuntimeError(ENV.robot.mth.TURN_RIGHT + `() erwartet keine Parameter!`);
-            r.turnRight();
-            return MK_STRING(DIR2GER[r.dir]);
-        }
-    );
-
-    mkRobotMethod(
-        ENV.robot.mth.PLACE_BLOCK,
-        (r, args) => {
-            if (args.length > 1)
-                throw new RuntimeError(ENV.robot.mth.PLACE_BLOCK + `() erwartet einen oder keine Parameter!`);
-            let col = "R";
-            if (args.length == 1) {
-                if (args[0].type != ValueAlias.String) throw new RuntimeError("Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!");
-                col = args[0].value;
-            }
-            r.placeBlock(CHAR2BLOCK[col.toLowerCase()]);
-            return MK_STRING(`( ${r.targetPos().x} | ${r.targetPos().y} )`);
-        }
-    );
-
-    mkRobotMethod(
-        ENV.robot.mth.PICKUP_BLOCK,
-        (r, args) => {
-            if (args.length != 0)
-                throw new RuntimeError(ENV.robot.mth.PICKUP_BLOCK + `() erwartet keine Parameter!`);
-            const pickedBlock = r.pickUpBlock();
-            if (pickedBlock == undefined)
-                throw new RuntimeError("Irgendetwas ist schiefgegangen...");
-            return MK_STRING(pickedBlock);
-        }
-    );
-
-    mkRobotMethod(
-        ENV.robot.mth.SET_MARKER,
-        (r, args) => {
-            if (args.length > 1)
-                throw new RuntimeError(ENV.robot.mth.SET_MARKER + `() erwartet einen oder keine Parameter, z.B. markSetzen(blau)!`);
-            let col = "Y";
-            if (args.length == 1) {
-                if (args[0].type != ValueAlias.String) throw new RuntimeError("Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!");
-                col = args[0].value;
-            }
-            r.setMarker(CHAR2MARKER[col]);
-            return MK_STRING(`( ${r.targetPos().x} | ${r.targetPos().y} )`);
-        }
-    );
-
-    mkRobotMethod(
-        ENV.robot.mth.REMOVE_MARKER,
-        (r, args) => {
-            if (args.length != 0)
-                throw new RuntimeError(ENV.robot.mth.REMOVE_MARKER + `() erwartet keine Parameter!`);
-            const removedMarker = r.removeMarker();
-            if (removedMarker == undefined)
-                throw new RuntimeError("Irgendetwas ist schiefgegangen...");
-            return MK_STRING(removedMarker);
-        }
-    );
-
-    mkRobotMethod(
-        ENV.robot.mth.IS_ON_MARKER,
-        (r, args) => {
-            if (args.length > 1)
-                throw new RuntimeError(ENV.robot.mth.IS_ON_MARKER +`() erwartet einen oder keine Parameter, z.B. istAufMarke(blau)!`);
-            if (args.length == 1) {
-                if (args[0].type != ValueAlias.String) throw new RuntimeError("Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!");
-                const col = args[0].value;
-                return MK_BOOL(r.isOnMarker(CHAR2MARKER[col]));
-            } else {
-                return MK_BOOL(r.isOnMarker());
-            }
-        }
-    );
-
-    mkRobotMethod(
-        ENV.robot.mth.SEES_BLOCK,
-        (r, args) => {
-            if (args.length > 1)
-                throw new RuntimeError(ENV.robot.mth.SEES_BLOCK + `() erwartet einen oder keine Parameter, z.B. siehtZiegel(blau)!`);
-            if (args.length == 1) {
-                if (args[0].type != ValueAlias.String) throw new RuntimeError("Erwarte 'gelb', 'blau', 'rot' oder 'grün' als Parameter!");
-                const col = args[0].value;
-                return MK_BOOL(r.seesBlock(CHAR2BLOCK[col.toLowerCase()]));
-            } else {
-                return MK_BOOL(r.seesBlock());
-            }
-        }
-    );
-
-    mkRobotMethod(
-        ENV.robot.mth.SEES_WALL,
-        (r, args) => {
-            if (args.length != 0)
-                throw new RuntimeError(ENV.robot.mth.SEES_WALL + `() erwartet keine Parameter!`);
-            return MK_BOOL(r.seesWall());
-        }
-    );
-
-    mkRobotMethod(
-        ENV.robot.mth.SEES_VOID,
-        (r, args) => {
-            if (args.length != 0)
-                throw new RuntimeError(ENV.robot.mth.SEES_VOID + `() erwartet keine Parameter!`);
-            return MK_BOOL(r.seesVoid());
-        }
-    );
-
-    mkRobotMethod(
-        ENV.robot.mth.SEES_ROBOT,
-        (r, args) => {
-            if (args.length > 1)
-                throw new RuntimeError(ENV.robot.mth.SEES_ROBOT + `() erwartet einen oder keinen Parameter!`);
-            if (args.length == 1) {
-                if (args[0].type != ValueAlias.Number) throw new RuntimeError(`Erwarte eine Zahl als Parameter!`);
-                return MK_BOOL(r.seesRobot(args[0].value));
-            }
-            else return MK_BOOL(r.seesRobot(null));
-        }
-    );
-
-    mkRobotMethod(
-        ENV.robot.mth.CAN_MOVE_HERE,
-        (r, args) => {
-            if (args.length > 0)
-                throw new RuntimeError(ENV.robot.mth.CAN_MOVE_HERE + `() erwartet keine Parameter!`);
-            try {
-                r.canMoveTo(r.targetPos());
-                return MK_BOOL(true);
-            } catch {
+                let outfitType = args[0].value as OutfitType;
+                if (Object.values(OutfitType).includes(outfitType)) {
+                    r.setOutfit(outfitType);
+                    return MK_BOOL(true);
+                }
                 return MK_BOOL(false);
-            }
-        }
-    );
-
-    mkRobotMethod(
-        ENV.robot.mth.WAIT,
-        (r, args) => {
-            if (args.length > 0)
-                throw new RuntimeError(ENV.robot.mth.WAIT + `() erwartet keine Parameter!`);
-            r.wait();
-            return MK_NULL();
-        }
-    )
-
-    mkRobotMethod(
-        ENV.robot.mth.DON,
-        (r, args) => {
-            if (args.length > 1)
-                throw new RuntimeError(ENV.robot.mth.DON + `() erwartet genau einen Parameter!`);
-            if (args[0].type !== ValueAlias.String)
-                throw new RuntimeError(`Erwarte einen Text als Parameter!`);
-            
-            let outfitType = args[0].value as OutfitType;
-            if (Object.values(OutfitType).includes(outfitType)) {
-                r.setOutfit(outfitType);
-                return MK_BOOL(true);
-            }
-            return MK_BOOL(false);
-        }
-    )
-
-    return robotCls;
+            },
+        },
+    });
 }
 
-export function declareRobot(r: Robot, varname: string, env: GlobalEnvironment): void {
-    const karol_env = new VarHolder();
-    const robot: RobotObjVal = {
-        type: ValueAlias.Object,
-        cls: env.robotClass,
-        ownMembers: karol_env,
-        r,
-    };
+export function declareRobot(
+    r: Robot,
+    varname: string,
+    env: GlobalEnvironment
+): void {
+    const robot: NativeObjectVal<Robot> = env.wrapNativeObject(
+        ENV.robot.cls, r
+    )
 
     // add robot to environment
     env.declareVar(varname, robot, true);
@@ -320,11 +302,20 @@ export class Robot {
     world: World;
     outfit: OutfitType;
 
-    constructor(x: number, y: number, dir: string, name: string, index: number, w: World) {
+    constructor(
+        x: number,
+        y: number,
+        dir: string,
+        name: string,
+        index: number,
+        w: World
+    ) {
         this.pos = new Vec2(x, y);
         this.moveH = 0.0;
         if (!["N", "E", "S", "W"].includes(dir))
-            throw new RuntimeError(`${name}: '${dir}' ist keine valide Richtung!`);
+            throw new RuntimeError(
+                `${name}: '${dir}' ist keine valide Richtung!`
+            );
         this.dir = dir;
         this.name = name;
         this.index = index;
@@ -372,16 +363,16 @@ export class Robot {
     turnRight() {
         switch (this.dir) {
             case "N":
-                this.dir = "E"
+                this.dir = "E";
                 break;
             case "E":
-                this.dir = "S"
+                this.dir = "S";
                 break;
             case "S":
-                this.dir = "W"
+                this.dir = "W";
                 break;
             case "W":
-                this.dir = "N"
+                this.dir = "N";
                 break;
         }
         // animation
@@ -392,16 +383,16 @@ export class Robot {
     turnLeft() {
         switch (this.dir) {
             case "N":
-                this.dir = "W"
+                this.dir = "W";
                 break;
             case "E":
-                this.dir = "N"
+                this.dir = "N";
                 break;
             case "S":
-                this.dir = "E"
+                this.dir = "E";
                 break;
             case "W":
-                this.dir = "S"
+                this.dir = "S";
                 break;
         }
         /*
@@ -422,11 +413,9 @@ export class Robot {
         if (this.canMoveTo(target)) {
             // this is kinda hacky right now
             const currentField = this.world.getField(this.pos.x, this.pos.y);
-            if (currentField)
-                currentField.wasChanged = true;
+            if (currentField) currentField.wasChanged = true;
             const targetField = this.world.getField(target.x, target.y);
-            if (targetField)
-                targetField.wasChanged = true;
+            if (targetField) targetField.wasChanged = true;
             // the actual movement
             this.pos = target;
         }
@@ -488,11 +477,10 @@ export class Robot {
         try {
             const field = this.world.getField(target.x, target.y)!;
             if (m == null) {
-                if (field.marker != MarkerType.None) check = true
+                if (field.marker != MarkerType.None) check = true;
                 else check = false;
-            }
-            else if (field.marker == m) check = true;
-            else check = false
+            } else if (field.marker == m) check = true;
+            else check = false;
         } catch {
             check = false;
         }
@@ -523,15 +511,14 @@ export class Robot {
     seesBlock(b: BlockType | null = null) {
         // logic
         const target = this.targetPos();
-        
+
         let check = false;
         try {
             const field = this.world.getField(target.x, target.y)!;
             if (b == null) {
                 if (field.blocks.length >= 1) check = true;
                 else check = false;
-            }
-            else if (field.blocks[field.blocks.length - 1] == b) check = true;
+            } else if (field.blocks[field.blocks.length - 1] == b) check = true;
             else check = false;
         } catch {
             check = false;
@@ -587,7 +574,11 @@ export class Robot {
         let check = false;
         const target = this.targetPos();
         for (const r of this.world.robots) {
-            if (r.index != this.index && r.pos.x == target.x && r.pos.y == target.y) {
+            if (
+                r.index != this.index &&
+                r.pos.x == target.x &&
+                r.pos.y == target.y
+            ) {
                 if (index == null || r.index == index) {
                     check = true;
                     break;
@@ -618,7 +609,7 @@ export class Robot {
     isWall(target: Vec2): boolean {
         const targetField = this.world.getField(target.x, target.y);
         if (!targetField) return true;
-        if (targetField.isWall) return true
+        if (targetField.isWall) return true;
         return false;
     }
 
@@ -626,67 +617,126 @@ export class Robot {
         const targetField = this.world.getField(target.x, target.y);
         if (!targetField) return true;
         if (targetField.isEmpty) return true;
-        return false
+        return false;
     }
 
     canMoveTo(target: Vec2): boolean {
         // if there is a world with other robots, etc.
         // check if this robot is legally positioned
         const currentField = this.world.getField(this.pos.x, this.pos.y);
-        if (!currentField) throw new RuntimeError(`${this.name}: Illegale Position!`);
+        if (!currentField)
+            throw new RuntimeError(`${this.name}: Illegale Position!`);
         // check if target field isn't accessible
         const targetField = this.world.getField(target.x, target.y);
-        if (!targetField) throw new RuntimeError(`${this.name}: Dieses Feld existiert nicht!`);
-        if (currentField.getBlockHeight() < targetField.getBlockHeight() - 1) throw new RuntimeError(`${this.name}: Kann diese Höhe hicht überwinden!`);
-        if (currentField.getBlockHeight() > targetField.getBlockHeight() + 1) throw new RuntimeError(`${this.name}: Kann diese Höhe hicht überwinden!`);
-        if (targetField.isEmpty) throw new RuntimeError(`${this.name}: Kann nicht ins Nichts laufen!`);
-        if (targetField.isWall) throw new RuntimeError(`${this.name}: Kann nicht gegen die Wand laufen!`);
+        if (!targetField)
+            throw new RuntimeError(
+                `${this.name}: Dieses Feld existiert nicht!`
+            );
+        if (currentField.getBlockHeight() < targetField.getBlockHeight() - 1)
+            throw new RuntimeError(
+                `${this.name}: Kann diese Höhe hicht überwinden!`
+            );
+        if (currentField.getBlockHeight() > targetField.getBlockHeight() + 1)
+            throw new RuntimeError(
+                `${this.name}: Kann diese Höhe hicht überwinden!`
+            );
+        if (targetField.isEmpty)
+            throw new RuntimeError(
+                `${this.name}: Kann nicht ins Nichts laufen!`
+            );
+        if (targetField.isWall)
+            throw new RuntimeError(
+                `${this.name}: Kann nicht gegen die Wand laufen!`
+            );
         // check if robot is in the way
         const targetRobot = this.world.getRobotAt(target.x, target.y);
-        if (targetRobot) throw new RuntimeError(`${this.name}: Roboter '${targetRobot.name}' ist im Weg!`);
-        return true
+        if (targetRobot)
+            throw new RuntimeError(
+                `${this.name}: Roboter '${targetRobot.name}' ist im Weg!`
+            );
+        return true;
     }
 
     canPlaceAt(targetField: Field | undefined): targetField is Field {
         // check if target field isn't accessible
-        if (!targetField) throw new RuntimeError(`${this.name}: Dieses Feld existiert nicht!`);
-        if (targetField.isEmpty) throw new RuntimeError(`${this.name}: Kann Blöcke nicht ins Nichts legen!`);
-        if (targetField.isWall) throw new RuntimeError(`${this.name}: Kann Blöcke nicht auf Wände legen!`);
-        if (targetField.blocks.length >= targetField.H) throw new RuntimeError(`${this.name}: Kann keinen Block mehr legen, da es keinen Platz mehr gibt!`);
+        if (!targetField)
+            throw new RuntimeError(
+                `${this.name}: Dieses Feld existiert nicht!`
+            );
+        if (targetField.isEmpty)
+            throw new RuntimeError(
+                `${this.name}: Kann Blöcke nicht ins Nichts legen!`
+            );
+        if (targetField.isWall)
+            throw new RuntimeError(
+                `${this.name}: Kann Blöcke nicht auf Wände legen!`
+            );
+        if (targetField.blocks.length >= targetField.H)
+            throw new RuntimeError(
+                `${this.name}: Kann keinen Block mehr legen, da es keinen Platz mehr gibt!`
+            );
         return true;
     }
 
     canPickUpFrom(targetField: Field | undefined): targetField is Field {
         // check if target field isn't accessible
-        if (!targetField) throw new RuntimeError(`${this.name}: Dieses Feld existiert nicht!`);
-        if (targetField.isEmpty) throw new RuntimeError(`${this.name}: Kann Blöcke nicht aus dem Nichts aufheben!`);
-        if (targetField.isWall) throw new RuntimeError(`${this.name}: Kann Wände nicht aufheben!`);
-        if (targetField.blocks.length == 0) throw new RuntimeError(`${this.name}: Kann keinen Block aufheben, weil hier keiner liegt!`);
+        if (!targetField)
+            throw new RuntimeError(
+                `${this.name}: Dieses Feld existiert nicht!`
+            );
+        if (targetField.isEmpty)
+            throw new RuntimeError(
+                `${this.name}: Kann Blöcke nicht aus dem Nichts aufheben!`
+            );
+        if (targetField.isWall)
+            throw new RuntimeError(`${this.name}: Kann Wände nicht aufheben!`);
+        if (targetField.blocks.length == 0)
+            throw new RuntimeError(
+                `${this.name}: Kann keinen Block aufheben, weil hier keiner liegt!`
+            );
         return true;
     }
 
     canMarkAt(targetField: Field | undefined): targetField is Field {
         // check if target field isn't accessible
-        if (!targetField) throw new RuntimeError(`${this.name}: Dieses Feld existiert nicht!`);
-        if (targetField.isEmpty) throw new RuntimeError(`${this.name}: Kann Marker nicht ins Nichts legen!`);
-        if (targetField.isWall) throw new RuntimeError(`${this.name}: Kann Marker nicht auf Wände legen!`);
+        if (!targetField)
+            throw new RuntimeError(
+                `${this.name}: Dieses Feld existiert nicht!`
+            );
+        if (targetField.isEmpty)
+            throw new RuntimeError(
+                `${this.name}: Kann Marker nicht ins Nichts legen!`
+            );
+        if (targetField.isWall)
+            throw new RuntimeError(
+                `${this.name}: Kann Marker nicht auf Wände legen!`
+            );
         return true;
     }
 
     canUnmarkAt(targetField: Field | undefined): targetField is Field {
         // check if target field isn't accessible
-        if (!targetField) throw new RuntimeError(`${this.name}: Dieses Feld existiert nicht!`);
-        if (targetField.isEmpty) throw new RuntimeError(`${this.name}: Kann Marker nicht im Nichts entfernen!`);
-        if (targetField.isWall) throw new RuntimeError(`${this.name}: Kann Marker nicht von Wände entfernen!`);
+        if (!targetField)
+            throw new RuntimeError(
+                `${this.name}: Dieses Feld existiert nicht!`
+            );
+        if (targetField.isEmpty)
+            throw new RuntimeError(
+                `${this.name}: Kann Marker nicht im Nichts entfernen!`
+            );
+        if (targetField.isWall)
+            throw new RuntimeError(
+                `${this.name}: Kann Marker nicht von Wände entfernen!`
+            );
         return true;
     }
 
     /**
      * Animation
-     * 
+     *
      * anim_Prog (progress) variables are timers that count down from 1.0 to 0.0.
      * During this time, the associated animation is active.
-     * 
+     *
      * prepare() updates the robot state FROM an external source,
      * in this case robot-view.ts
      * animate() updates the timers
@@ -722,17 +772,22 @@ export class Robot {
         // update height
         if (this.animCurrHeight != fieldHeight) {
             this.animCurrHeight = fieldHeight;
-            if (this.animCurrHeight != this.animLastHeight) this.triggerFallAnim();
+            if (this.animCurrHeight != this.animLastHeight)
+                this.triggerFallAnim();
         }
         // trigger falls
-        if (this.animFallProg <= 0 || Math.abs(this.animCurrHeight - this.animLastHeight) > 1)
+        if (
+            this.animFallProg <= 0 ||
+            Math.abs(this.animCurrHeight - this.animLastHeight) > 1
+        )
             this.animLastHeight = this.animCurrHeight;
         // auto blink
         if (this.animBlinkProg == 0 && Math.random() < 0.001) {
             this.triggerBlinkAnim();
         }
         // auto reset view
-        if (this.animThoughtProg <= 0) this.animThoughtType = ThoughtType.Nothing;
+        if (this.animThoughtProg <= 0)
+            this.animThoughtType = ThoughtType.Nothing;
     }
 
     animate(deltaProg: number, delta: number): void {

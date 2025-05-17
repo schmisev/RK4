@@ -1,7 +1,8 @@
 import { RuntimeError } from "../../../errors";
-import { Identifier, BinaryExpr, UnaryExpr, AssignmentExpr, CallExpr, MemberExpr, StmtKind, ListLiteral, ComputedMemberExpr } from "../../frontend/ast";
+import { formatValue } from "../../../utils";
+import { Identifier, BinaryExpr, UnaryExpr, AssignmentExpr, CallExpr, MemberExpr, StmtKind, ListLiteral, ComputedMemberExpr, InstanceExpr } from "../../frontend/ast";
 import { CodePosition, Token, TokenType } from "../../frontend/lexer";
-import { Environment } from "../environment";
+import { Environment, instanceNativeObjectFromClass, VarHolder } from "../environment";
 import { SteppedEval, evaluate_expr } from "../interpreter";
 import {
     RuntimeVal,
@@ -19,7 +20,7 @@ import {
     FloatVal,
     MK_FLOAT,
 } from "../values";
-import { eval_bare_statements } from "./statements";
+import { eval_bare_statements, eval_var_declaration } from "./statements";
 
 export function eval_identifier(
     ident: Identifier,
@@ -112,6 +113,64 @@ export function* eval_assignment_expr(
     );
 }
 
+export function* eval_instance_expr(
+    decl: InstanceExpr,
+    evalEnv: Environment,
+    declEnv: Environment | VarHolder = evalEnv
+): SteppedEval<RuntimeVal> {
+    const cl = evalEnv.lookupVar(decl.classname);
+    if (cl.type != ValueAlias.Class)
+        throw new RuntimeError(
+            `'${decl.classname}' ist kein Klassenname!`,
+            decl.codePos
+        );
+
+    // calculate arguments of constructor
+    const args: RuntimeVal[] = [];
+    for (const expr of decl.args) {
+        const result = yield* evaluate_expr(expr, evalEnv);
+        args.push(result);
+    }
+
+    if (cl.internal) {
+        return instanceNativeObjectFromClass(cl, args);
+    }
+
+    // standard instantiation
+    const obj: ObjectVal = {
+        type: ValueAlias.Object,
+        cls: cl,
+        ownMembers: new VarHolder(),
+    };
+
+    const constructorEnv = new Environment(evalEnv);
+
+    // create variables
+    if (args.length != cl.params.length)
+        throw new RuntimeError(
+            `Erwarte ${cl.params.length} Parameter, habe aber ${args.length} erhalten!`,
+            decl.codePos
+        );
+    for (let i = 0; i < cl.params.length; i++) {
+        const param = cl.params[i];
+        const varname = param.ident;
+        const arg = args[i];
+
+        if (param.type != arg.type)
+            throw new RuntimeError(
+                `'${varname}' sollte '${param.type}' sein, ist aber '${arg.type}'`,
+                decl.codePos
+            );
+        constructorEnv.declareVar(varname, args[i]);
+    }
+
+    for (const attr of cl.attributes) {
+        yield* eval_var_declaration(attr, constructorEnv, obj.ownMembers);
+    }
+    
+    return obj;
+}
+
 export function* eval_binary_expr(
     binop: BinaryExpr,
     env: Environment
@@ -189,7 +248,7 @@ export function eval_numeric_binary_expr(
         return MK_BOOL(lhs.value <= rhs.value);
     } else if (operator.type == TokenType.NEQ) {
         return MK_BOOL(lhs.value != rhs.value);
-    } else if (lhs.type !== rhs.type) {
+    } else if (lhs.type === ValueAlias.Float || rhs.type === ValueAlias.Float) {
         // cast to float
         if (operator.type == TokenType.Plus) {
             return MK_FLOAT(lhs.value + rhs.value);
@@ -359,13 +418,17 @@ export function* eval_call_expr(
         }
 
         const result = yield* eval_bare_statements(fn.body, scope);
+        let ret: RuntimeVal;
         if (result.type === AbruptAlias.Return) {
-            return result.value;
+            ret = result.value;
+        } else {
+            ret = result;
         }
-        return result;
-    }
 
-    throw new RuntimeError(`Du versuchst hier ${JSON.stringify(fn)} als Funktion auszuführen!`, call.codePos);
+        return ret;
+    }  
+
+    throw new RuntimeError(`Du versuchst hier ${formatValue(fn)} als Funktion auszuführen!`, call.codePos);
 }
 
 export function* eval_member_expr(

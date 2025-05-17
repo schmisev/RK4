@@ -164,9 +164,9 @@ zeig k1.siehtZiegel(gelb) // Gibt wahr zurück, wenn der oberste Ziegel im Stape
 zeig k1.istAufMarke(rot) // Gibt wahr zurück, wenn die Marke unter k1 rot ist.
 // Auch hier ist der Parameter optional.
 
-zeig k1.x() // Gibt die x-Koordinate von k1 zurück.
-zeig k1.y() // Gibt die y-Koordinate zurück.
-zeig k1.richtung() // Gibt die Richtung als Text zurück: "N", "S", "W" oder "O".
+zeig k1.x // Gibt die x-Koordinate von k1 zurück.
+zeig k1.y // Gibt die y-Koordinate zurück.
+zeig k1.richtung // Gibt die Richtung als Text zurück: "N", "S", "W" oder "O".
 
 // im Debugbereich können weitere Robotermethoden eingesehen werden
 `, false);
@@ -184,7 +184,7 @@ ende
 
 // k1 dreht sich solange, bis er nach Norden schaut
 // Mehr zu = und anderen Vergleichsoperatoren später
-wiederhole solange nicht (k1.richtung() == "N")
+wiederhole solange nicht (k1.richtung == "N")
     k1.linksDrehen()
 ende
 
@@ -211,9 +211,9 @@ ende
 
 // Auch 'sonst wenn' ist legal...
 // ... wird aber als geschachtelte bedingte Anweisung interpretiert.
-wenn k1.x() > 0 dann
+wenn k1.x > 0 dann
     k1.schritt()
-sonst wenn k1.y() > 0 dann
+sonst wenn k1.y > 0 dann
     k1.linksDrehen()
     k1.schritt()
 sonst
@@ -266,11 +266,11 @@ Klasse Vektor
     ende
 ende
 
-Objekt v1 als Vektor
+Objekt v1 sei neuer Vektor
 v1.x ist 4
 v1.y ist 6
 
-Objekt v2 als Vektor
+Objekt v2 sei neuer Vektor
 v2.setzeXY(3, -9)
 
 v1.plus(v2)
@@ -283,7 +283,7 @@ Klasse Foo(Zahl n)
     Zahl zweiBar ist 2 * n
 ende
 
-Objekt f als Foo(4)
+Objekt f sei neues Foo(4)
 zeig f.bar // >> 4
 zeig f.zweiBar // >> 8
 `, false);
@@ -310,28 +310,30 @@ Methode feldAufräumen() für Roboter
     ende
 ende
 
-k1.umdrehen() // Funktioniert!
+zeig k1.gehen(3) // nicht kollidiert...
+k1.umdrehen()
+zeig k1.gehen(5) // kollidiert!
 `, false);
 
 storeRawCode("Tutorial: Kommazahlen", `// Kommazahlen
 zeig "Ganze Zahl:"
 Zahl N sei zufallszahl(-100, 100)
-zeig "* N =", N
-zeig "* als Kommazahl", zuKommazahl(N)
-zeig "* |N| =", betrag(N)
+zeig "N =", N
+zeig "als Kommazahl", zuKommazahl(N)
+zeig "|N| =", betrag(N)
 
 zeig ""
 zeig "Kommazahl:"
 Kommazahl z sei zufallsbereich(-100, 100)
-zeig "* z =", z
-zeig "* als ganze Zahl", zuZahl(z)
-zeig "* gestutzt", stutzen(z)
-zeig "* aufgerundet", aufrunden(z)
-zeig "* abgerundet", abrunden(z)
-zeig "* sin(z) =", sin(z)
-zeig "* cos(z) =", cos(z)
-zeig "* tan(z) =", tan(z)
-zeig "* |z| =", betrag(z)
+zeig "z =", z
+zeig "als ganze Zahl", zuZahl(z)
+zeig "gestutzt", stutzen(z)
+zeig "aufgerundet", aufrunden(z)
+zeig "abgerundet", abrunden(z)
+zeig "sin(z) =", sin(z)
+zeig "cos(z) =", cos(z)
+zeig "tan(z) =", tan(z)
+zeig "|z| =", betrag(z)
 `, false);
 
 // retrieve backup, if there is one
