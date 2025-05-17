@@ -283,7 +283,8 @@ export function declareGlobalEnv(): GlobalEnvironment {
     env.declareVar(ENV.robot.cls, createRobotClass(env), true);
     env.declareVar(ENV.world.cls, createWorldClass(env), true);
 
-    env.declareVar("Kugel", createSphereClass(), true);
+    // TODO: add additional classes
+    // env.declareVar("Kugel", createSphereClass(), true);
 
     return env;
 }

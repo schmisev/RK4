@@ -1,5 +1,6 @@
+// TODO: Work in progress
 import type * as p5 from "p5";
-import { Environment, instanceNativeObjectFromClass } from "../../language/runtime/environment";
+import { Environment } from "../../language/runtime/environment";
 import { createInternalClass } from "../../language/runtime/environment";
 import { NativeObjectVal } from "../../language/runtime/environment";
 import {

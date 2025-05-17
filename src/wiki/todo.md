@@ -10,6 +10,7 @@
   - [x] Using p5.Framebuffers instead of p5.Graphics to draw blocks
   - [x] Using p5.Framebuffers for all graphics, like thoughts and labels
 - [ ] Faster loading - somehow?
+- [ ] Add fun sounds
 
 ### Robots & World
 
@@ -44,6 +45,7 @@
   - [ ] Implement structogram visualization
   - [ ] Implement flowchart visualization
 - [ ] EXTRA MAYBE: Shorthand for `wiederhole` as `wdh.`
+- [ ] Add proper tests
 
 ### Quality of life
 

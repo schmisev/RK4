@@ -211,9 +211,9 @@ ende
 
 // Auch 'sonst wenn' ist legal...
 // ... wird aber als geschachtelte bedingte Anweisung interpretiert.
-wenn k1.x() > 0 dann
+wenn k1.x > 0 dann
     k1.schritt()
-sonst wenn k1.y() > 0 dann
+sonst wenn k1.y > 0 dann
     k1.linksDrehen()
     k1.schritt()
 sonst
@@ -310,28 +310,30 @@ Methode feldAufräumen() für Roboter
     ende
 ende
 
-k1.umdrehen() // Funktioniert!
+zeig k1.gehen(3) // nicht kollidiert...
+k1.umdrehen()
+zeig k1.gehen(5) // kollidiert!
 `, false);
 
 storeRawCode("Tutorial: Kommazahlen", `// Kommazahlen
 zeig "Ganze Zahl:"
 Zahl N sei zufallszahl(-100, 100)
-zeig "* N =", N
-zeig "* als Kommazahl", zuKommazahl(N)
-zeig "* |N| =", betrag(N)
+zeig "N =", N
+zeig "als Kommazahl", zuKommazahl(N)
+zeig "|N| =", betrag(N)
 
 zeig ""
 zeig "Kommazahl:"
 Kommazahl z sei zufallsbereich(-100, 100)
-zeig "* z =", z
-zeig "* als ganze Zahl", zuZahl(z)
-zeig "* gestutzt", stutzen(z)
-zeig "* aufgerundet", aufrunden(z)
-zeig "* abgerundet", abrunden(z)
-zeig "* sin(z) =", sin(z)
-zeig "* cos(z) =", cos(z)
-zeig "* tan(z) =", tan(z)
-zeig "* |z| =", betrag(z)
+zeig "z =", z
+zeig "als ganze Zahl", zuZahl(z)
+zeig "gestutzt", stutzen(z)
+zeig "aufgerundet", aufrunden(z)
+zeig "abgerundet", abrunden(z)
+zeig "sin(z) =", sin(z)
+zeig "cos(z) =", cos(z)
+zeig "tan(z) =", tan(z)
+zeig "|z| =", betrag(z)
 `, false);
 
 // retrieve backup, if there is one
