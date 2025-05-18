@@ -18,4 +18,11 @@ export class RuntimeError extends DebugError {
     }
 }
 
+export class CompilerError extends DebugError {
+    constructor(msg: string, lineIndex?: CodePosition) {
+        super(msg, lineIndex != undefined ? Object.assign({}, lineIndex) : ILLEGAL_CODE_POS());
+        console.info("COMPILER: " + msg); // TODO: remove
+    }
+}
+
 export class WorldError extends Error {}
