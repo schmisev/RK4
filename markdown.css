@@ -74,4 +74,15 @@
   padding: 10px;
   font-weight: unset;
   box-shadow: rgba(0, 0, 0, 0.2) 2px 2px 5px;
+  white-space: pre-wrap;
+  text-align: left;
+}
+
+.markdown table {
+  border: 1px solid black;
+}
+
+.markdown table td {
+  border: 1px solid black;
+  font-size: small;
 }
