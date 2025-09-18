@@ -377,6 +377,7 @@ export class Robot {
         }
         // animation
         this.triggerRotAnim();
+        this.signalChange();
         return this.dir;
     }
 
@@ -395,19 +396,16 @@ export class Robot {
                 this.dir = "S";
                 break;
         }
-        /*
-        for(let i = 0; i < 3; i++) {
-            this.turnRight()
-        }
-        */
         // animation
         this.triggerRotAnim();
+        this.signalChange();
         return this.dir;
     }
 
     step() {
         // animation
         this.triggerHopAnim();
+        this.signalChange();
         // logic
         const target = this.targetPos();
         if (this.canMoveTo(target)) {
@@ -729,6 +727,21 @@ export class Robot {
                 `${this.name}: Kann Marker nicht von Wände entfernen!`
             );
         return true;
+    }
+
+    /**
+     * Events
+     */
+    hasChanged: boolean = true;
+
+    signalChange() {
+      this.hasChanged = true;
+    }
+
+    readChangeSignal() {
+      const ret = this.hasChanged;
+      this.hasChanged = false;
+      return ret;
     }
 
     /**

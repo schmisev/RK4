@@ -400,10 +400,8 @@ function robotSketch(p5: p5) {
         // draw object diagrams
         if (robotDiagramIndex >= world.robots.length) {
             hideRobotDiagram(ENV.objOverlay);
-        }
-
-        if (robotDiagramIndex >= 0) {
-            updateRobotDiagram(world.robots[robotDiagramIndex], ENV.objOverlay);
+        } else if (robotDiagramIndex >= 0) {
+            updateRobotDiagram(world.robots[robotDiagramIndex], ENV.objOverlay, false);
         }
 
         // draw heads up display

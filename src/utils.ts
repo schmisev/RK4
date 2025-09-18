@@ -1,34 +1,41 @@
-import { toPng } from "html-to-image";
-import { NumberLikeVal, RuntimeVal, ValueAlias } from "./language/runtime/values";
+import { toJpeg, toPng } from "html-to-image";
+import {
+    NumberLikeVal,
+    RuntimeVal,
+    ValueAlias,
+} from "./language/runtime/values";
 import { RuntimeError } from "./errors";
 
 export class Vec2 {
-  x: number = 0;
-  y: number = 0;
+    x: number = 0;
+    y: number = 0;
 
-  constructor(x: number, y: number) {
-    this.x = x;
-    this.y = y;
-  }
+    constructor(x: number, y: number) {
+        this.x = x;
+        this.y = y;
+    }
 
-  get xy(): [number, number] {
-    return [this.x, this.y];
-  }
+    get xy(): [number, number] {
+        return [this.x, this.y];
+    }
 
-  add(v: Vec2): Vec2 {
-    return new Vec2(this.x + v.x, this.y + v.y);
-  }
+    add(v: Vec2): Vec2 {
+        return new Vec2(this.x + v.x, this.y + v.y);
+    }
 
-  sub(v: Vec2): Vec2 {
-    return new Vec2(this.x - v.x, this.y - v.y);
-  }
+    sub(v: Vec2): Vec2 {
+        return new Vec2(this.x - v.x, this.y - v.y);
+    }
 }
 
 export function deepCopy<T>(obj: T): T {
     return JSON.parse(JSON.stringify(obj));
 }
 
-export function partition<T>(arr: T[], condition: (v: T) => boolean): [T[], T[]] {
+export function partition<T>(
+    arr: T[],
+    condition: (v: T) => boolean
+): [T[], T[]] {
     const trueArr: T[] = [];
     const falseArr: T[] = [];
     for (const v of arr) {
@@ -54,19 +61,30 @@ export function getVals(obj: Object) {
 }
 
 export const lerp = (x: number, y: number, a: number) => x * (1 - a) + y * a;
-export const clamp = (a: number, min = 0, max = 1) => Math.min(max, Math.max(min, a));
+export const clamp = (a: number, min = 0, max = 1) =>
+    Math.min(max, Math.max(min, a));
 export const toZero = (x: number, rate: number) => clamp(x - rate, 0, x);
-export const invlerp = (x: number, y: number, a: number) => clamp((a - x) / (y - x));
-export const range = (x1: number, y1: number, x2: number, y2: number, a: number) => lerp(x2, y2, invlerp(x1, y1, a));
+export const invlerp = (x: number, y: number, a: number) =>
+    clamp((a - x) / (y - x));
+export const range = (
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    a: number
+) => lerp(x2, y2, invlerp(x1, y1, a));
 export const easeInQuad = (x: number) => x * x;
 export const easeOutQuad = (x: number) => 1 - x * x;
 export const easeInCubic = (x: number) => x * x * x;
 export const easeOutCubic = (x: number) => 1 - x * x * x;
-export const easeJump = (x: number) => 1 - (2*x - 1) * (2*x - 1)
-export const easeInOutQuad = (x: number) => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+export const easeJump = (x: number) => 1 - (2 * x - 1) * (2 * x - 1);
+export const easeInOutQuad = (x: number) =>
+    x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
 export const easeOutInQuad = (x: number) => 1.0 - easeInOutQuad(x);
-export const easeBump = (x: number) => x < 0.5 ? easeInOutQuad(x * 2) : easeOutInQuad(x * 2 - 1);
-export const rndi = (min_incl: number, max_non_incl: number) => Math.floor(Math.random() * (max_non_incl - min_incl) + min_incl);
+export const easeBump = (x: number) =>
+    x < 0.5 ? easeInOutQuad(x * 2) : easeOutInQuad(x * 2 - 1);
+export const rndi = (min_incl: number, max_non_incl: number) =>
+    Math.floor(Math.random() * (max_non_incl - min_incl) + min_incl);
 export const easeOutElastic = (x: number) => {
     const c4 = (2 * Math.PI) / 3;
 
@@ -75,7 +93,7 @@ export const easeOutElastic = (x: number) => {
         : x === 1
         ? 1
         : Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * c4) + 1;
-}
+};
 export const easeInOutBack = (x: number) => {
     const c1 = 1.70158;
     const c2 = c1 * 1.525;
@@ -83,17 +101,22 @@ export const easeInOutBack = (x: number) => {
     return x < 0.5
         ? (Math.pow(2 * x, 2) * ((c2 + 1) * 2 * x - c2)) / 2
         : (Math.pow(2 * x - 2, 2) * ((c2 + 1) * (x * 2 - 2) + c2) + 2) / 2;
-}
+};
 export const easeInQuint = (x: number): number => {
     return x * x * x * x * x;
-}
+};
 
 export function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // Create new Option
-export function createOption(key: string, innerHTML: string, disabled = false, selected = false): HTMLOptionElement {
+export function createOption(
+    key: string,
+    innerHTML: string,
+    disabled = false,
+    selected = false
+): HTMLOptionElement {
     const newOption = document.createElement("option");
     newOption.disabled = disabled;
     newOption.value = key;
@@ -113,7 +136,7 @@ export function translateOperator(op: string) {
             return "+";
         case "-":
             return "-";
-            /*
+        /*
         case "und":
             return "∧";
         case "oder":
@@ -135,7 +158,7 @@ export function formatValue(value: RuntimeVal): string {
     } else if (value.type == ValueAlias.Float) {
         let str = value.value.toString();
         if (str.includes(".")) return str;
-        return str + ".0"
+        return str + ".0";
     } else if (value.type == ValueAlias.Boolean) {
         const boolVal = value.value;
         if (boolVal) {
@@ -153,28 +176,34 @@ export function formatValue(value: RuntimeVal): string {
         return `[Objekt der Klasse ${value.cls.name}]`;
     } else if (value.type == ValueAlias.Class) {
         return `<Klasse ${value.name}>`;
-    } else if (value.type == ValueAlias.Function || value.type == ValueAlias.NativeFunction) {
+    } else if (
+        value.type == ValueAlias.Function ||
+        value.type == ValueAlias.NativeFunction
+    ) {
         return `(Funktion ${value.name})`;
     }
     return value satisfies never;
 }
-export function screenshotDiv(elem: HTMLElement, filename: string) {
-    toPng(elem, {})
-        .then(function (dataUrl) {
-            var link = document.createElement('a');
-            link.download = filename;
-            link.href = dataUrl;
-            link.click();
-            link.remove();
-        });
+
+export async function screenshotDiv(elem: HTMLElement, filename: string) {
+    return toPng(elem).then(function (dataUrl) {
+        var link = document.createElement("a");
+        link.download = filename;
+        link.href = dataUrl;
+        link.click();
+        link.remove();
+    });
 }
 
 export function downloadTextFile(filename: string, text: string) {
-    const element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-    element.setAttribute('download', filename);
+    const element = document.createElement("a");
+    element.setAttribute(
+        "href",
+        "data:text/plain;charset=utf-8," + encodeURIComponent(text)
+    );
+    element.setAttribute("download", filename);
 
-    element.style.display = 'none';
+    element.style.display = "none";
     document.body.appendChild(element);
 
     element.click();
@@ -184,7 +213,7 @@ export function downloadTextFile(filename: string, text: string) {
 
 export function destructureTaskKey(key: string, containsTitle = false) {
     const keyParts = key.split("_");
-    let title = containsTitle ? (keyParts.pop() || "unbenannt") : "ex. Titel";
+    let title = containsTitle ? keyParts.pop() || "unbenannt" : "ex. Titel";
     let name = keyParts.pop() || "unbenannt";
     let category = keyParts.pop() || "Standard";
     let author = keyParts.pop() || "unbekannt";
@@ -198,26 +227,38 @@ export function destructureTaskKey(key: string, containsTitle = false) {
     };
 }
 
-export function mod(l: number, r: number) { return ((l % r) + r) % r };
+export function mod(l: number, r: number) {
+    return ((l % r) + r) % r;
+}
 
 export function tooFewArgs(expected: ValueAlias): never {
     throw new RuntimeError(`Zu wenige Parameter! Erwartete '${expected}'`);
 }
 
 export function tooManyArgs(args: RuntimeVal[], expected: number = 0): void {
-    if (args.length > expected) throw new RuntimeError(`Zu viele Parameter! Erwartete ${expected}, erhielt ${args.length}.`);
+    if (args.length > expected)
+        throw new RuntimeError(
+            `Zu viele Parameter! Erwartete ${expected}, erhielt ${args.length}.`
+        );
 }
 
 export function numberLikeArg(given: RuntimeVal | undefined): NumberLikeVal {
     if (!given) tooFewArgs(ValueAlias.Number);
     if (given.type !== ValueAlias.Number && given.type !== ValueAlias.Float)
-        throw new RuntimeError(`Erwartete '${ValueAlias.Number}' oder '${ValueAlias.Float}'`);
+        throw new RuntimeError(
+            `Erwartete '${ValueAlias.Number}' oder '${ValueAlias.Float}'`
+        );
     return given;
 }
 
-export function checkAnyArg<R extends RuntimeVal>(given: RuntimeVal | undefined, expected: R["type"]): R {
+export function checkAnyArg<R extends RuntimeVal>(
+    given: RuntimeVal | undefined,
+    expected: R["type"]
+): R {
     if (!given) tooFewArgs(expected);
-    if (given.type !== expected) 
-        throw new RuntimeError(`Erwartete '${expected}', erhielt '${given.type}'`);
+    if (given.type !== expected)
+        throw new RuntimeError(
+            `Erwartete '${expected}', erhielt '${given.type}'`
+        );
     return given as R;
 }
