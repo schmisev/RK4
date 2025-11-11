@@ -1,11 +1,19 @@
 // importing wiki docs
 const wikiPages: Record<string, string> = {}
 const rawFiles = require.context('./wiki', false, /\.md$/);
+const rootRawFiles = require.context('../', false, /\.md$/);
 
 for (const fileName of rawFiles.keys()) {
   let pureFileName = fileName.slice(2, fileName.length - 3);
   wikiPages[pureFileName] = rawFiles(fileName);
 }
+
+/*
+for (const fileName of rootRawFiles.keys()) {
+  let pureFileName = fileName.slice(2, fileName.length - 3);
+  wikiPages[pureFileName] = rootRawFiles(fileName);
+}
+*/
 
 
 // regular imports
@@ -95,6 +103,8 @@ export function showMap() {
   ${declMapCall("switch", "Fallunterschiedung", true, [])}
 
   ${declMapTerm("world", "Die Welt", true, [])}
+
+  ${declMapTerm("info",  "Alles wissenswerte", true, [])}
   `;
   flowchartView.removeAttribute("data-processed")
   mermaid.contentLoaded();
