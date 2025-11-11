@@ -584,9 +584,8 @@ code {
     width: auto;
     height: auto;
     top: 115%;
-    width: 10rem;
-    /* width: 100%;  Full width (cover the whole page) */
-    /* height: 100%;  Full height (cover the whole page) */
+    /*width: 100%;  Full width (cover the whole page) */
+    /*height: 100%;  Full height (cover the whole page) */
     background-color: rgba(255,255,255,1); /* Black background with opacity */
     z-index: 500; /* Specify a stack order in case you're using a different order for other elements */
     cursor: pointer; /* Add a pointer on hover */
