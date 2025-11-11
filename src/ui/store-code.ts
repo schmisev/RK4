@@ -183,7 +183,7 @@ wiederhole 3 mal
 ende
 
 // k1 dreht sich solange, bis er nach Norden schaut
-// Mehr zu = und anderen Vergleichsoperatoren später
+// Mehr zu == und anderen Vergleichsoperatoren später
 wiederhole solange nicht (k1.richtung == "N")
     k1.linksDrehen()
 ende
