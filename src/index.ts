@@ -200,7 +200,8 @@ editor.setFontSize(zoomStages[0])
 const zoomEditor = document.getElementById("zoom-editor")!;
 const zoomEditorDecrease = document.getElementById("zoom-editor-decrease")!;
 function adjustFontSize(step: number) {
-    let fontSize = parseInt(editor.getFontSize());
+    let extractedSize = editor.getFontSize();
+    let fontSize = typeof extractedSize === "string" ? parseInt(extractedSize) : extractedSize;
     let atIdx = zoomStages.indexOf(fontSize);
     if (atIdx == -1) {
         editor.setFontSize(zoomStages[0])
